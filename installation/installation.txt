@@ -15,7 +15,8 @@ In lab we found two CDs for the Andor
 	Intruction Manuals October 2012 
 	MATLAB SDK CD v2.94.300007.0 
 
-The contents of both these CDs are stored in the lab drives.
+The contents of both these CDs are stored in the lab drives. However, the revelant manuals
+for our camera have been copied to the repository as they are relatively small.
 
 To install, we ran the setup.exe found on the MATLAD SDK Folder. 
 
