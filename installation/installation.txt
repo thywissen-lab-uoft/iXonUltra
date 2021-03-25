@@ -1,0 +1,44 @@
+installation.txt
+
+Author : CJ Fujiwara
+Date     : 2020/02/21
+
+Our primary imaging camera is an iXon Ultra from Andor.  The model number and serial number are as follows:
+
+Model		DU-897U-CS0-EXF
+Serial Number	X-7686
+Issue Date	Nov 2012
+
+Driver and SDK Installation:
+
+In lab we found two CDs for the Andor 
+	Intruction Manuals October 2012 
+	MATLAB SDK CD v2.94.300007.0 
+
+The contents of both these CDs are stored in the lab drives.
+
+To install, we ran the setup.exe found on the MATLAD SDK Folder. 
+
+After doing this, the camera should appear in your device manager :
+
+LibUSB-Win32 Devices -> Andor iXon Ultra 
+
+
+Matlab SDK:
+We use a GUI developed by Stefan Trotzky to run the iXon camera. 
+
+Installation of the SDK setup.exe will put the requisite files in your MATLAB root
+
+	C:\Program Files\MATLAB\R2019b\toolbox\Andor
+
+After that, copy the drivers found in your matlab root:
+
+	C:\Program Files\MATLAB\R2019b\toolbox\Andor\Camera Files\atmcd64d.dll
+	C:\Program Files\MATLAB\R2019b\toolbox\Andor\Camera Files\ATSIFIO64.dll
+
+To your local directory of the imaging code.  For some odd reason, these dlls need to be in the local directory when a matlab function codes the mex complied functions (I don’t know why it can’t just be referenced externally).  So there are some funny looking calls to “cd” (change directory) in order to satisfy this criterion.
+If you are running 32-bit MATLAB, you should’ve chosen the 32-bit installation when running the setup.exe.  The filenames names will change accordingly.
+
+That should be all you need to do to run the code!
+
+Note that there is a GUI that Andor provides that we could also use.
