@@ -1,0 +1,44 @@
+fluoresence mode (single image) --> two images, one backvround, one with atoms.
+singleimage.acq (most often used)
+
+
+fluoresence mode (image sequence) --> 
+
+Normal operation :
+(1) single image (which is really two images)
+(2) Adwin send two triggers (PWA,BKGD)
+(3) then gets ready for next triggers
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+VV + PX don't ever remember using absorption mode
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+dualimage.acq is used for looking for heating rates in imaging, but is
+hardly ever used. (two images, kinetics mode)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Info givers you the information of dacquistion for 
+the selected radio button (but you need to click to
+reload the text file)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+open shutter button maybe allows to open the shutter from
+the settings file (maybe? unsure)
+
+%%%%%%%%%%%%%%%5
+thigs that we actually change
+
+EMCCDGain = 300
+ExposureTime = [1 ms --> 2 seconds]
+TriggerMode
+
+%%
+itneral trigger is only useful for aligningment 
+
+however, there is sometimes a use for "live" feedback.

@@ -1,0 +1,117 @@
+SDK Functions
+
+Here is a brief descriptions of important SDK functions that are used in coding the GUI. For a full description
+refer to the SDK manual.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetAcquisitionMode(int mode) – “This function will set the acquisition mode to be used on the next StarAcqusition.
+	1 Single Scan “is the simplest form of acquisition where a single scan is captured.”
+	2 Accumulate “mode takes a sequence of single scans and adds them together.” (in computer memory)
+	3 Kinetics “mode captures a sequence of single scans, or possibly depending on the camera, a sequence of accumulated scans.”
+	4 Fast Kinetics 
+	6 Run till abort “continually performs scans of the CCD until aborted.”
+
+We typically set the acquisition mode to 3, which means kinetic series(?).  According to the SDK (pp 38) the exposure time, accumulate cycle time, number of accumulations, kinetic cycle time, and number in kinetic series need to be specified.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetReadMode(int mode) – “This function will set the readout mode to be used on th subsequent acquisitions.
+	0 Full Vertical Binning
+	1 Multi-Track
+	2 Random-Track
+	3 Single-Track
+	4 Image
+We typically use ReadMode of 4
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetShutter(int type, int mode, int closingtime, int openingtime) – “This function controls the behavior of the shutter”.
+	Int type: 0 output TTL low signal to open shutter, 1 output TTL to high signal to open shutter
+	Int Mode : 0 Auto, 1 Open, 2 Closed
+	Int closingtime/openingtime time it takes to open or close the shutter in milliseconds
+
+ShutterType is not set in the .acq files, but ShutterMode is set to be be 0. Therefore, the the shutter is automatically opened by the camera. In the InitilaizeCamStruct function, it appears that the shuttertype is set to be 1, which means that a high TTL is required to open the shutter. However, I am confused why the mode is relevant if there is a TTL required to adjust the shutter. Does the mode override the type? 
+Okay, so further reading indicates that the shutter is an output not an input. Therefore, this the shutter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetFanMode(int mode) – “Allows the user to control the mode of the camera fan. If the system is cooled, the fan should only be turned off for short periods of time. During this time the body of the camera will warm up which could compromise cooling capabilities.
+If the camera body reaches too high a temperature, depends on camera, the buzzer will sound. If this happens, turn off the external power supply and allow the system to stabilize before continuing.”
+	0 fan on full
+	1 fan on low
+	2 fan off
+The fan mode is not set in the acquisition settings file, but is set to have a value of zero by default.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetADChannel(int channel) -  This function will set the AD channel to one of the possible A-Ds of the system. This AD channel will be used for all subsequent operations performed by the system.
+This is not specified in the settings file and it’s value is to 0 by default.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetPreAmpGain(int index) - This function will set the pre amp gain to be used for subsequent acquisitions. The actual gain factor that will be applied can be found through a call to the GetPreAmpGain function. The number of Pre Amp Gains available is found by calling the GetNumberPreAmpGains function.
+This is not specified in the settings file and its value is set to 0 by default.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetEMGainMode
+	0 EM Gain set by DAC settings 0-255
+	1 EM Gain set by the DAC settings 0-4095
+	2 Linear Mode
+	3 Real EM gain
+This is set to a value of 3 in the setttings file, but is 0 by default.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetEMAdvanced - This function turns on and off access to higher EM gain levels within the SDK. Typically, optimal signal to noise ratio and dynamic range is achieved between x1 to x300 EM Gain. Higher gains of > x300 are recommended for single photon counting only. Before using higher levels, you should ensure that light levels do not exceed the regime of tens of photons per pixel, otherwise accelerated ageing of the sensor can occur.
+
+
+This is not available in the settings file and is disabled by default.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetEMCCDGain(int gain) - Allows the user to change the gain value. The valid range for the gain depends on what gain mode the camera is operating in. See SetEMGainMode to set the mode and GetEMGainRange to get the valid range to work with. To access higher gain values (>x300) see SetEMAdvanced.
+We typically use gains of 300 and it is set to 1 by default (with a gain mode of 0) 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetVSSpeed(int index) - This function will set the vertical speed to be used for subsequent acquisitions. 
+
+We typically use a value of 3. Apparatnly, this yields a speed of 1.7us
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetHSSpeed(int typ,int index) - This function will set the speed at which the pixels are shifted into the output node during the readout phase of an acquisition. Typically your camera will be capable of operating at several horizontal shift speeds. To get the actual speed that an index corresponds to use the GetHSSpeed function.
+	Typ 0 electron multiplication/convential (clara)
+	Typ 1 conventional/exnted NIR mode (clara)
+	Index 0 to getnumberhsspedd-1
+
+We typically use an index value of 3 (set by file) and typ of 0 (set by default). The hardware manual says this range between 17 MHz and 0.08 MHz, higher speed for faster frame rates. 0.08 MHz is for best dynamic range. Apparently, an index of 3 yields a speed of 1 MHz
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetExposureTime(float time) - This function will set the exposure time to the nearest valid value not less than the given value. The actual exposure time used is obtained by GetAcquisitionTimings. . Please refer to SECTION 5 – ACQUISITION MODES for further information.
+	Float time – the exposure time in seconds
+
+We typically set this to be 2 ms.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetTriggerMode(int mode) – set the trigger mode
+	0 internal
+	1 external
+	6 external start
+	7 external exposure (bulb)
+	9 external FVB EM (only valid for EM newtown models in FVB mode)
+	10 software
+	12 external charge shifting
+Typically use a value of 1 but sometimes use a value of 0 for “alignment”/”live” feedback.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SetAccumulationCycleTime(float time) - This function will set the accumulation cycle time to the nearest valid value not less than the given value. The actual cycle time used is obtained by GetAcquisitionTimings. Please refer to SECTION 5 – ACQUISITION MODES for further information.
+
+We set to be 0 in the settings.
+
+
