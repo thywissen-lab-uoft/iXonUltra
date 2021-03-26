@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=0;
+doDebug=1;
 
 %% Camera Settings
 
@@ -30,7 +30,6 @@ cam_status.TemperatureSP=10;    % Must lie between -120 C and 20 C
 cam_status.isTempStable=0;
 cam_status.isCooling=0;
 cam_status.isAcquiring=0;
-
 
 
 %% Other Settings
@@ -180,7 +179,8 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         disp(' ');
         disp(cam_info);
         setTemperature(tblTemp.Data);
-        
+        hbCamInfo.Enable='on';
+
         hbCool.Enable='on';
         tblTemp.Enable='on';
         strtemp.Enable='on';
@@ -213,6 +213,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         hbCool.Enable='off';
         hbCoolOff.Enable='off';
         tblTemp.Enable='off';
+        hbCamInfo.Enable='off';
         
         hbOpenShutter.Enable='off';
         hbCloseShutter.Enable='off';
@@ -221,11 +222,22 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
 
     end
 
+% Info button
+ttstr='Display camera info';
+cdata=imresize(imread(fullfile(mpath,'icons','info.jpg')),[18 18]);
+hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,...
+    'enable','on','backgroundcolor','w','position',[130 5 20 20],...
+    'ToolTipString',ttstr,'enable','off');
+
+    function infoCB(~,~)
+       disp(cam_info); 
+    end
+
 % Start Cooling
 ttstr='Begin cooling the sensor to set point.';
 hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
     'units','pixels','fontsize',10,'Position',...
-    [140 5 60 20],'enable','off',...
+    [155 5 60 20],'enable','off',...
     'backgroundcolor',[173 216 230]/255,'callback',{@coolCB ,1},...
     'ToolTipString',ttstr);
 
@@ -234,7 +246,7 @@ hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
 ttstr='Stop cooling the sensor to set point.';
 hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
     'units','pixels','fontsize',10,'Position',...
-    [203 5 60 20],'enable','off',...
+    [218 5 60 20],'enable','off',...
     'backgroundcolor',[.8 .8 .8],'callback',{@coolCB, 0},...
     'ToolTipString',ttstr);
 
@@ -266,7 +278,7 @@ tblTemp=uitable(hpCam,'units','pixels','ColumnWidth',{30},...
     'CellEditCallback',@chTempCB,'RowName',{},'ToolTipString',ttstr,...
     'enable','off');
 tblTemp.Position(3:4)=tblTemp.Extent(3:4);
-tblTemp.Position(1:2)=[265 4];
+tblTemp.Position(1:2)=[280 4];
 
     function chTempCB(src,evt)
         disp('Changing temperature set point');
@@ -297,11 +309,13 @@ tblTemp.Position(1:2)=[265 4];
     end
 
 % Text
+ttstr='Camera sensor temperature. (green: stable; yellow: unstable; red: set point not reached)';
 strtemp=uicontrol(hpCam,'style','text','string','NaN','units','pixels',...
     'backgroundcolor','w','fontsize',12,'horizontalalignment','left',...
-    'foregroundcolor','r','enable','off','fontweight','bold');
+    'foregroundcolor','r','enable','off','fontweight','bold',...
+    'ToolTipString',ttstr);
 strtemp.Position(3:4)=[45 20];
-strtemp.Position(1:2)=[305 5];
+strtemp.Position(1:2)=[320 5];
 
 % Timer to update temperature
 tempTimer=timer('Name','iXonTemperatureTimer','Period',1,...
@@ -336,13 +350,13 @@ tempTimer=timer('Name','iXonTemperatureTimer','Period',1,...
 % Open camera shutter
 ttstr='Open camera shutter.';
 hbOpenShutter=uicontrol(hpCam,'style','pushbutton','string','open shutter',...
-    'units','pixels','fontsize',10,'Position',[350 5 80 20],'enable','off',...
+    'units','pixels','fontsize',10,'Position',[365 5 80 20],'enable','off',...
     'backgroundcolor',[255 204 0]/255,'callback',{@shutterCB,1},...
     'ToolTipString',ttstr);
 
 ttstr='Close camera shutter.';
 hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
-    'units','pixels','fontsize',10,'Position',[430 5 80 20],'enable','off',...
+    'units','pixels','fontsize',10,'Position',[445 5 80 20],'enable','off',...
     'backgroundcolor',[255 102 120]/255,'callback',{@shutterCB,0},...
     'ToolTipString',ttstr);
 
