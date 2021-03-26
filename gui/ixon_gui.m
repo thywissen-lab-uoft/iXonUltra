@@ -25,12 +25,16 @@ cam_info=struct;
 
 % Initialize Camera Status
 cam_status=struct;
-cam_status.Temperature=NaN;
+cam_status.Temperature=NaN;     % sensor temperature
 cam_status.TemperatureSP=10;    % Must lie between -120 C and 20 C
-cam_status.isTempStable=0;
-cam_status.isCooling=0;
-cam_status.isAcquiring=0;
+cam_status.isTempStable=0;      % is sensor tempreature stable?
+cam_status.isCooling=0;         % is the TEC active?
+cam_status.isAcquiring=0;       % is the camera acquiring frames?
 
+% Declare Acquisition settings
+acq=defaultAcqSettings;
+
+% Declare image data structure
 
 %% Other Settings
 
@@ -57,8 +61,8 @@ data=struct;
 data.X=X;
 data.Y=Y;
 data.Z=Z;
-data.Name='DummyImage';
-
+data.Date=datevec(now);
+data.Name=['iXonUltra_' datestr(data.Date,'yyyy-mm-dd_HH-MM-SS')];
 
 %% Initialize Drivers and GUI
 
@@ -91,7 +95,6 @@ hF=figure;clf
 set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
     'Tag','GUI','CloseRequestFcn',@closeGUI,'NumberTitle','off',...
     'Position',[50 50 1200 850],'SizeChangedFcn',@SizeChangedFcn);
-% set(hF,'WindowStyle','docked');
 
 % Callback for when the GUI is requested to be closed.
     function closeGUI(fig,~)
@@ -988,7 +991,14 @@ function data=updateImages(data)
     
     % Perform Box Count
     data=boxCount(data);
-    set(tCoMAnalysis,'String',makeCoMStr(data.BoxCount));        
+    
+    str=[ num2str(data.BoxCount.Nraw,'%.3e') ' counts' newline ...
+        '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(data.BoxCount.Xc,1)) ',' ...
+        num2str(round(data.BoxCount.Yc,1)) ')$' newline ...
+        '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(data.BoxCount.Xs,1)) ',' ...
+        num2str(round(data.BoxCount.Ys,1)) ')$'];
+    
+    set(tCoMAnalysis,'String',str);        
 
     
     set(hImg,'XData',data.X,'YData',data.Y,'CData',Z);
@@ -1251,4 +1261,31 @@ function str=makeCoMStr(boxcount)
 
 end
 
+function [out,dstr]=grabSequenceParams(src)
+    if nargin~=1
+        src='Y:\_communication\control.txt';
+    end
+    disp(['Opening information from from ' src]);
+    out=struct;
+    % Open the control file
+    [fid,errmsg] = fopen(src,'rt');
+    if ~isempty(errmsg)
+       warning('Unable to read control.txt. Aborting association');
+       return
+    end
+    % Read the first six lines (and throw them away)
+    fgetl(fid);
+    fgetl(fid);
+    dstr=fgetl(fid);   % Date line
+    dstr=dstr(17:end-1); % get date string (this is a bit risky coding)
+    fgetl(fid);
+    fgetl(fid);
+    fgetl(fid);
+    % Read the parameters (each line looks like "k_cMOT_detuning: 5")
+    params = textscan(fid,'%[^:] %*s %s');
+    % Close the file
+    fclose(fid);
+    % Convert the string into a structure
+    out=cell2struct(num2cell(str2double(params{2})),params{1});
+end
 
