@@ -84,6 +84,8 @@ cam_status.isAcquiring=0;       % is the camera acquiring frames?
 % Declare Acquisition settings
 acq=defaultAcqSettings;
 
+% Description of Acquisitino settings
+desc=acqDescription(acq);
 
 
 %% Initialize Figure
@@ -190,7 +192,8 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         
         rbSingle.Enable='on';
         rbLive.Enable='on';
-
+        tbl_acq.Enable='on';
+        
         start(tempTimer);
     end
 
@@ -227,6 +230,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         
         hbstart.Enable='off';
         hbstop.Enable='off';
+        tbl_acq.Enable='off';
 
 
         set(strtemp,'ForegroundColor','r','String','NaN','Enable','off');
@@ -860,13 +864,11 @@ tabs(2)=uitab(hpFit,'Title','param','units','pixels');
 tabs(3)=uitab(hpFit,'Title','1','units','pixels');
 
 % Table for acquisition
-tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',8,...
-    'ColumnName',{},'ColumnWidth',{100 35 40},'columneditable',[false true false],...
-    'Position',[0 0 1 1],'celleditcallback',@foo);
+tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
+    'ColumnName',{},'ColumnWidth',{80 30 69},'columneditable',[false true false],...
+    'Position',[0 0 1 1],'celleditcallback',@foo,'ColumnFormat',{'char','numeric','char'},'enable','off');
 
-    function foo(src,evt)
-       src;
-       evt;
+    function foo(src,evt)        
         temp = get(src,'Data');
         set(src,'Data',{ 'dummy' });
         set(src,'Data', temp );
@@ -874,7 +876,11 @@ tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',8,...
 
 
 tbl_acq.Data=[fieldnames(acq), ...
-    struct2cell(acq)];         
+    struct2cell(acq)];     
+
+for kk=1:size(tbl_acq.Data,1)    
+    tbl_acq.Data{kk,3}=desc.(tbl_acq.Data{kk,1});   
+end
 
 % Table for run parameters
 tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...

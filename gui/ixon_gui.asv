@@ -84,6 +84,8 @@ cam_status.isAcquiring=0;       % is the camera acquiring frames?
 % Declare Acquisition settings
 acq=defaultAcqSettings;
 
+% Description of Acquisitino settings
+desc=acqDescription(acq);
 
 
 %% Initialize Figure
@@ -186,6 +188,10 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         tblTemp.Enable='on';
         strtemp.Enable='on';
         hbOpenShutter.Enable='on';
+        hbstart.Enable='on';
+        
+        rbSingle.Enable='on';
+        rbLive.Enable='on';
 
         start(tempTimer);
     end
@@ -218,6 +224,12 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         
         hbOpenShutter.Enable='off';
         hbCloseShutter.Enable='off';
+        rbSingle.Enable='off';
+        rbLive.Enable='off';
+        
+        hbstart.Enable='off';
+        hbstop.Enable='off';
+
 
         set(strtemp,'ForegroundColor','r','String','NaN','Enable','off');
 
@@ -438,49 +450,83 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
     'Position',[2 hpAcq.Position(4)-35 40 20],...    
     'Callback',@startCamCB,'ToolTipString',ttstr,'enable','off');
 
+    function startCamCB(src,evt)
+        disp('Starting acquisition');
+        
+        rbSingle.Enable='off';
+        rbLive.Enable='off';
+
+        hbstart.Enable='off';
+        hbstop.Enable='on';
+        
+        tbl_acq.ColumnEditable(2)=false;
+        tbl_acq.Enable='off';
+    end
+
 % Stop acquisition button
 ttstr='Abort acquisition.';
 hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
     'units','pixels','fontsize',10,'backgroundcolor',[250 102 120]/255,...
     'Position',[45 hpAcq.Position(4)-35 40 20], ...
-    'Callback',@startCamCB,'ToolTipString',ttstr,'enable','off');
+    'Callback',@stopCamCB,'ToolTipString',ttstr,'enable','off');
 
-% Info button
-ttstr='Grab current camera settings.';
-cdata=imresize(imread(fullfile(mpath,'icons','info.jpg')),[18 18]);
-hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@settingsCB,...
+
+    function stopCamCB(src,evt)
+        disp('Stopping acquisition');
+        
+        hbstart.Enable='on';
+        hbstop.Enable='off';
+        
+        rbSingle.Enable='on';
+        rbLive.Enable='on';
+        
+        tbl_acq.ColumnEditable(2)=true;
+        tbl_acq.Enable='on';
+
+    end
+
+% Acquisition help button
+ttstr='Help on acquisition.';
+cdata=imresize(imread(fullfile(mpath,'icons','help.jpg')),[15 15]);
+hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,...
     'enable','on','backgroundcolor','w','position',[88 hpAcq.Position(4)-35 20 20],...
-    'ToolTipString',ttstr,'enable','off');
+    'ToolTipString',ttstr,'enable','on');
+
+    function helpCB(~,~)
+       disp('Im helping you'); 
+    end
 
 % Button group for acquisition mode
 bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chAcqCB);  
-bgAcq.Position(3:4)=[175 60];
-bgAcq.Position(1:2)=[5 hpAcq.Position(4)-95];
+bgAcq.Position(3:4)=[175 40];
+bgAcq.Position(1:2)=[5 hpAcq.Position(4)-75];
     
 % Settings button
-ttstr='Change some settings.';
-cdata=imresize(imread(fullfile(mpath,'icons','gear.jpg')),[18 18]);
-hbSingleSett=uicontrol(bgAcq,'style','pushbutton','CData',cdata,'callback',@settingsCB,...
-    'enable','on','backgroundcolor','w','position',[0 0 size(cdata,[1 2])],...
-    'ToolTipString',ttstr);
-hbMultiSett=uicontrol(bgAcq,'style','pushbutton','CData',cdata,'callback',@settingsCB,...
-    'enable','on','backgroundcolor','w','position',[0 20 size(cdata,[1 2])],...
-    'ToolTipString',ttstr);
+% ttstr='Change some settings.';
+% cdata=imresize(imread(fullfile(mpath,'icons','gear.jpg')),[18 18]);
+% hbSingleSett=uicontrol(bgAcq,'style','pushbutton','CData',cdata,'callback',@settingsCB,...
+%     'enable','on','backgroundcolor','w','position',[0 0 size(cdata,[1 2])],...
+%     'ToolTipString',ttstr);
+% hbMultiSett=uicontrol(bgAcq,'style','pushbutton','CData',cdata,'callback',@settingsCB,...
+%     'enable','on','backgroundcolor','w','position',[0 20 size(cdata,[1 2])],...
+%     'ToolTipString',ttstr);
 
 % Radio buttons for cuts vs sum
-rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','Single (PWA,BKGD)',...
-    'Position',[22 0 200 20],'units','pixels','backgroundcolor','w','Value',1,...
-    'UserData','Single');
-rbMulti=uicontrol(bgAcq,'Style','radiobutton','String','Multiple (PWA,..,BKGD)',...
-    'Position',[22 20 200 20],'units','pixels','backgroundcolor','w',...
-    'UserData','Multi');
-rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live',...
-    'Position',[22 40 200 20],'units','pixels','backgroundcolor','w',...
-    'UserData','Live');
+rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','Normal (pwa,pwa,...,bkgd)',...
+    'Position',[1 0 200 20],'units','pixels','backgroundcolor','w','Value',1,...
+    'UserData','Normal','Enable','off');
+% rbMulti=uicontrol(bgAcq,'Style','radiobutton','String','Multiple (PWA,..,BKGD)',...
+%     'Position',[22 20 200 20],'units','pixels','backgroundcolor','w',...
+%     'UserData','Multi');
+rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live (be careful)',...
+    'Position',[1 20 200 20],'units','pixels','backgroundcolor','w',...
+    'UserData','Live','Enable','off');
 
 % Change acqusition mode callback
     function chAcqCB(~,evt)
+        disp('Probably should make a confirm diaglog box here');
+        
         oldStr=evt.OldValue.UserData;
         newStr=evt.NewValue.UserData;                
         if isequal(oldStr,newStr)
@@ -490,10 +536,8 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live',...
         switch newStr
             case 'Live'
                 changeAcqMode(0);                
-            case 'Single'
+            case 'Normal'
                 changeAcqMode(1);
-            case 'Multi'
-                changeAcqMode(2);
             otherwise
                 warning('Unexpected acqusition mode. What happened?');
         end        
@@ -813,14 +857,30 @@ cDrag.Position=[cCross.Position(1)+cCross.Position(3)+2 cCross.Position(2) 125 2
 hpFit=uitabgroup(hF,'units','pixels');
 hpFit.Position=[160 0 200 hF.Position(4)-55];
 
-tabs(1)=uitab(hpFit,'Title','params','units','pixels');
-tabs(2)=uitab(hpFit,'Title','params','units','pixels');
+tabs(1)=uitab(hpFit,'Title','acq','units','pixels');
+tabs(2)=uitab(hpFit,'Title','param','units','pixels');
 tabs(3)=uitab(hpFit,'Title','1','units','pixels');
 
-% Table for acquisitionparameters
-tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...
-    'ColumnName',{},'ColumnWidth',{125 50},'columneditable',[false false],...
-    'Position',[0 0 1 1]);
+% Table for acquisition
+tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',8,...
+    'ColumnName',{},'ColumnWidth',{10 35 40},'columneditable',[false true false],...
+    'Position',[0 0 1 1],'celleditcallback',@foo);
+
+    function foo(src,evt)
+       src;
+       evt;
+        temp = get(src,'Data');
+        set(src,'Data',{ 'dummy' });
+        set(src,'Data', temp );
+    end
+
+
+tbl_acq.Data=[fieldnames(acq), ...
+    struct2cell(acq)];     
+
+for kk=1:size(tbl_acq.Data,1)    
+    tbl_acq.Data{kk,3}=desc.(tbl_acq.Data{kk,1});   
+end
 
 % Table for run parameters
 tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...

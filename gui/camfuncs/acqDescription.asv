@@ -20,7 +20,7 @@ strs={'Full Vertical Binning','Multi-Track','Random-Track','Single-Track','Image
 desc.ReadMode=strs{acq.ReadMode+1};
 
 % ShutterType
-strs={'open low','open high'};
+strs={'low to open','high to open'};
 desc.ShutterType=strs{acq.ShutterType+1};
 
 % ShutterMode
@@ -92,11 +92,13 @@ desc.AccCycleTime='seconds';
 % KinCycleTime
 desc.KinCycleTime='seconds';
 
+if isequal(acq.TriggerMode
+
 % NumAcc
-desc.NumAcc='img/scan';
+desc.NumAcc='img/set';
 
 % NumKin
-desc.NumKin='scan/trig';
+desc.NumKin='set/trig';
 
 % xbin
 desc.xbin='pixel(s)';
@@ -105,15 +107,15 @@ desc.xbin='pixel(s)';
 desc.ybin='pixel(s)';
 
 % xstart
-desc.xstart='x px start';
+desc.xstart='x pixel start';
 
 % xend
-desc.xend='x px end';
+desc.xend='x pixel end';
 
 % ystart
-desc.ystart='y px start';
+desc.ystart='y pixel start';
 
 % yend
-desc.yend='y px end';
+desc.yend='y pixel end';
 end
 
