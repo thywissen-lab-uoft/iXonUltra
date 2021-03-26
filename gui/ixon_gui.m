@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=1;
+doDebug=0;
 
 %% Camera Settings
 
@@ -205,7 +205,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         
         
         cam_status.isCooling=0;
-        cam_status.isTempStableCooling=0;
+        cam_status.isTempStable=0;
         cam_status.Temperature=NaN;
         
         hbDisconnect.Enable='off';
@@ -299,7 +299,7 @@ tblTemp.Position(1:2)=[265 4];
 % Text
 strtemp=uicontrol(hpCam,'style','text','string','NaN','units','pixels',...
     'backgroundcolor','w','fontsize',12,'horizontalalignment','left',...
-    'foregroundcolor','r','enable','off');
+    'foregroundcolor','r','enable','off','fontweight','bold');
 strtemp.Position(3:4)=[45 20];
 strtemp.Position(1:2)=[305 5];
 
@@ -308,18 +308,29 @@ tempTimer=timer('Name','iXonTemperatureTimer','Period',1,...
     'TimerFcn',@tempTimerFcn,'ExecutionMode','FixedSpacing');
 
     function tempTimerFcn(~,~)
-        [out,temp]=getTemperature;
+        [out,temp,outstr]=getTemperature;
         strtemp.String=[num2str(temp) ' C'];
         
         cam_status.Temperature=temp;
         
-        if isequal(temp,tblTemp.Data)
-            cam_status.isTempStable=1;
-            strtemp.ForegroundColor='k';
-        else
-            cam_status.isTempStable=0;
-            strtemp.ForegroundColor='r';
+        
+        switch outstr
+            case 'DRV_TEMPERATURE_STABILIZED'
+                cam_status.isTempStable=1;
+                strtemp.ForegroundColor=[80 200 120]/255;
+            case 'DRV_TEMP_NOT_STABILIZED'
+                cam_status.isTempStable=0;
+                strtemp.ForegroundColor=[255 204 0]/255;
+            otherwise
+                cam_status.isTempStable=0;
+                strtemp.ForegroundColor='r';
         end
+
+
+        
+  
+        
+        
     end
 
 % Open camera shutter
@@ -1084,7 +1095,7 @@ function out=setTemperature(temp)
     ret=SetTemperature(temp);
     disp(error_code(ret))
     
-    if isequal(error_code(ret),'DRV_SUCCESS')
+    if isequal(error_code(ret),'DRV_SUCCESS') 
         out=1;
     else
         warning('Unable to change iXon temperature set point.');
@@ -1092,15 +1103,13 @@ function out=setTemperature(temp)
     end
 end
 
-function [out,temp]=getTemperature
+function [out,temp,outstr]=getTemperature
     [ret,temp]=GetTemperature;
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to read iXon temperature.');
-        out=0;
-    end
+    out=1;
+    outstr=error_code(ret);
+
 end
+
 
 function out=coolCamera(state)
     if state
