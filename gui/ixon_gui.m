@@ -18,6 +18,30 @@ function ixon_gui
 % Enable debug mode?
 doDebug=1;
 
+%% Initialize Drivers and GUI
+
+% Add the Andor MATLAB drivers to the MATLAB path. You need to have
+% installed the MATLAB drivers in order for this to work.
+addpath(genpath(fullfile(matlabroot,'toolbox','Andor')));
+
+% Add all subdirectories for this m file
+mpath = fileparts(mfilename('fullpath'));
+addpath(mpath);addpath(genpath(mpath))
+
+% Find any instances of the GUI and bring it to focus, this is to avoid
+% restarting the GUI which may leave the shutter open.
+h = findall(0,'tag','GUI');
+for kk=1:length(h)
+    if isequal(h(kk).Name,guiname)
+        disp(['iXon GUI instance detected.  Bringing into focus. ' ...
+            ' If you want to start a new instance, close the original iXon GUI.']); 
+       figure(h);
+       return;
+    end    
+end
+
+disp('Initializing iXon GUI...');
+
 %% Camera Settings
 
 % Declare cam_info struct;
@@ -64,29 +88,7 @@ data.Z=Z;
 data.Date=datevec(now);
 data.Name=['iXonUltra_' datestr(data.Date,'yyyy-mm-dd_HH-MM-SS')];
 
-%% Initialize Drivers and GUI
 
-% Add the Andor MATLAB drivers to the MATLAB path. You need to have
-% installed the MATLAB drivers in order for this to work.
-addpath(genpath(fullfile(matlabroot,'toolbox','Andor')));
-
-% Add all subdirectories for this m file
-mpath = fileparts(mfilename('fullpath'));
-addpath(mpath);addpath(genpath(mpath))
-
-% Find any instances of the GUI and bring it to focus, this is to avoid
-% restarting the GUI which may leave the shutter open.
-h = findall(0,'tag','GUI');
-for kk=1:length(h)
-    if isequal(h(kk).Name,guiname)
-        disp(['iXon GUI instance detected.  Bringing into focus. ' ...
-            ' If you want to start a new instance, close the original iXon GUI.']); 
-       figure(h);
-       return;
-    end    
-end
-
-disp('Initializing iXon GUI...');
 
 %% Initialize Figure
 
