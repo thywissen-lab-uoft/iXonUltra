@@ -1,43 +1,8 @@
 function out = setAcqSettings(acq)
-fnames={'AcquisitionMode';
-    'ReadMode';
-    'ShutterType';
-    'ShutterMode'
-    'ClosingTime';
-    'OpeningTime';
-    'FanMode';
-    'ADChannelIndex';
-    'PreAmpGainIndex';
-    'EMGainMode';
-    'EMAdvanced';
-    'EMCCDGain';
-    'VSSpeedIndex';
-    'AmpTypeIndex';
-    'HSSpeedIndex';
-    'ExposureTime';
-    'TriggerMode';
-    'AccCycleTime';
-    'NumAcc';
-    'NumKin';
-    'KinCycleTime';
-    'xbin';
-    'ybin';
-    'xrange';
-    'yrange'};
 
-isGood=1;
-
-for kk=1:length(fnames)
-    if ~ismember(fnames{kk},fieldnames(acq))
-       isGood=0;
-       warning([fnames{kk} ' not provided']);
-    end
-    
-end
-
-if ~isGood
-    disp('Abandoning changes');
-   return; 
+if ~isValidAcq(acq)
+    warning('Bad acquisition settings provided. Aborting.');
+    return;
 end
       
 
@@ -99,7 +64,7 @@ end
 
 % Set binning and image acquisition area
 [ret]=SetImage(acq.xbin,acq.ybin,...
-    acq.xrange(1),acq.xrange(2),acq.yrange(1),acq.yrange(2));
+    acq.xstart,acq.xend,acq.ystart,acq.yend);
 
 % acq.validExposureTime = 0;
 % acq.validKineticsCycleTime = 0;

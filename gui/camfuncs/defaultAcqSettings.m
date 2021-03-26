@@ -36,8 +36,9 @@ acq.NumAcc=1;           % 1 accumulation
 acq.NumKin=2;           % two images (PWA,bkgd)
 acq.xbin=1;             % no x binning
 acq.ybin=1;             % no y binning
-acq.xrange=[1 512];     % full x pixel range
-acq.yrange=[1 512];     % full y pixel range
-
+acq.xstart=1;           % hardware ROI is full 1:512
+acq.xend=512;           % hardware ROI is full 1:512
+acq.ystart=1;           % hardware ROI is full 1:512
+acq.yend=512;           % hardware ROI is full 1:512
 end
 

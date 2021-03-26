@@ -86,7 +86,6 @@ acq=defaultAcqSettings;
 
 
 
-
 %% Initialize Figure
 
 % Initialize the primary figure
@@ -603,15 +602,15 @@ tbl_dispROI=uitable('parent',hpDisp,'units','pixels','RowName',{},'columnname',{
 tbl_dispROI.Position(3:4)=tbl_dispROI.Extent(3:4);
 tbl_dispROI.Position(1:2)=[2 hpDisp.Position(4)-tbl_dispROI.Position(4)-20];
 
-% Button for maximizing the ROI limits
+% Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
 cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
 hbFullLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
     'Backgroundcolor','w','Position',[102 tbl_dispROI.Position(2)+2 18 18],'Callback',@fullDispCB,...
     'ToolTipString',ttstr);
 
-%
-ttstr='Snap display ROI to data ROI(s).';
+% Button to snap display ROI to the data ROI
+ttstr='Snap display ROI to data ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','snapLim.png')),[15 15]);
 hbSnapLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
     'Backgroundcolor','w','Position',[120 tbl_dispROI.Position(2)+2 18 18],'Callback',@snapDispCB,...
@@ -651,15 +650,10 @@ hbSlctLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
             set(axImg,'XLim',ROI(1:2),'YLim',ROI(3:4));
             drawnow;
             resizePlots;
-%             drawnow;
-%             pDisp.Position=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];           
-%             updateScalebar;
-%             drawnow;
         catch ab
             warning('Unable to change display ROI.');
             src.Data(evt.Indices)=evt.PreviousData;
-        end
-        
+        end        
     end
 
 % Callback for change display ROI to maximum
@@ -720,7 +714,7 @@ climtext=uicontrol('parent',hpDisp,'units','pixels','string','color:',...
 climtext.Position(3:4)=climtext.Extent(3:4);
 climtext.Position(1:2)=[2 tbl_dispROI.Position(2)-climtext.Position(4)-5];
 
-% Color limit table for OD image
+% Table to adjust color limits on image
 climtbl=uitable('parent',hpDisp,'units','pixels','RowName',{},'ColumnName',{},...
     'Data',[0 1000],'ColumnWidth',{40,40},'ColumnEditable',[true true],...
     'CellEditCallback',@climCB);
@@ -799,6 +793,7 @@ cDrag=uicontrol(hpDisp,'style','checkbox','string','can drag?',...
     'enable','on','value',0);
 cDrag.Position=[cCross.Position(1)+cCross.Position(3)+2 cCross.Position(2) 125 20];
 
+% Callback for dragging the crosshair (matches cut plots with crosshair)
     function cDragCB(src,~)    
         if src.Value            
             pCrossXDrag=draggable(pCrossX);
@@ -819,15 +814,21 @@ hpFit=uitabgroup(hF,'units','pixels');
 hpFit.Position=[160 0 200 hF.Position(4)-55];
 
 tabs(1)=uitab(hpFit,'Title','params','units','pixels');
-tabs(2)=uitab(hpFit,'Title','1','units','pixels');
+tabs(2)=uitab(hpFit,'Title','params','units','pixels');
+tabs(3)=uitab(hpFit,'Title','1','units','pixels');
+
+% Table for acquisitionparameters
+tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...
+    'ColumnName',{},'ColumnWidth',{125 50},'columneditable',[false false],...
+    'Position',[0 0 1 1]);
 
 % Table for run parameters
-tbl_params=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',8,...
+tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...
     'ColumnName',{},'ColumnWidth',{125 50},'columneditable',[false false],...
     'Position',[0 0 1 1]);
 
 % Table for analysis outputs
-tbl_analysis(1)=uitable(tabs(2),'units','normalized','RowName',{},'ColumnName',{},...
+tbl_analysis(1)=uitable(tabs(3),'units','normalized','RowName',{},'ColumnName',{},...
     'fontsize',8,'ColumnWidth',{60 65 65},'columneditable',false(ones(1,3)),...
     'Position',[0 0 1 1]);
 
@@ -894,15 +895,17 @@ axis equal tight
 pCrossX=plot([1 512],[512/2 512/2],'-','color',co(5,:),'linewidth',1);
 pCrossY=plot([512/2 512/2],[1 512],'-','color',co(5,:),'linewidth',1);
 
-% Make cross hair draggle (MORE OPTIONS TO FOLLOW);
+% Make cross hair draggable. This declaration makes this variable global
 pCrossXDrag=draggable(pCrossX);
 pCrossYDrag=draggable(pCrossY);
 pCrossXDrag.on_move_callback=@Xupdate;
 pCrossYDrag.on_move_callback=@Yupdate;
 
+% Delete so that it is initially undraggable. 
 delete(pCrossXDrag)
 delete(pCrossYDrag)
 
+% Callback for adjusting the X crosshair
     function Xupdate(g,~)
         % If you drag, you're not plotting a sum
         rbCut.Value=1;
@@ -915,7 +918,7 @@ delete(pCrossYDrag)
         drawnow;       
     end
 
-
+% Callback 
     function Yupdate(g,~)
         % If you drag, you're not plotting a sum
         rbCut.Value=1;
