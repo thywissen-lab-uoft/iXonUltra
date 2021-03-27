@@ -192,7 +192,8 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         
         rbSingle.Enable='on';
         rbLive.Enable='on';
-
+        tbl_acq.Enable='on';
+        
         start(tempTimer);
     end
 
@@ -229,6 +230,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         
         hbstart.Enable='off';
         hbstop.Enable='off';
+        tbl_acq.Enable='off';
 
 
         set(strtemp,'ForegroundColor','r','String','NaN','Enable','off');
@@ -336,10 +338,8 @@ tempTimer=timer('Name','iXonTemperatureTimer','Period',1,...
 
     function tempTimerFcn(~,~)
         [out,temp,outstr]=getTemperature;
-        strtemp.String=[num2str(temp) ' C'];
-        
-        cam_status.Temperature=temp;
-        
+        strtemp.String=[num2str(temp) ' C'];        
+        cam_status.Temperature=temp;        
         
         switch outstr
             case 'DRV_TEMPERATURE_STABILIZED'
@@ -351,13 +351,7 @@ tempTimer=timer('Name','iXonTemperatureTimer','Period',1,...
             otherwise
                 cam_status.isTempStable=0;
                 strtemp.ForegroundColor='r';
-        end
-
-
-        
-  
-        
-        
+        end             
     end
 
 % Open camera shutter
@@ -453,12 +447,13 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
     function startCamCB(src,evt)
         disp('Starting acquisition');
         
+        % Send acquistion start command
+        
+        % Enable/Disable Button/Tables
         rbSingle.Enable='off';
         rbLive.Enable='off';
-
         hbstart.Enable='off';
-        hbstop.Enable='on';
-        
+        hbstop.Enable='on';        
         tbl_acq.ColumnEditable(2)=false;
         tbl_acq.Enable='off';
     end
@@ -472,17 +467,15 @@ hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
 
 
     function stopCamCB(src,evt)
-        disp('Stopping acquisition');
+        disp('Stopping acquisition');     
         
+        % Enable/Disable Button/Tables
         hbstart.Enable='on';
-        hbstop.Enable='off';
-        
+        hbstop.Enable='off';        
         rbSingle.Enable='on';
-        rbLive.Enable='on';
-        
+        rbLive.Enable='on';        
         tbl_acq.ColumnEditable(2)=true;
         tbl_acq.Enable='on';
-
     end
 
 % Acquisition help button
@@ -862,13 +855,23 @@ tabs(2)=uitab(hpFit,'Title','param','units','pixels');
 tabs(3)=uitab(hpFit,'Title','1','units','pixels');
 
 % Table for acquisition
-tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',8,...
-    'ColumnName',{},'ColumnWidth',{10 35 40},'columneditable',[false true false],...
-    'Position',[0 0 1 1],'celleditcallback',@foo);
+tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
+    'ColumnName',{},'ColumnWidth',{80 30 69},'columneditable',[false true false],...
+    'Position',[0 0 1 1],'celleditcallback',@foo,'ColumnFormat',{'char','numeric','char'},'enable','off');
 
-    function foo(src,evt)
-       src;
-       evt;
+    function foo(src,evt)  
+        % Temp acquisition setting with new data
+        f=src.Data{evt.Indices(1),1};        
+        temp_acq=acq;
+        temp_acq.(f)=evt.NewData;
+        
+        if isValidAcq(temp_acq)
+            acq=temp_acq;
+            setAcqSett
+        end
+        
+        keyboard
+        
         temp = get(src,'Data');
         set(src,'Data',{ 'dummy' });
         set(src,'Data', temp );

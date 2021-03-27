@@ -338,10 +338,8 @@ tempTimer=timer('Name','iXonTemperatureTimer','Period',1,...
 
     function tempTimerFcn(~,~)
         [out,temp,outstr]=getTemperature;
-        strtemp.String=[num2str(temp) ' C'];
-        
-        cam_status.Temperature=temp;
-        
+        strtemp.String=[num2str(temp) ' C'];        
+        cam_status.Temperature=temp;        
         
         switch outstr
             case 'DRV_TEMPERATURE_STABILIZED'
@@ -353,13 +351,7 @@ tempTimer=timer('Name','iXonTemperatureTimer','Period',1,...
             otherwise
                 cam_status.isTempStable=0;
                 strtemp.ForegroundColor='r';
-        end
-
-
-        
-  
-        
-        
+        end             
     end
 
 % Open camera shutter
@@ -455,12 +447,13 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
     function startCamCB(src,evt)
         disp('Starting acquisition');
         
+        % Send acquistion start command
+        
+        % Enable/Disable Button/Tables
         rbSingle.Enable='off';
         rbLive.Enable='off';
-
         hbstart.Enable='off';
-        hbstop.Enable='on';
-        
+        hbstop.Enable='on';        
         tbl_acq.ColumnEditable(2)=false;
         tbl_acq.Enable='off';
     end
@@ -474,17 +467,15 @@ hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
 
 
     function stopCamCB(src,evt)
-        disp('Stopping acquisition');
+        disp('Stopping acquisition');     
         
+        % Enable/Disable Button/Tables
         hbstart.Enable='on';
-        hbstop.Enable='off';
-        
+        hbstop.Enable='off';        
         rbSingle.Enable='on';
-        rbLive.Enable='on';
-        
+        rbLive.Enable='on';        
         tbl_acq.ColumnEditable(2)=true;
         tbl_acq.Enable='on';
-
     end
 
 % Acquisition help button
@@ -868,7 +859,25 @@ tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
     'ColumnName',{},'ColumnWidth',{80 30 69},'columneditable',[false true false],...
     'Position',[0 0 1 1],'celleditcallback',@foo,'ColumnFormat',{'char','numeric','char'},'enable','off');
 
-    function foo(src,evt)        
+    function foo(src,evt)  
+        % Temp acquisition setting with new data
+        f=src.Data{evt.Indices(1),1};        
+        temp_acq=acq;
+        temp_acq.(f)=evt.NewData;
+        
+        if isValidAcq(temp_acq)
+            acq=temp_acq;        
+            desc=acqDescription(acq);
+            for nn=1:size(src.Data,1)    
+                src.Data{nn,3}=desc.(src.Data{nn,1});   
+            end
+            setAcqSettings(acq);
+        else
+            src.Data{evt.Indices}=evt.PreviousData;          
+        end           
+               
+
+        
         temp = get(src,'Data');
         set(src,'Data',{ 'dummy' });
         set(src,'Data', temp );
