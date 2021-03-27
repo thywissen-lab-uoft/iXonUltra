@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=0;
+doDebug=1;
 
 %% Other Settings
 

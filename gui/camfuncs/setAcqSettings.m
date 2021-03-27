@@ -2,7 +2,7 @@ function out = setAcqSettings(acq)
 
 disp(' ');
 disp('Updating acquisition settings ...');
-
+disp('(see SDK manual for function descriptions)');
 if ~isValidAcq(acq)
     warning('Bad acquisition settings provided. Aborting.');
     return;
@@ -110,7 +110,7 @@ fprintf([' SetKineticCycleTime      : ' num2str(acq.KinCycleTime) ' ... ']);
 disp(error_code(ret))
 
 % Set binning and image acquisition area
-fprintf([' SetImage                : ' ...
+fprintf([' SetImage                 : ' ...
     num2str(acq.xbin) ',' num2str(acq.ybin) ',' ...
     num2str(acq.xstart) ',' num2str(acq.xend) ',' ...
     num2str(acq.ystart) ',' num2str(acq.yend) ' ... ']);
