@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=1;
+doDebug=0;
 
 %% Other Settings
 
@@ -244,8 +244,9 @@ hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,
     'enable','on','backgroundcolor','w','position',[130 5 20 20],...
     'ToolTipString',ttstr,'enable','off');
 
-    function infoCB(~,~)
-       disp(cam_info); 
+    function infoCB(~,~)        
+        cam_info=getCamInfo;        
+        disp(cam_info); 
     end
 
 % Start Cooling
@@ -873,7 +874,8 @@ tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
             end
             setAcqSettings(acq);
         else
-            src.Data{evt.Indices}=evt.PreviousData;          
+            evt.PreviousData
+            src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;          
         end           
                
 

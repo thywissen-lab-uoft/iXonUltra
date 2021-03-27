@@ -82,7 +82,7 @@ if ~isequal(acq.ADChannelIndex,0); warning('Bad ADChannelIndex'); return; end
 if isempty(find(acq.PreAmpGainIndex==[0 1 2],1)); warning('Bad PreAmpGainIndex'); return; end
 
 % EMGainMode
-if isempty(find(acq.EMGainMode==[0 1 3],1)); warning('Bad EMGainMode'); return; end
+if isempty(find(acq.EMGainMode==[0 1 2 3],1)); warning('Bad EMGainMode'); return; end
 
 % EMAdvanced
 if isempty(find(acq.EMAdvanced==[0 1],1)); warning('Bad EMAdvanced'); return; end

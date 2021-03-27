@@ -16,6 +16,9 @@ nfo=struct;
 [ret,nfo.PixelSize(1),nfo.PixelSize(2)]=GetPixelSize;
 %%%%%% Get Settable Settings %%%%%%
 
+% Shutter minimum times
+[ret,nfo.MinShutterTime(1),nfo.MinShutterTime(2)]=GetShutterMinTimes;
+
 % Sensor temperature range
 [ret,nfo.TempRange(1),nfo.TempRange(2)]=GetTemperatureRange;
 
@@ -51,7 +54,7 @@ end
 
 % PreAmp Gains (all available for both amplifier types). (1,2,3)
 [ret, nfo.NumPreAmpGains] = GetNumberPreAmpGains; 
-nfo.AvailablePreAmpGains = zeros(nfo.NumPreAmpGains,1);
+nfo.AvailablePreAmpGains = zeros(1,nfo.NumPreAmpGains);
 for j = 0:nfo.NumPreAmpGains-1
     [ret,nfo.AvailablePreAmpGains(j+1)] = GetPreAmpGain(j);
 end
