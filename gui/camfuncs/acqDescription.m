@@ -54,7 +54,7 @@ strs={'DAC 255','DAC 4095','Linear','Real EM'};
 desc.EMGainMode=strs{acq.EMGainMode+1};
 
 % EMAdvanced
-strs={'yes >x300','no >x300'};
+strs={'no >x300','yes >x300'};
 desc.EMAdvanced=strs{acq.EMAdvanced+1};
 
 % EMCCDGain

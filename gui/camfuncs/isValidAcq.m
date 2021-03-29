@@ -54,6 +54,9 @@ try
     % Read mode
     if isempty(find(acq.ReadMode==[1 2 3 4 5],1)); warning('Bad ReadMode');isValid=0; end
 
+    % Remove shutter checking as we disable this as a user option
+    %{
+    
     % Shutter Type
     if isempty(find(acq.ShutterType==[0 1],1)); warning('Bad ShutterType'); isValid=0; end
 
@@ -73,6 +76,8 @@ try
         warning('Bad ClosingTime'); 
         isValid=0;
     end
+    
+    %}
 
     % FanMode
     if isempty(find(acq.FanMode==[0 1 2],1)); warning('Bad FanMode'); isValid=0; end
@@ -162,6 +167,7 @@ try
     if ~(acq.yend>acq.ystart && acq.yend<=512 && acq.ystart>=1); warning('Bad ylimits'); isValid=0; end
 
 catch ME
+    disp(ME)
     warning('Error on checking acquisition settings');
     isValid=0;
 end

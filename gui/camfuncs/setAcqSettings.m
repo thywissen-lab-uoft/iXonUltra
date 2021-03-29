@@ -1,16 +1,18 @@
 function [out,bNames] = setAcqSettings(acq)
 
 out=1;
+bNames={};
+
 
 disp(' ');
 disp('Updating acquisition settings ...');
 disp('(see SDK manual for function descriptions)');
 if ~isValidAcq(acq)
+    out=0;
     warning('Bad acquisition settings provided. Aborting.');
     return;
 end
   
-bNames={};
 
 %% Set Acquisition Mode 
 % 1: Single Scan, 2: Accumulate, 3: Kinetics, 4: Fast Kinetics, 5: Run till abort

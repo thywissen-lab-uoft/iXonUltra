@@ -1,4 +1,4 @@
-function acq = defaultAcqSettings
+function acq = defaultNormalAcqSettings
 
 acq=struct;
 

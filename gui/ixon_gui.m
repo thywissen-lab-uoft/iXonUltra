@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=0;
+doDebug=1;
 
 %% Other Settings
 
@@ -168,9 +168,12 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
     'fontsize',10,'Position',[2 5 55 20],'backgroundcolor',[80 200 120]/255,...
     'Callback',@connectCB,'ToolTipString',ttstr);
 
+% Callback for the connect button
     function connectCB(~,~)
+        % Connect to the camera
        out=connectCam; 
        
+       % Give warning if connection fails
        if ~out && ~doDebug
            warning('Unable to connect to camera');
            return;
@@ -178,27 +181,54 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        
        % Close the shutter
        setCameraShutter(0);
-
        
-        hbDisconnect.Enable='on';
-        hbConnect.Enable='off';          
+       % Configure acquisition settings
+       [out,bNames]=setAcqSettings(acq);       
+       
+        if out
+           disp(' All acquisition settings written');
+        else
+            if ~isempty(bNames)
+                disp(' ');
+                str=strcat(bNames','\n');
+                str=[str{:}];
+                str(end-1:end)=[];
+                warning(sprintf([' Unexpected return result. ' ...
+                    ' Possible issue with : \n' ...
+                    str]));
+            else
+                warning('Unexpected return result.');
+            end
+        end          
+
+        % Close the shutter (again to be safe)
+        setCameraShutter(0);        
+        hbOpenShutter.Enable='on'; % allow shutter to be opened
+
+        % Get the camera information
         cam_info=getCamInfo;
         disp(' ');
         disp(cam_info);
+        
+        % Set the temperature set point
         setTemperature(tblTemp.Data);
         hbCamInfo.Enable='on';
+        
+        % Enable/Disable connect
+        hbDisconnect.Enable='on';
+        hbConnect.Enable='off';   
 
+        % Enable/Disable temperature
         hbCool.Enable='on';
         tblTemp.Enable='on';
         strtemp.Enable='on';
-        hbOpenShutter.Enable='on';
+        start(tempTimer);
+
+        % Enable acquisition
         hbstart.Enable='on';
-        
         rbSingle.Enable='on';
         rbLive.Enable='on';
-        tbl_acq.Enable='on';
-        
-        start(tempTimer);
+        tbl_acq.Enable='on';        
     end
 
 % Disconnect camera
@@ -207,8 +237,12 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
     'fontsize',10,'Position',[58 5 70 20],'backgroundcolor',[255 102 120]/255,...
     'Callback',@disconnectCB,'ToolTipString',ttstr,'enable','off');
 
+% Callback for the disconnect button
     function disconnectCB(~,~)
+        % Stop temperature monitor
         stop(tempTimer);
+        
+        % Disconnect from camera
         out=disconnectCam; 
        
         if ~out && ~doDebug
@@ -236,9 +270,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         hbstop.Enable='off';
         tbl_acq.Enable='off';
 
-
         set(strtemp,'ForegroundColor','r','String','NaN','Enable','off');
-
     end
 
 % Info button
@@ -535,18 +567,28 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live (be careful)',...
         if isequal(oldStr,newStr)
            disp('The old and new setting are the same.  How did you get here?'); 
            return
-        end        
+        end  
+        
+        % Close the shutter
+        disp('Closing shutter in case you forgot.');                
+        setCameraShutter(0);        
+        hbCloseShutter.Enable='off';
+        hbOpenShutter.Enable='on';
+        
         switch newStr
             case 'Live'
                 msg=['Entering live mode. Verify your settings before ' ...
                     'starting acquisition'];
-                f = msgbox(msg,'Live Mode','warn','modal');    
-                changeAcqMode(0);                
+                msgbox(msg,'Live Mode','warn','modal');    
+                
+                
+                changeAcqMode('live');                
             case 'Normal'
-                changeAcqMode(1);
+                changeAcqMode('normal');
             otherwise
                 warning('Unexpected acqusition mode. What happened?');
         end        
+        
     end
 
 %% Image Process Panel
@@ -581,6 +623,15 @@ uicontrol('parent',hpADV,'units','pixels',...
     'style','text','string','pixels','position',[125 cGaussFilter.Position(2)+1 30 15],...
     'fontsize',8,'backgroundcolor','w');
 
+
+% process button
+hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
+    'units','pixels','callback',@processCB,'parent',hpADV,'backgroundcolor','w');
+hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
+
+    function processCB(~,~)
+       disp('reprocessing images...'); 
+    end
 
 %% Analysis Panel
 hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','analysis');
@@ -1270,7 +1321,14 @@ function out=coolCamera(state)
 end
 
 function changeAcqMode(cmode)
-    disp(cmode);
+    switch cmode
+        case 'live'
+            
+        case 'normal'
+            
+        otherwise
+            warning('Unexpected acquisition mode. OH NO');
+    end
 end
 
 function out=setCameraShutter(state)
@@ -1363,18 +1421,6 @@ function s3=getDayDir
     if ~exist(s1,'dir'); mkdir(s1); end
     if ~exist(s2,'dir'); mkdir(s2); end
     if ~exist(s3,'dir'); mkdir(s3); end
-end
-
-
-function str=makeCoMStr(boxcount)
-    
-    str=[ num2str(boxcount.Nraw,'%.3e') ' counts' newline ...
-        '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(boxcount.Xc,1)) ',' ...
-        num2str(round(boxcount.Yc,1)) ')$' newline ...
-        '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(boxcount.Xs,1)) ',' ...
-        num2str(round(boxcount.Ys,1)) ')$'];
-
-
 end
 
 function [out,dstr]=grabSequenceParams(src)
