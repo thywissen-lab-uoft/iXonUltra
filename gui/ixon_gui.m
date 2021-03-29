@@ -432,6 +432,7 @@ hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
         end
     end
 
+%{
 ttstr='Send a software trigger. TriggerMode=10 and AcquisitionMode=5';
 hbSoftTrig=uicontrol(hpCam,'style','pushbutton','string','software trigger',...
     'units','pixels','fontsize',10,'Position',[535 5 100 20],'enable','off',...
@@ -447,6 +448,7 @@ hbSoftTrig=uicontrol(hpCam,'style','pushbutton','string','software trigger',...
             disp('Cant send software trigger if the camera is not configured.');
         end
     end
+%}
 
 %% Save Panel
 
