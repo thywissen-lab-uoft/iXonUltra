@@ -6,11 +6,12 @@ acq=struct;
 acq.AcquisitionMode=3;  % Kinetics
 acq.ReadMode=4;         % Full Image
 
+% Dont allow changing of the shutter from here
 % Shutter
-acq.ShutterType=1;      % HIGH to open
-acq.ShutterMode=0;      % Auto
-acq.OpeningTime=5;      % 5 ms
-acq.ClosingTime=5;      % 5 ms
+% acq.ShutterType=1;      % HIGH to open
+% acq.ShutterMode=0;      % Auto
+% acq.OpeningTime=5;      % 5 ms
+% acq.ClosingTime=5;      % 5 ms
 
 % Fan
 acq.FanMode=0;          % Always on

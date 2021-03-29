@@ -19,6 +19,10 @@ desc.AcquisitionMode=strs{acq.AcquisitionMode};
 strs={'Full Vertical Binning','Multi-Track','Random-Track','Single-Track','Image'};
 desc.ReadMode=strs{acq.ReadMode+1};
 
+
+% Disable shutter manipulation as setting that can be changed (always open
+% or closed)
+%{
 % ShutterType
 strs={'open low','open high'};
 desc.ShutterType=strs{acq.ShutterType+1};
@@ -32,6 +36,7 @@ desc.ClosingTime='ms';
 
 % OpeningTime
 desc.OpeningTime='ms';
+%}
 
 % FanMode
 strs={'on full','on low','off'};

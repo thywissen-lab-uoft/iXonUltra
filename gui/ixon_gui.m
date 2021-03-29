@@ -176,6 +176,10 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
            return;
        end
        
+       % Close the shutter
+       setCameraShutter(0);
+
+       
         hbDisconnect.Enable='on';
         hbConnect.Enable='off';          
         cam_info=getCamInfo;
@@ -408,14 +412,18 @@ hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',10
         end
     end
 % Browse button
+ttstr='Select directory to save images.';
 cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[20 20]);
 bBrowse=uicontrol(hpSave,'style','pushbutton','CData',cdata,'callback',@browseCB,...
-    'enable','off','backgroundcolor','w','position',[110 2 size(cdata,[1 2])]);
+    'enable','off','backgroundcolor','w','position',[110 2 size(cdata,[1 2])],...
+    'tooltipstring',ttstr);
 
 % String for current save directory
+ttstr='The current save directory.';
 tSaveDir=uicontrol(hpSave,'style','text','string','directory','fontsize',8,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'enable','off','UserData','','Position',[135 0 hF.Position(3)-135 20]);
+    'enable','off','UserData','','Position',[135 0 hF.Position(3)-135 20],...
+    'tooltipstring',ttstr);
 
 % Browse button callback
     function browseCB(~,~)
@@ -518,17 +526,21 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live (be careful)',...
     'UserData','Live','Enable','off');
 
 % Change acqusition mode callback
-    function chAcqCB(~,evt)
-        disp('Probably should make a confirm diaglog box here');
-        
+    function chAcqCB(~,evt)        
         oldStr=evt.OldValue.UserData;
-        newStr=evt.NewValue.UserData;                
+        newStr=evt.NewValue.UserData;     
+        
+        disp(['Changing camera acquisition mode to "' newStr '"']);
+
         if isequal(oldStr,newStr)
            disp('The old and new setting are the same.  How did you get here?'); 
            return
         end        
         switch newStr
             case 'Live'
+                msg=['Entering live mode. Verify your settings before ' ...
+                    'starting acquisition'];
+                f = msgbox(msg,'Live Mode','warn','modal');    
                 changeAcqMode(0);                
             case 'Normal'
                 changeAcqMode(1);
@@ -878,14 +890,15 @@ tabs(3)=uitab(hpFit,'Title','1','units','pixels');
 % Table for acquisition
 tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
     'ColumnName',{},'ColumnWidth',{80 30 69},'columneditable',[false true false],...
-    'Position',[0 0 1 1],'celleditcallback',@foo,'ColumnFormat',{'char','numeric','char'},'enable','off');
+    'Position',[0 0 1 1],'celleditcallback',@acqTblCB,'ColumnFormat',{'char','numeric','char'},'enable','off');
 
-    function foo(src,evt)  
+    function acqTblCB(src,evt)  
         % Temp acquisition setting with new data
         f=src.Data{evt.Indices(1),1};        
         temp_acq=acq;
         temp_acq.(f)=evt.NewData;
         
+        % Only send if valid acquisition settings
         if isValidAcq(temp_acq)
             acq=temp_acq;        
             desc=acqDescription(acq);
@@ -904,10 +917,8 @@ tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
                 warning(sprintf([' Unexpected return result. ' ...
                     ' Possible issue with : \n' ...
                     str]));
-            end
-            
+            end            
         else
-            evt.PreviousData
             src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;          
         end           
                

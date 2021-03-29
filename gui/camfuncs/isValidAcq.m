@@ -4,10 +4,10 @@ isValid=1;
 % Field Names
 fnames={'AcquisitionMode';
     'ReadMode';
-    'ShutterType';
-    'ShutterMode'
-    'ClosingTime';
-    'OpeningTime';
+%     'ShutterType'; % remove changing of shutter mode
+%     'ShutterMode'
+%     'ClosingTime';
+%     'OpeningTime';
     'FanMode';
     'ADChannelIndex';
     'PreAmpGainIndex';

@@ -35,6 +35,9 @@ if ~isequal(error_code(ret),'DRV_SUCCESS')
 end
 
 %% Set Shutter Mode
+% Disable changing of shutter mode from here, (always open or closed)
+
+%{
 % Type : (0: LOW to open, 1: HIGH to open), Mode: (0: Auto, 1: Open, 2:Close), Times in ms
 fprintf([' SetShutter               : ' num2str(acq.ShutterType) ',' ...
     num2str(acq.ShutterMode) ',' num2str(acq.ClosingTime) ',' ...
@@ -49,6 +52,7 @@ if ~isequal(error_code(ret),'DRV_SUCCESS')
     bNames{end+1}='OpeningTime';
     bNames{end+1}='ClosingTime';
 end
+%}
 
 %% Set Fan Mode
 % 0: on Full, 1: on low, 2: off
