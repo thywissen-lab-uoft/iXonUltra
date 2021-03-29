@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=1;
+doDebug=0;
 
 %% Other Settings
 
@@ -1323,7 +1323,6 @@ end
 function [out,outstr]=getCameraStatus
     out=0;
     [ret,outstr]=AndorGetStatus;
-    disp(outstr);
     outstr=error_code(outstr);
     
     if isequal(error_code(ret),'DRV_SUCCESS')
