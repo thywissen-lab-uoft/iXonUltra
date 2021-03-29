@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=0;
+doDebug=1;
 
 %% Other Settings
 
@@ -107,9 +107,9 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
         % Actually, maybe don't allow closing of GUI. Or have a confirm
         % dialog option
         
-        stop(tempTimer);
+        stop(statusTimer);
         disconnectCam;
-        delete(tempTimer);
+        delete(statusTimer);
         
         delete(fig);                % Delete the figure
     end
@@ -154,6 +154,8 @@ function SizeChangedFcn(~,~)
         cCross.Position(2)=cCoMStr.Position(2)-20;
         cDrag.Position(2)=cCross.Position(2);
         
+        
+        strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3);
         
         drawnow;
 end
@@ -206,7 +208,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         hbCool.Enable='on';
         tblTemp.Enable='on';
         strtemp.Enable='on';
-        start(tempTimer);
+        start(statusTimer);
 
         % Enable acquisition
         hbstart.Enable='on';
@@ -224,7 +226,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
 % Callback for the disconnect button
     function disconnectCB(~,~)
         % Stop temperature monitor
-        stop(tempTimer);
+        stop(statusTimer);
         
         % Disconnect from camera
         out=disconnectCam; 
@@ -353,11 +355,22 @@ strtemp=uicontrol(hpCam,'style','text','string','NaN','units','pixels',...
 strtemp.Position(3:4)=[45 20];
 strtemp.Position(1:2)=[320 5];
 
-% Timer to update temperature
-tempTimer=timer('Name','iXonTemperatureTimer','Period',1,...
-    'TimerFcn',@tempTimerFcn,'ExecutionMode','FixedSpacing');
+% Text
+ttstr='Camera status.';
+strstatus=uicontrol(hpCam,'style','text','string','DRV_NOT_INITIALIZED','units','pixels',...
+    'backgroundcolor','w','fontsize',10,'horizontalalignment','left',...
+    'foregroundcolor','k','enable','on','fontweight','bold',...
+    'ToolTipString',ttstr);
+strstatus.Position(3:4)=[150 20];
+strstatus.Position(1:2)=[hpCam.Position(3)-150 5];
 
-    function tempTimerFcn(~,~)
+% Timer to update temperature
+statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
+    'TimerFcn',@statusTimerFcn,'ExecutionMode','FixedSpacing');
+
+    function statusTimerFcn(~,~)
+        
+        % Get the temperature
         [out,temp,outstr]=getTemperature;
         strtemp.String=[num2str(temp) ' C'];        
         cam_status.Temperature=temp;        
@@ -372,7 +385,11 @@ tempTimer=timer('Name','iXonTemperatureTimer','Period',1,...
             otherwise
                 cam_status.isTempStable=0;
                 strtemp.ForegroundColor='r';
-        end             
+        end     
+        
+        % Camera Status
+        [out,outstr]=getCameraStatus;
+        strstatus.String=outstr;
     end
 
 % Open camera shutter
@@ -473,6 +490,7 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
         disp('Starting acquisition');
         
         % Send acquistion start command
+        startCamera;
         
         % Enable/Disable Button/Tables
         rbSingle.Enable='off';
@@ -493,6 +511,9 @@ hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
 
     function stopCamCB(src,evt)
         disp('Stopping acquisition');     
+        
+        %
+        stopCamera;
         
         % Enable/Disable Button/Tables
         hbstart.Enable='on';
@@ -1277,6 +1298,7 @@ function out=disconnectCam
     end
 end
 
+% Set the temperature setpoint
 function out=setTemperature(temp)
     fprintf(['Changing temperature set point to ' num2str(temp) ' C ...']);
     ret=SetTemperature(temp);
@@ -1290,14 +1312,28 @@ function out=setTemperature(temp)
     end
 end
 
+% Get the temperature
 function [out,temp,outstr]=getTemperature
     [ret,temp]=GetTemperature;
     out=1;
     outstr=error_code(ret);
-
 end
 
+% Get the camera status
+function [out,outstr]=getCameraStatus
+    out=0;
+    [ret,outstr]=AndorGetStatus;
+    outstr=error_code(ret);
+    
+    if isequal(error_code(ret),'DRV_SUCCESS')
+        out=1;
+    else
+        warning('Unable to read iXon temperature.');
+        out=0;
+    end
+end
 
+% Engage/Disengage TEC
 function out=coolCamera(state)
     if state
         fprintf('Engaging TEC to cool sensor ... ');
@@ -1316,17 +1352,7 @@ function out=coolCamera(state)
     end
 end
 
-function changeAcqMode(cmode)
-    switch cmode
-        case 'live'
-            
-        case 'normal'
-            
-        otherwise
-            warning('Unexpected acquisition mode. OH NO');
-    end
-end
-
+% Set the camera shutter
 function out=setCameraShutter(state)
     typ=1; % HIGH TO OPEN
     
@@ -1349,6 +1375,10 @@ function out=setCameraShutter(state)
         warning('Unable to set iXon shutter.');
         out=0;
     end
+end
+
+function out=startCamera
+
 end
 
 %% Analysis Functions
