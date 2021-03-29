@@ -540,15 +540,35 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live (be careful)',...
 %% Image Process Panel
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-60 160 60],'title','processing');
+    'Position',[0 hpAcq.Position(2)-60 160 80],'title','processing');
 
+% Checkbox for applying point spread function (should this be a separate
+% panel?)
 hcPSF=uicontrol(hpADV,'style','checkbox','string','sharpen w/ PSF','fontsize',8,...
     'backgroundcolor','w','Position',[5 0 100 20],'callback',@() disp('hi'),...
     'ToolTipString',ttstr,'enable','off');
 
+% Checkbox for new processings
 hcCool=uicontrol(hpADV,'style','checkbox','string','something cool','fontsize',8,...
     'backgroundcolor','w','Position',[5 20 100 20],'callback',@() disp('hi'),...
     'ToolTipString',ttstr,'enable','off');
+
+% Checkbox for enabling 2D gauss fitting
+cGaussFilter=uicontrol('style','checkbox','string','gauss filter',...
+    'units','pixels','parent',hpADV,'backgroundcolor','w',...
+    'value',0);
+cGaussFilter.Position=[5 40 80 20];
+
+tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',.5,'columneditable',[true],...
+    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
+tblGaussFilter.Position=[80 cGaussFilter.Position(2)-1 45 20];
+
+% Pixels label
+uicontrol('parent',hpADV,'units','pixels',...
+    'style','text','string','pixels','position',[125 cGaussFilter.Position(2)+1 30 15],...
+    'fontsize',8,'backgroundcolor','w');
+
 
 %% Analysis Panel
 hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','analysis');
@@ -872,7 +892,20 @@ tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
             for nn=1:size(src.Data,1)    
                 src.Data{nn,3}=desc.(src.Data{nn,1});   
             end
-            setAcqSettings(acq);
+            [out,bNames]=setAcqSettings(acq);
+            
+            if out
+               disp(' All acquisition settings written');
+            else
+                disp(' ');
+                str=strcat(bNames','\n');
+                str=[str{:}];
+                str(end-1:end)=[];
+                warning(sprintf([' Unexpected return result. ' ...
+                    ' Possible issue with : \n' ...
+                    str]));
+            end
+            
         else
             evt.PreviousData
             src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;          
