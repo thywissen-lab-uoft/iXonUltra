@@ -395,6 +395,11 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
         % Camera Status
         [out,outstr]=getCameraStatus;
         strstatus.String=outstr;
+        
+        [out,xpx,ypx]=GetDetectorInfo;
+        disp(xpx)
+        disp(ypx)
+        disp(' ');
     end
 
 % Open camera shutter
@@ -427,15 +432,17 @@ hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
         end
     end
 
-ttstr='Send a software trigget.';
+ttstr='Send a software trigger. TriggerMode=10 and AcquisitionMode=5';
 hbSoftTrig=uicontrol(hpCam,'style','pushbutton','string','software trigger',...
     'units','pixels','fontsize',10,'Position',[535 5 100 20],'enable','off',...
     'backgroundcolor',[230,230,250]/255,'callback',@softTrigCB,...
     'ToolTipString',ttstr);
 
     function softTrigCB(~,~)
-        if acq.TriggerMode==10
+        if acq.TriggerMode==10 && acq.TriggerMode==5
             out=softwareTrigger;
+            pause(acq.ExposureTime+.5);
+            grabImages;
         else
             disp('Cant send software trigger if the camera is not configured.');
         end
@@ -1256,6 +1263,21 @@ drawnow;
 %%
 SizeChangedFcn
 axes(axImg);
+
+function grabImages
+
+    [ret,first,last] = GetNumberNewImages;
+    numpix = handles.cam.xpixels*handles.cam.ypixels;
+    [ret,data] = GetAcquiredData(last*numpix);
+    handles.image.img = {}; % clear img
+    
+    for j = 1:last % break up into individual images
+        handles.image.img{j} = reshape(double(data((1+(j-1)*numpix):(j*numpix))),...
+            handles.cam.xpixels,handles.cam.ypixels);
+    end        
+end
+
+
 end
 
 %% Camera Functions
@@ -1352,6 +1374,18 @@ function [out,outstr]=getCameraStatus
     end
 end
 
+% Get Detector
+function [out,xpx,ypx]=GetDetectorInfo    
+    [ret,xpx,ypx]=GetDetector;
+    
+    if isequal(error_code(ret),'DRV_SUCCESS')
+        out=1;
+    else
+        warning('Unable to get detector informaton.');
+        out=0;
+    end
+end
+
 % Engage/Disengage TEC
 function out=coolCamera(state)
     if state
@@ -1437,6 +1471,8 @@ function out=softwareTrigger
         out=0;
     end
 end
+
+
 
 %% Analysis Functions
 
