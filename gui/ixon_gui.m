@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=1;
+doDebug=0;
 
 %% Other Settings
 
@@ -81,8 +81,8 @@ cam_status.isTempStable=0;      % is sensor tempreature stable?
 cam_status.isCooling=0;         % is the TEC active?
 cam_status.isAcquiring=0;       % is the camera acquiring frames?
 
-% Declare Acquisition settings
-acq=defaultAcqSettings;
+% Load default acquisition settings
+acq=defaultNormalAcqSettings;
 
 % Description of Acquisitino settings
 desc=acqDescription(acq);
@@ -182,26 +182,10 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        % Close the shutter
        setCameraShutter(0);
        
-       % Configure acquisition settings
-       [out,bNames]=setAcqSettings(acq);       
+       % Load default acquisition settings
+       loadAcquisitionSettings;     
        
-        if out
-           disp(' All acquisition settings written');
-        else
-            if ~isempty(bNames)
-                disp(' ');
-                str=strcat(bNames','\n');
-                str=[str{:}];
-                str(end-1:end)=[];
-                warning(sprintf([' Unexpected return result. ' ...
-                    ' Possible issue with : \n' ...
-                    str]));
-            else
-                warning('Unexpected return result.');
-            end
-        end          
-
-        % Close the shutter (again to be safe)
+       % Close the shutter (again to be safe)
         setCameraShutter(0);        
         hbOpenShutter.Enable='on'; % allow shutter to be opened
 
@@ -579,17 +563,18 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live (be careful)',...
             case 'Live'
                 msg=['Entering live mode. Verify your settings before ' ...
                     'starting acquisition'];
-                msgbox(msg,'Live Mode','warn','modal');    
+                msgbox(msg,'Live Mode','warn','modal');  
+                acq=defaultLiveAcqSettings;    
                 
-                
-                changeAcqMode('live');                
             case 'Normal'
-                changeAcqMode('normal');
+                acq=defaultNormalAcqSettings;
+
             otherwise
                 warning('Unexpected acqusition mode. What happened?');
         end        
         
     end
+
 
 %% Image Process Panel
 
@@ -928,7 +913,7 @@ cDrag.Position=[cCross.Position(1)+cCross.Position(3)+2 cCross.Position(2) 125 2
     end
 
 
-%% Fit Results Panel
+%% Tabular Data Results Panel
 % Panel for parameters and analysis results.
 
 hpFit=uitabgroup(hF,'units','pixels');
@@ -943,50 +928,61 @@ tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
     'ColumnName',{},'ColumnWidth',{80 30 69},'columneditable',[false true false],...
     'Position',[0 0 1 1],'celleditcallback',@acqTblCB,'ColumnFormat',{'char','numeric','char'},'enable','off');
 
+    function loadAcquisitionSettings
+        if ~isValidAcq(acq)            
+            warning('Invalid acquisition settings to send to camera.');
+            return; 
+        end
+        
+        % Update descriptions
+        desc=acqDescription(acq);
+
+        % Update table with settings and descriptions        
+        tbl_acq.Data=[fieldnames(acq), ...
+            struct2cell(acq), struct2cell(desc)];     
+    
+        % Send commands to camera
+        [out,bNames]=setAcqSettings(acq);
+        
+        % Process output
+        if out
+            disp(' All acquisition settings written');
+        else
+            disp(' ');
+            str=strcat(bNames','\n');
+            str=[str{:}];
+            str(end-1:end)=[];
+            warning(sprintf([' Unexpected return result. ' ...
+                ' Possible issue with : \n' ...
+                str]));
+         end   
+    end
+
     function acqTblCB(src,evt)  
         % Temp acquisition setting with new data
         f=src.Data{evt.Indices(1),1};        
         temp_acq=acq;
         temp_acq.(f)=evt.NewData;
         
-        % Only send if valid acquisition settings
         if isValidAcq(temp_acq)
-            acq=temp_acq;        
+            acq=temp_acq;
             desc=acqDescription(acq);
-            for nn=1:size(src.Data,1)    
-                src.Data{nn,3}=desc.(src.Data{nn,1});   
-            end
-            [out,bNames]=setAcqSettings(acq);
-            
-            if out
-               disp(' All acquisition settings written');
-            else
-                disp(' ');
-                str=strcat(bNames','\n');
-                str=[str{:}];
-                str(end-1:end)=[];
-                warning(sprintf([' Unexpected return result. ' ...
-                    ' Possible issue with : \n' ...
-                    str]));
-            end            
+            loadAcquisitionSettings;
         else
-            src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;          
-        end           
-               
-
+            src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;     
+        end   
         
         temp = get(src,'Data');
         set(src,'Data',{ 'dummy' });
         set(src,'Data', temp );
     end
 
-
-tbl_acq.Data=[fieldnames(acq), ...
-    struct2cell(acq)];     
-
-for kk=1:size(tbl_acq.Data,1)    
-    tbl_acq.Data{kk,3}=desc.(tbl_acq.Data{kk,1});   
-end
+% % Load data onto tbl_acq (to 
+% tbl_acq.Data=[fieldnames(acq), ...
+%     struct2cell(acq)];     
+% for kk=1:size(tbl_acq.Data,1)    
+%     tbl_acq.Data{kk,3}=desc.(tbl_acq.Data{kk,1});   
+% end
 
 % Table for run parameters
 tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...
