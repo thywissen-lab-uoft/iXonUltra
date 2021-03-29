@@ -490,7 +490,7 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
         disp('Starting acquisition');
         
         % Send acquistion start command
-        startCamera;
+        out=startCamera;
         
         % Enable/Disable Button/Tables
         rbSingle.Enable='off';
@@ -1323,6 +1323,7 @@ end
 function [out,outstr]=getCameraStatus
     out=0;
     [ret,outstr]=AndorGetStatus;
+    disp(outstr);
     outstr=error_code(outstr);
     
     if isequal(error_code(ret),'DRV_SUCCESS')
@@ -1377,8 +1378,33 @@ function out=setCameraShutter(state)
     end
 end
 
-function out=startCamera
 
+% Start Acquisition
+function out=startCamera
+    fprintf('Starting acquisition ... ');
+    [ret]=StartAcquisition;
+    disp(error_code(ret));
+    
+    if isequal(error_code(ret),'DRV_SUCCESS')
+        out=1;
+    else
+        warning('Unable to start acquisition.');
+        out=0;
+    end
+end
+
+% Stop Acquisition
+function out=stopCamera
+    fprintf('Stopping acquisition ... ');
+    [ret]=AbortAcquisition;
+    disp(error_code(ret));
+    
+    if isequal(error_code(ret),'DRV_SUCCESS')
+        out=1;
+    else
+        warning('Unable to stop acquisition.');
+        out=0;
+    end
 end
 
 %% Analysis Functions
