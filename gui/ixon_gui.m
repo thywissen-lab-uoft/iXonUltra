@@ -200,6 +200,9 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         setTemperature(tblTemp.Data);
         hbCamInfo.Enable='on';
         
+        hbSoftTrig.Enable='on'; 
+
+        
         % Enable/Disable connect
         hbDisconnect.Enable='on';
         hbConnect.Enable='off';   
@@ -235,6 +238,8 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
            return;
         end
         
+        hbSoftTrig.Enable='off'; 
+
         
         cam_status.isCooling=0;
         cam_status.isTempStable=0;
@@ -419,6 +424,20 @@ hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
         else
             hbOpenShutter.Enable='on';
             hbCloseShutter.Enable='off';
+        end
+    end
+
+ttstr='Send a software trigget.';
+hbSoftTrig=uicontrol(hpCam,'style','pushbutton','string','software trigger',...
+    'units','pixels','fontsize',10,'Position',[535 5 100 20],'enable','off',...
+    'backgroundcolor',[230,230,250]/255,'callback',@softTrigCB,...
+    'ToolTipString',ttstr);
+
+    function softTrigCB(~,~)
+        if acq.TriggerMode==10
+            out=softwareTrigger;
+        else
+            disp('Cant send software trigger if the camera is not configured.');
         end
     end
 
@@ -1323,7 +1342,6 @@ end
 function [out,outstr]=getCameraStatus
     out=0;
     [ret,outstr]=AndorGetStatus;
-    disp(outstr);
     outstr=error_code(outstr);
     
     if isequal(error_code(ret),'DRV_SUCCESS')
@@ -1403,6 +1421,19 @@ function out=stopCamera
         out=1;
     else
         warning('Unable to stop acquisition.');
+        out=0;
+    end
+end
+
+% Software Trigger
+function out=softwareTrigger
+    fprintf('Sending software trigger ... ');
+    [ret]=SendSoftwareTrigger;
+    disp(error_code(ret));
+    if isequal(error_code(ret),'DRV_SUCCESS')
+        out=1;
+    else
+        warning('Unable to send software trigger.');
         out=0;
     end
 end
