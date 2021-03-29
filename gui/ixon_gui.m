@@ -155,7 +155,7 @@ function SizeChangedFcn(~,~)
         cDrag.Position(2)=cCross.Position(2);
         
         
-        strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3);
+        strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;
         
         drawnow;
 end
@@ -358,11 +358,11 @@ strtemp.Position(1:2)=[320 5];
 % Text
 ttstr='Camera status.';
 strstatus=uicontrol(hpCam,'style','text','string','DRV_NOT_INITIALIZED','units','pixels',...
-    'backgroundcolor','w','fontsize',10,'horizontalalignment','left',...
+    'backgroundcolor','w','fontsize',10,'horizontalalignment','right',...
     'foregroundcolor','k','enable','on','fontweight','bold',...
     'ToolTipString',ttstr);
-strstatus.Position(3:4)=[150 20];
-strstatus.Position(1:2)=[hpCam.Position(3)-150 5];
+strstatus.Position(3:4)=[157 20];
+strstatus.Position(1:2)=[hpCam.Position(3)-155 5];
 
 % Timer to update temperature
 statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
@@ -1323,7 +1323,7 @@ end
 function [out,outstr]=getCameraStatus
     out=0;
     [ret,outstr]=AndorGetStatus;
-    outstr=error_code(ret);
+    outstr=error_code(outstr);
     
     if isequal(error_code(ret),'DRV_SUCCESS')
         out=1;
