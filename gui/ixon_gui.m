@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=1;
+doDebug=0;
 
 
 
@@ -185,6 +185,10 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        
        % Close the shutter
        setCameraShutter(0);
+       
+       % Read Camera Capabilities
+       cam_skills=readCameraCapabilities;
+  
        
        % Load default acquisition settings
        loadAcquisitionSettings;     
@@ -1519,7 +1523,33 @@ function out=softwareTrigger
     end
 end
 
+function cam_skills=readCameraCapabilities
+    cam_skills=struct;
+    cam_skills.ulAcqModes=[];
+    cam_skills.ulReadModes=[];
+    cam_skills.ulFTReadModes=[];
+    cam_skills.ulTriggerModes=[];
+    cam_skills.ulCameraType=[];
+    cam_skills.ulPixelModes=[];
+    cam_skills.ulSetFunctions=[];
+    cam_skills.ulGetFunctions=[];
+    cam_skills.ulFeatures=[];
+    cam_skills.ulPCICard=[];
+    cam_skills.ulEMGainCapability=[];
 
+    fprintf('Reading camera capabilities ... ');
+   [ret,c02,c03,c04,c05,c06,c07,c08,c09,c10,...
+       c11,c12]=GetCapabilities;
+
+   keyboard
+   
+      if isequal(error_code(ret),'DRV_SUCCESS')
+        out=1;
+    else
+        warning('Unable to send software trigger.');
+        out=0;
+    end
+end
 
 %% Analysis Functions
 
