@@ -627,11 +627,21 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
         [out,outstr]=getCameraStatus;        
         switch outstr
             case 'DRV_IDLE'
-                grabImages;                
+                % Grab the images from the camera
+                grabImages;       
+                
+                % Restart Acquisition if desired (auto-stopts)
                 if hcAcqRpt.Value
-                    startCamera;
+                    startCamera;  
                 else
-                    stopCamCB;
+                    stop(src);
+                    % Enable/Disable Button/Tables
+                    hbstart.Enable='on';
+                    hbstop.Enable='off';        
+                    rbSingle.Enable='on';
+                    rbLive.Enable='on';        
+                    tbl_acq.ColumnEditable(2)=true;
+                    tbl_acq.Enable='on';                    
                 end                
             case 'DRV_ACQUIRING'
                 
@@ -641,9 +651,6 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
         end        
     end
 
-%     function grabImages
-%        disp('I should do someting'); 
-%     end
 
 
 %% Image Process Panel
@@ -1289,15 +1296,30 @@ axes(axImg);
 
 function grabImages
 
+    % How many images to grab
     [ret,first,last] = GetNumberNewImages;
-    numpix = 512*512;
-    [ret,D] = GetAcquiredData(last*numpix);
-
+    
+    numpix=512
+    % Grab the data (number just sets buffer size)
+    [ret,D] = GetAcquiredData(last*512^2);
+    disp(size(D))
+    keyboard
     imgs={};
     for j = 1:last % break up into individual images
         imgs{j} = reshape(double(D((1+(j-1)*numpix):(j*numpix))),...
             512,512);
-    end        
+    end   
+    
+    figure
+    
+    subplot(221)
+    imagesc(imgs{1})
+    
+    subplot(222)
+    imagesc(imgs{2})
+    
+    subplot(223)
+    histogram(imgs{1},256)
 end
 
 
@@ -1392,7 +1414,7 @@ function [out,outstr]=getCameraStatus
     if isequal(error_code(ret),'DRV_SUCCESS')
         out=1;
     else
-%         warning('Unable to read iXon status.');
+        warning('Unable to read iXon status.');
         out=0;
     end
 end
@@ -1474,12 +1496,17 @@ function out=stopCamera
     [ret]=AbortAcquisition;
     disp(error_code(ret));
     
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to stop acquisition.');
-        out=0;
-    end
+    switch error_code(ret)
+        case 'DRV_SUCCESS'
+            out=1;
+        case 'DRV_IDLE'
+            out=1;
+            disp('Camera acquisition not running.');
+        otherwise
+            warning('Error stopping acquisition.');
+            out=0;
+    end   
+
 end
 
 % Software Trigger
