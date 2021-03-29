@@ -430,23 +430,6 @@ hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
         end
     end
 
-%{
-ttstr='Send a software trigger. TriggerMode=10 and AcquisitionMode=5';
-hbSoftTrig=uicontrol(hpCam,'style','pushbutton','string','software trigger',...
-    'units','pixels','fontsize',10,'Position',[535 5 100 20],'enable','off',...
-    'backgroundcolor',[230,230,250]/255,'callback',@softTrigCB,...
-    'ToolTipString',ttstr);
-
-    function softTrigCB(~,~)
-        if acq.TriggerMode==10 && acq.TriggerMode==5
-            out=softwareTrigger;
-            pause(acq.ExposureTime+.5);
-            grabImages;
-        else
-            disp('Cant send software trigger if the camera is not configured.');
-        end
-    end
-%}
 
 %% Save Panel
 
@@ -628,8 +611,9 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
         switch outstr
             case 'DRV_IDLE'
                 % Grab the images from the camera
-                grabImages;       
-                
+                imgs=grabRawImages;       
+                mydata=processImages(imgs);
+
                 % Restart Acquisition if desired (auto-stopts)
                 if hcAcqRpt.Value
                     startCamera;  
@@ -642,7 +626,8 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                     rbLive.Enable='on';        
                     tbl_acq.ColumnEditable(2)=true;
                     tbl_acq.Enable='on';                    
-                end                
+                end  
+                
             case 'DRV_ACQUIRING'
                 
             otherwise
@@ -1283,45 +1268,57 @@ function data=updateImages(data)
     end
     
     data.ROI=tblROI.Data;    
-%     thistoryInd.String=sprintf('%03d',ind);        
-
-
+%     thistoryInd.String=sprintf('%03d',ind); 
 end
+
+
 
 data=updateImages(data);
 drawnow;
-%%
 SizeChangedFcn
 axes(axImg);
 
-function grabImages
+%%
+function imgs=grabRawImages
 
     % How many images to grab
     [ret,first,last] = GetNumberNewImages;
     
-    numpix=512
+    numpix=512;
     % Grab the data (number just sets buffer size)
     [ret,D] = GetAcquiredData(last*512^2);
-    disp(size(D))
-    keyboard
+
     imgs={};
     for j = 1:last % break up into individual images
         imgs{j} = reshape(double(D((1+(j-1)*numpix):(j*numpix))),...
             512,512);
+        % Subtract off aritifical baseline counts (see manual).
+        imgs{j}=imgs{j}-200;
     end   
     
-    figure
-    
-    subplot(221)
-    imagesc(imgs{1})
-    
-    subplot(222)
-    imagesc(imgs{2})
-    
-    subplot(223)
-    histogram(imgs{1},256)
 end
 
+function mydata=processImages(imgs)
+    tin=datevec(now);
+
+    mydata=struct;
+    % Create the image data structure
+    mydata=struct;
+    mydata.Date=datevec(now);
+    mydata.Name=['iXonUltra_' datestr(data.Date,'yyyy-mm-dd_HH-MM-SS')];   
+
+    % Grab the images
+    mydata.RawImages=imgs;
+
+    % Grab the sequence parameters
+    [mydata.Params,dstr]=grabSequenceParams;        
+    mydata.Params.ExecutionDate=dstr;    
+
+    % Append acquisition information
+    mydata.CameraInformation=cam_info;
+    mydata.AcquisitionInformation=acq;
+    mydata.AcquisitionDescription=desc;
+end
 
 end
 
