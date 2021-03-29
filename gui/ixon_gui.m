@@ -16,7 +16,9 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=0;
+doDebug=1;
+
+
 
 %% Other Settings
 
@@ -396,10 +398,6 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
         [out,outstr]=getCameraStatus;
         strstatus.String=outstr;
         
-        [out,xpx,ypx]=GetDetectorInfo;
-        disp(xpx)
-        disp(ypx)
-        disp(' ');
     end
 
 % Open camera shutter
@@ -519,6 +517,7 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
         
         % Send acquistion start command
         out=startCamera;
+        start(acqTimer);
         
         % Enable/Disable Button/Tables
         rbSingle.Enable='off';
@@ -541,6 +540,7 @@ hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
         disp('Stopping acquisition');     
         
         %
+        stop(acqTimer);
         stopCamera;
         
         % Enable/Disable Button/Tables
@@ -563,29 +563,22 @@ hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,
        disp('Im helping you'); 
     end
 
+% Continuous Acquisition checkbox
+ttstr='Reinitialize camera acquisition after image acquisition.';
+hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',8,...
+    'backgroundcolor','w','Position',[5 hpAcq.Position(4)-55 120 20],...
+    'ToolTipString',ttstr,'enable','on');
+
 % Button group for acquisition mode
 bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chAcqCB);  
 bgAcq.Position(3:4)=[175 40];
-bgAcq.Position(1:2)=[5 hpAcq.Position(4)-75];
-    
-% Settings button
-% ttstr='Change some settings.';
-% cdata=imresize(imread(fullfile(mpath,'icons','gear.jpg')),[18 18]);
-% hbSingleSett=uicontrol(bgAcq,'style','pushbutton','CData',cdata,'callback',@settingsCB,...
-%     'enable','on','backgroundcolor','w','position',[0 0 size(cdata,[1 2])],...
-%     'ToolTipString',ttstr);
-% hbMultiSett=uicontrol(bgAcq,'style','pushbutton','CData',cdata,'callback',@settingsCB,...
-%     'enable','on','backgroundcolor','w','position',[0 20 size(cdata,[1 2])],...
-%     'ToolTipString',ttstr);
+bgAcq.Position(1:2)=[5 hpAcq.Position(4)-95];    
 
 % Radio buttons for cuts vs sum
 rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','Normal (pwa,pwa,...,bkgd)',...
     'Position',[1 0 200 20],'units','pixels','backgroundcolor','w','Value',1,...
     'UserData','Normal','Enable','off');
-% rbMulti=uicontrol(bgAcq,'Style','radiobutton','String','Multiple (PWA,..,BKGD)',...
-%     'Position',[22 20 200 20],'units','pixels','backgroundcolor','w',...
-%     'UserData','Multi');
 rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live (be careful)',...
     'Position',[1 20 200 20],'units','pixels','backgroundcolor','w',...
     'UserData','Live','Enable','off');
@@ -623,6 +616,34 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live (be careful)',...
         end        
         
     end
+
+% Timer to check on acquisition
+acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
+    'TimerFcn',@acqTimerFcn,'ExecutionMode','FixedSpacing');
+
+% Timer function checks if acquisition is over and restarts it
+    function acqTimerFcn(src,evt)      
+        % Camera Status
+        [out,outstr]=getCameraStatus;        
+        switch outstr
+            case 'DRV_IDLE'
+                grabImages;                
+                if hcAcqRpt.Value
+                    startCamera;
+                else
+                    stopCamCB;
+                end                
+            case 'DRV_ACQUIRING'
+                
+            otherwise
+                warning('Acuisition timer has unexpected result');
+                stopCamCB;
+        end        
+    end
+
+%     function grabImages
+%        disp('I should do someting'); 
+%     end
 
 
 %% Image Process Panel
@@ -1269,13 +1290,13 @@ axes(axImg);
 function grabImages
 
     [ret,first,last] = GetNumberNewImages;
-    numpix = handles.cam.xpixels*handles.cam.ypixels;
-    [ret,data] = GetAcquiredData(last*numpix);
-    handles.image.img = {}; % clear img
-    
+    numpix = 512*512;
+    [ret,D] = GetAcquiredData(last*numpix);
+
+    imgs={};
     for j = 1:last % break up into individual images
-        handles.image.img{j} = reshape(double(data((1+(j-1)*numpix):(j*numpix))),...
-            handles.cam.xpixels,handles.cam.ypixels);
+        imgs{j} = reshape(double(D((1+(j-1)*numpix):(j*numpix))),...
+            512,512);
     end        
 end
 
@@ -1371,7 +1392,7 @@ function [out,outstr]=getCameraStatus
     if isequal(error_code(ret),'DRV_SUCCESS')
         out=1;
     else
-        warning('Unable to read iXon temperature.');
+%         warning('Unable to read iXon status.');
         out=0;
     end
 end
