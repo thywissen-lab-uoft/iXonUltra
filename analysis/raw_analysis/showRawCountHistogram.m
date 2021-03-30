@@ -22,8 +22,14 @@ end
 gMin=inf;
 gMax=-inf;
 for kk=1:length(atomdata)
-    gMin=min([gMin atomdata(kk).Raw(imgnum).Minimum]);
-    gMax=max([gMax atomdata(kk).Raw(imgnum).Maximum]);
+    img=atomdata(kk).RawImages(:,:,imgnum);
+    vals=sort(img(:),'descend');
+    
+    gMin=min([gMin vals(end-opts.Outliers(1))]);
+    gMax=max([gMax vals(opts.Outliers(2))]);
+
+%     gMin=min([gMin atomdata(kk).Raw(imgnum).Minimum]);
+%     gMax=max([gMax atomdata(kk).Raw(imgnum).Maximum]);
 end
 
     
@@ -55,7 +61,7 @@ for ii=1:length(atomdata)
     thisAxes=axes('parent',hF,'units','pixels');
     set(thisAxes,'FontSize',8,'XMinorTick','on','YMinorTick','on',...
         'Box','on','YGrid','on','XGrid','on','units','pixels',...
-        'YTickLabel',{});
+        'YAxisLocation','right');
     hold on;     
     cla;
     [a,b,c,d]=getAxesPos(ii,length(atomdata),...
@@ -64,15 +70,21 @@ for ii=1:length(atomdata)
     thisAxes.Position(2)=b;
     thisAxes.Position(3)=c;
     thisAxes.Position(4)=d;   
-    
-    
+
+
+    img=atomdata(ii).RawImages(:,:,imgnum);
+    vals=sort(img(:),'descend');
     if opts.GlobalLimits
-        histogram(atomdata(ii).RawImages(:,:,imgnum),'BinWidth',opts.BinWidth,'BinLimits',[gMin gMax]); 
+        histogram(img,'BinWidth',opts.BinWidth,'BinLimits',[gMin gMax],...
+            'edgealpha',0.25); 
+        xlim([gMin-10 gMax+10]);
     else
-        histogram(atomdata(ii).RawImages(:,:,imgnum),'BinWidth',opts.BinWidth); 
+        histogram(img,'BinWidth',opts.BinWidth); 
+        set(gca,'XLim',[vals(end-opts.Outliers(1)) vals(opts.Outliers(2))],...
+            'edgealpha',0.25);
     end
 
-   
+
 
     str=['{\bf sum: }' ...
         num2str(atomdata(ii).Raw(imgnum).Total,'%.2e') ...
@@ -83,27 +95,27 @@ for ii=1:length(atomdata)
     
         
     % Plot the data
-    try
+    try  
+        % Draw the analysis string box
+        text(thisAxes.Position(3)-1, thisAxes.Position(4), str, 'Units', 'pixels',...
+            'FontSize', 8,...
+            'verticalalignment','cap','horizontalalignment','right',...
+            'backgroundcolor',[1 1 1 .5]); 
 
-    
-    
-
-    % Draw the analysis string box
-    text(thisAxes.Position(3)-1, thisAxes.Position(4), str, 'Units', 'pixels',...
-        'FontSize', 8,...
-        'verticalalignment','cap','horizontalalignment','right'); 
-
-    % Draw the iteration number and variable value
-     text(3, thisAxes.Position(4)-1, ...
-         ['{\bf(' num2str(ii) ')' newline ...
-         num2str(xData(ii)) '}'], ...
-         'Units', 'pixels',...
-         'FontSize', 8,...
-         'verticalalignment','cap','HorizontalAlignment','left'); 
-    
+        % Draw the iteration number and variable value
+         tt=text(3, thisAxes.Position(4)-1, ...
+             ['{\bf(' num2str(ii) ')' newline ...
+             num2str(xData(ii)) '}'], ...
+             'Units', 'pixels',...
+             'FontSize', 8,...
+             'verticalalignment','cap','HorizontalAlignment','left',...
+             'backgroundcolor',[1 1 1 .5]);     
     end
-    set(gca,'YScale',opts.YScale);
 
+    set(gca,'YScale',opts.YScale);
+    drawnow
+
+    
 end      
 disp('Done!');
 end
@@ -113,11 +125,11 @@ nInd=nInd-1;
 yTop=30;
 yBot=30;
 
-xLeft=20;
+xLeft=10;
 xRight=20;
 
 ySpace=25;
-xSpace=10;
+xSpace=20;
 
 nRow=ceil(sqrt(nTot));
 

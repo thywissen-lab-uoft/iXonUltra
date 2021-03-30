@@ -51,10 +51,8 @@ m=40*amu;
 % field of the .mat file. The unit has no tangibile affect and only affects
 % display properties.
 
-varType='param';    % The variable is from the sequencer
-varType='acq';      % The variable is from the camera
 
-xVar='ExposureTime';
+xVar='EMCCDGain';
 unit='s';
 
 
@@ -147,25 +145,38 @@ switch varType
     otherwise
         error('uhh you chose the wrong thing to plot');
 end
-%% Uhh okay
 
+%% Image Processing
+
+% Subtract off electronical bias offset
+for kk=1:length(atomdata)
+    for jj=1:size(atomdata(kk).RawImages,3)
+        atomdata(kk).RawImages(:,:,jj)=atomdata(kk).RawImages(:,:,jj)-200;
+    end
+end
+
+%% Basic Raw Image Analysis
+
+% Do basic analysis on raw counts
 atomdata=computeRawCounts(atomdata);
 
+
+% Plot histogram of raw counts
 hist_opts=struct;
-hist_opts.GlobalLimits=0;
-hist_opts.BinWidth=1;
-hist_opts.ImageNumber=1;
-hist_opts.YScale='Log';
+hist_opts.Outliers=[10 50]; % Histogram wont plot outliers of this many low/high
+hist_opts.GlobalLimits=1;   % Maintain historgram x limits
+hist_opts.BinWidth=1;       % Histogram bin width
+hist_opts.ImageNumber=1;    % Which image to histogram (overwritten)
+hist_opts.YScale='Log';     % Histogram y scale
 % hist_opts.YScale='Linear';
 
 for kk=1:size(atomdata(1).RawImages,3)
-    disp(kk)
     hist_opts.ImageNumber=kk;
     hF_rawhist=showRawCountHistogram(atomdata,xVar,hist_opts);
     saveFigure(atomdata,hF_rawhist,['raw_hist' num2str(kk)]);
 end
 
-
+% Plot raw count total
 raw_opts=struct;
 raw_opts.FitLinear=1;
 hF_rawtotal=showRawCountTotal(atomdata,xVar,raw_opts);
