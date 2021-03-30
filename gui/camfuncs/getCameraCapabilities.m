@@ -94,9 +94,20 @@ camtypes={'Andor PDA','Andor iXon','Andor ICCD','Andor EMCCD','Andor CCD',...
     'Andor iVac','Andor Clara','Andor USB iStar'};
 ulCameraType=camtypes{int32_ulCameraType+1};
 
+%% PixelModes
+ulPixelModes=struct;
+ulPixelModes.AC_PIXELMODE_8BIT=bitget(int32_ulPixelModes,1);
+ulPixelModes.AC_PIXELMODE_14BIT=bitget(int32_ulPixelModes,2);
+ulPixelModes.AC_PIXELMODE_16BIT=bitget(int32_ulPixelModes,4);
+ulPixelModes.AC_PIXELMODE_32BIT=bitget(int32_ulPixelModes,1);
+
+pxmodes={'AC_PIXELMODE_MONO','AC_PIXELMODE_RGB','AC_PIXELMODE_CMY'};
+ulPixelModes.AC_PIXELMODE=pxmodes(int32_ulPixelModes(17:32));
+
+
+
 %% PCI Card
 ulPCICard=int32_ulPCICard;
-
 
 %% EM Gain Capability
 ulEMGainCapability=struct;
