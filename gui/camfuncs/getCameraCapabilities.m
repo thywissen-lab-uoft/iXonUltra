@@ -46,6 +46,7 @@ nums=[int32_ulAcqModes,int32_ulReadModes,int32_ulFTReadModes,...
 %% Verify good output
 
 if ~isequal(error_code(ret),'DRV_SUCCESS')
+    disp(' ');
    warning('Unable to send software trigger.');
    out=0;
    return;
@@ -67,7 +68,7 @@ cam_skills.ulAcqModes=ulAcqModes;
 ulReadModes=struct;
 ulReadModes.AC_READMODE_FULLIMAGE=bitget(int32_ulReadModes,0+1);
 ulReadModes.AC_READMODE_SUBIMAGE=bitget(int32_ulReadModes,1+1);
-ulReadModes.AC_READMODE_SINGLETRACK=bitget(int32_ulReadMode,2+1);
+ulReadModes.AC_READMODE_SINGLETRACK=bitget(int32_ulReadModes,2+1);
 ulReadModes.AC_READMODE_FVB=bitget(int32_ulReadModes,3+1);
 ulReadModes.AC_READMODE_MULTITRACK=bitget(int32_ulReadModes,4+1);
 ulReadModes.AC_READMODE_RANDOMTRACK=bitget(int32_ulReadModes,5+1);
@@ -205,7 +206,6 @@ ulFeatures.AC_FEATURES_DUALMODE=bitget(int32_ulFeatures,19+1);
 
 cam_skills.ulFeatures=ulFeatures;
 
-%%
 
 %% PCI Card
 ulPCICard=int32_ulPCICard;
@@ -222,15 +222,7 @@ ulEMGainCapability.AC_EMGAIN_REAL12=bitget(int32_ulEMGainCapability,4);
 cam_skills.ulEMGainCapability=ulEMGainCapability;
 
 %%
-
-disp('%%%%%%%%%%%%%%%%%%%%%%%%%');
-fnames=fieldnames(cam_skills);
-for kk=1:length(fnames)
-    disp(fnames{kk});
-    disp(dec2bin(nums(kk),32));
-    
-   disp(cam_skills.(fnames{kk})); 
-   disp('%%%');
-end
+disp('done');
+warning('Not sure if these are all correct.... :(?');
         
 end

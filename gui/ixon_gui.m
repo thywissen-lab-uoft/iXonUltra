@@ -31,6 +31,10 @@ guiname='iXon GUI';
 % Directory where images are automatically saved.
 historyDir=['C:' filesep 'IxonImageHistory'];
 
+if ~exist(historyDir,'dir')
+    mkdir(historyDir);
+end
+
 % Dummy file to load on startup
 fname='initdata.mat';
 initImg=load(fname);
@@ -188,8 +192,17 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        
        % Read Camera Capabilities
        cam_skills=getCameraCapabilities;
-       disp(cam_skills);
-  
+       
+       disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+        disp('Displaying Camera Capabilities');        
+        fnames=fieldnames(cam_skills);
+        for nn=1:length(fnames)
+           disp(fnames{nn});
+           disp(cam_skills.(fnames{nn})); 
+           disp(' ');
+        end
+         disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+
        
        % Load default acquisition settings
        loadAcquisitionSettings;     
@@ -617,6 +630,8 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
             case 'DRV_IDLE'
                 % Grab the images from the camera
                 imgs=grabRawImages;       
+                
+                % Assign images metadata
                 mydata=processImages(imgs);
 
                 % Restart Acquisition if desired (auto-stopts)
@@ -632,6 +647,17 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                     tbl_acq.ColumnEditable(2)=true;
                     tbl_acq.Enable='on';                    
                 end  
+                
+                % Save data to image history
+                saveData(mydata)     
+                
+                % Save images to save directory
+                if hcauto.Value
+                   saveData(mydata,tSaveDir.UserData); 
+                end              
+     
+            
+                
                 
             case 'DRV_ACQUIRING'
                 
@@ -1289,17 +1315,24 @@ function imgs=grabRawImages
     % How many images to grab
     [ret,first,last] = GetNumberNewImages;
     
-    numpix=512;
+    numpix=512^2;
     % Grab the data (number just sets buffer size)
     [ret,D] = GetAcquiredData(last*512^2);
+    
 
     imgs={};
+    imgmats=zeros(512,512,last);
+
     for j = 1:last % break up into individual images
-        imgs{j} = reshape(double(D((1+(j-1)*numpix):(j*numpix))),...
-            512,512);
+        ii=double(D((1+(j-1)*numpix):(j*numpix)));
+        imgs{j} = reshape(ii,512,512);
         % Subtract off aritifical baseline counts (see manual).
-        imgs{j}=imgs{j}-200;
-    end   
+%         imgs{j}=imgs{j}-200;
+        imgmats(:,:,j)=imgs{j};
+    end 
+    
+    imgs=imgmats;
+    
     
 end
 
@@ -1310,7 +1343,7 @@ function mydata=processImages(imgs)
     % Create the image data structure
     mydata=struct;
     mydata.Date=datevec(now);
-    mydata.Name=['iXonUltra_' datestr(data.Date,'yyyy-mm-dd_HH-MM-SS')];   
+    mydata.Name=['iXonUltra_' datestr(mydata.Date,'yyyy-mm-dd_HH-MM-SS')];   
 
     % Grab the images
     mydata.RawImages=imgs;
@@ -1325,6 +1358,29 @@ function mydata=processImages(imgs)
     mydata.AcquisitionDescription=desc;
 end
 
+
+    function saveData(data,saveDir)
+        if nargin==1
+           saveDir=historyDir;
+           filenames=dir([saveDir filesep '*.mat']);
+           filenames={filenames.name};
+           filenames=sort(filenames);
+
+           % Delete old images
+           if length(filenames)>200
+               f=[saveDir filesep filenames{1}];
+               delete(f);
+           end               
+        end
+        filename=[data.Name '.mat']; 
+        if ~exist(saveDir,'dir')
+           mkdir(saveDir);
+        end        
+        filename=fullfile(saveDir,filename);
+        fprintf('%s',[filename ' ...']);
+        save(filename,'data');
+        disp(' done'); 
+    end
 end
 
 %% Camera Functions

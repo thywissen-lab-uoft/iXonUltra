@@ -60,12 +60,20 @@ for j = 0:nfo.NumPreAmpGains-1
 end
 
 
+% Check if baseline clamp is enabled.
+% [ret, nfo.BaselineClamp] = GetBaselineClamp;
+% if ~isequal(error_code(ret),'DRV_SUCCESS')
+%    disp(['GetBaselineClamp : ' error_code(ret)]); 
+% end
+
 
 % [ret,cam.currentTemp]=GetTemperature;
 % % [ret,cam.PreAmpGain]=GetPreAmpGain(cam.PreAmpGainIndex);
 % [ret,cam.VSSpeed]=GetVSSpeed(cam.VSSpeedIndex);
 % [ret,cam.HSSpeed]=GetHSSpeed(cam.ADChannelIndex,cam.AmpTypeIndex,cam.HSSpeedIndex);
 %  [ret,cam.EMCCDGain]=GetEMCCDGain;
+
+
 
 
 end
