@@ -187,7 +187,8 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        setCameraShutter(0);
        
        % Read Camera Capabilities
-       cam_skills=readCameraCapabilities;
+       cam_skills=getCameraCapabilities;
+       disp(cam_skills);
   
        
        % Load default acquisition settings
