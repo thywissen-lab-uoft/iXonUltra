@@ -487,9 +487,9 @@ tSaveDir=uicontrol(hpSave,'style','text','string','directory','fontsize',8,...
 
 % Browse button callback
     function browseCB(~,~)
-%         str=getDayDir;
-%         str=uigetdir(str);
-    str=uigetdir;
+        str=getDayDir;
+        str=uigetdir(str);
+        
         if str
             tSaveDir.UserData=str; % Full directory to save
             str=strsplit(str,filesep);
@@ -1641,7 +1641,13 @@ end
 %% HELPER
 function s3=getDayDir
     t=now;
+    
     d=['Y:\Data'];
+
+    if ~exist(d,'dir')
+        s3=pwd;
+        return;
+    end
     s1=datestr(t,'yyyy');s2=datestr(t,'yyyy.mm');s3=datestr(t,'mm.dd');
     s1=[d filesep s1];s2=[s1 filesep s2];s3=[s2 filesep s3];
 
