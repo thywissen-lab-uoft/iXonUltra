@@ -82,9 +82,11 @@ coIN=brighten(co,.8);
 
 Nbg=200*size(atomdata(1).RawImages,1)*size(atomdata(1).RawImages,2);
 legStr={};
+
 for nn=1:size(atomdata(1).RawImages,3)
-   plot(xData,Nsum(:,nn)-0*Nbg,'o','color',co(nn,:),'linewidth',1,'markersize',8,...
-       'markerfacecolor',co(nn,:),'markeredgecolor',.5*co(nn,:),...
+    [cface,cedge] = ixoncolororder(nn);
+   plot(xData,Nsum(:,nn)-0*Nbg,'o','color',cedge,'linewidth',1,'markersize',8,...
+       'markerfacecolor',cface,'markeredgecolor',cedge,...
        'linewidth',2);
    ps(nn)=plot(xData,polyval(pps{nn},xData),'color',co(nn,:));
    legStr{nn}=[num2str(pps{nn}(1),'%.3e') ' counts/var'];
