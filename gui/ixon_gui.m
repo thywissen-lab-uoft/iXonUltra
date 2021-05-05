@@ -192,7 +192,8 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        
        % Read Camera Capabilities
        cam_skills=getCameraCapabilities;
-       
+       % Dont display camera capabilities
+       %{
        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
         disp('Displaying Camera Capabilities');        
         fnames=fieldnames(cam_skills);
@@ -202,7 +203,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
            disp(' ');
         end
          disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-
+%}
        
        % Load default acquisition settings
        loadAcquisitionSettings;     
@@ -655,7 +656,9 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 if hcauto.Value
                    saveData(mydata,tSaveDir.UserData); 
                 end              
-     
+                
+                % Updte live preview
+                data=mydata;
             
                 
                 
