@@ -35,19 +35,26 @@ if ~exist(historyDir,'dir')
     mkdir(historyDir);
 end
 
+% % Dummy file to load on startup
+% fname='example_data_plane.mat';
+% initdata=load(fname);
+% Z=initdata.Z;
+% % Initializse image data structure with dummy data
+% data=struct;
+% data.X=1:size(initdata.Z,2);
+% data.Y=1:size(initdata.Z,1);
+% data.Z=initdata.Z;
+% data.Date=datevec(now);
+% data.Name=['iXonUltra_' datestr(data.Date,'yyyy-mm-dd_HH-MM-SS')];
+
+
 % Dummy file to load on startup
-fname='initdata.mat';
-initImg=load(fname);
-
-Z=initImg.Z;
-
+fname='example_data_EIT_RAMAN.mat';
+data=load(fname);
+data=data.data;
+data.Z=data.RawImages(:,:,2)-data.RawImages(:,:,1);
+Z=data.Z;
 % Initializse image data structure with dummy data
-data=struct;
-data.X=1:size(initImg.Z,2);
-data.Y=1:size(initImg.Z,1);
-data.Z=initImg.Z;
-data.Date=datevec(now);
-data.Name=['iXonUltra_' datestr(data.Date,'yyyy-mm-dd_HH-MM-SS')];
 
 
 %% Initialize Drivers and GUI
@@ -81,6 +88,7 @@ cam_info=struct;
 
 % Initialize Camera Status
 cam_status=struct;
+cam_status.isConnected=0;       % Are you connected to camera?
 cam_status.Temperature=NaN;     % sensor temperature
 cam_status.TemperatureSP=10;    % Must lie between -120 C and 20 C
 cam_status.isTempStable=0;      % is sensor tempreature stable?
@@ -104,20 +112,39 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
 
 % Callback for when the GUI is requested to be closed.
     function closeGUI(fig,~)
-        disp('Closing iXon GUI...');
+        answer = questdlg('Close the iXon GUI?','Close iXon?',...
+            'Yes','No','No') ;
         
-        % Stop acquistion if necessary
+         doClose=0;
+        % Handle response
+        switch answer
+            case 'Yes'
+                disp('Closing the iXon GUI ...')
+                doClose = 1;
+            case 'No'
+                disp('Not closing the iXon GUI.')
+                doClose=0;
+        end
         
-        % Stop Cooling if necessary
-        
-        % Actually, maybe don't allow closing of GUI. Or have a confirm
-        % dialog option
-        
-        stop(statusTimer);
-        disconnectCam;
-        delete(statusTimer);
-        
-        delete(fig);                % Delete the figure
+        if doClose
+            disp('Closing iXon GUI...');
+
+            % Stop acquistion if necessary
+
+            % Stop Cooling if necessary
+
+            % Actually, maybe don't allow closing of GUI. Or have a confirm
+            % dialog option
+
+
+            stop(statusTimer);
+            if cam_status.isConnected
+                disconnectCam;
+            end
+            delete(statusTimer);
+
+            delete(fig);                % Delete the figure
+        end
     end
 
 % Change the figure picture (will be depreciated)
@@ -130,13 +157,16 @@ function SizeChangedFcn(~,~)
         % This resize fucntion ensures that the X and Y cut/sum plot has
         % commenserate positioning with respect the actual image shown
         
-        W=hF.Position(3);H=hF.Position(4);      % Grab figure dimensions   
+        % Grab figure dimensions
+        W=hF.Position(3);H=hF.Position(4);         
         
+        % Resize image panel  
         if W>360 && H>55        
-            hp.Position=[360 1 W-360 H-55];         % Resize image panel    
+            hp.Position=[360 1 W-360 H-55];           
         end
         
-        resizePlots;                            % Resize plots
+        % Resize plots
+        resizePlots;                            
         
         % Resize Panels
         hpCam.Position(2:3)=[H-hpCam.Position(4) hF.Position(3)];        
@@ -159,8 +189,10 @@ function SizeChangedFcn(~,~)
         cCoMStr.Position(2)=cGaussRet.Position(2)-20;
         cCross.Position(2)=cCoMStr.Position(2)-20;
         cDrag.Position(2)=cCross.Position(2);
+        tblcross.Position(2)=cCross.Position(2)-tblcross.Position(4);
         
         
+        % Move status string
         strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;
 end
@@ -185,6 +217,8 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
            warning('Unable to connect to camera');
            return;
        end
+       
+       cam_status.isConnected=1;
        
        % Close the shutter
        setCameraShutter(0);
@@ -219,10 +253,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         
         % Set the temperature set point
         setTemperature(tblTemp.Data);
-        hbCamInfo.Enable='on';
-        
-%         hbSoftTrig.Enable='on'; 
-
+        hbCamInfo.Enable='on';       
         
         % Enable/Disable connect
         hbDisconnect.Enable='on';
@@ -258,10 +289,8 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         if ~out && ~doDebug
            return;
         end
-        
-%         hbSoftTrig.Enable='off'; 
-
-        
+          
+        cam_status.isConnected=0;
         cam_status.isCooling=0;
         cam_status.isTempStable=0;
         cam_status.Temperature=NaN;
@@ -304,7 +333,6 @@ hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
     [155 5 60 20],'enable','off',...
     'backgroundcolor',[173 216 230]/255,'callback',{@coolCB ,1},...
     'ToolTipString',ttstr);
-
 
 % Stop Cooling
 ttstr='Stop cooling the sensor to set point.';
@@ -657,7 +685,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                    saveData(mydata,tSaveDir.UserData); 
                 end              
                 
-                % Updte live preview
+                % Update live preview
                 data=mydata;   
                 data=updateImages(data);
                 
@@ -736,7 +764,8 @@ tblROI.Position(1:2)=[5 hpAnl.Position(4)-tblROI.Position(4)-20];
             warning('Incorrect data type provided for ROI.');
             src.Data(m,n)=evt.PreviousData;
             return;
-        end        
+        end
+        
         ROI=round(ROI);      % Make sure this ROI are integers   
         % Check that limits go from low to high
         if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
@@ -759,6 +788,52 @@ tblROI.Position(1:2)=[5 hpAnl.Position(4)-tblROI.Position(4)-20];
            src.Data(m,n)=evt.PreviousData;
         end
     end
+
+% Button to enable GUI selection of analysis ROI
+ttstr='Select the analysis ROI.';
+cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
+hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+    'Backgroundcolor','w','Position',[130 tblROI.Position(2)+2 18 18],'Callback',@slctROICB,...
+    'ToolTipString',ttstr);
+
+
+% Callback for selecting an ROI based upon mouse click input.
+    function slctROICB(~,~)
+        disp(['Selecting display ROI .' ...
+            ' Click two points that form the rectangle ROI.']);
+        axes(axImg)                 % Select the OD image axis
+        [x1,y1]=ginput(1);          % Get a mouse click
+        x1=round(x1);y1=round(y1);  % Round to interger        
+        p1=plot(x1,y1,'+','color','k','linewidth',1); % Plot it
+        
+        [x2,y2]=ginput(1);          % Get a mouse click
+        x2=round(x2);y2=round(y2);  % Round it        
+        p2=plot(x2,y2,'+','color','k','linewidth',1);  % Plot it
+
+        % Create the ROI
+        ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
+
+        % Constrain ROI to image
+        if ROI(1)<1; ROI(1)=1; end       
+        if ROI(3)<1; ROI(3)=1; end   
+        if ROI(4)>512; ROI(4)=512; end       
+        if ROI(2)>512; ROI(2)=512; end   
+        
+        % Try to update ROI graphics
+        tblROI.Data=ROI;   
+        
+        try
+            pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+            set(pROI(1),'Position',pos);
+            drawnow;        
+        catch
+           warning('Unable to change display ROI.');
+        end
+        delete(p1);delete(p2);                   % Delete markers
+
+    end
+
+
 
 
 hcBox=uicontrol(hpAnl,'style','checkbox','string','center of mass','fontsize',8,...
@@ -911,17 +986,17 @@ hbSlctLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
 %%%%%% Color Limits %%%%%%
 
 % Text label for color limit table on OD image
-climtext=uicontrol('parent',hpDisp,'units','pixels','string','color:',...
-    'fontsize',10,'backgroundcolor','w','style','text');
+climtext=uicontrol('parent',hpDisp,'units','pixels','string','color limits : ',...
+    'fontsize',8,'backgroundcolor','w','style','text');
 climtext.Position(3:4)=climtext.Extent(3:4);
 climtext.Position(1:2)=[2 tbl_dispROI.Position(2)-climtext.Position(4)-5];
 
 % Table to adjust color limits on image
 climtbl=uitable('parent',hpDisp,'units','pixels','RowName',{},'ColumnName',{},...
-    'Data',[0 1000],'ColumnWidth',{40,40},'ColumnEditable',[true true],...
+    'Data',[0 12000],'ColumnWidth',{40,40},'ColumnEditable',[true true],...
     'CellEditCallback',@climCB);
 climtbl.Position(3:4)=climtbl.Extent(3:4);
-climtbl.Position(1:2)=[36 tbl_dispROI.Position(2)-climtext.Position(4)-5];
+climtbl.Position(1:2)=[65 tbl_dispROI.Position(2)-climtext.Position(4)-5];
 
 % Callback for changing the color limits table
     function climCB(src,evt)
@@ -943,9 +1018,9 @@ bgPlot.Position(1:2)=[2 climtbl.Position(2)-bgPlot.Position(4)-2];
     
 % Radio buttons for cuts vs sum
 rbCut=uicontrol(bgPlot,'Style','radiobutton','String','plot cut',...
-    'Position',[0 0 120 20],'units','pixels','backgroundcolor','w','Value',0);
+    'Position',[0 0 120 20],'units','pixels','backgroundcolor','w','Value',1);
 rbSum=uicontrol(bgPlot,'Style','radiobutton','String','plot sum',...
-    'Position',[0 20 120 20],'units','pixels','backgroundcolor','w','Value',1);
+    'Position',[0 20 120 20],'units','pixels','backgroundcolor','w','Value',0);
 
     function chPlotCB(~,~)
 %        updatePlots(dstruct); 
@@ -1002,12 +1077,54 @@ cDrag.Position=[cCross.Position(1)+cCross.Position(3)+2 cCross.Position(2) 125 2
             pCrossYDrag=draggable(pCrossY);
             pCrossXDrag.on_move_callback=@Xupdate;
             pCrossYDrag.on_move_callback=@Yupdate;
+            pCrossYDrag.constraint="horizontal";
+            pCrossXDrag.constraint="vertical";
+
         else
             delete(pCrossXDrag)
             delete(pCrossYDrag)
         end
     end
 
+
+% Table to adjust cross hai
+tblcross=uitable('parent',hpDisp,'units','pixels','RowName',{},'ColumnName',{},...
+    'Data',[200 200],'ColumnWidth',{40,40},'ColumnEditable',[true true],...
+    'CellEditCallback',@tblcrossCB);
+tblcross.Position(3:4)=tblcross.Extent(3:4);
+tblcross.Position(1:2)=[20 cCross.Position(2)-tblcross.Position(4)];
+
+    function tblcrossCB(src,evt)
+        m=evt.Indices(1); n=evt.Indices(2);
+        
+        newPos=src.Data(m,n);
+        % Check that the data is numeric
+        if sum(~isnumeric(newPos)) || sum(isinf(newPos)) || sum(isnan(newPos))
+            warning('Incorrect data type provided for cross hair.');
+            src.Data(m,n)=evt.PreviousData;
+            return;
+        end
+        
+        newPos=round(newPos);      % Make sure the cross hair is an integer
+
+        % Check that limits go from low to high
+        if newPos<1 || newPos>512
+           warning('Bad cross hair position given.');
+           return;
+        end
+        
+        src.Data(m,n)=newPos;
+        % Try to update ROI graphics
+        try
+            set(pROI(m),'Position',pos);
+            pCrossX.YData=[1 1]* tblcross.Data(1,1);
+            pCrossY.XData=[1 1]* tblcross.Data(1,2);            
+            
+            
+        catch
+           warning('Unable to change cross hair position.');
+        end
+    end
 
 %% Tabular Data Results Panel
 % Panel for parameters and analysis results.
@@ -1173,6 +1290,8 @@ delete(pCrossYDrag)
         Ycross=round(g.YData(1));
         Zx=data.Z(Ycross,:);
         set(pX,'XData',data.X,'YData',Zx);
+        tblcross.Data(1,2)=Ycross;
+        
         drawnow;       
     end
 
@@ -1186,6 +1305,8 @@ delete(pCrossYDrag)
         Xcross=round(g.XData(1));
         Zy=data.Z(:,Xcross);
         set(pY,'YData',data.Y,'XData',Zy);
+        tblcross.Data(1,1)=Xcross;
+
         drawnow;       
     end
 
@@ -1245,13 +1366,15 @@ function data=updateImages(data)
     y=ROI(3):ROI(4); 
     
     % Create Data Objects
-    Z=data.Z;
-    Zsub=Z(ROI(3):ROI(4),ROI(1):ROI(2));
+    Z0=data.RawImages(:,:,2)-data.RawImages(:,:,1);
+    Zsub=Z0(ROI(3):ROI(4),ROI(1):ROI(2));
     
     % Perform Box Count
     data=boxCount(data);
     
-    str=[ num2str(data.BoxCount.Nraw,'%.3e') ' counts' newline ...
+    
+    str=[ num2str(max(max(data.Z)),'%.2e') ' max counts ' newline ...
+        num2str(data.BoxCount.Nraw,'%.2e') ' counts' newline ...
         '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(data.BoxCount.Xc,1)) ',' ...
         num2str(round(data.BoxCount.Yc,1)) ')$' newline ...
         '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(data.BoxCount.Xs,1)) ',' ...
@@ -1260,11 +1383,16 @@ function data=updateImages(data)
     set(tCoMAnalysis,'String',str);        
 
     
-    set(hImg,'XData',data.X,'YData',data.Y,'CData',Z);
+    set(hImg,'XData',data.X,'YData',data.Y,'CData',Z0);
     
     pCrossX.YData=[1 1]*round(data.BoxCount.Yc);
     pCrossY.XData=[1 1]*round(data.BoxCount.Xc);
 
+    tblcross.Data(1,2)=pCrossX.YData(1);
+    tblcross.Data(1,1)=pCrossY.XData(1);
+
+    
+    
     % Create Sum Object
     if rbSum.Value
         Zy=sum(Zsub,2);
@@ -1285,7 +1413,8 @@ function data=updateImages(data)
         drawnow;
     end
     
-    
+    tbl_params.Data=[fieldnames(data.Params), ...
+        struct2cell(data.Params)];    
     
     set(tImageFile,'String',data.Name);
 
@@ -1348,6 +1477,10 @@ function mydata=processImages(imgs)
 
     % Grab the images
     mydata.RawImages=imgs;
+    
+    % Add X and Y vectors
+    mydata.X=1:size(RawImages,2);
+    mydata.Y=1:size(RawImages,1);
 
     % Grab the sequence parameters
     [mydata.Params,dstr]=grabSequenceParams;        
@@ -1399,6 +1532,7 @@ function out=connectCam
         warning('Invalid number of cameras detected.');
         return;
     end
+    
 
     % Initialize the camera and load DLLs
     currDir = pwd;
@@ -1422,17 +1556,19 @@ end
 function out=disconnectCam
     disp('Disconnecting from the iXon camera.');
     
+    % Shut down cooler
     fprintf('Turning off cooler ... ');
-    [ret]=SetCoolerMode(1);     % Shut down cooler
-    disp(error_code(ret))
+    [ret]=SetCoolerMode(1);     
+    disp(error_code(ret));
 
-
+    % Close the shutter
     fprintf('Closing the shutter ... ');
-    [ret]=SetShutter(1,2,0,0);  % Close the shutter
-    disp(error_code(ret))
+    [ret]=SetShutter(1,2,0,0);  
+    disp(error_code(ret));
 
+    % Shut down the camera
     fprintf('Shutting down camera ... ');
-    [ret]=AndorShutDown;        % Shut down the camera
+    [ret]=AndorShutDown;        
     disp(error_code(ret))
     
     if isequal(error_code(ret),'DRV_SUCCESS')
