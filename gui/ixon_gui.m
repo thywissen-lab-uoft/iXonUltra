@@ -546,12 +546,13 @@ hpNav=uipanel(hF,'units','pixels','backgroundcolor','w',...
 
 % Button to load an image into the acquisition
 ttstr='Load an image into the acquisition GUI.';
-cdata=imresize(imread('images/browse.jpg'),[20 20]);
-hbBrowseImage=uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@browseImageCB,...
-    'enable','on','backgroundcolor','w','position',[0 2 size(cdata,[1 2])],...
-    'ToolTipString',ttstr);
+cdata=imresize(imread('icons/browse.jpg'),[20 20]);
+uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+    'callback',@browseImageCB,'enable','on','backgroundcolor','w',...
+    'position',[0 2 size(cdata,[1 2])],'ToolTipString',ttstr);
+
     function browseImageCB(~,~)
-%        loadImage; 
+       loadImage; 
     end
 
 % Checkbox for auto updating when new images are taken
@@ -594,24 +595,15 @@ hbhistoryRight.Position=[131 2 12 20];
             filename=[pathname filename];
         end          
         disp(['     Loading ' filename]);        
-        olddata=dstruct;
+        olddata=data;
         try
-            data=load(filename);
-            dstruct=data.data;
-            dstruct=computeOD(dstruct);
-            updateImages(dstruct);
-            dstruct=performFits(dstruct);
-            updatePlots(dstruct); 
-           tbl_params.Data=[fieldnames(dstruct.Params), ...
-                    struct2cell(dstruct.Params)];         
-        catch badness
-            dstruct=olddata;
-            dstruct=computeOD(dstruct);
-            updateImages(dstruct);
-            dstruct=performFits(dstruct);
-            updatePlots(dstruct);      
-           tbl_params.Data=[fieldnames(dstruct.Params), ...
-                    struct2cell(dstruct.Params)];       
+            newdata=load(filename);
+            data=newdata.data;
+            updateImages(data);      
+        catch ME
+            warning('Unable to load image, reverting to old data');
+            data=olddata;
+            updateImages(data);      
         end
     end
 
@@ -623,11 +615,12 @@ hbhistoryRight.Position=[131 2 12 20];
        filenames=sort(filenames);
        filenames=flip(filenames);
        
-       myname=[dstruct.Name '.mat'];           % Current data mat       
-       ind=find(ismember(filenames,myname));    % index in filenames        
+       myname=[data.Name '.mat'];           	% Current data mat       
+       ind=find(ismember(filenames,myname));    % index in filenames   
        if isempty(ind)
           ind=1; 
        end
+       
         switch state
             case '-'
                 ind=max([ind-1 1]);            
@@ -639,7 +632,9 @@ hbhistoryRight.Position=[131 2 12 20];
         thistoryInd.String=sprintf('%03d',ind);
         drawnow;        
         filename=filenames{ind};
-        loadImage(fullfile(historyDir,filename));
+        
+        newfilename=fullfile(historyDir,filename);
+        loadImage(newfilename);
     end
 
 
@@ -1495,7 +1490,7 @@ function data=updateImages(data)
     data=boxCount(data);
     
     
-    str=[ num2str(max(max(data.Z)),'%.2e') ' max counts ' newline ...
+    str=[ num2str(max(max(Z0)),'%.2e') ' max counts ' newline ...
         num2str(data.BoxCount.Nraw,'%.2e') ' counts' newline ...
         '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(data.BoxCount.Xc,1)) ',' ...
         num2str(round(data.BoxCount.Yc,1)) ')$' newline ...
@@ -1601,6 +1596,10 @@ function mydata=processImages(imgs)
     % Add X and Y vectors
     mydata.X=1:size(RawImages,2);
     mydata.Y=1:size(RawImages,1);
+    
+    % For now always assumed that its PWA,BKGD
+    mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
+   
 
     % Grab the sequence parameters
     [mydata.Params,dstr]=grabSequenceParams;        
@@ -1848,6 +1847,7 @@ function dstruct=boxCount(dstruct,bgROI)
         bgROI=NaN;
     end
   
+    
     BoxCount=struct;    
     for k=1:size(dstruct.ROI,1)
         ROI=dstruct.ROI(k,:);
