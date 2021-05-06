@@ -2,7 +2,7 @@ function ixon_gui
 % ixon_gui.m
 %
 % Author      : C. Fujiwara
-% Last Edited : 2021/03/03
+% Last Edited : 2021/05/06
 %
 % This code operates the iXon Ultra camera that the lattice experiment
 % uses to take fluorescence images of the quantum gas microscope.
@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=0;
+doDebug=1;
 
 
 
@@ -161,8 +161,7 @@ function SizeChangedFcn(~,~)
         cDrag.Position(2)=cCross.Position(2);
         
         
-        strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;
-        
+        strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;
 end
 
@@ -190,8 +189,9 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        % Close the shutter
        setCameraShutter(0);
        
+       % Do this someplace else
        % Read Camera Capabilities
-       cam_skills=getCameraCapabilities;
+       %cam_skills=getCameraCapabilities;
        % Dont display camera capabilities
        %{
        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
@@ -221,7 +221,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         setTemperature(tblTemp.Data);
         hbCamInfo.Enable='on';
         
-        hbSoftTrig.Enable='on'; 
+%         hbSoftTrig.Enable='on'; 
 
         
         % Enable/Disable connect
@@ -259,7 +259,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
            return;
         end
         
-        hbSoftTrig.Enable='off'; 
+%         hbSoftTrig.Enable='off'; 
 
         
         cam_status.isCooling=0;
@@ -658,11 +658,11 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 end              
                 
                 % Updte live preview
-                data=mydata;
-            
-                
+                data=mydata;   
+                data=updateImages(data);
                 
             case 'DRV_ACQUIRING'
+                % Acquisition is still going.
                 
             otherwise
                 warning('Acuisition timer has unexpected result');
@@ -1340,8 +1340,6 @@ function imgs=grabRawImages
 end
 
 function mydata=processImages(imgs)
-    tin=datevec(now);
-
     mydata=struct;
     % Create the image data structure
     mydata=struct;
