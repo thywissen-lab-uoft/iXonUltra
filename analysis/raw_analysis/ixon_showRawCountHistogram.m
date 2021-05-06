@@ -1,12 +1,11 @@
-function hF=showRawCountHistogram(atomdata,xVar,opts)
+function hF=ixon_showRawCountHistogram(ixondata,xVar,opts)
 global imgdir
 imgnum=opts.ImageNumber;
 
-params=[atomdata.Params];
-acq=[atomdata.AcquisitionInformation];
+params=[ixondata.Params];
+acq=[ixondata.AcquisitionInformation];
 
-% keyboard
-xData=1:length(atomdata);
+xData=1:length(ixondata);
 if ismember(xVar,fieldnames(params))
     xData=[params.(xVar)];
 end
@@ -21,15 +20,15 @@ end
 
 gMin=inf;
 gMax=-inf;
-for kk=1:length(atomdata)
-    img=atomdata(kk).RawImages(:,:,imgnum);
+for kk=1:length(ixondata)
+    img=ixondata(kk).RawImages(:,:,imgnum);
     vals=sort(img(:),'descend');
     
     gMin=min([gMin vals(end-opts.Outliers(1))]);
     gMax=max([gMax vals(opts.Outliers(2))]);
 
-%     gMin=min([gMin atomdata(kk).Raw(imgnum).Minimum]);
-%     gMax=max([gMax atomdata(kk).Raw(imgnum).Maximum]);
+%     gMin=min([gMin ixondata(kk).Raw(imgnum).Minimum]);
+%     gMax=max([gMax ixondata(kk).Raw(imgnum).Maximum]);
 end
 
     
@@ -56,7 +55,7 @@ t.Position(3)=hF.Position(3);
 t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
 
-for ii=1:length(atomdata)
+for ii=1:length(ixondata)
     % Create axes object
     thisAxes=axes('parent',hF,'units','pixels');
     set(thisAxes,'FontSize',8,'XMinorTick','on','YMinorTick','on',...
@@ -64,7 +63,7 @@ for ii=1:length(atomdata)
         'YAxisLocation','right');
     hold on;     
     cla;
-    [a,b,c,d]=getAxesPos(ii,length(atomdata),...
+    [a,b,c,d]=getAxesPos(ii,length(ixondata),...
         hF.Position(3),hF.Position(4));
     thisAxes.Position(1)=a;
     thisAxes.Position(2)=b;
@@ -72,11 +71,11 @@ for ii=1:length(atomdata)
     thisAxes.Position(4)=d;   
 
 
-    img=atomdata(ii).RawImages(:,:,imgnum);
+    img=ixondata(ii).RawImages(:,:,imgnum);
     vals=sort(img(:),'descend');
     if opts.GlobalLimits
         histogram(img,'BinWidth',opts.BinWidth,'BinLimits',[gMin gMax],...
-            'edgealpha',0.25); 
+            'edgealpha',0.0); 
         xlim([gMin-10 gMax+10]);
     else
         histogram(img,'BinWidth',opts.BinWidth); 
@@ -87,11 +86,11 @@ for ii=1:length(atomdata)
 
 
     str=['{\bf sum: }' ...
-        num2str(atomdata(ii).Raw(imgnum).Total,'%.2e') ...
+        num2str(ixondata(ii).Raw(imgnum).Total,'%.2e') ...
         '{\bf median: }' ...
-        num2str(round(atomdata(ii).Raw(imgnum).Median,1)) ...
+        num2str(round(ixondata(ii).Raw(imgnum).Median,1)) ...
         '{\bf \sigma: }'  ...
-        num2str(round(atomdata(ii).Raw(imgnum).Std,1))];    
+        num2str(round(ixondata(ii).Raw(imgnum).Std,1))];    
     
         
     % Plot the data

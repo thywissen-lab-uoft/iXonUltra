@@ -2,8 +2,6 @@
 
 % This is an imaging analysis script. 
 %   Date
-
-
 disp(repmat('-',1,60));    
 disp(repmat('-',1,60));    
 disp(['Calling ' mfilename '.m']);
@@ -33,7 +31,7 @@ disp(' ');
 
 disp('Choosing global settings for analysis...');
 
-global imgdir
+global ixon_imgdir
 global doRotate
 
 lambda=770E-9;
@@ -51,30 +49,29 @@ m=40*amu;
 % field of the .mat file. The unit has no tangibile affect and only affects
 % display properties.
 
-
-xVar='EMCCDGain';
+varType='param';
+xVar='F_Pump_Power';
 unit='s';
-
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
 disp([datestr(now,13) ' Choose an image analysis folder...']);
 dialog_title='Choose the root dire ctory of the images';
-imgdir=uigetdir(getImageDir(datevec(now)),dialog_title);
-if isequal(imgdir,0)
+ixon_imgdir=uigetdir(getImageDir(datevec(now)),dialog_title);
+if isequal(ixon_imgdir,0)
     disp('Canceling.');
     return 
 end
 
 %% Load the data
-clear atomdata
-disp(['Loading data from ' imgdir]);
-files=dir([imgdir filesep '*.mat']);
+clear ixondata
+disp(['Loading data from ' ixon_imgdir]);
+files=dir([ixon_imgdir filesep '*.mat']);
 files={files.name};
 
 
 for kk=1:length(files)
-    str=fullfile(imgdir,files{kk});
+    str=fullfile(ixon_imgdir,files{kk});
     [a,b,c]=fileparts(str);      
     disp(['     (' num2str(kk) ')' files{kk}]);    
     data=load(str);     
@@ -84,82 +81,102 @@ for kk=1:length(files)
     try
         disp(['     Image Name     : ' data.Name]);
         disp(['     Execution Time : ' datestr(data.Date)]);
-%         disp(['     ' xVar ' : ' num2str(data.Params.(xVar))]);
+        disp(['     ' xVar ' : ' num2str(data.Params.(xVar))]);
         disp(' ');
     end    
     
-%     if isequal(xVar,'ExecutionDate')
-%         data.Params.(xVar)=datenum(data.Params.(xVar))*24*60*60;
-%     end
-    atomdata(kk)=data;    
+    if isequal(xVar,'ExecutionDate')
+        data.Params.(xVar)=datenum(data.Params.(xVar))*24*60*60;
+    end
+    
+    ixondata(kk)=data;    
 end
 disp(' ');
 
 if isequal(xVar,'ExecutionDate')
-   p=[atomdata.Params] ;
+   p=[ixondata.Params] ;
    tmin=min([p.ExecutionDate]);
-   for kk=1:length(atomdata)
-      atomdata(kk).Params.ExecutionDate= ...
-          atomdata(kk).Params.ExecutionDate-tmin;
+   for kk=1:length(ixondata)
+      ixondata(kk).Params.ExecutionDate= ...
+          ixondata(kk).Params.ExecutionDate-tmin;
    end     
 end
 
 %% Sort the data
 % Sort the data by your given parameter
 clear x
-disp(['Sorting atomdata by the given ''' xVar '''']);
+disp(['Sorting ixondata by the given ''' xVar '''']);
 
 % Get the object that contains the variable
 switch varType
     case 'param'
-        varList=[atomdata.Params];
+        varList=[ixondata.Params];
     case 'acq'
-        varList=[atomdata.AcquisitionInformation];        
+        varList=[ixondata.AcquisitionInformation];        
     otherwise
         error('uhh you chose the wrong thing to plot');
 end
        
-% Make sure that all atomdata have the parameter and record it
+% Make sure that all ixondata have the parameter and record it
 allGood=1;
 for kk=1:length(varList)
     if isfield(varList(kk),xVar)
-        x(kk)=varList.(xVar);
+        x(kk)=varList(kk).(xVar);
     else
         allGood=0;
-        warning(['atomdata(' num2str(kk) ') has no ''' xVar '''']);
+        warning(['ixondata(' num2str(kk) ') has no ''' xVar '''']);
     end
 end
 
 % Sort if all the data has that parameter
 if allGood
     [~, inds]=sort(x);
-    atomdata=atomdata(inds);
+    ixondata=ixondata(inds);
 end
 
 % Get the object that contains the variable
 switch varType
     case 'param'
-        varList=[atomdata.Params];
+        varList=[ixondata.Params];
     case 'acq'
-        varList=[atomdata.AcquisitionInformation];        
+        varList=[ixondata.AcquisitionInformation];        
     otherwise
         error('uhh you chose the wrong thing to plot');
 end
 
-%% Image Processing
+%% Analysis ROI
+% Analysis ROI is an Nx4 matrix of [X1 X2 Y1 Y2] which specifies a region
+% to analyze. Each new row in the matrix indicates a separate ROI to
+% perform analysis on.
+%
+% While in principle different images can have different analysis ROIs,
+% this is currently disabled because it creates code issues at the moment.
+
+% Full ROI
+ixonROI = [1 512 1 512];   
+
+
+[ixondata.ROI]=deal(ixonROI);
+
+%% BG Subtract
+% FOR NOW Z is always just 2-1 and done in the GUI
 
 % Subtract off electronical bias offset
-for kk=1:length(atomdata)
-    for jj=1:size(atomdata(kk).RawImages,3)
-        atomdata(kk).RawImages(:,:,jj)=atomdata(kk).RawImages(:,:,jj)-200;
+for kk=1:length(ixondata)
+    for jj=1:size(ixondata(kk).RawImages,3)
+        ixondata(kk).RawImages(:,:,jj)=ixondata(kk).RawImages(:,:,jj)-200;
     end
 end
 
 %% Basic Raw Image Analysis
 
-% Do basic analysis on raw counts
-atomdata=computeRawCounts(atomdata);
+doRawImageAnalysis=1;
+if doRawImageAnalysis
+    
 
+
+% Do basic analysis on raw counts
+ixondata=ixon_computeRawCounts(ixondata);
 
 % Plot histogram of raw counts
 hist_opts=struct;
@@ -170,14 +187,58 @@ hist_opts.ImageNumber=1;    % Which image to histogram (overwritten)
 hist_opts.YScale='Log';     % Histogram y scale
 % hist_opts.YScale='Linear';
 
-for kk=1:size(atomdata(1).RawImages,3)
+for kk=1:size(ixondata(1).RawImages,3)
     hist_opts.ImageNumber=kk;
-    hF_rawhist=showRawCountHistogram(atomdata,xVar,hist_opts);
-    saveFigure(atomdata,hF_rawhist,['raw_hist' num2str(kk)]);
+    hF_rawhist=ixon_showRawCountHistogram(ixondata,xVar,hist_opts);
+    saveFigure(ixondata,hF_rawhist,['ixon_raw_hist' num2str(kk)]);
 end
 
 % Plot raw count total
 raw_opts=struct;
-raw_opts.FitLinear=1;
-hF_rawtotal=showRawCountTotal(atomdata,xVar,raw_opts);
-saveFigure(atomdata,hF_rawtotal,['raw_counts']);
+raw_opts.FitLinear=0;
+hF_rawtotal=ixon_showRawCountTotal(ixondata,xVar,raw_opts);
+saveFigure(ixondata,hF_rawtotal,['ixon_raw_counts']);
+
+end
+
+%% ANALYSIS : BOX COUNT
+doBoxCount=1;
+
+if doBoxCount
+    ixondata=ixon_boxCount(ixondata);
+end
+
+
+
+%% PLOTTING : BOX COUNT
+
+ixon_boxPopts = struct;
+ixon_boxPopts.NumberExpFit = 0;                  % Fit exponential decay to atom number
+
+if doBoxCount  
+    % Plot the atom number
+    [hF_ixon_numberbox,Ndatabox]=ixon_showBoxAtomNumber(ixondata,xVar,ixon_boxPopts);      
+    
+    if doSave
+        saveFigure(atomdata,hF_ixon_numberbox,'ixon_box_number'); 
+    end
+    
+    % Plot the ratios if there are more than one ROI.
+    if size(ROI,1)>1    
+        [hF_numberratio,Ndataratio]=showBoxAtomNumberRatio(atomdata,xVar,boxPopts);
+        
+        if doSave
+            saveFigure(atomdata,hF_numberratio,'box_number_ratio');
+        end
+    end      
+    
+       
+        % Plot the atom number
+    hF_box_ratio=showBoxAspectRatio(atomdata,xVar);      
+    
+    if doSave
+        saveFigure(atomdata,hF_box_ratio,'box_ratio');
+    end
+     
+    
+end

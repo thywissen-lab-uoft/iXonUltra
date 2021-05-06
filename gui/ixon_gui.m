@@ -1527,8 +1527,8 @@ function data=updateImages(data)
     
     % Update plots if cut
     if rbCut.Value
-        Zy=Z(:,round(data.BoxCount.Xc));
-        Zx=Z(:,round(data.BoxCount.Yc));
+        Zy=data.Z(:,round(data.BoxCount.Xc));
+        Zx=data.Z(:,round(data.BoxCount.Yc));
         set(pX,'XData',data.X,'YData',Zx);
         set(pY,'XData',Zy,'YData',data.Y);
         drawnow;
@@ -1582,15 +1582,13 @@ function mydata=processImages(imgs)
 
     % Grab the images
     mydata.RawImages=imgs;
-    
+
     % Add magnification
     mydata.Magnification=mag;
-
     
     % Add X and Y vectors
-    mydata.X=1:size(RawImages,2);
-    mydata.Y=1:size(RawImages,1);
-    
+    mydata.X=1:size(mydata.RawImages,2);
+    mydata.Y=1:size(mydata.RawImages,1);    
     
     % For now always assumed that its PWA,BKGD
     mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);

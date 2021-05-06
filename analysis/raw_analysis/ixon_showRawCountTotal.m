@@ -1,12 +1,12 @@
-function hF=showRawCountTotal(atomdata,xVar,opts)
+function hF=ixon_showRawCountTotal(ixondata,xVar,opts)
 % Grab important global variables
 
 global imgdir
 
-params=[atomdata.Params];
-acq=[atomdata.AcquisitionInformation];
+params=[ixondata.Params];
+acq=[ixondata.AcquisitionInformation];
 
-xData=1:length(atomdata);
+xData=1:length(ixondata);
 if ismember(xVar,fieldnames(params))
     xData=[params.(xVar)];
 end
@@ -18,14 +18,14 @@ end
 %% Sort the data by the parameter given
 
 [xData,inds]=sort(xData,'ascend');
-atomdata=atomdata(inds);
+ixondata=ixondata(inds);
 
 %% Grab data
 
-Nsum=zeros(length(atomdata),size(atomdata(1).RawImages,3));
-for kk=1:length(atomdata)
-    for jj=1:size(atomdata(1).RawImages,3)
-       Nsum(kk,jj)=atomdata(kk).Raw(jj).Total; 
+Nsum=zeros(length(ixondata),size(ixondata(1).RawImages,3));
+for kk=1:length(ixondata)
+    for jj=1:size(ixondata(1).RawImages,3)
+       Nsum(kk,jj)=ixondata(kk).Raw(jj).Total; 
     end
 end
 
@@ -33,7 +33,7 @@ end
 
 
 if opts.FitLinear
-    for jj=1:size(atomdata(1).RawImages,3)
+    for jj=1:size(ixondata(1).RawImages,3)
        y=Nsum(:,jj);
        [pps{jj},pss{jj}]=polyfit(xData,y',1);
     end
@@ -83,18 +83,21 @@ coIN=brighten(co,.8);
 
 legStr={};
 
-for nn=1:size(atomdata(1).RawImages,3)
+for nn=1:size(ixondata(1).RawImages,3)
     [cface,cedge] = ixoncolororder(nn);
+    if opts.FitLinear
        ps(nn)=plot(xData,polyval(pps{nn},xData),'color',cedge,'linewidth',2);
+        legStr{nn}=[num2str(pps{nn}(1),'%.3e') ' counts/var'];
+
+    end
 hold on
    plot(xData,Nsum(:,nn),'o','color',cedge,'linewidth',1,'markersize',8,...
        'markerfacecolor',cface,'markeredgecolor',cedge,...
        'linewidth',2);
-   legStr{nn}=[num2str(pps{nn}(1),'%.3e') ' counts/var'];
 end
-
-legend(ps,legStr,'location','northwest');
-
+if opts.FitLinear
+    legend(ps,legStr,'location','northwest');
+end
 
 % Image directory folder string
 t=uicontrol('style','text','string',str,'units','pixels','backgroundcolor',...
