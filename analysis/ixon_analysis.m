@@ -53,11 +53,14 @@ varType='param';
 xVar='F_Pump_Power';
 unit='s';
 
+
+ixon_doSave=1;
+
 %% Select image directory
 % Choose the directory where the images to analyze are stored
 disp([datestr(now,13) ' Choose an image analysis folder...']);
 dialog_title='Choose the root dire ctory of the images';
-ixon_imgdir=uigetdir(getImageDir(datevec(now)),dialog_title);
+ixon_imgdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
 if isequal(ixon_imgdir,0)
     disp('Canceling.');
     return 
@@ -144,6 +147,7 @@ switch varType
         error('uhh you chose the wrong thing to plot');
 end
 
+
 %% Analysis ROI
 % Analysis ROI is an Nx4 matrix of [X1 X2 Y1 Y2] which specifies a region
 % to analyze. Each new row in the matrix indicates a separate ROI to
@@ -189,15 +193,20 @@ hist_opts.YScale='Log';     % Histogram y scale
 
 for kk=1:size(ixondata(1).RawImages,3)
     hist_opts.ImageNumber=kk;
-    hF_rawhist=ixon_showRawCountHistogram(ixondata,xVar,hist_opts);
-    saveFigure(ixondata,hF_rawhist,['ixon_raw_hist' num2str(kk)]);
+    hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,xVar,hist_opts);
+    if ixon_doSave
+        ixon_saveFigure(ixondata,hF_ixon_rawhist,['ixon_raw_hist' num2str(kk)]);
+    end
 end
 
 % Plot raw count total
 raw_opts=struct;
 raw_opts.FitLinear=0;
-hF_rawtotal=ixon_showRawCountTotal(ixondata,xVar,raw_opts);
-saveFigure(ixondata,hF_rawtotal,['ixon_raw_counts']);
+hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,xVar,raw_opts);
+
+if ixon_doSave
+    ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);
+end
 
 end
 
@@ -219,26 +228,9 @@ if doBoxCount
     % Plot the atom number
     [hF_ixon_numberbox,Ndatabox]=ixon_showBoxAtomNumber(ixondata,xVar,ixon_boxPopts);      
     
-    if doSave
-        saveFigure(atomdata,hF_ixon_numberbox,'ixon_box_number'); 
-    end
-    
-    % Plot the ratios if there are more than one ROI.
-    if size(ROI,1)>1    
-        [hF_numberratio,Ndataratio]=showBoxAtomNumberRatio(atomdata,xVar,boxPopts);
-        
-        if doSave
-            saveFigure(atomdata,hF_numberratio,'box_number_ratio');
-        end
-    end      
-    
-       
-        % Plot the atom number
-    hF_box_ratio=showBoxAspectRatio(atomdata,xVar);      
-    
-    if doSave
-        saveFigure(atomdata,hF_box_ratio,'box_ratio');
-    end
+    if ixon_doSave
+        ixon_saveFigure(atomdata,hF_ixon_numberbox,'ixon_box_number'); 
+    end  
      
     
 end
