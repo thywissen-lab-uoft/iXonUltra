@@ -18,7 +18,8 @@ function ixon_gui
 % Enable debug mode?
 doDebug=1;
 
-
+% Manification (as measured in Graham's thesis)
+mag=[82.6 83.2];
 
 %% Other Settings
 
@@ -799,9 +800,14 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                    saveData(mydata,tSaveDir.UserData); 
                 end              
                 
-                % Update live preview
-                data=mydata;   
-                data=updateImages(data);
+                % Update live preview if new                
+                if ~cAutoUpdate.Value
+                    data=mydata;   
+                    data=updateImages(data); 
+                else
+                    % Just update index
+                    updateHistoryInd(data);   
+                end  
                 
             case 'DRV_ACQUIRING'
                 % Acquisition is still going.
@@ -1481,32 +1487,36 @@ function data=updateImages(data)
     data.ROI=ROI;       
     x=ROI(1):ROI(2);
     y=ROI(3):ROI(4); 
-    
-    % Create Data Objects
-    Z0=data.RawImages(:,:,2)-data.RawImages(:,:,1);
-    Zsub=Z0(ROI(3):ROI(4),ROI(1):ROI(2));
+
+    % Create sub image to do center of mass analysis
+    Zsub=data.Z(y,x);
     
     % Perform Box Count
     data=boxCount(data);
     
-    
-    str=[ num2str(max(max(Z0)),'%.2e') ' max counts ' newline ...
+    % Update box count string
+    str=[ num2str(max(max(data.Z)),'%.2e') ' max counts ' newline ...
         num2str(data.BoxCount.Nraw,'%.2e') ' counts' newline ...
         '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(data.BoxCount.Xc,1)) ',' ...
         num2str(round(data.BoxCount.Yc,1)) ')$' newline ...
         '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(data.BoxCount.Xs,1)) ',' ...
         num2str(round(data.BoxCount.Ys,1)) ')$'];    
+    
+    % Update box count string object
     set(tCoMAnalysis,'String',str);    
     
-    set(hImg,'XData',data.X,'YData',data.Y,'CData',Z0);
+    % Update X, Y, and Z objects
+    set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z);
     
+    % Move cross hair to center of mass
     pCrossX.YData=[1 1]*round(data.BoxCount.Yc);
     pCrossY.XData=[1 1]*round(data.BoxCount.Xc);
 
+    % Update table that trackes cross hair
     tblcross.Data(1,2)=pCrossX.YData(1);
     tblcross.Data(1,1)=pCrossY.XData(1);    
     
-    % Create Sum Object
+    % Update plots if sum
     if rbSum.Value
         Zy=sum(Zsub,2);
         Zx=sum(Zsub,1);          
@@ -1515,38 +1525,21 @@ function data=updateImages(data)
         drawnow;
     end
     
-    % Cut Box
+    % Update plots if cut
     if rbCut.Value
         Zy=Z(:,round(data.BoxCount.Xc));
         Zx=Z(:,round(data.BoxCount.Yc));
         set(pX,'XData',data.X,'YData',Zx);
-%         set(hAxX,'XLim',[x(1), x(end)]);
         set(pY,'XData',Zy,'YData',data.Y);
-%         set(hAxY,'YLim',[y(1), y(end)]);
         drawnow;
     end
     
+    % Update table parametesr
     tbl_params.Data=[fieldnames(data.Params), ...
-        struct2cell(data.Params)];    
+        struct2cell(data.Params)]; 
     
-    set(tImageFile,'String',data.Name);
-
-    filenames=dir([historyDir  filesep '*.mat']);
-    filenames={filenames.name};       
-    filenames=sort(filenames);
-    filenames=flip(filenames);
-%           set(tImageFileFig,'String',data.Name);
-
-
- % Current data mat  
-    myname=[data.Name '.mat'];               
-    ind=find(ismember(filenames,myname));    % index in filenames        
-    if isempty(ind)
-      ind=1; 
-    end
-    
-    data.ROI=tblROI.Data;    
-%     thistoryInd.String=sprintf('%03d',ind); 
+    updateHistoryInd(data);   
+  
 end
 
 
@@ -1564,8 +1557,7 @@ function imgs=grabRawImages
     
     numpix=512^2;
     % Grab the data (number just sets buffer size)
-    [ret,D] = GetAcquiredData(last*512^2);
-    
+    [ret,D] = GetAcquiredData(last*512^2);    
 
     imgs={};
     imgmats=zeros(512,512,last);
@@ -1578,9 +1570,7 @@ function imgs=grabRawImages
         imgmats(:,:,j)=imgs{j};
     end 
     
-    imgs=imgmats;
-    
-    
+    imgs=imgmats;  
 end
 
 function mydata=processImages(imgs)
@@ -1593,9 +1583,14 @@ function mydata=processImages(imgs)
     % Grab the images
     mydata.RawImages=imgs;
     
+    % Add magnification
+    mydata.Magnification=mag;
+
+    
     % Add X and Y vectors
     mydata.X=1:size(RawImages,2);
     mydata.Y=1:size(RawImages,1);
+    
     
     % For now always assumed that its PWA,BKGD
     mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
@@ -1633,6 +1628,27 @@ end
         fprintf('%s',[filename ' ...']);
         save(filename,'data');
         disp(' done'); 
+    end
+
+    function updateHistoryInd(data)          
+        % Update image string
+        set(tImageFile,'String',data.Name);
+
+        % Upate history list
+        filenames=dir([historyDir  filesep '*.mat']);
+        filenames={filenames.name};       
+        filenames=sort(filenames);
+        filenames=flip(filenames);    
+
+        % Find image in image history
+        myname=[data.Name '.mat'];               
+        ind=find(ismember(filenames,myname));    % index in filenames        
+        if isempty(ind)
+          ind=1; 
+        end
+
+        % Update string
+        thistoryInd.String=sprintf('%03d',ind); 
     end
 end
 
