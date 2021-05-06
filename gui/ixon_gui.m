@@ -222,22 +222,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        
        % Close the shutter
        setCameraShutter(0);
-       
-       % Do this someplace else
-       % Read Camera Capabilities
-       %cam_skills=getCameraCapabilities;
-       % Dont display camera capabilities
-       %{
-       disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-        disp('Displaying Camera Capabilities');        
-        fnames=fieldnames(cam_skills);
-        for nn=1:length(fnames)
-           disp(fnames{nn});
-           disp(cam_skills.(fnames{nn})); 
-           disp(' ');
-        end
-         disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-%}
+
        
        % Load default acquisition settings
        loadAcquisitionSettings;     
@@ -254,6 +239,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         % Set the temperature set point
         setTemperature(tblTemp.Data);
         hbCamInfo.Enable='on';       
+        hbCamAbilities.Enable='on';
         
         % Enable/Disable connect
         hbDisconnect.Enable='on';
@@ -301,6 +287,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         hbCoolOff.Enable='off';
         tblTemp.Enable='off';
         hbCamInfo.Enable='off';
+        hbCamAbilities.Enable='off';
         
         hbOpenShutter.Enable='off';
         hbCloseShutter.Enable='off';
@@ -326,11 +313,33 @@ hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,
         disp(cam_info); 
     end
 
+% Capabilities button
+ttstr='Display camera capabilities';
+cdata=imresize(imread(fullfile(mpath,'icons','infob.jpg')),[18 18]);
+hbCamAbilities=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@abilitiesCB,...
+    'enable','on','backgroundcolor','w','position',[152 5 20 20],...
+    'ToolTipString',ttstr,'enable','off');
+
+    function abilitiesCB(~,~)  
+        % Read Camera Capabilities
+        cam_skills=getCameraCapabilities;
+        % Dont display camera capabilities
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+        disp('Displaying Camera Capabilities');        
+        fnames=fieldnames(cam_skills);
+        for nn=1:length(fnames)
+           disp(fnames{nn});
+           disp(cam_skills.(fnames{nn})); 
+           disp(' ');
+        end
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+    end
+
 % Start Cooling
 ttstr='Begin cooling the sensor to set point.';
 hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
     'units','pixels','fontsize',10,'Position',...
-    [155 5 60 20],'enable','off',...
+    [175 5 60 20],'enable','off',...
     'backgroundcolor',[173 216 230]/255,'callback',{@coolCB ,1},...
     'ToolTipString',ttstr);
 
@@ -338,7 +347,7 @@ hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
 ttstr='Stop cooling the sensor to set point.';
 hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
     'units','pixels','fontsize',10,'Position',...
-    [218 5 60 20],'enable','off',...
+    [238 5 60 20],'enable','off',...
     'backgroundcolor',[.8 .8 .8],'callback',{@coolCB, 0},...
     'ToolTipString',ttstr);
 
@@ -370,7 +379,7 @@ tblTemp=uitable(hpCam,'units','pixels','ColumnWidth',{30},...
     'CellEditCallback',@chTempCB,'RowName',{},'ToolTipString',ttstr,...
     'enable','off');
 tblTemp.Position(3:4)=tblTemp.Extent(3:4);
-tblTemp.Position(1:2)=[280 4];
+tblTemp.Position(1:2)=[300 4];
 
     function chTempCB(src,evt)
         disp('Changing temperature set point');
@@ -407,7 +416,7 @@ strtemp=uicontrol(hpCam,'style','text','string','NaN','units','pixels',...
     'foregroundcolor','r','enable','off','fontweight','bold',...
     'ToolTipString',ttstr);
 strtemp.Position(3:4)=[45 20];
-strtemp.Position(1:2)=[320 5];
+strtemp.Position(1:2)=[340 5];
 
 % Text
 ttstr='Camera status.';
@@ -450,13 +459,13 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
 % Open camera shutter
 ttstr='Open camera shutter.';
 hbOpenShutter=uicontrol(hpCam,'style','pushbutton','string','open shutter',...
-    'units','pixels','fontsize',10,'Position',[365 5 80 20],'enable','off',...
+    'units','pixels','fontsize',10,'Position',[385 5 80 20],'enable','off',...
     'backgroundcolor',[255 204 0]/255,'callback',{@shutterCB,1},...
     'ToolTipString',ttstr);
 
 ttstr='Close camera shutter.';
 hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
-    'units','pixels','fontsize',10,'Position',[445 5 80 20],'enable','off',...
+    'units','pixels','fontsize',10,'Position',[465 5 80 20],'enable','off',...
     'backgroundcolor',[255 102 120]/255,'callback',{@shutterCB,0},...
     'ToolTipString',ttstr);
 
@@ -712,7 +721,7 @@ hcPSF=uicontrol(hpADV,'style','checkbox','string','sharpen w/ PSF','fontsize',8,
     'ToolTipString',ttstr,'enable','off');
 
 % Checkbox for new processings
-hcCool=uicontrol(hpADV,'style','checkbox','string','something cool','fontsize',8,...
+hcMask=uicontrol(hpADV,'style','checkbox','string','objective mask','fontsize',8,...
     'backgroundcolor','w','Position',[5 20 100 20],'callback',@() disp('hi'),...
     'ToolTipString',ttstr,'enable','off');
 
@@ -1067,7 +1076,7 @@ cCross.Position=[2 cCoMStr.Position(2)-20 80 20];
 % Checkbox for dragging cross-hair
 cDrag=uicontrol(hpDisp,'style','checkbox','string','can drag?',...
     'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cDragCB,...
-    'enable','on','value',0);
+    'enable','on','value',1);
 cDrag.Position=[cCross.Position(1)+cCross.Position(3)+2 cCross.Position(2) 125 20];
 
 % Callback for dragging the crosshair (matches cut plots with crosshair)
@@ -1110,17 +1119,20 @@ tblcross.Position(1:2)=[20 cCross.Position(2)-tblcross.Position(4)];
         % Check that limits go from low to high
         if newPos<1 || newPos>512
            warning('Bad cross hair position given.');
+           src.Data(m,n)=evt.PreviousData;
            return;
         end
         
         src.Data(m,n)=newPos;
         % Try to update ROI graphics
         try
-            set(pROI(m),'Position',pos);
-            pCrossX.YData=[1 1]* tblcross.Data(1,1);
-            pCrossY.XData=[1 1]* tblcross.Data(1,2);            
-            
-            
+            % Update the cross hair position
+            pCrossY.XData=[1 1]* tblcross.Data(1,1); 
+            pCrossX.YData=[1 1]* tblcross.Data(1,2);            
+            Zx=data.Z(tblcross.Data(1,1),:);
+            set(pX,'XData',data.X,'YData',Zx);
+            Zy=data.Z(:,tblcross.Data(1,2));
+            set(pY,'XData',Zy,'YData',data.Y);            
         catch
            warning('Unable to change cross hair position.');
         end
@@ -1277,8 +1289,8 @@ pCrossXDrag.on_move_callback=@Xupdate;
 pCrossYDrag.on_move_callback=@Yupdate;
 
 % Delete so that it is initially undraggable. 
-delete(pCrossXDrag)
-delete(pCrossYDrag)
+% delete(pCrossXDrag)
+% delete(pCrossYDrag)
 
 % Callback for adjusting the X crosshair
     function Xupdate(g,~)
