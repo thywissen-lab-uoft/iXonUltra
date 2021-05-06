@@ -170,7 +170,8 @@ function SizeChangedFcn(~,~)
         
         % Resize Panels
         hpCam.Position(2:3)=[H-hpCam.Position(4) hF.Position(3)];        
-        hpSave.Position(2:3)=[hpCam.Position(2)-hpSave.Position(4) hF.Position(3)];
+        hpSave.Position(2:3)=[hpCam.Position(2)-hpSave.Position(4) hF.Position(3)-300];
+        hpNav.Position(1:2)=[hpSave.Position(1)+hpSave.Position(3) hpSave.Position(2)];
         hpAcq.Position(2)=hpSave.Position(2)-hpAcq.Position(4);
         hpADV.Position(2)=hpAcq.Position(2)-hpADV.Position(4);
         hpAnl.Position(2)=hpADV.Position(2)-hpAnl.Position(4);        
@@ -490,7 +491,7 @@ hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
 %% Save Panel
 
 hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpCam.Position(2)-30 hF.Position(3) 25]);
+    'Position',[0 hpCam.Position(2)-30 hF.Position(3)-150 25]);
 
 % Auto Save check box
 ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
@@ -538,6 +539,115 @@ tSaveDir=uicontrol(hpSave,'style','text','string','directory','fontsize',8,...
         end
     end
 
+%% History 
+
+hpNav=uipanel(hF,'units','pixels','backgroundcolor','w',...
+    'Position',[hpSave.Position(1)+hpSave.Position(3) hpSave.Position(2) 300 25]);
+
+% Button to load an image into the acquisition
+ttstr='Load an image into the acquisition GUI.';
+cdata=imresize(imread('images/browse.jpg'),[20 20]);
+hbBrowseImage=uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@browseImageCB,...
+    'enable','on','backgroundcolor','w','position',[0 2 size(cdata,[1 2])],...
+    'ToolTipString',ttstr);
+    function browseImageCB(~,~)
+%        loadImage; 
+    end
+
+% Checkbox for auto updating when new images are taken
+ttstr='Automatically refresh to most recent image upon new image acquisition.';
+cAutoUpdate=uicontrol('parent',hpNav,'units','pixels','string',...
+    'hold?','value',0,'fontsize',7,'backgroundcolor','w',...
+    'Style','checkbox','ToolTipString',ttstr);
+cAutoUpdate.Position=[21 5 45 14];
+
+ttstr='Jump to most recent image acquired.';
+hbhistoryNow=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
+    'backgroundcolor','w','String',[char(10094) char(10094)],'fontsize',10,...
+    'callback',{@chData, '0'},'ToolTipString',ttstr);
+hbhistoryNow.Position=[65 2 24 20];
+
+ttstr='Step to next more recent image';
+hbhistoryLeft=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
+    'backgroundcolor','w','String',char(10094),'fontsize',10,...
+    'callback',{@chData, '-'},'ToolTipString',ttstr);
+hbhistoryLeft.Position=[89 2 12 20];
+
+thistoryInd=uicontrol(hpNav,'Style','text','units','pixels',...
+    'backgroundcolor','w','string','000','fontsize',12);
+thistoryInd.Position=[101 2 30 20];
+
+
+ttstr='Step to later image.';
+hbhistoryRight=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
+    'backgroundcolor','w','String',char(10095),'fontsize',10,...
+    'callback',{@chData, '+'},'ToolTipString',ttstr);
+hbhistoryRight.Position=[131 2 12 20];
+
+    function loadImage(filename)
+        if nargin<1
+            [filename,pathname]=uigetfile([historyDir filesep '*.mat']);
+            if ~filename
+                disp('No mat file chosen!');
+                return;
+            end
+            filename=[pathname filename];
+        end          
+        disp(['     Loading ' filename]);        
+        olddata=dstruct;
+        try
+            data=load(filename);
+            dstruct=data.data;
+            dstruct=computeOD(dstruct);
+            updateImages(dstruct);
+            dstruct=performFits(dstruct);
+            updatePlots(dstruct); 
+           tbl_params.Data=[fieldnames(dstruct.Params), ...
+                    struct2cell(dstruct.Params)];         
+        catch badness
+            dstruct=olddata;
+            dstruct=computeOD(dstruct);
+            updateImages(dstruct);
+            dstruct=performFits(dstruct);
+            updatePlots(dstruct);      
+           tbl_params.Data=[fieldnames(dstruct.Params), ...
+                    struct2cell(dstruct.Params)];       
+        end
+    end
+
+% Callback function for changing number of ROIs
+    function chData(~,~,state)       
+       % Get mat files in history directory
+       filenames=dir([historyDir  filesep '*.mat']);
+       filenames={filenames.name};       
+       filenames=sort(filenames);
+       filenames=flip(filenames);
+       
+       myname=[dstruct.Name '.mat'];           % Current data mat       
+       ind=find(ismember(filenames,myname));    % index in filenames        
+       if isempty(ind)
+          ind=1; 
+       end
+        switch state
+            case '-'
+                ind=max([ind-1 1]);            
+            case '+'
+                ind=min([ind+1 length(filenames)]);
+            case '0'
+                ind=1;        
+        end        
+        thistoryInd.String=sprintf('%03d',ind);
+        drawnow;        
+        filename=filenames{ind};
+        loadImage(fullfile(historyDir,filename));
+    end
+
+
+ttstr='Name of current image';
+tImageFile=uicontrol(hpNav,'style','text','string','FILENAME','fontsize',7,...
+    'backgroundcolor','w','units','pixels','horizontalalignment','left',...
+    'Position',[145 2 hpNav.Position(3)-133 14],'tooltipstring',ttstr);
+tImageFile.String=data.Name;
 %% Image Acqusition Panel
 % Panel for image acquisition controls and settings.
 
@@ -1399,9 +1509,7 @@ function data=updateImages(data)
     pCrossY.XData=[1 1]*round(data.BoxCount.Xc);
 
     tblcross.Data(1,2)=pCrossX.YData(1);
-    tblcross.Data(1,1)=pCrossY.XData(1);
-
-    
+    tblcross.Data(1,1)=pCrossY.XData(1);    
     
     % Create Sum Object
     if rbSum.Value
@@ -1434,7 +1542,9 @@ function data=updateImages(data)
     filenames=flip(filenames);
 %           set(tImageFileFig,'String',data.Name);
 
-    myname=[data.Name '.mat'];           % Current data mat       
+
+ % Current data mat  
+    myname=[data.Name '.mat'];               
     ind=find(ismember(filenames,myname));    % index in filenames        
     if isempty(ind)
       ind=1; 
