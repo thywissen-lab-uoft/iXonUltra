@@ -1390,10 +1390,8 @@ function data=updateImages(data)
         '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(data.BoxCount.Xc,1)) ',' ...
         num2str(round(data.BoxCount.Yc,1)) ')$' newline ...
         '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(data.BoxCount.Xs,1)) ',' ...
-        num2str(round(data.BoxCount.Ys,1)) ')$'];
-    
-    set(tCoMAnalysis,'String',str);        
-
+        num2str(round(data.BoxCount.Ys,1)) ')$'];    
+    set(tCoMAnalysis,'String',str);    
     
     set(hImg,'XData',data.X,'YData',data.Y,'CData',Z0);
     
