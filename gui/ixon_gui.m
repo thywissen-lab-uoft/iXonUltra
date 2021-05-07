@@ -186,7 +186,9 @@ function SizeChangedFcn(~,~)
         hbSlctLim.Position(2)=tbl_dispROI.Position(2)+2;
         climtbl.Position(2)=tbl_dispROI.Position(2)-climtbl.Position(4)-5;
         climtext.Position(2)=climtbl.Position(2);
-        bgPlot.Position(2)=climtbl.Position(2)-bgPlot.Position(4)-2;
+        cAutoColor.Position(2)=climtext.Position(2)-25;
+        
+        bgPlot.Position(2)=cAutoColor.Position(2)-bgPlot.Position(4)-2;
         cGaussRet.Position(2)=bgPlot.Position(2)-20;
         cCoMStr.Position(2)=cGaussRet.Position(2)-20;
         cCross.Position(2)=cCoMStr.Position(2)-20;
@@ -1136,6 +1138,13 @@ climtbl=uitable('parent',hpDisp,'units','pixels','RowName',{},'ColumnName',{},..
 climtbl.Position(3:4)=climtbl.Extent(3:4);
 climtbl.Position(1:2)=[65 tbl_dispROI.Position(2)-climtext.Position(4)-5];
 
+
+    function beep(~,~)
+        disp('hello');
+        climtbl.Data=axImg.CLim;
+        drawnow;
+    end
+
 % Callback for changing the color limits table
     function climCB(src,evt)
         try
@@ -1146,19 +1155,41 @@ climtbl.Position(1:2)=[65 tbl_dispROI.Position(2)-climtext.Position(4)-5];
         end
     end
 
+cAutoColor=uicontrol(hpDisp,'style','checkbox','string','auto clim?',...
+    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cAutoCLIMCB,...
+    'enable','on','value',0);
+cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
+
+    function cAutoCLIMCB(src,~)     
+        if src.Value
+                        axImg.CLim
+
+            climtbl.ColumnEditable=[false false];
+            axImg.CLimMode='auto';
+            drawnow;
+            
+            axImg.CLim
+        else
+            climtbl.ColumnEditable=[true true];      
+            axImg.CLimMode='manual';
+            drawnow;
+        end 
+    end 
+
+
 %%%%%% Plot Options %%%%%%
 
 % Button group for deciding what the X/Y plots show
 bgPlot = uibuttongroup(hpDisp,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chPlotCB);  
-bgPlot.Position(3:4)=[125 40];
+bgPlot.Position(3:4)=[125 20];
 bgPlot.Position(1:2)=[2 climtbl.Position(2)-bgPlot.Position(4)-2];
     
 % Radio buttons for cuts vs sum
 rbCut=uicontrol(bgPlot,'Style','radiobutton','String','plot cut',...
-    'Position',[0 0 120 20],'units','pixels','backgroundcolor','w','Value',1);
+    'Position',[0 0 60 20],'units','pixels','backgroundcolor','w','Value',1);
 rbSum=uicontrol(bgPlot,'Style','radiobutton','String','plot sum',...
-    'Position',[0 20 120 20],'units','pixels','backgroundcolor','w','Value',0);
+    'Position',[60 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
 
     function chPlotCB(~,~)
         % Update Data Plot
@@ -1907,7 +1938,7 @@ function data=gaussFit(data,sc)
 end
 
 %% FINISH
-
+addlistener(axImg,'CLim','PostSet',@beep);
 data=updateImages(data);
 drawnow;
 SizeChangedFcn
