@@ -17,6 +17,11 @@ function ixon_gui
 
 % Enable debug mode?
 doDebug=1;
+if doDebug
+   warning(['You are operating in DEBUG MODE. This removes ' ...
+       'certain safety precautions. If not intended set the doDebug ' ...
+       'flag to 0.']); 
+end
 
 % Manification (as measured in Graham's thesis)
 mag=[82.6 83.2];
@@ -61,8 +66,6 @@ data=load(fname);
 data=data.data;
 data.Z=data.RawImages(:,:,2)-data.RawImages(:,:,1);
 Z=data.Z;
-% Initializse image data structure with dummy data
-
 
 %% Initialize Drivers and GUI
 
@@ -134,23 +137,14 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
         end
         
         if doClose
-            disp('Closing iXon GUI...');
-
-            % Stop acquistion if necessary
-
-            % Stop Cooling if necessary
-
-            % Actually, maybe don't allow closing of GUI. Or have a confirm
-            % dialog option
-
+            disp('Closing iXon GUI...');      
 
             stop(statusTimer);
             if cam_status.isConnected
                 disconnectCam;
             end
             delete(statusTimer);
-
-            delete(fig);                % Delete the figure
+            delete(fig);      % Delete the figure          
         end
     end
 
@@ -224,13 +218,11 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        if ~out && ~doDebug
            warning('Unable to connect to camera');
            return;
-       end
-       
+       end       
        cam_status.isConnected=1;
        
        % Close the shutter
        setCameraShutter(0);
-
        
        % Load default acquisition settings
        loadAcquisitionSettings;     
@@ -444,7 +436,12 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
         % Get the temperature
         [out,temp,outstr]=getTemperature;
         strtemp.String=[num2str(temp) ' C'];        
-        cam_status.Temperature=temp;        
+        cam_status.Temperature=temp;   
+        
+        if cam_status.Temperature>-60 && isequal(hbCloseShutter.Enable,'on')
+            warning('Shutter is open and temperature above -60. Closing shutter');
+            shutterCB([],[],0);
+        end
         
         switch outstr
             case 'DRV_TEMPERATURE_STABILIZED'
@@ -478,8 +475,15 @@ hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
     'ToolTipString',ttstr);
 
     function shutterCB(~,~,state)
+        
+        if state && cam_status.Temperature>-60
+            warning('Denying your request to open the shutter above -60C.');
+            return;
+        end
+        
         out=setCameraShutter(state);
         
+        % Exit if bad return
         if ~out && ~doDebug
            return; 
         end
@@ -718,7 +722,7 @@ hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,
 ttstr='Reinitialize camera acquisition after image acquisition.';
 hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',8,...
     'backgroundcolor','w','Position',[5 hpAcq.Position(4)-55 120 20],...
-    'ToolTipString',ttstr,'enable','on');
+    'ToolTipString',ttstr,'enable','on','value',1);
 
 % Button group for acquisition mode
 bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
