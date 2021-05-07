@@ -54,7 +54,7 @@ varType='param'; % always select 'param' for now
 
 
 
-xVar='Raman_Time';
+xVar='ExecutionDate';
 unit='s';
 
 
@@ -196,7 +196,7 @@ for kk=1:length(ixondata)
         end
         
         if doGaussFilter
-           imgs(:,:,jj)=imgaussfil(imgs(:,:,jj),filter_radius);
+           imgs(:,:,jj)=imgaussfilt(imgs(:,:,jj),filter_radius);
         end
     end
     
@@ -291,7 +291,7 @@ ixon_animateOpts.EndDelay=2;     % Time to hold final picture
 
 % animateOpts.Order='descend';    % Asceneding or descending
 ixon_animateOpts.Order='ascend';
-ixon_animateOpts.CLim=[0 14000];   % Color limits
+ixon_animateOpts.CLim=[0 20000];   % Color limits
 
 ixon_animate(ixondata,xVar,ixon_animateOpts);
 end
