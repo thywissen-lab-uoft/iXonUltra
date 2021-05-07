@@ -1938,7 +1938,6 @@ function data=gaussFit(data,sc)
 end
 
 %% FINISH
-addlistener(axImg,'CLim','PostSet',@beep);
 data=updateImages(data);
 drawnow;
 SizeChangedFcn
