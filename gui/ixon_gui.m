@@ -32,6 +32,8 @@ maskname=fullfile(analysis_path,'ixon_mask.mat');
 ixon_mask=load(maskname);
 ixon_mask=ixon_mask.BW;
 
+% Add analysis paths
+addpath(analysis_path);addpath(genpath(analysis_path))
 %% Other Settings
 
 % Choose the default colormap
@@ -1548,9 +1550,6 @@ set(axImg,'XLim',tbl_dispROI.Data(1:2),'YLim',tbl_dispROI.Data(3:4));
 
 
 %%
-    
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % updateImages
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1580,11 +1579,7 @@ function data=updateImages(data)
     end
 
     % For now always assumed that its PWA,BKGD
-    data.Z=imgs(:,:,2)-imgs(:,:,1);
-    
-
-   
-    
+    data.Z=imgs(:,:,2)-imgs(:,:,1);    
     
     % Create sub image to do center of mass analysis
     Zsub=data.Z(y,x);
