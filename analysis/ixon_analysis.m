@@ -200,6 +200,7 @@ for kk=1:length(ixondata)
         end
     end
     
+    % For now we assume only two images
     Z=imgs(:,:,2)-imgs(:,:,1);
     ixondata(kk).Z=Z;
 end

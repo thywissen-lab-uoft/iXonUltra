@@ -2,7 +2,6 @@ function ixon_gui
 % ixon_gui.m
 %
 % Author      : C. Fujiwara
-% Last Edited : 2021/05/06
 %
 % This code operates the iXon Ultra camera that the lattice experiment
 % uses to take fluorescence images of the quantum gas microscope.
@@ -1752,77 +1751,68 @@ end
 % Performs analysis and updates graphics as required.
 function data=updateAnalysis(data)
     if hcGauss.Value
-        disp('Fitting data to 2D gaussian...')
-        
-        
+        disp('Fitting data to 2D gaussian...')   
         opts=struct;
         opts.doRescale=1;
         opts.doMask=hcMask.Value;
         opts.Scale=0.5;
-        opts.Mask=ixon_mask;
-        
+        opts.Mask=ixon_mask;        
         data=ixon_gaussFit(data,opts);            
         cGaussRet.Enable='on';
         updateGaussPlot(data);
     end
 end
 
-
-
 %% OTHER HELPER FUNCTIONS
-function imgs=grabRawImages
+    function imgs=grabRawImages
+        % How many images to grab
+        [ret,first,last] = GetNumberNewImages;    
+        numpix=512^2;
+        % Grab the data (number just sets buffer size)
+        [ret,D] = GetAcquiredData(last*512^2);    
 
-    % How many images to grab
-    [ret,first,last] = GetNumberNewImages;
-    
-    numpix=512^2;
-    % Grab the data (number just sets buffer size)
-    [ret,D] = GetAcquiredData(last*512^2);    
+        imgs={};
+        imgmats=zeros(512,512,last);
 
-    imgs={};
-    imgmats=zeros(512,512,last);
+        for j = 1:last % break up into individual images
+            ii=double(D((1+(j-1)*numpix):(j*numpix)));
+            imgs{j} = reshape(ii,512,512);
+            imgmats(:,:,j)=imgs{j};
+        end 
 
-    for j = 1:last % break up into individual images
-        ii=double(D((1+(j-1)*numpix):(j*numpix)));
-        imgs{j} = reshape(ii,512,512);
-        % Subtract off aritifical baseline counts (see manual).
-%         imgs{j}=imgs{j}-200;
-        imgmats(:,:,j)=imgs{j};
-    end 
-    
-    imgs=imgmats;  
-end
+        imgs=imgmats;  
+    end
 
-function mydata=processImages(imgs)
-    mydata=struct;
-    % Create the image data structure
-    mydata=struct;
-    mydata.Date=datevec(now);
-    mydata.Name=['iXonUltra_' datestr(mydata.Date,'yyyy-mm-dd_HH-MM-SS')];   
+    function mydata=processImages(imgs)
+        mydata=struct;
+        % Create the image data structure
+        mydata=struct;
+        mydata.Date=datevec(now);
+        mydata.Name=['iXonUltra_' datestr(mydata.Date,'yyyy-mm-dd_HH-MM-SS')];   
 
-    % Grab the images
-    mydata.RawImages=imgs;
+        % Grab the images
+        mydata.RawImages=imgs;
 
-    % Add magnification
-    mydata.Magnification=mag;
-    
-    % Add X and Y vectors
-    mydata.X=1:size(mydata.RawImages,2);
-    mydata.Y=1:size(mydata.RawImages,1);    
-    
-    % For now always assumed that its PWA,BKGD
-    mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
-   
+        % Add magnification
+        mydata.Magnification=mag;
 
-    % Grab the sequence parameters
-    [mydata.Params,dstr]=grabSequenceParams;        
-    mydata.Params.ExecutionDate=dstr;    
+        % Add X and Y vectors
+        mydata.X=1:size(mydata.RawImages,2);
+        mydata.Y=1:size(mydata.RawImages,1);    
 
-    % Append acquisition information
-    mydata.CameraInformation=cam_info;
-    mydata.AcquisitionInformation=acq;
-    mydata.AcquisitionDescription=desc;
-end
+        % For now always assumed that its PWA,BKGD
+        mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
+
+
+        % Grab the sequence parameters
+        [mydata.Params,dstr]=grabSequenceParams;        
+        mydata.Params.ExecutionDate=dstr;    
+
+        % Append acquisition information
+        mydata.CameraInformation=cam_info;
+        mydata.AcquisitionInformation=acq;
+        mydata.AcquisitionDescription=desc;
+    end
 
 
     function saveData(data,saveDir)
