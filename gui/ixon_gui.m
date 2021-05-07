@@ -1532,6 +1532,9 @@ pGaussRet=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:));
 % Color bar
 cBar=colorbar('fontsize',8,'units','pixels','location','northoutside');
 
+pPCA(1)=plot(0,0,'-','linewidth',1,'color','r');
+pPCA(2)=plot(0,0,'-','linewidth',1,'color','r');
+
 axImg.CLim=climtbl.Data;
 drawnow;
 
@@ -1761,7 +1764,19 @@ function data=updateAnalysis(data)
         opts.Scale=0.5;
         opts.Mask=ixon_mask;
         
-        data=ixon_gaussFit(data,opts);            
+        data=ixon_gaussFit(data,opts);  
+        
+        out=ixon_simple_pca(data);
+ 
+        x1=out.Mean(1)+out.Radii(1)*out.PCA(1,1)*[-1 1];
+        y1=out.Mean(2)+out.Radii(1)*out.PCA(2,1)*[-1 1];
+
+        x2=out.Mean(1)+out.Radii(2)*out.PCA(1,2)*[-1 1];
+        y2=out.Mean(2)+out.Radii(2)*out.PCA(2,2)*[-1 1];
+        
+        set(pPCA(1),'XData',x1,'YData',y1);
+        set(pPCA(2),'XData',x2,'YData',y2);
+        
         cGaussRet.Enable='on';
         updateGaussPlot(data);
     end

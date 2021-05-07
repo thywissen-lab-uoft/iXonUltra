@@ -21,6 +21,7 @@ function data=ixon_gaussFit(data,opts)
             X=imresize(X,opts.Scale);
             Y=imresize(Y,opts.Scale);
         end
+        
 
         % Smooth data, extract peak
         dSmooth=imgaussfilt(Zdata,0.5);   
