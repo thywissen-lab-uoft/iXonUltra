@@ -99,7 +99,7 @@ t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
 % Axes for data
 hAxImg=axes('parent',hF,'units','pixels','Box','on','XGrid','on',...
-    'YGrid','on','YDir','reverse','XAxisLocation','bottom');
+    'YGrid','on','YDir','normal','XAxisLocation','bottom');
 % hAxImg.Position(2)=60;
 % hAxImg.Position(1)=60;
 % hAxImg.Position(3)=hAxImg.Position(4);
