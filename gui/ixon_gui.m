@@ -16,7 +16,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=1;
+doDebug=0;
 
 % Manification (as measured in Graham's thesis)
 mag=[82.6 83.2];
@@ -1384,7 +1384,7 @@ co=get(gca,'colororder');
 hImg=imagesc(data.X,data.Y,data.Z);
 set(axImg,'box','on','linewidth',.1,'fontsize',10,'units','pixels',...
     'XAxisLocation','top','colormap',colormap(cmap),...
-    'xcolor',co(4,:),'ycolor',co(4,:));
+    'xcolor',co(4,:),'ycolor',co(4,:),'YDir','normal');
 hold on
 axImg.Position=[50 150 hp.Position(3)-200 hp.Position(4)-200];
 axis equal tight
@@ -1467,7 +1467,7 @@ pXF=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'line
 
 % Y Cut/Sum Axis
 hAxY=axes('box','on','linewidth',1,'fontsize',10,'units','pixels',...
-    'YAxisLocation','Right','YDir','Reverse','parent',hp);
+    'YAxisLocation','Right','YDir','normal','parent',hp);
 hAxY.Position=[axImg.Position(1)+axImg.Position(3) axImg.Position(2) l axImg.Position(4)];
 hold on
 % Add Y data data and fit plots
