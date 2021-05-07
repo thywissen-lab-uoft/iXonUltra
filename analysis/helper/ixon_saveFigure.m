@@ -1,17 +1,17 @@
-function saveFigure(atomdata,hF,filename)
-global imgdir
+function ixon_saveFigure(atomdata,hF,filename)
+global ixon_imgdir
 ext='.png';
 save_qual='-r90';
 
 
 % The directory where the figures are saved
-figDir=fullfile(imgdir,'figures');
+figDir=fullfile(ixon_imgdir,'figures');
 if ~exist(figDir,'dir')
    mkdir(figDir); 
 end
 
 % Create the name of the figure
-[filepath,name,~]=fileparts(imgdir);
+[filepath,name,~]=fileparts(ixon_imgdir);
 
 
 % Make the figure name with the location

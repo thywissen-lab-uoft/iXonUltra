@@ -49,8 +49,12 @@ m=40*amu;
 % field of the .mat file. The unit has no tangibile affect and only affects
 % display properties.
 
-varType='param';
-xVar='F_Pump_Power';
+% Choose what kind of variable to plot against (sequencer/camera)
+varType='param'; % always select 'param' for now 
+
+
+
+xVar='Raman_Time';
 unit='s';
 
 
@@ -218,19 +222,49 @@ if doBoxCount
 end
 
 
-
 %% PLOTTING : BOX COUNT
 
 ixon_boxPopts = struct;
 ixon_boxPopts.NumberExpFit = 0;                  % Fit exponential decay to atom number
 
+ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
+ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
+
 if doBoxCount  
     % Plot the atom number
-    [hF_ixon_numberbox,Ndatabox]=ixon_showBoxAtomNumber(ixondata,xVar,ixon_boxPopts);      
-    
+    [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,xVar,ixon_boxPopts);      
+    yl=get(gca,'YLim');
+    set(gca,'YLim',[0 yl(2)]); 
     if ixon_doSave
-        ixon_saveFigure(atomdata,hF_ixon_numberbox,'ixon_box_number'); 
-    end  
-     
+        ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number'); 
+    end     
     
+    % Plot the second moments
+    hF_ixon_size=ixon_showBoxMoments(ixondata,xVar);   
+    if ixon_doSave
+        ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size'); 
+    end     
+    
+    % Plot the cloud center
+    hF_ixon_center=ixon_showBoxCentre(ixondata,xVar,ixon_boxPopts); 
+    if ixon_doSave
+        ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre'); 
+    end 
+end
+
+%% Animate cloud
+ixon_doAnimate = 1;
+if ixon_doAnimate == 1
+ixon_animateOpts=struct;
+ixon_animateOpts.StartDelay=2; % Time to hold on first picture
+ixon_animateOpts.MidDelay=.25;     % Time to hold in middle picutres
+ixon_animateOpts.EndDelay=2;     % Time to hold final picture
+
+
+% animateOpts.Order='descend';    % Asceneding or descending
+ixon_animateOpts.Order='ascend';
+ixon_animateOpts.CLim=[0 14000];   % Color limits
+
+ixon_animate(ixondata,xVar,ixon_animateOpts);
 end
