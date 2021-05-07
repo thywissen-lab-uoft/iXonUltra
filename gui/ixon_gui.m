@@ -1162,17 +1162,16 @@ cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
 
     function cAutoCLIMCB(src,~)     
         if src.Value
-                        axImg.CLim
-
-            climtbl.ColumnEditable=[false false];
+            climtbl.Enable='off';
             axImg.CLimMode='auto';
             drawnow;
             
-            axImg.CLim
+            climtbl.Data=axImg.CLim;
         else
-            climtbl.ColumnEditable=[true true];      
-            axImg.CLimMode='manual';
+            climtbl.Enable='on';
+            axImg.CLimMode='manual';            
             drawnow;
+            climtbl.Data=axImg.CLim;
         end 
     end 
 
@@ -1652,7 +1651,8 @@ function data=updateImages(data)
     updateHistoryInd(data);  
     
     drawnow;
-    
+    climtbl.Data=axImg.CLim;
+
     disp('')
     disp('Performing fits and analysis.');
     
