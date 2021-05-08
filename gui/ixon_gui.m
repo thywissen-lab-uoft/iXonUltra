@@ -1547,7 +1547,7 @@ pCrossYDrag.on_move_callback=@Yupdate;
         set(pY,'YData',data.Y,'XData',Zy);
         tblcross.Data(1,1)=Xcross;
         
-        if hcGauss.Value
+        if hcGauss.Value || hcGaussRot.Value
             updateGaussPlot(data);
         end
         g.XData=round(g.XData);

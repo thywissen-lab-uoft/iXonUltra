@@ -89,7 +89,6 @@ function data=ixon_gaussFit(data,opts)
             disp([' done (' num2str(round((t2-t1)*24*60*60,1)) ' sec.).']);
             GaussFit(k)={fout};    
             
-            disp(fout)
         else
             % Rotated Gaussian Analysis
             % Very experimental
@@ -136,8 +135,6 @@ function data=ixon_gaussFit(data,opts)
             disp([' done (' num2str(round((t2-t1)*24*60*60,1)) ' sec.).']);
             GaussFit(k)={fout};
             
-                        disp(fout)
-
         end
     end
     data.GaussFit=GaussFit;
