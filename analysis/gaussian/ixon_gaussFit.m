@@ -15,72 +15,66 @@ function data=ixon_gaussFit(data,opts)
         % Acquire the data
         X=double(data.X(ROI(1):ROI(2)));
         Y=double(data.Y(ROI(3):ROI(4)));
-        Zdata=double(data.Z(ROI(3):ROI(4),ROI(1):ROI(2)));       
+        Z=double(data.Z(ROI(3):ROI(4),ROI(1):ROI(2)));       
 
         % Rescale images for fitting speed
         if opts.doRescale
-            Zdata=imresize(Zdata,opts.Scale);
+            Z=imresize(Z,opts.Scale);
             X=imresize(X,opts.Scale);
             Y=imresize(Y,opts.Scale);
         end
         
-        if ~doRotate
+        % Make a mesh grid for fitting
+        [xx,yy]=meshgrid(X,Y);    
+
+        % Copy the data
+        Z2=Z;xx2=xx;yy2=yy;
+
+        % Remove mask from fit
+        if opts.doMask
+            % Scale the image mask
+            if opts.doRescale                
+                ixon_mask_sc=imresize(opts.Mask,opts.Scale);
+            end
+            % Remove data points from fit based on mask
+            xx2(~ixon_mask_sc)=[];
+            yy2(~ixon_mask_sc)=[];
+            Z2(~ixon_mask_sc)=[];
+        end  
+        
+        if ~opts.doRotate
 
             % Smooth data, extract peak
-            dSmooth=imgaussfilt(Zdata,0.5);   
+            dSmooth=imgaussfilt(Z,0.5);   
             N0=max(max(dSmooth));          
 
             % Calculate guesses for center and size
-            Zx=sum(Zdata,1);Zy=sum(Zdata,2)';             % Get X and Y sum profiles
+            Zx=sum(Z,1);Zy=sum(Z,2)';             % Get X and Y sum profiles
             Nx=sum(Zx);Ny=sum(Zy);                % Get the total number of counts
             Xc=mean(X(Zx>.9*max(X)));           % X center (use >90% SNR)
             Yc=mean(Y(Zy>.9*max(Y)));           % Y center (use >90% SNR)
             Xs=sqrt(sum((X-Xc).^2.*Zx)/Nx); % X standard deviation
-            Ys=sqrt(sum((Y-Yc).^2.*Zy)/Ny); % Y standard deviation       
-
-            % Make a mesh grid for fitting
-            [xx,yy]=meshgrid(X,Y);
-
-            % Copy the data
-            Z2=Zdata;xx2=xx;yy2=yy;
-
-            % Remove mask from fit
-            if opts.doMask
-                % Scale the image mask
-                if opts.doRescale                
-                    ixon_mask_sc=imresize(opts.Mask,opts.Scale);
-                end
-                % Remove data points from fit based on mask
-                xx2(~ixon_mask_sc)=[];
-                yy2(~ixon_mask_sc)=[];
-                Z2(~ixon_mask_sc)=[];
-            end      
-
+            Ys=sqrt(sum((Y-Yc).^2.*Zy)/Ny); % Y standard deviation   
+     
             % For ixon hopefully the background is 
-            bg=min(min(Zdata)); 
+            bg=min(min(Z));             
+            
+            s1=Xs;
+            s2=Ys;
+            nbg=min(min(Z));
+            A=N0;  
+             
+            gaussme=@(A,Xc,Yc,s1,s2,nbg,xx,yy) A*exp(-( ...
+                (1/(2*s1^2))*(xx-Xc).^2 + ...     
+                 (1/(2*s2^2))*(yy-Yc).^2))+nbg;        
 
-            % Create fit object
-            myfit=fittype('A*exp(-(xx-Xc).^2./(2*Xs^2)).*exp(-(yy-Yc).^2./(2*Ys^2))+nbg',...
-                'independent',{'xx','yy'},'coefficients',{'A','Xc','Xs','Yc','Ys','nbg'});
+            myfit=fittype(@(A,Xc,Yc,s1,s2,nbg,xx,yy) gaussme(A,Xc,Yc,s1,s2,nbg,xx,yy),...
+                'independent',{'xx','yy'},'coefficients',{'A','Xc','Yc','s1','s2','nbg'});
             opt=fitoptions(myfit);
-            opt.StartPoint=[N0 Xc Xs Yc Ys bg];
-            opt.Lower=[N0/10 10 1 10 1 -1];
-            opt.Upper=[5*N0 max(X) range(X) max(Y) range(Y) N0];
-            opt.Weights=[];
-
-
-            % Check that the upper and lower bounds make sense
-            badInds=opt.Upper<opt.Lower;
-            if sum(badInds)
-                warning(['Generated lower bounds for gaussian fit exceed the upper ' ...
-                    'bounds for ' num2str(sum(badInds)) ' parameters. This ' ...
-                    'may be caused by no atoms.']);
-                opt.Lower=[0 0 0 0 0 0];
-                opt.Upper=[];
-                opt.StartPoint=[100 mean(Dx) range(Dx)/10 mean(Dy) range(Dy)/10 ...
-                    10];
-            end
-
+            opt.StartPoint=[A Xc Yc s1 s2 nbg];
+            opt.Upper=[A*1.3 Xc+50 Yc+50 s1*1.5 s2*1.5 1000];
+            opt.Lower=[A*0.7 Xc-50 Yc-50 s1*.5 s2*.5 -500];   
+            
             % Display initial guess
             str1=['(Xc0,Yc0)=(' num2str(round(Xc)) ',' num2str(round(Yc)) ');'];
             str2=['(Xs0,Ys0)=(' num2str(round(Xs)) ',' num2str(round(Ys)) ')'];
@@ -90,72 +84,59 @@ function data=ixon_gaussFit(data,opts)
             fprintf(' fitting...');
             t1=now;
             [fout,gof,output]=fit([xx2(:) yy2(:)],Z2(:),myfit,opt);
+            
             t2=now;
             disp([' done (' num2str(round((t2-t1)*24*60*60,1)) ' sec.).']);
-            GaussFit(k)={fout};
+            GaussFit(k)={fout};    
+            
+            disp(fout)
         else
             % Rotated Gaussian Analysis
             % Very experimental
-            % Z is a mxn matrix to which we want to fit an elliptic gaussian
-Z=double(Z);
-Dx=[1:size(Z,2)]';
-Dy=[1:size(Z,1)]';
+            % Z is a mxn matrix to which we want to fit an elliptic gaussian            
+            
+            % Angle of rotation
+            theta=atan(opts.PCA.PCA(2,1)/opts.PCA.PCA(1,1));
 
-[xx,yy]=meshgrid(Dx,Dy);
-
-% Peak amplitude
-A=max(max(imgaussfilt(Z,5)));
-
-% X and Y center
-X=sum(Z,1);Y=sum(Z,2)';             % Get X and Y sum profiles
-Nx=sum(X);Ny=sum(Y);                % Get the total number of counts
-Xc=mean(Dx(X>.9*max(X)));           % X center (use >90% SNR)
-Yc=mean(Dy(Y>.9*max(Y)));           % Y center (use >90% SNR)
-
-% Size guess BE MORE CLEVER ABOUT THIS
-theta=(pi/180)*60;
-theta=(pi/180)*10;
-
-
-Sx=150;
-Sy=50;
-
-Sx=75;
-Sy=75;
-theta=0;
-
-
-% Copy the data
-data2=Z;xx2=xx;yy2=yy;
-
-% Elminate data points below a threshold to reduce # points to fit
-% th=0.05;
-% xx2(Z<th*A)=[];yy2(Z<th*A)=[];data2(Z<th*A)=[];
+            % Gaussian Radius
+            s1=opts.PCA.Radii(1);
+            s2=opts.PCA.Radii(2);
+            
+            % Center point
+            Xc=opts.PCA.Mean(1);
+            Yc=opts.PCA.Mean(2);
+            
+            % Amplitdue
+            A=max(max(imgaussfilt(Z,.5)));
+            
+            % Background guess
+            nbg=min(min(Z));
+            
+            % https://en.wikipedia.org/wiki/Gaussian_function
+            % But we add a minus sign to make it counter clockwise angle
+            % When theta=0 s1 is on the x axis
+            gaussrot=@(A,Xc,Yc,s1,s2,theta,nbg,xx,yy) A*exp(-( ...
+                (cos(theta)^2/(2*s1^2)+sin(theta)^2/(2*s2^2))*(xx-Xc).^2 + ...
+                 2*(sin(2*theta)/(4*s1^2) - sin(2*theta)/(4*s2^2))*(xx-Xc).*(yy-Yc) + ...
+                 (sin(theta)^2/(2*s1^2)+cos(theta)^2/(2*s2^2))*(yy-Yc).^2))+nbg;           
 
 
-a='cos(t)^2/(2*Xs^2)+sin(t)^2/(2*Ys^2)';
-a=['(' a ')'];
-a=[a '*(xx-Xc).^2'];
+            myfit=fittype(@(A,Xc,Yc,s1,s2,theta,nbg,xx,yy) gaussrot(A,Xc,Yc,s1,s2,theta,nbg,xx,yy),...
+                'independent',{'xx','yy'},'coefficients',{'A','Xc','Yc','s1','s2','theta','nbg'});
+            opt=fitoptions(myfit);
+            opt.StartPoint=[A Xc Yc s1 s2 theta nbg];
+            opt.Upper=[A*1.3 Xc+50 Yc+50 s1*1.5 s2*1.5 theta+5*(pi/180) 1000];
+            opt.Lower=[A*0.7 Xc-50 Yc-50 s1*.5 s2*.5 theta-5*(pi/180) -500];
 
-b='-sin(2*t)/(4*Xs^2) + sin(2*t)/(4*Ys^2)';
-b=['(' b ')'];
-b=['2*' b '*(xx-Xc).*(yy-Yc)'];
-
-c='sin(t)^2/(2*Xs^2)+cos(t)^2/(2*Ys^2)';
-c=['(' c ')'];
-c=[c '*(yy-Yc).^2'];
-
-str=['A*exp(-(' a '+' b '+' c '))+bg'];
-
-myfit=fittype(str,...
-    'independent',{'xx','yy'},'coefficients',{'A','Xc','Xs','Yc','Ys','t','bg'});
-opt=fitoptions(myfit);
-opt.StartPoint=[A Xc Sx Yc Sy theta 0];
-
-% opt.Lower=[N0/10 10 1 10 1 0];
-opt.Upper=[2*A max(Dx) range(Dx) max(Dy) range(Dy) 4*pi 10];
-
-opt.Weights=[];
+            % Perform the fit
+            fprintf(' fitting...');
+            t1=now;
+            [fout,gof,output]=fit([xx2(:) yy2(:)],Z2(:),myfit,opt);
+            t2=now;
+            disp([' done (' num2str(round((t2-t1)*24*60*60,1)) ' sec.).']);
+            GaussFit(k)={fout};
+            
+                        disp(fout)
 
         end
     end

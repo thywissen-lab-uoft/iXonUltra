@@ -613,11 +613,11 @@ hbhistoryRight.Position=[131 2 12 20];
         try
             newdata=load(filename);
             data=newdata.data;
-            updateImages(data);      
+            data=updateImages(data);      
         catch ME
             warning('Unable to load image, reverting to old data');
             data=olddata;
-            updateImages(data);      
+            data=updateImages(data);      
         end
     end
 
@@ -882,7 +882,7 @@ hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
 hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
     function processCB(~,~)
-        updateImages(data);
+        data=updateImages(data);
         disp('Reprocessing images...'); 
     end
 
@@ -986,9 +986,16 @@ hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsiz
     function hcpcaCB(src,~)
        for n=1:length(pPCA)
           if ~src.Value
-             pPCA.Visible='off'; 
+             pPCA(n).Visible='off'; 
           end 
        end  
+       
+       if src.Value
+          hcGaussRot.Enable='on';
+       else
+            hcGaussRot.Enable='off';
+            hcGaussRot.Value=0;
+       end
     end
 
 
@@ -1007,12 +1014,34 @@ hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',8,...
              cGaussRet.Enable='off';
           end
        end
+       
+       if src.Value
+           hcGaussRot.Value=0;
+       end
 
     end
 
 hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize',8,...
     'backgroundcolor','w','Position',[5 20 100 20],'callback',@(~,~) disp('hi'),...
-    'ToolTipString',ttstr,'enable','off');
+    'ToolTipString',ttstr,'enable','off','callback',@hcgaussRotCB);
+
+    function hcgaussRotCB(src,~)
+      for n=1:length(pXF)
+          pXF(n).Visible=src.Value;
+          pYF(n).Visible=src.Value;
+          
+          if ~src.Value
+             pGaussRet(n).Visible='off';
+             cGaussRet.Value=0;
+             cGaussRet.Enable='off';
+          end
+      end
+      
+      if src.Value
+         hcGauss.Value=0;
+      end
+        
+    end
 
 hcSingleAtoms=uicontrol(hpAnl,'style','checkbox','string','find single atoms','fontsize',8,...
     'backgroundcolor','w','Position',[5 0 100 20],'callback',@(~,~) disp('hi'),...
@@ -1408,7 +1437,7 @@ tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...
 
 % Table for analysis outputs
 tbl_analysis=uitable(tabs(3),'units','normalized','RowName',{},'ColumnName',{},...
-    'fontsize',8,'ColumnWidth',{95 90},'columneditable',false(ones(1,2)),...
+    'fontsize',8,'ColumnWidth',{100 85},'columneditable',false(ones(1,2)),...
     'Position',[0 0 1 1]);
 
 
@@ -1498,7 +1527,7 @@ pCrossYDrag.on_move_callback=@Yupdate;
         set(pX,'XData',data.X,'YData',Zx);
         tblcross.Data(1,2)=Ycross;
         
-        if hcGauss.Value
+        if hcGauss.Value || hcGaussRot.Value
             updateGaussPlot(data);
         end
             
@@ -1510,7 +1539,7 @@ pCrossYDrag.on_move_callback=@Yupdate;
     function Yupdate(g,~)
         % If you drag, you're not plotting a sum
         rbCut.Value=1;
-        rbSum.Value=0;
+        rbSum.Value=0;       
         
         % Get the cross hair poisition
         Xcross=round(g.XData(1));
@@ -1622,8 +1651,8 @@ function data=updateImages(data)
     bc=data.BoxCount;
     
     % Box counts analysis table string
-    stranl={'box sum',num2str(bc.Nraw,'%.3e');
-        'box peak',num2str(max(max(Zsub)),'%.3e');
+    stranl={'box sum (counts)',num2str(bc.Nraw,'%.3e');
+        'box peak (counts)',num2str(max(max(Zsub)),'%.3e');
         'box Yc (px)',round(bc.Yc,1);
         'box Xc (px)',round(bc.Xc,1);
         ['box Y' char(963) ' (px)'],round(bc.Ys,1);
@@ -1727,6 +1756,8 @@ function updateDataPlots(data)
 end
 
 function updateGaussPlot(data)
+    
+    
     for n=1:length(data.GaussFit)
         ROI=data.ROI(n,:);
         x=ROI(1):ROI(2);
@@ -1738,10 +1769,17 @@ function updateGaussPlot(data)
         zF=feval(fout,xx,yy); 
 
         % Evaluate and plot 1/e^2 gaussian reticle
-        t=linspace(0,2*pi,100);            
-        xR=fout.Xc+1*fout.Xs*cos(t);
-        yR=fout.Yc+1*fout.Ys*sin(t);    
+        t=linspace(0,2*pi,100);  
+        
+        if ismember('theta',coeffnames(fout))
+            xR=fout.Xc+fout.s1*cos(fout.theta)*cos(t)-fout.s2*sin(fout.theta)*sin(t);
+            yR=fout.Yc+fout.s1*sin(fout.theta)*cos(t)+fout.s2*cos(fout.theta)*sin(t); 
+        else
+            xR=fout.Xc+fout.s1*cos(t);
+            yR=fout.Yc+fout.s2*sin(t);    
+        end   
         set(pGaussRet(n),'XData',xR,'YData',yR,'linewidth',2);  
+                
         drawnow;
 
         if rbCut.Value            
@@ -1782,12 +1820,12 @@ function data=updateAnalysis(data)
         
         % PCA analysis table string
         stranl={'','';
-            ['pca ' char(952) '1'] ,atan(out.PCA(2,1)/out.PCA(1,1))*180/pi;
-            ['pca ' char(952) '2'],atan(out.PCA(2,2)/out.PCA(1,2))*180/pi;
-            ['pca ' char(963) '1'],out.Radii(1);
-            ['pca ' char(963) '2'],out.Radii(2);
-            ['pca xc'],out.Mean(1);
-            ['pca yc'],out.Mean(2);};
+            ['pca ' char(952) '1 (deg)'] ,atan(out.PCA(2,1)/out.PCA(1,1))*180/pi;
+            ['pca ' char(952) '2 (deg)'],atan(out.PCA(2,2)/out.PCA(1,2))*180/pi;
+            ['pca ' char(963) '1 (px)'],out.Radii(1);
+            ['pca ' char(963) '2 (px)'],out.Radii(2);
+            ['pca xc (px)'],out.Mean(1);
+            ['pca yc (px)'],out.Mean(2);};
 
         tbl_analysis.Data=[tbl_analysis.Data; stranl];
         
@@ -1802,6 +1840,7 @@ function data=updateAnalysis(data)
         opts.doRescale=1;
         opts.doMask=hcMask.Value;
         opts.Scale=0.5;
+        opts.doRotate=0;
 
         opts.Mask=ixon_mask;        
         data=ixon_gaussFit(data,opts);   
@@ -1809,19 +1848,46 @@ function data=updateAnalysis(data)
         
         % Gaussian analysis table string
         stranl={'','';
-            ['gauss N'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.Xs*data.GaussFit{1}.Ys;
-            ['gauss A'],data.GaussFit{1}.A;
-            ['gauss x' char(963)],data.GaussFit{1}.Xs;
-            ['gauss y' char(963)],data.GaussFit{1}.Ys;
-            ['gauss xc'],data.GaussFit{1}.Xc;
-            ['gauss yc'],data.GaussFit{1}.Yc;
-            ['gauss nbg'],data.GaussFit{1}.nbg;};
-
-        tbl_analysis.Data=[tbl_analysis.Data; stranl];
-        
-        
+            ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
+            ['gauss A (counts)'],data.GaussFit{1}.A;
+            ['gauss x' char(963) ' (px)'],data.GaussFit{1}.s1;
+            ['gauss y' char(963) ' (px)'],data.GaussFit{1}.s2;
+            ['gauss xc (px)'],data.GaussFit{1}.Xc;
+            ['gauss yc (px)'],data.GaussFit{1}.Yc;
+            ['gauss nbg (counts)'],data.GaussFit{1}.nbg;};
+        tbl_analysis.Data=[tbl_analysis.Data; stranl];  
         updateGaussPlot(data);
     end
+    
+    % Update Guassian Analysis
+    if hcGaussRot.Value
+        disp('Fitting data to 2D gaussian...')   
+        opts=struct;
+        opts.doRescale=1;
+        opts.doMask=hcMask.Value;
+        opts.Scale=0.5;
+        opts.doRotate=1;
+        opts.PCA=out;
+        opts.Mask=ixon_mask;          
+        
+        data=ixon_gaussFit(data,opts);   
+        cGaussRet.Enable='on';
+        
+        stranl={'','';
+            ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
+            ['gauss A (counts)'],data.GaussFit{1}.A;
+            ['gauss ' char(963) '1 (px)'],data.GaussFit{1}.s1;
+            ['gauss ' char(963) '2 (px)'],data.GaussFit{1}.s2;
+            ['gauss xc (px)'],data.GaussFit{1}.Xc;
+            ['gauss yc (px)'],data.GaussFit{1}.Yc;
+            ['gauss nbg (counts)'],data.GaussFit{1}.nbg;
+            ['gauss ' char(952) ' (deg)'],data.GaussFit{1}.theta*180/pi};
+        tbl_analysis.Data=[tbl_analysis.Data; stranl];  
+
+        updateGaussPlot(data);
+
+    end    
+    
 end
 
 %% OTHER HELPER FUNCTIONS
