@@ -13,6 +13,8 @@ function ixon_gui
 % interface from MATLAB, but uses the figure interface for desinging GUIs.
 % This design choice is because CF is not as familiar with the uifigure
 % interface.
+%
+% 
 
 % Enable debug mode?
 doDebug=0;
@@ -1650,13 +1652,14 @@ function data=updateImages(data)
     data=ixon_boxCount(data);
     bc=data.BoxCount;
     
-    % Box counts analysis table string
-    stranl={'box sum (counts)',num2str(bc.Nraw,'%.3e');
-        'box peak (counts)',num2str(max(max(Zsub)),'%.3e');
-        'box Yc (px)',round(bc.Yc,1);
-        'box Xc (px)',round(bc.Xc,1);
-        ['box Y' char(963) ' (px)'],round(bc.Ys,1);
-        ['box X' char(963) ' (px)'],round(bc.Xs,1)};
+    % Box counts analysis table string    
+     stranl={'box sum (counts)',bc.Nraw;
+        'box peak (counts)',max(max(Zsub));
+        'box Yc (px)',bc.Yc;
+        'box Xc (px)',bc.Xc;
+        ['box Y' char(963) ' (px)'],bc.Ys;
+        ['box X' char(963) ' (px)'],bc.Xs};   
+    
     tbl_analysis.Data=stranl;
     
     % Update box count string
@@ -1886,7 +1889,51 @@ function data=updateAnalysis(data)
 
         updateGaussPlot(data);
 
-    end    
+    end  
+    
+    
+    
+    fr=tbl_analysis.Data(:,2)';
+    
+    % Ensure fit results is a number
+    for n=1:length(fr)
+        % If value is empty, assign a zero
+        if isempty(fr{n})
+            fr{n}=0;
+        end
+        
+        % If string conver to number
+        if isstr(fr{n})
+            try
+                fr{n}=str2double(fr{n});
+            catch ME
+                fr{n}=NaN;
+            end
+        end
+    end
+    
+%     fr=cell2mat(fr);
+
+    fr=[data.Name fr];
+    
+    fr
+    
+    
+    %%%%%% Output to fit results
+    % Output some analysis to the main workspace, this is done to be
+    % comptaible with old regimens for fitting and analysis
+    
+    try
+        % Read in fitresults
+        ixon_fitresults=evalin('base','ixon_fitresults');        
+    catch ME
+        % Error means that it is probably undefined
+        ixon_fitresults={};
+    end
+    
+    M=size(ixon_fitresults,1)+1;                         % Find next row
+    ixon_fitresults(M:(M+size(fr,1)-1),1:size(fr,2))=fr; % Append data        
+    assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults    
     
 end
 
