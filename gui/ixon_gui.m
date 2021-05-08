@@ -15,7 +15,7 @@ function ixon_gui
 % interface.
 
 % Enable debug mode?
-doDebug=1;
+doDebug=0;
 if doDebug
    warning(['You are operating in DEBUG MODE. This removes ' ...
        'certain safety precautions. If not intended set the doDebug ' ...
@@ -1494,7 +1494,7 @@ co=get(gca,'colororder');
 hImg=imagesc(data.X,data.Y,data.Z);
 set(axImg,'box','on','linewidth',.1,'fontsize',10,'units','pixels',...
     'XAxisLocation','top','colormap',colormap(cmap),...
-    'xcolor',co(4,:),'ycolor',co(4,:),'ydir','normal');
+    'xcolor',co(4,:),'ycolor',co(4,:),'YDir','normal');
 hold on
 axImg.Position=[50 150 hp.Position(3)-200 hp.Position(4)-200];
 axis equal tight
