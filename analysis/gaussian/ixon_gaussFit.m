@@ -94,7 +94,7 @@ for n=1:length(ixondata)
             fprintf([str1 str2 ';']);
 
             % Perform the fit
-            fprintf(' fitting...');
+            fprintf(' performing 2d gauss fit ... ');
             t1=now;
             [fout,gof,output]=fit([xx2(:) yy2(:)],Z2(:),myfit,opt);
             
@@ -142,7 +142,7 @@ for n=1:length(ixondata)
             opt.Lower=[A*0.7 Xc-50 Yc-50 s1*.5 s2*.5 theta-5*(pi/180) -500];
 
             % Perform the fit
-            fprintf(' fitting...');
+            fprintf(' performing rotated 2d gauss fit ... ');
             t1=now;
             [fout,gof,output]=fit([xx2(:) yy2(:)],Z2(:),myfit,opt);
             t2=now;

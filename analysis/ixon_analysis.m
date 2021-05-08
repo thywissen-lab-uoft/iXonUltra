@@ -252,11 +252,11 @@ ixon_doGaussFit=1;
 ixondata=ixon_simple_pca(ixondata);
 
 gauss_opts=struct;
-gauss_opts.doRescale=1;
-gauss_opts.doMask=1;
-gauss_opts.Scale=0.5;
-gauss_opts.doRotate=1;
-gauss_opts.Mask=ixon_mask;     
+gauss_opts.doRescale=1;     % Rescaling the image makes fitting faster
+gauss_opts.doMask=1;        % Apply the image mask
+gauss_opts.Scale=0.5;       % Scale to rescale the image by
+gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
+gauss_opts.Mask=ixon_mask;  % The image mask
 
 if ixon_doGaussFit  
     ixondata=ixon_gaussFit(ixondata,gauss_opts);
