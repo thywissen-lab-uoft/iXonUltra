@@ -96,7 +96,67 @@ function data=ixon_gaussFit(data,opts)
         else
             % Rotated Gaussian Analysis
             % Very experimental
-            
+            % Z is a mxn matrix to which we want to fit an elliptic gaussian
+Z=double(Z);
+Dx=[1:size(Z,2)]';
+Dy=[1:size(Z,1)]';
+
+[xx,yy]=meshgrid(Dx,Dy);
+
+% Peak amplitude
+A=max(max(imgaussfilt(Z,5)));
+
+% X and Y center
+X=sum(Z,1);Y=sum(Z,2)';             % Get X and Y sum profiles
+Nx=sum(X);Ny=sum(Y);                % Get the total number of counts
+Xc=mean(Dx(X>.9*max(X)));           % X center (use >90% SNR)
+Yc=mean(Dy(Y>.9*max(Y)));           % Y center (use >90% SNR)
+
+% Size guess BE MORE CLEVER ABOUT THIS
+theta=(pi/180)*60;
+theta=(pi/180)*10;
+
+
+Sx=150;
+Sy=50;
+
+Sx=75;
+Sy=75;
+theta=0;
+
+
+% Copy the data
+data2=Z;xx2=xx;yy2=yy;
+
+% Elminate data points below a threshold to reduce # points to fit
+% th=0.05;
+% xx2(Z<th*A)=[];yy2(Z<th*A)=[];data2(Z<th*A)=[];
+
+
+a='cos(t)^2/(2*Xs^2)+sin(t)^2/(2*Ys^2)';
+a=['(' a ')'];
+a=[a '*(xx-Xc).^2'];
+
+b='-sin(2*t)/(4*Xs^2) + sin(2*t)/(4*Ys^2)';
+b=['(' b ')'];
+b=['2*' b '*(xx-Xc).*(yy-Yc)'];
+
+c='sin(t)^2/(2*Xs^2)+cos(t)^2/(2*Ys^2)';
+c=['(' c ')'];
+c=[c '*(yy-Yc).^2'];
+
+str=['A*exp(-(' a '+' b '+' c '))+bg'];
+
+myfit=fittype(str,...
+    'independent',{'xx','yy'},'coefficients',{'A','Xc','Xs','Yc','Ys','t','bg'});
+opt=fitoptions(myfit);
+opt.StartPoint=[A Xc Sx Yc Sy theta 0];
+
+% opt.Lower=[N0/10 10 1 10 1 0];
+opt.Upper=[2*A max(Dx) range(Dx) max(Dy) range(Dy) 4*pi 10];
+
+opt.Weights=[];
+
         end
     end
     data.GaussFit=GaussFit;
