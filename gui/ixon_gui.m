@@ -977,6 +977,21 @@ hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
 
     end
 
+% Checkbox for principal component analysis
+ttstr='Principal component analysis to determine cloud axes..';
+hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsize',8,...
+    'backgroundcolor','w','Position',[5 60 120 20],...
+    'ToolTipString',ttstr,'enable','on','callback',@hcpcaCB);
+
+    function hcpcaCB(src,~)
+       for n=1:length(pPCA)
+          if ~src.Value
+             pPCA.Visible='off'; 
+          end 
+       end  
+    end
+
+
 hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',8,...
     'backgroundcolor','w','Position',[5 40 100 20],...
     'ToolTipString',ttstr,'enable','on','callback',@hcgaussCB);
@@ -1450,7 +1465,7 @@ co=get(gca,'colororder');
 hImg=imagesc(data.X,data.Y,data.Z);
 set(axImg,'box','on','linewidth',.1,'fontsize',10,'units','pixels',...
     'XAxisLocation','top','colormap',colormap(cmap),...
-    'xcolor',co(4,:),'ycolor',co(4,:));
+    'xcolor',co(4,:),'ycolor',co(4,:),'ydir','normal');
 hold on
 axImg.Position=[50 150 hp.Position(3)-200 hp.Position(4)-200];
 axis equal tight
@@ -1549,7 +1564,7 @@ pXF=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'line
 
 % Y Cut/Sum Axis
 hAxY=axes('box','on','linewidth',1,'fontsize',10,'units','pixels',...
-    'YAxisLocation','Right','YDir','Reverse','parent',hp);
+    'YAxisLocation','Right','YDir','normal','parent',hp);
 hAxY.Position=[axImg.Position(1)+axImg.Position(3) axImg.Position(2) l axImg.Position(4)];
 hold on
 % Add Y data data and fit plots
@@ -1752,7 +1767,33 @@ end
 % updateAnalysis
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Performs analysis and updates graphics as required.
-function data=updateAnalysis(data)
+function data=updateAnalysis(data)    
+    
+    if hcPCA.Value      
+        % Finding cloud principal axes
+        out=ixon_simple_pca(data);
+ 
+        x1=out.Mean(1)+out.Radii(1)*out.PCA(1,1)*[-1 1];
+        y1=out.Mean(2)+out.Radii(1)*out.PCA(2,1)*[-1 1];
+
+        x2=out.Mean(1)+out.Radii(2)*out.PCA(1,2)*[-1 1];
+        y2=out.Mean(2)+out.Radii(2)*out.PCA(2,2)*[-1 1];
+        
+        % PCA analysis table string
+        stranl={'','';
+            ['pca ' char(952) '1'] ,atan(out.PCA(2,1)/out.PCA(1,1))*180/pi;
+            ['pca ' char(952) '2'],atan(out.PCA(2,2)/out.PCA(1,2))*180/pi;
+            ['pca ' char(963) '1'],out.Radii(1);
+            ['pca ' char(963) '2'],out.Radii(2);
+            ['pca xc'],out.Mean(1);
+            ['pca yc'],out.Mean(2);};
+
+        tbl_analysis.Data=[tbl_analysis.Data; stranl];
+        
+        set(pPCA(1),'XData',x1,'YData',y1,'Visible','on');
+        set(pPCA(2),'XData',x2,'YData',y2,'Visible','on');
+    end
+    
     if hcGauss.Value
         disp('Fitting data to 2D gaussian...')   
         opts=struct;
@@ -1763,17 +1804,7 @@ function data=updateAnalysis(data)
         opts.Mask=ixon_mask;
         
         data=ixon_gaussFit(data,opts);  
-        
-        out=ixon_simple_pca(data);
- 
-        x1=out.Mean(1)+out.Radii(1)*out.PCA(1,1)*[-1 1];
-        y1=out.Mean(2)+out.Radii(1)*out.PCA(2,1)*[-1 1];
-
-        x2=out.Mean(1)+out.Radii(2)*out.PCA(1,2)*[-1 1];
-        y2=out.Mean(2)+out.Radii(2)*out.PCA(2,2)*[-1 1];
-        
-        set(pPCA(1),'XData',x1,'YData',y1);
-        set(pPCA(2),'XData',x2,'YData',y2);
+       
         
         cGaussRet.Enable='on';
         updateGaussPlot(data);

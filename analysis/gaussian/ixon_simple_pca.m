@@ -1,5 +1,5 @@
 function out=ixon_simple_pca(ixondata)
-
+tic
 clear out
 for kk=1:length(ixondata)
     out(kk)=struct;
@@ -11,13 +11,15 @@ for kk=1:length(ixondata)
     B=B/max(max(B));
     
     % Find 30%-40% 1/e=.36
-    C=(B>.3).*(B<.4);
+    C=(B>.32).*(B<.4);
     [y,x]=find(C);
     
+    pp=[x y];
+
     % Undersample
-    n=500;
+%     n=5000;
     % p = randperm(length(y),n);
-    pp=datasample([x y],n);
+%     pp=datasample([x y],n);
     
     % Do PCA
     [cc,score,latent,tsquared,explained,mu]=pca(pp);
@@ -38,7 +40,7 @@ for kk=1:length(ixondata)
     out(kk).Radii=[s1 s2];
     out(kk).PCA=cc;
 end
-
+toc
 
 end
 
