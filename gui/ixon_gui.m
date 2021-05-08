@@ -35,6 +35,9 @@ ixon_mask=ixon_mask.BW;
 
 % Add analysis paths
 addpath(analysis_path);addpath(genpath(analysis_path))
+
+
+
 %% Other Settings
 
 % Choose the default colormap
@@ -1361,6 +1364,18 @@ tblcross.Position(1:2)=[20 cCross.Position(2)-tblcross.Position(4)];
         end
     end
 
+% Text label for fit results output variable
+frtext=uicontrol('parent',hpDisp,'units','pixels','string','fit results variable',...
+    'fontsize',7,'backgroundcolor','w','style','text');
+frtext.Position(3:4)=frtext.Extent(3:4);
+frtext.Position(1:2)=[2 20];
+
+% Drop down menu for fit results output
+frslct=uicontrol('parent',hpDisp','units','pixels','style','popupmenu',...
+    'String',{'a','b','c'},'fontsize',8);
+frslct.Position(3)=hpDisp.Position(3)-10;
+frslct.Position(1:2)=[2 5];
+
 %% Tabular Data Results Panel
 % Panel for parameters and analysis results.
 
@@ -1607,6 +1622,9 @@ pYF=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'line
 set(axImg,'XLim',tbl_dispROI.Data(1:2),'YLim',tbl_dispROI.Data(3:4));
 
 
+
+
+
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % updateImages
@@ -1700,14 +1718,26 @@ function data=updateImages(data)
         set(pX,'XData',data.X,'YData',Zx);
         set(pY,'XData',Zy,'YData',data.Y);
         drawnow;
+    end           
+        
+    % Update table parameters (alphebetically)
+    [~,inds] = sort(lower(fieldnames(data.Params)));
+    params = orderfields(data.Params,inds);    
+    tbl_params.Data=[fieldnames(params), ...
+        struct2cell(params)];    
+    
+    % Update parameter for fit results
+    frVar=frslct.String{frslct.Value};   % Old fitresults variable
+    frslct.String=fieldnames(params); 
+    ind=find(ismember(frslct.String,frVar));
+    if ~isempty(ind)
+        frslct.Value=ind;
+    else
+        ind=find(ismember(frslct.String,'ExecutionDate'));
+        frslct.Value=ind;
     end
     
-        
-        
-    % Update table parametesr
-    tbl_params.Data=[fieldnames(data.Params), ...
-        struct2cell(data.Params)]; 
-    
+    % Update history index
     updateHistoryInd(data);  
     
     drawnow;
@@ -1912,12 +1942,19 @@ function data=updateAnalysis(data)
         end
     end
     
-%     fr=cell2mat(fr);
-
-    fr=[data.Name fr];
+    % Get fit results variable
+    frVar=frslct.String{frslct.Value};    
+    val=data.Params.(frVar);
     
-    fr
+    % Convert execution date into a time
+    if isequal(frVar,'ExecutionDate') 
+       val=datenum(val); 
+       val=val-floor(val);
+       val=val*24*60;
+    end
     
+    % Create fit results object
+    fr=[data.Name frVar val fr];   
     
     %%%%%% Output to fit results
     % Output some analysis to the main workspace, this is done to be
@@ -2038,9 +2075,12 @@ end
 
 %% FINISH
 data=updateImages(data);
+
+
 drawnow;
 SizeChangedFcn
 axes(axImg);
+
 
 end
 
