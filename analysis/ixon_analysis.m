@@ -54,7 +54,7 @@ varType='param'; % always select 'param' for now
 
 
 
-xVar='Raman_Time';
+xVar='ExecutionDate';
 unit='s';
 
 
@@ -166,22 +166,50 @@ ixonROI = [1 512 1 512];
 
 [ixondata.ROI]=deal(ixonROI);
 
-%% BG Subtract
-% FOR NOW Z is always just 2-1 and done in the GUI
+%% Image Processing
 
-% Subtract off electronical bias offset
+% Electronic bias offset
+doSubBias=1;
+offset=200; % (Doesnt affect calculations)
+
+% Ixon mask
+doApplyMask=1;
+maskname=fullfile('ixon_mask.mat');
+ixon_mask=load(maskname);
+ixon_mask=ixon_mask.BW;
+
+% Gauss Filter
+doGaussFilter=1;
+filter_radius=0.25;  % Gaussian filter radius
+
+
 for kk=1:length(ixondata)
-    for jj=1:size(ixondata(kk).RawImages,3)
-        ixondata(kk).RawImages(:,:,jj)=ixondata(kk).RawImages(:,:,jj)-200;
+    imgs=ixondata(kk).RawImages;    
+    
+    for jj=1:size(ixondata(kk).RawImages,3)   
+        if doSubBias
+           imgs(:,:,jj)=imgs(:,:,jj)-offset; 
+        end
+        
+        if doApplyMask
+           imgs(:,:,jj)=imgs(:,:,jj).*ixon_mask;
+        end
+        
+        if doGaussFilter
+           imgs(:,:,jj)=imgaussfilt(imgs(:,:,jj),filter_radius);
+        end
     end
+    
+    % For now we assume only two images
+    Z=imgs(:,:,2)-imgs(:,:,1);
+    ixondata(kk).Z=Z;
 end
+
 
 %% Basic Raw Image Analysis
 
 doRawImageAnalysis=1;
-if doRawImageAnalysis
-    
-
+if doRawImageAnalysis   
 
 % Do basic analysis on raw counts
 ixondata=ixon_computeRawCounts(ixondata);
@@ -264,7 +292,7 @@ ixon_animateOpts.EndDelay=2;     % Time to hold final picture
 
 % animateOpts.Order='descend';    % Asceneding or descending
 ixon_animateOpts.Order='ascend';
-ixon_animateOpts.CLim=[0 14000];   % Color limits
+ixon_animateOpts.CLim=[0 20000];   % Color limits
 
 ixon_animate(ixondata,xVar,ixon_animateOpts);
 end

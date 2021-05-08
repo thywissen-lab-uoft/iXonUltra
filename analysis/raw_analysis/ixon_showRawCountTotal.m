@@ -1,7 +1,7 @@
 function hF=ixon_showRawCountTotal(ixondata,xVar,opts)
 % Grab important global variables
 
-global imgdir
+global ixon_imgdir
 
 params=[ixondata.Params];
 acq=[ixondata.AcquisitionInformation];
@@ -43,14 +43,14 @@ end
 
 
 % Create the name of the figure
-[filepath,name,~]=fileparts(imgdir);
+[filepath,name,~]=fileparts(ixon_imgdir);
 
-figDir=fullfile(imgdir,'figures');
+figDir=fullfile(ixon_imgdir,'figures');
 if ~exist(figDir,'dir')
    mkdir(figDir); 
 end
 
-strs=strsplit(imgdir,filesep);
+strs=strsplit(ixon_imgdir,filesep);
 str=[strs{end-1} filesep strs{end}];
 
 hF=figure('Name',['Raw Counts : '  str],...

@@ -99,7 +99,7 @@ t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
 % Axes for data
 hAxImg=axes('parent',hF,'units','pixels','Box','on','XGrid','on',...
-    'YGrid','on','YDir','reverse','XAxisLocation','bottom');
+    'YGrid','on','YDir','normal','XAxisLocation','bottom');
 % hAxImg.Position(2)=60;
 % hAxImg.Position(1)=60;
 % hAxImg.Position(3)=hAxImg.Position(4);
@@ -131,7 +131,7 @@ co=get(gca,'colororder');
 hold on
 colorbar
 
-set(gca,'units','pixels','box','on','linewidth',2);
+set(gca,'units','pixels','box','on','linewidth',2,'ydir','normal');
 
 % Add ROI
 for kk=1:size(ixondata(1).ROI,1)
@@ -154,7 +154,7 @@ for kk=1:length(uxvals)   % Iterate over all unique xvalues
 
 
     set(hImg,'XData',X,'YData',Y,'CData',Zall(:,:,kk));  % Image data
-    set(gca,'XDir','normal','YDir','Reverse');
+    set(gca,'XDir','normal','YDir','normal');
     
     drawnow % update graphcis
     

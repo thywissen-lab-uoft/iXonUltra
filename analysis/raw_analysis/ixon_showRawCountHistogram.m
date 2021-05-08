@@ -1,5 +1,5 @@
 function hF=ixon_showRawCountHistogram(ixondata,xVar,opts)
-global imgdir
+global ixon_imgdir
 imgnum=opts.ImageNumber;
 
 params=[ixondata.Params];
@@ -34,7 +34,7 @@ end
     
 %% Make Fgiure
 
-strs=strsplit(imgdir,filesep);
+strs=strsplit(ixon_imgdir,filesep);
 str=[strs{end-1} filesep strs{end}];
 
 

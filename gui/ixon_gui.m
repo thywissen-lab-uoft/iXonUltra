@@ -2,7 +2,6 @@ function ixon_gui
 % ixon_gui.m
 %
 % Author      : C. Fujiwara
-% Last Edited : 2021/05/06
 %
 % This code operates the iXon Ultra camera that the lattice experiment
 % uses to take fluorescence images of the quantum gas microscope.
@@ -17,10 +16,23 @@ function ixon_gui
 
 % Enable debug mode?
 doDebug=0;
+if doDebug
+   warning(['You are operating in DEBUG MODE. This removes ' ...
+       'certain safety precautions. If not intended set the doDebug ' ...
+       'flag to 0.']); 
+end
 
 % Manification (as measured in Graham's thesis)
 mag=[82.6 83.2];
 
+% Load the mask file
+analysis_path = fullfile(fileparts(fileparts(mfilename('fullpath'))),'analysis');
+maskname=fullfile(analysis_path,'ixon_mask.mat');
+ixon_mask=load(maskname);
+ixon_mask=ixon_mask.BW;
+
+% Add analysis paths
+addpath(analysis_path);addpath(genpath(analysis_path))
 %% Other Settings
 
 % Choose the default colormap
@@ -55,8 +67,6 @@ data=load(fname);
 data=data.data;
 data.Z=data.RawImages(:,:,2)-data.RawImages(:,:,1);
 Z=data.Z;
-% Initializse image data structure with dummy data
-
 
 %% Initialize Drivers and GUI
 
@@ -68,7 +78,7 @@ addpath(genpath(fullfile(matlabroot,'toolbox','Andor')));
 mpath = fileparts(mfilename('fullpath'));
 addpath(mpath);addpath(genpath(mpath))
 
-% Find any instances of the GUI and bring it to focus, this is to avoid
+% Find any instances of the GUI and bring it to focus, this is tof avoid
 % restarting the GUI which may leave the shutter open.
 h = findall(0,'tag','GUI');
 for kk=1:length(h)
@@ -128,23 +138,14 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
         end
         
         if doClose
-            disp('Closing iXon GUI...');
-
-            % Stop acquistion if necessary
-
-            % Stop Cooling if necessary
-
-            % Actually, maybe don't allow closing of GUI. Or have a confirm
-            % dialog option
-
+            disp('Closing iXon GUI...');      
 
             stop(statusTimer);
             if cam_status.isConnected
                 disconnectCam;
             end
             delete(statusTimer);
-
-            delete(fig);                % Delete the figure
+            delete(fig);      % Delete the figure          
         end
     end
 
@@ -186,7 +187,9 @@ function SizeChangedFcn(~,~)
         hbSlctLim.Position(2)=tbl_dispROI.Position(2)+2;
         climtbl.Position(2)=tbl_dispROI.Position(2)-climtbl.Position(4)-5;
         climtext.Position(2)=climtbl.Position(2);
-        bgPlot.Position(2)=climtbl.Position(2)-bgPlot.Position(4)-2;
+        cAutoColor.Position(2)=climtext.Position(2)-25;
+        
+        bgPlot.Position(2)=cAutoColor.Position(2)-bgPlot.Position(4)-2;
         cGaussRet.Position(2)=bgPlot.Position(2)-20;
         cCoMStr.Position(2)=cGaussRet.Position(2)-20;
         cCross.Position(2)=cCoMStr.Position(2)-20;
@@ -218,13 +221,11 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        if ~out && ~doDebug
            warning('Unable to connect to camera');
            return;
-       end
-       
+       end       
        cam_status.isConnected=1;
        
        % Close the shutter
        setCameraShutter(0);
-
        
        % Load default acquisition settings
        loadAcquisitionSettings;     
@@ -438,7 +439,12 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
         % Get the temperature
         [out,temp,outstr]=getTemperature;
         strtemp.String=[num2str(temp) ' C'];        
-        cam_status.Temperature=temp;        
+        cam_status.Temperature=temp;   
+        
+        if cam_status.Temperature>-60 && isequal(hbCloseShutter.Enable,'on')
+            warning('Shutter is open and temperature above -60. Closing shutter');
+            shutterCB([],[],0);
+        end
         
         switch outstr
             case 'DRV_TEMPERATURE_STABILIZED'
@@ -472,8 +478,15 @@ hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
     'ToolTipString',ttstr);
 
     function shutterCB(~,~,state)
+        
+        if state && cam_status.Temperature>-60
+            warning('Denying your request to open the shutter above -60C.');
+            return;
+        end
+        
         out=setCameraShutter(state);
         
+        % Exit if bad return
         if ~out && ~doDebug
            return; 
         end
@@ -600,11 +613,11 @@ hbhistoryRight.Position=[131 2 12 20];
         try
             newdata=load(filename);
             data=newdata.data;
-            updateImages(data);      
+            data=updateImages(data);      
         catch ME
             warning('Unable to load image, reverting to old data');
             data=olddata;
-            updateImages(data);      
+            data=updateImages(data);      
         end
     end
 
@@ -712,7 +725,7 @@ hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,
 ttstr='Reinitialize camera acquisition after image acquisition.';
 hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',8,...
     'backgroundcolor','w','Position',[5 hpAcq.Position(4)-55 120 20],...
-    'ToolTipString',ttstr,'enable','on');
+    'ToolTipString',ttstr,'enable','on','value',1);
 
 % Button group for acquisition mode
 bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
@@ -823,27 +836,37 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
 %% Image Process Panel
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-60 160 80],'title','processing');
+    'Position',[0 hpAcq.Position(2)-60 160 100],'title','processing');
 
 % Checkbox for applying point spread function (should this be a separate
 % panel?)
+ttstr='Sharpen image using point spread function';
 hcPSF=uicontrol(hpADV,'style','checkbox','string','sharpen w/ PSF','fontsize',8,...
     'backgroundcolor','w','Position',[5 0 100 20],'callback',@() disp('hi'),...
     'ToolTipString',ttstr,'enable','off');
 
 % Checkbox for new processings
-hcMask=uicontrol(hpADV,'style','checkbox','string','objective mask','fontsize',8,...
-    'backgroundcolor','w','Position',[5 20 100 20],'callback',@() disp('hi'),...
-    'ToolTipString',ttstr,'enable','off');
+ttstr='Apply mask to image to eliminate aperture clipping';
+hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',8,...
+    'backgroundcolor','w','Position',[5 20 120 20],...
+    'ToolTipString',ttstr,'enable','on','Value',1);
+
+% Checkbox for new processings
+ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
+hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',8,...
+    'backgroundcolor','w','Position',[5 40 100 20],...
+    'ToolTipString',ttstr,'enable','on','Value',1);
+
 
 % Checkbox for enabling 2D gauss fitting
+ttstr='Apply gaussian filter to smooth image';
 cGaussFilter=uicontrol('style','checkbox','string','gauss filter',...
     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',0);
-cGaussFilter.Position=[5 40 80 20];
+    'value',1,'ToolTipString',ttstr);
+cGaussFilter.Position=[5 60 80 20];
 
 tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',.5,'columneditable',[true],...
+    'rowname',{},'columnname',{},'Data',.25,'columneditable',[true],...
     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
 tblGaussFilter.Position=[80 cGaussFilter.Position(2)-1 45 20];
 
@@ -859,7 +882,8 @@ hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
 hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
     function processCB(~,~)
-       disp('reprocessing images...'); 
+        data=updateImages(data);
+        disp('Reprocessing images...'); 
     end
 
 %% Analysis Panel
@@ -953,20 +977,71 @@ hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
 
     end
 
+% Checkbox for principal component analysis
+ttstr='Principal component analysis to determine cloud axes..';
+hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsize',8,...
+    'backgroundcolor','w','Position',[5 60 120 20],...
+    'ToolTipString',ttstr,'enable','on','callback',@hcpcaCB);
 
+    function hcpcaCB(src,~)
+       for n=1:length(pPCA)
+          if ~src.Value
+             pPCA(n).Visible='off'; 
+          end 
+       end  
+       
+       if src.Value
+          hcGaussRot.Enable='on';
+       else
+            hcGaussRot.Enable='off';
+            hcGaussRot.Value=0;
+       end
+    end
 
-
-hcBox=uicontrol(hpAnl,'style','checkbox','string','center of mass','fontsize',8,...
-    'backgroundcolor','w','Position',[5 60 100 20],'callback',@(~,~) disp('hi'),...
-    'ToolTipString',ttstr,'value',1);
 
 hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',8,...
-    'backgroundcolor','w','Position',[5 40 100 20],'callback',@(~,~) disp('hi'),...
-    'ToolTipString',ttstr,'enable','off');
+    'backgroundcolor','w','Position',[5 40 100 20],...
+    'ToolTipString',ttstr,'enable','on','callback',@hcgaussCB);
+
+    function hcgaussCB(src,~)
+       for n=1:length(pXF)
+          pXF(n).Visible=src.Value;
+          pYF(n).Visible=src.Value;
+          
+          if ~src.Value
+             pGaussRet(n).Visible='off';
+             cGaussRet.Value=0;
+             cGaussRet.Enable='off';
+          end
+       end
+       
+       if src.Value
+           hcGaussRot.Value=0;
+       end
+
+    end
 
 hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize',8,...
     'backgroundcolor','w','Position',[5 20 100 20],'callback',@(~,~) disp('hi'),...
-    'ToolTipString',ttstr,'enable','off');
+    'ToolTipString',ttstr,'enable','off','callback',@hcgaussRotCB);
+
+    function hcgaussRotCB(src,~)
+      for n=1:length(pXF)
+          pXF(n).Visible=src.Value;
+          pYF(n).Visible=src.Value;
+          
+          if ~src.Value
+             pGaussRet(n).Visible='off';
+             cGaussRet.Value=0;
+             cGaussRet.Enable='off';
+          end
+      end
+      
+      if src.Value
+         hcGauss.Value=0;
+      end
+        
+    end
 
 hcSingleAtoms=uicontrol(hpAnl,'style','checkbox','string','find single atoms','fontsize',8,...
     'backgroundcolor','w','Position',[5 0 100 20],'callback',@(~,~) disp('hi'),...
@@ -1118,6 +1193,13 @@ climtbl=uitable('parent',hpDisp,'units','pixels','RowName',{},'ColumnName',{},..
 climtbl.Position(3:4)=climtbl.Extent(3:4);
 climtbl.Position(1:2)=[65 tbl_dispROI.Position(2)-climtext.Position(4)-5];
 
+
+    function beep(~,~)
+        disp('hello');
+        climtbl.Data=axImg.CLim;
+        drawnow;
+    end
+
 % Callback for changing the color limits table
     function climCB(src,evt)
         try
@@ -1128,23 +1210,48 @@ climtbl.Position(1:2)=[65 tbl_dispROI.Position(2)-climtext.Position(4)-5];
         end
     end
 
+cAutoColor=uicontrol(hpDisp,'style','checkbox','string','auto clim?',...
+    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cAutoCLIMCB,...
+    'enable','on','value',0);
+cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
+
+    function cAutoCLIMCB(src,~)     
+        if src.Value
+            climtbl.Enable='off';
+            axImg.CLimMode='auto';
+            drawnow;
+            
+            climtbl.Data=axImg.CLim;
+        else
+            climtbl.Enable='on';
+            axImg.CLimMode='manual';            
+            drawnow;
+            climtbl.Data=axImg.CLim;
+        end 
+    end 
+
+
 %%%%%% Plot Options %%%%%%
 
 % Button group for deciding what the X/Y plots show
 bgPlot = uibuttongroup(hpDisp,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chPlotCB);  
-bgPlot.Position(3:4)=[125 40];
+bgPlot.Position(3:4)=[125 20];
 bgPlot.Position(1:2)=[2 climtbl.Position(2)-bgPlot.Position(4)-2];
     
 % Radio buttons for cuts vs sum
 rbCut=uicontrol(bgPlot,'Style','radiobutton','String','plot cut',...
-    'Position',[0 0 120 20],'units','pixels','backgroundcolor','w','Value',1);
+    'Position',[0 0 60 20],'units','pixels','backgroundcolor','w','Value',1);
 rbSum=uicontrol(bgPlot,'Style','radiobutton','String','plot sum',...
-    'Position',[0 20 120 20],'units','pixels','backgroundcolor','w','Value',0);
+    'Position',[60 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
 
     function chPlotCB(~,~)
-%        updatePlots(dstruct); 
-        updateImages(data);
+        % Update Data Plot
+        updateDataPlots(data);
+        
+        if hcGauss.Value
+           updateGaussPlot(data); 
+        end
     end
 
 %%%%%% Extra Display Stuff %%%%%%
@@ -1239,11 +1346,14 @@ tblcross.Position(1:2)=[20 cCross.Position(2)-tblcross.Position(4)];
         try
             % Update the cross hair position
             pCrossY.XData=[1 1]* tblcross.Data(1,1); 
-            pCrossX.YData=[1 1]* tblcross.Data(1,2);            
-            Zx=data.Z(tblcross.Data(1,1),:);
-            set(pX,'XData',data.X,'YData',Zx);
-            Zy=data.Z(:,tblcross.Data(1,2));
-            set(pY,'XData',Zy,'YData',data.Y);            
+            pCrossX.YData=[1 1]* tblcross.Data(1,2);     
+            
+            updateDataPlots(data);
+
+            if hcGauss.Value
+               updateGaussPlot(data); 
+            end
+            
         catch
            warning('Unable to change cross hair position.');
         end
@@ -1326,8 +1436,8 @@ tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...
     'Position',[0 0 1 1]);
 
 % Table for analysis outputs
-tbl_analysis(1)=uitable(tabs(3),'units','normalized','RowName',{},'ColumnName',{},...
-    'fontsize',8,'ColumnWidth',{60 65 65},'columneditable',false(ones(1,3)),...
+tbl_analysis=uitable(tabs(3),'units','normalized','RowName',{},'ColumnName',{},...
+    'fontsize',8,'ColumnWidth',{100 85},'columneditable',false(ones(1,2)),...
     'Position',[0 0 1 1]);
 
 
@@ -1409,12 +1519,19 @@ pCrossYDrag.on_move_callback=@Yupdate;
         rbCut.Value=1;
         rbSum.Value=0;
         
+        
+        
         % Get the cross hair poisition
         Ycross=round(g.YData(1));
         Zx=data.Z(Ycross,:);
         set(pX,'XData',data.X,'YData',Zx);
         tblcross.Data(1,2)=Ycross;
         
+        if hcGauss.Value || hcGaussRot.Value
+            updateGaussPlot(data);
+        end
+            
+        g.YData=round(g.YData);
         drawnow;       
     end
 
@@ -1422,13 +1539,19 @@ pCrossYDrag.on_move_callback=@Yupdate;
     function Yupdate(g,~)
         % If you drag, you're not plotting a sum
         rbCut.Value=1;
-        rbSum.Value=0;
+        rbSum.Value=0;       
         
         % Get the cross hair poisition
         Xcross=round(g.XData(1));
         Zy=data.Z(:,Xcross);
         set(pY,'YData',data.Y,'XData',Zy);
         tblcross.Data(1,1)=Xcross;
+        
+        if hcGauss.Value
+            updateGaussPlot(data);
+        end
+        g.XData=round(g.XData);
+
 
         drawnow;       
     end
@@ -1451,6 +1574,9 @@ pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2);
 pGaussRet=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:));
 % Color bar
 cBar=colorbar('fontsize',8,'units','pixels','location','northoutside');
+
+pPCA(1)=plot(0,0,'-','linewidth',1,'color','r');
+pPCA(2)=plot(0,0,'-','linewidth',1,'color','r');
 
 axImg.CLim=climtbl.Data;
 drawnow;
@@ -1480,6 +1606,10 @@ set(axImg,'XLim',tbl_dispROI.Data(1:2),'YLim',tbl_dispROI.Data(3:4));
 
 
 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% updateImages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Initial function call to update basic analysis graphics on new data input
 
 function data=updateImages(data)
     % Grab the ROI
@@ -1487,20 +1617,55 @@ function data=updateImages(data)
     data.ROI=ROI;       
     x=ROI(1):ROI(2);
     y=ROI(3):ROI(4); 
+    
+    imgs=data.RawImages;
+    
+    if hcSubBias.Value
+        for p=1:size(imgs,3)
+            imgs(:,:,p)=imgs(:,:,p)-200;
+        end
+    end
+    
+    if hcMask.Value
+        disp('Applying mask.');
+        for p=1:size(imgs,3)
+            imgs(:,:,p)=imgs(:,:,p).*ixon_mask; 
+        end
+    end
+    
+    if cGaussFilter.Value  
+        disp('Applying gaussian filter.');
+        for p=1:size(imgs,3)
+            imgs(:,:,p)=imgaussfilt(imgs(:,:,p),tblGaussFilter.Data); 
+        end
+    end
 
+    % For now always assumed that its PWA,BKGD
+    data.Z=imgs(:,:,2)-imgs(:,:,1);    
+    
     % Create sub image to do center of mass analysis
     Zsub=data.Z(y,x);
     
-    % Perform Box Count
-    data=boxCount(data);
+    % Perform Box Count ALWAYS DONE
+    data=ixon_boxCount(data);
+    bc=data.BoxCount;
+    
+    % Box counts analysis table string
+    stranl={'box sum (counts)',num2str(bc.Nraw,'%.3e');
+        'box peak (counts)',num2str(max(max(Zsub)),'%.3e');
+        'box Yc (px)',round(bc.Yc,1);
+        'box Xc (px)',round(bc.Xc,1);
+        ['box Y' char(963) ' (px)'],round(bc.Ys,1);
+        ['box X' char(963) ' (px)'],round(bc.Xs,1)};
+    tbl_analysis.Data=stranl;
     
     % Update box count string
-    str=[ num2str(max(max(data.Z)),'%.2e') ' max counts ' newline ...
-        num2str(data.BoxCount.Nraw,'%.2e') ' counts' newline ...
-        '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(data.BoxCount.Xc,1)) ',' ...
-        num2str(round(data.BoxCount.Yc,1)) ')$' newline ...
-        '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(data.BoxCount.Xs,1)) ',' ...
-        num2str(round(data.BoxCount.Ys,1)) ')$'];    
+    str=[ num2str(max(max(Zsub)),'%.2e') ' max counts ' newline ...
+        num2str(bc.Nraw,'%.2e') ' counts' newline ...
+        '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(bc.Xc,1)) ',' ...
+        num2str(round(bc.Yc,1)) ')$' newline ...
+        '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs,1)) ',' ...
+        num2str(round(bc.Ys,1)) ')$']; 
     
     % Update box count string object
     set(tCoMAnalysis,'String',str);    
@@ -1527,82 +1692,254 @@ function data=updateImages(data)
     
     % Update plots if cut
     if rbCut.Value
-        Zy=data.Z(:,round(data.BoxCount.Xc));
-        Zx=data.Z(:,round(data.BoxCount.Yc));
+        Zy=data.Z(:,pCrossX.YData(1));
+        Zx=data.Z(pCrossY.XData(1),:);
         set(pX,'XData',data.X,'YData',Zx);
         set(pY,'XData',Zy,'YData',data.Y);
         drawnow;
     end
     
+        
+        
     % Update table parametesr
     tbl_params.Data=[fieldnames(data.Params), ...
         struct2cell(data.Params)]; 
     
-    updateHistoryInd(data);   
-  
+    updateHistoryInd(data);  
+    
+    drawnow;
+    climtbl.Data=axImg.CLim;
+
+    disp('')
+    disp('Performing fits and analysis.');
+    
+    % Now do the fits
+    data=updateAnalysis(data);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% updateDataPlots
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This function graphically updates the x and y data plots
 
+function updateDataPlots(data)
+    % Grab the ROI
+    ROI=tblROI.Data;
+    data.ROI=ROI;       
+    x=ROI(1):ROI(2);
+    y=ROI(3):ROI(4); 
 
-data=updateImages(data);
-drawnow;
-SizeChangedFcn
-axes(axImg);
+    % Image over the ROI domain
+    Zsub=data.Z(y,x);
 
-%%
-function imgs=grabRawImages
-
-    % How many images to grab
-    [ret,first,last] = GetNumberNewImages;
+    % Update plots if sum
+    if rbSum.Value
+        Zy=sum(Zsub,2);
+        Zx=sum(Zsub,1);          
+        set(pX,'XData',x,'YData',Zx);
+        set(pY,'XData',Zy,'YData',y);
+        drawnow;
+    end
     
-    numpix=512^2;
-    % Grab the data (number just sets buffer size)
-    [ret,D] = GetAcquiredData(last*512^2);    
-
-    imgs={};
-    imgmats=zeros(512,512,last);
-
-    for j = 1:last % break up into individual images
-        ii=double(D((1+(j-1)*numpix):(j*numpix)));
-        imgs{j} = reshape(ii,512,512);
-        % Subtract off aritifical baseline counts (see manual).
-%         imgs{j}=imgs{j}-200;
-        imgmats(:,:,j)=imgs{j};
-    end 
-    
-    imgs=imgmats;  
+    % Update plots if cut
+    if rbCut.Value
+        indy=find(round(pCrossX.YData(1))==y,1);           % Y center
+        indx=find(round(pCrossY.XData(1))==x,1);           % X center        
+        
+        Zy=data.Z(:,indx);        
+        Zx=data.Z(indy,:);
+        
+        set(pX,'XData',data.X,'YData',Zx);
+        set(pY,'XData',Zy,'YData',data.Y);
+        drawnow;
+    end   
 end
 
-function mydata=processImages(imgs)
-    mydata=struct;
-    % Create the image data structure
-    mydata=struct;
-    mydata.Date=datevec(now);
-    mydata.Name=['iXonUltra_' datestr(mydata.Date,'yyyy-mm-dd_HH-MM-SS')];   
-
-    % Grab the images
-    mydata.RawImages=imgs;
-
-    % Add magnification
-    mydata.Magnification=mag;
+function updateGaussPlot(data)
     
-    % Add X and Y vectors
-    mydata.X=1:size(mydata.RawImages,2);
-    mydata.Y=1:size(mydata.RawImages,1);    
     
-    % For now always assumed that its PWA,BKGD
-    mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
-   
+    for n=1:length(data.GaussFit)
+        ROI=data.ROI(n,:);
+        x=ROI(1):ROI(2);
+        y=ROI(3):ROI(4);
+        
+        % Grab fit data
+        fout=data.GaussFit{n};
+        [xx,yy]=meshgrid(x,y);
+        zF=feval(fout,xx,yy); 
 
-    % Grab the sequence parameters
-    [mydata.Params,dstr]=grabSequenceParams;        
-    mydata.Params.ExecutionDate=dstr;    
+        % Evaluate and plot 1/e^2 gaussian reticle
+        t=linspace(0,2*pi,100);  
+        
+        if ismember('theta',coeffnames(fout))
+            xR=fout.Xc+fout.s1*cos(fout.theta)*cos(t)-fout.s2*sin(fout.theta)*sin(t);
+            yR=fout.Yc+fout.s1*sin(fout.theta)*cos(t)+fout.s2*cos(fout.theta)*sin(t); 
+        else
+            xR=fout.Xc+fout.s1*cos(t);
+            yR=fout.Yc+fout.s2*sin(t);    
+        end   
+        set(pGaussRet(n),'XData',xR,'YData',yR,'linewidth',2);  
+                
+        drawnow;
 
-    % Append acquisition information
-    mydata.CameraInformation=cam_info;
-    mydata.AcquisitionInformation=acq;
-    mydata.AcquisitionDescription=desc;
+        if rbCut.Value            
+
+            indy=find(round(pCrossX.YData(1))==y,1);           % Y center
+            indx=find(round(pCrossY.XData(1))==x,1);           % X center               
+
+            ZyF=zF(:,indx);
+            ZxF=zF(indy,:);
+
+            set(pXF(n),'XData',x,'YData',ZxF,'Visible','on');
+            set(pYF(n),'XData',ZyF,'YData',y,'Visible','on');
+        else    
+            ZyF=sum(zF,2);
+            ZxF=sum(zF,1);   
+
+            set(pXF(n),'XData',x,'YData',ZxF,'Visible','on');
+            set(pYF(n),'XData',ZyF,'YData',y,'Visible','on');
+        end  
+    end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% updateAnalysis
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Performs analysis and updates graphics as required.
+function data=updateAnalysis(data)    
+    
+    % Update PCA analysis
+    if hcPCA.Value      
+        % Finding cloud principal axes
+        out=ixon_simple_pca(data);
+ 
+        x1=out.Mean(1)+out.Radii(1)*out.PCA(1,1)*[-1 1];
+        y1=out.Mean(2)+out.Radii(1)*out.PCA(2,1)*[-1 1];
+
+        x2=out.Mean(1)+out.Radii(2)*out.PCA(1,2)*[-1 1];
+        y2=out.Mean(2)+out.Radii(2)*out.PCA(2,2)*[-1 1];
+        
+        % PCA analysis table string
+        stranl={'','';
+            ['pca ' char(952) '1 (deg)'] ,atan(out.PCA(2,1)/out.PCA(1,1))*180/pi;
+            ['pca ' char(952) '2 (deg)'],atan(out.PCA(2,2)/out.PCA(1,2))*180/pi;
+            ['pca ' char(963) '1 (px)'],out.Radii(1);
+            ['pca ' char(963) '2 (px)'],out.Radii(2);
+            ['pca xc (px)'],out.Mean(1);
+            ['pca yc (px)'],out.Mean(2);};
+
+        tbl_analysis.Data=[tbl_analysis.Data; stranl];
+        
+        set(pPCA(1),'XData',x1,'YData',y1,'Visible','on');
+        set(pPCA(2),'XData',x2,'YData',y2,'Visible','on');
+    end
+    
+    % Update Guassian Analysis
+    if hcGauss.Value
+        disp('Fitting data to 2D gaussian...')   
+        opts=struct;
+        opts.doRescale=1;
+        opts.doMask=hcMask.Value;
+        opts.Scale=0.5;
+        opts.doRotate=0;
+
+        opts.Mask=ixon_mask;        
+        data=ixon_gaussFit(data,opts);   
+        cGaussRet.Enable='on';
+        
+        % Gaussian analysis table string
+        stranl={'','';
+            ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
+            ['gauss A (counts)'],data.GaussFit{1}.A;
+            ['gauss x' char(963) ' (px)'],data.GaussFit{1}.s1;
+            ['gauss y' char(963) ' (px)'],data.GaussFit{1}.s2;
+            ['gauss xc (px)'],data.GaussFit{1}.Xc;
+            ['gauss yc (px)'],data.GaussFit{1}.Yc;
+            ['gauss nbg (counts)'],data.GaussFit{1}.nbg;};
+        tbl_analysis.Data=[tbl_analysis.Data; stranl];  
+        updateGaussPlot(data);
+    end
+    
+    % Update Guassian Analysis
+    if hcGaussRot.Value
+        disp('Fitting data to 2D gaussian...')   
+        opts=struct;
+        opts.doRescale=1;
+        opts.doMask=hcMask.Value;
+        opts.Scale=0.5;
+        opts.doRotate=1;
+        opts.PCA=out;
+        opts.Mask=ixon_mask;          
+        
+        data=ixon_gaussFit(data,opts);   
+        cGaussRet.Enable='on';
+        
+        stranl={'','';
+            ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
+            ['gauss A (counts)'],data.GaussFit{1}.A;
+            ['gauss ' char(963) '1 (px)'],data.GaussFit{1}.s1;
+            ['gauss ' char(963) '2 (px)'],data.GaussFit{1}.s2;
+            ['gauss xc (px)'],data.GaussFit{1}.Xc;
+            ['gauss yc (px)'],data.GaussFit{1}.Yc;
+            ['gauss nbg (counts)'],data.GaussFit{1}.nbg;
+            ['gauss ' char(952) ' (deg)'],data.GaussFit{1}.theta*180/pi};
+        tbl_analysis.Data=[tbl_analysis.Data; stranl];  
+
+        updateGaussPlot(data);
+
+    end    
+    
+end
+
+%% OTHER HELPER FUNCTIONS
+    function imgs=grabRawImages
+        % How many images to grab
+        [ret,first,last] = GetNumberNewImages;    
+        numpix=512^2;
+        % Grab the data (number just sets buffer size)
+        [ret,D] = GetAcquiredData(last*512^2);    
+
+        imgs={};
+        imgmats=zeros(512,512,last);
+
+        for j = 1:last % break up into individual images
+            ii=double(D((1+(j-1)*numpix):(j*numpix)));
+            imgs{j} = reshape(ii,512,512);
+            imgmats(:,:,j)=imgs{j};
+        end 
+
+        imgs=imgmats;  
+    end
+
+    function mydata=processImages(imgs)
+        mydata=struct;
+        % Create the image data structure
+        mydata=struct;
+        mydata.Date=datevec(now);
+        mydata.Name=['iXonUltra_' datestr(mydata.Date,'yyyy-mm-dd_HH-MM-SS')];   
+
+        % Grab the images
+        mydata.RawImages=imgs;
+
+        % Add magnification
+        mydata.Magnification=mag;
+
+        % Add X and Y vectors
+        mydata.X=1:size(mydata.RawImages,2);
+        mydata.Y=1:size(mydata.RawImages,1);    
+
+        % For now always assumed that its PWA,BKGD
+        mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
+
+
+        % Grab the sequence parameters
+        [mydata.Params,dstr]=grabSequenceParams;        
+        mydata.Params.ExecutionDate=dstr;    
+
+        % Append acquisition information
+        mydata.CameraInformation=cam_info;
+        mydata.AcquisitionInformation=acq;
+        mydata.AcquisitionDescription=desc;
+    end
 
 
     function saveData(data,saveDir)
@@ -1648,6 +1985,16 @@ end
         % Update string
         thistoryInd.String=sprintf('%03d',ind); 
     end
+%% Analysis Funciton
+
+
+
+%% FINISH
+data=updateImages(data);
+drawnow;
+SizeChangedFcn
+axes(axImg);
+
 end
 
 %% Camera Functions
@@ -1848,64 +2195,6 @@ function out=softwareTrigger
         warning('Unable to send software trigger.');
         out=0;
     end
-end
-
-
-
-%% Analysis Functions
-
-function dstruct=boxCount(dstruct,bgROI)
-    fprintf('Performing box count analysis ...');   
-    
-    if nargin==1
-        bgROI=NaN;
-    end
-  
-    
-    BoxCount=struct;    
-    for k=1:size(dstruct.ROI,1)
-        ROI=dstruct.ROI(k,:);
-        x=dstruct.X(ROI(1):ROI(2));                 % X vector
-        y=dstruct.Y(ROI(3):ROI(4));                 % Y vector
-        z=double(dstruct.Z(ROI(3):ROI(4),ROI(1):ROI(2)));
-        nbg=0;
-        
-        if nargin==2
-            zbg=double(dstruct.Z(bgROI(3):bgROI(4),bgROI(1):bgROI(2)));
-            nbg=sum(sum(zbg))/(size(zbg,1)*size(zbg,2)); % count density
-        end 
-        
-        Nraw=sum(sum(z));
-        Nbg=nbg*size(z,1)*size(z,2);  
-        
-        zNoBg=z-nbg;        
-        Ncounts=sum(sum(zNoBg));   
-        zY=sum(zNoBg,2)';
-        zX=sum(zNoBg,1);
-               
-        % Calculate center of mass
-        Xc=sum(zX.*x)/Ncounts;
-        Yc=sum(zY.*y)/Ncounts;
-        
-        % Calculate central second moment/variance and the standard
-        % deviation
-        X2=sum(zX.*(x-Xc).^2)/Ncounts; % x variance
-        Xs=sqrt(X2); % standard deviation X
-        Y2=sum(zY.*(y-Yc).^2)/Ncounts; % x variance
-        Ys=sqrt(Y2); % standard deviation Y               
-
-        BoxCount(k).Ncounts=Ncounts;    % Number of counts (w/ bkgd removed)
-        BoxCount(k).Nraw=Nraw;          % Raw of number of counts
-        BoxCount(k).Nbkgd=Nbg;          % Bakcground number of counts
-        BoxCount(k).nbkgd=nbg;          % Background counts/px
-        BoxCount(k).bgROI=bgROI;        % ROI for calculating bgkd
-        BoxCount(k).Xc=Xc;              % X center of mass
-        BoxCount(k).Yc=Yc;              % Y center of mass
-        BoxCount(k).Xs=Xs;              % X standard deviation
-        BoxCount(k).Ys=Ys;              % Y standard deviation
-    end    
-    dstruct.BoxCount=BoxCount;
-    disp('done');
 end
 
 
