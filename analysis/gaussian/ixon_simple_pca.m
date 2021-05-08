@@ -1,8 +1,8 @@
-function out=ixon_simple_pca(ixondata)
+function ixondata=ixon_simple_pca(ixondata)
 tic
 clear out
 for kk=1:length(ixondata)
-    out(kk)=struct;
+    thispca=struct;
     
     Z=ixondata(kk).Z;
     
@@ -36,9 +36,12 @@ for kk=1:length(ixondata)
     v1=cc(1,:);
     v2=cc(2,:);    
     
-    out(kk).Mean=[xc yc];
-    out(kk).Radii=[s1 s2];
-    out(kk).PCA=cc;
+    thispca.Mean=[xc yc];
+    thispca.Radii=[s1 s2];
+    thispca.PCA=cc;
+
+    ixondata(kk).PCA=thispca;
+%     out(kk)=thispca;
 end
 toc
 

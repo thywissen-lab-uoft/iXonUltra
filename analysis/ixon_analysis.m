@@ -240,30 +240,26 @@ end
 end
 
 %% ANALYSIS : BOX COUNT
-doBoxCount=1;
+ixon_doBoxCount=1;
 
-if doBoxCount
+if ixon_doBoxCount
     ixondata=ixon_boxCount(ixondata);
 end
 
 %% ANALYSIS : 2D Gaussian
-doGaussFit=1;
+ixon_doGaussFit=1;
 % do a very basic PCA to determine angle of the atomic cloud
-PCA=ixon_simple_PCA(ixondata);
+ixondata=ixon_simple_pca(ixondata);
 
 gauss_opts=struct;
-gauss_opts.doRescale=0;
+gauss_opts.doRescale=1;
 gauss_opts.doMask=1;
 gauss_opts.Scale=0.5;
 gauss_opts.doRotate=1;
-gauss_opts.PCA=PCA(1);
 gauss_opts.Mask=ixon_mask;     
 
-if doGaussFit
-    for kk=1:length(ixondata)
-        gauss_opts.PCA=PCA(kk);
-        ixondata(kk)=ixon_gaussfit(ixondata(kk),gauss_opts);
-    end  
+if ixon_doGaussFit  
+    ixondata=ixon_gaussFit(ixondata,gauss_opts);
 end
 
 %% PLOTTING : BOX COUNT
@@ -275,7 +271,7 @@ ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
 ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
 ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
 
-if doBoxCount  
+if ixon_doBoxCount  
     % Plot the atom number
     [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,xVar,ixon_boxPopts);      
     yl=get(gca,'YLim');

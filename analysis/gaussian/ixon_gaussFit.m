@@ -1,21 +1,28 @@
-function data=ixon_gaussFit(data,opts)    
+function ixondata=ixon_gaussFit(ixondata,opts)    
     if nargin==1
         opts.doRescale=0;
         opts.doMask=0;
         opts.doRotate=0;
-        opts.PCA=[];
         opts.Scale=1;
-        opts.Mask=ones(size(data.Z,1),size(data.Z,2));
+        opts.Mask=ones(size(ixondata.Z,1),size(ixondata.Z,2));
     end
 
+    if ~isfield(ixondata(1),'PCA')
+       opts.doRotate=0; 
+    end
+    
+for n=1:length(ixondata)
     GaussFit={};    
-    for k=1:size(data.ROI,1)
-        ROI=data.ROI(k,:);
+    
+    
+    
+    for k=1:size(ixondata(n).ROI,1)
+        ROI=ixondata(n).ROI(k,:);
 
         % Acquire the data
-        X=double(data.X(ROI(1):ROI(2)));
-        Y=double(data.Y(ROI(3):ROI(4)));
-        Z=double(data.Z(ROI(3):ROI(4),ROI(1):ROI(2)));       
+        X=double(ixondata(n).X(ROI(1):ROI(2)));
+        Y=double(ixondata(n).Y(ROI(3):ROI(4)));
+        Z=double(ixondata(n).Z(ROI(3):ROI(4),ROI(1):ROI(2)));       
 
         % Rescale images for fitting speed
         if opts.doRescale
@@ -35,11 +42,17 @@ function data=ixon_gaussFit(data,opts)
             % Scale the image mask
             if opts.doRescale                
                 ixon_mask_sc=imresize(opts.Mask,opts.Scale);
+                xx2(~ixon_mask_sc)=[];
+                yy2(~ixon_mask_sc)=[];
+                Z2(~ixon_mask_sc)=[];
+            else
+                ixon_mask=opts.Mask;
+                xx2(~ixon_mask)=[];
+                yy2(~ixon_mask)=[];
+                Z2(~ixon_mask)=[];
             end
             % Remove data points from fit based on mask
-            xx2(~ixon_mask_sc)=[];
-            yy2(~ixon_mask_sc)=[];
-            Z2(~ixon_mask_sc)=[];
+            
         end  
         
         if ~opts.doRotate
@@ -94,17 +107,18 @@ function data=ixon_gaussFit(data,opts)
             % Very experimental
             % Z is a mxn matrix to which we want to fit an elliptic gaussian            
             
-            % Angle of rotation
-            theta=atan(opts.PCA.PCA(2,1)/opts.PCA.PCA(1,1));
+            PCA=ixondata(n).PCA;
+            
+            % Angle of rotation     
+            theta=atan(PCA.PCA(2,1)/PCA.PCA(1,1));
 
             % Gaussian Radius
-            s1=opts.PCA.Radii(1);
-            s2=opts.PCA.Radii(2);
+            s1=PCA.Radii(1);
+            s2=PCA.Radii(2);
             
             % Center point
-            Xc=opts.PCA.Mean(1);
-            Yc=opts.PCA.Mean(2);
-            
+            Xc=PCA.Mean(1);
+            Yc=PCA.Mean(2);
             % Amplitdue
             A=max(max(imgaussfilt(Z,.5)));
             
@@ -137,6 +151,7 @@ function data=ixon_gaussFit(data,opts)
             
         end
     end
-    data.GaussFit=GaussFit;
+    ixondata(n).GaussFit=GaussFit;
+end
 
 end

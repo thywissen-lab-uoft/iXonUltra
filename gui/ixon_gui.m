@@ -1843,8 +1843,10 @@ function data=updateAnalysis(data)
     % Update PCA analysis
     if hcPCA.Value      
         % Finding cloud principal axes
-        out=ixon_simple_pca(data);
- 
+        data=ixon_simple_pca(data);
+        
+        out=data.PCA;
+        
         x1=out.Mean(1)+out.Radii(1)*out.PCA(1,1)*[-1 1];
         y1=out.Mean(2)+out.Radii(1)*out.PCA(2,1)*[-1 1];
 
@@ -1900,7 +1902,6 @@ function data=updateAnalysis(data)
         opts.doMask=hcMask.Value;
         opts.Scale=0.5;
         opts.doRotate=1;
-        opts.PCA=out;
         opts.Mask=ixon_mask;          
         
         data=ixon_gaussFit(data,opts);   
