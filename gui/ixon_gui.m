@@ -1769,6 +1769,7 @@ end
 % Performs analysis and updates graphics as required.
 function data=updateAnalysis(data)    
     
+    % Update PCA analysis
     if hcPCA.Value      
         % Finding cloud principal axes
         out=ixon_simple_pca(data);
@@ -1794,6 +1795,7 @@ function data=updateAnalysis(data)
         set(pPCA(2),'XData',x2,'YData',y2,'Visible','on');
     end
     
+    % Update Guassian Analysis
     if hcGauss.Value
         disp('Fitting data to 2D gaussian...')   
         opts=struct;
@@ -1801,12 +1803,23 @@ function data=updateAnalysis(data)
         opts.doMask=hcMask.Value;
         opts.Scale=0.5;
 
-        opts.Mask=ixon_mask;
-        
-        data=ixon_gaussFit(data,opts);  
-       
-        
+        opts.Mask=ixon_mask;        
+        data=ixon_gaussFit(data,opts);   
         cGaussRet.Enable='on';
+        
+        % Gaussian analysis table string
+        stranl={'','';
+            ['gauss N'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.Xs*data.GaussFit{1}.Ys;
+            ['gauss A'],data.GaussFit{1}.A;
+            ['gauss x' char(963)],data.GaussFit{1}.Xs;
+            ['gauss y' char(963)],data.GaussFit{1}.Ys;
+            ['gauss xc'],data.GaussFit{1}.Xc;
+            ['gauss yc'],data.GaussFit{1}.Yc;
+            ['gauss nbg'],data.GaussFit{1}.nbg;};
+
+        tbl_analysis.Data=[tbl_analysis.Data; stranl];
+        
+        
         updateGaussPlot(data);
     end
 end
