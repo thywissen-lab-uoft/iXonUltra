@@ -52,11 +52,8 @@ m=40*amu;
 % Choose what kind of variable to plot against (sequencer/camera)
 varType='param'; % always select 'param' for now 
 
-
-
 xVar='ExecutionDate';
 unit='s';
-
 
 ixon_doSave=1;
 
@@ -249,6 +246,25 @@ if doBoxCount
     ixondata=ixon_boxCount(ixondata);
 end
 
+%% ANALYSIS : 2D Gaussian
+doGaussFit=1;
+% do a very basic PCA to determine angle of the atomic cloud
+PCA=ixon_simple_PCA(ixondata);
+
+gauss_opts=struct;
+gauss_opts.doRescale=0;
+gauss_opts.doMask=1;
+gauss_opts.Scale=0.5;
+gauss_opts.doRotate=1;
+gauss_opts.PCA=PCA(1);
+gauss_opts.Mask=ixon_mask;     
+
+if doGaussFit
+    for kk=1:length(ixondata)
+        gauss_opts.PCA=PCA(kk);
+        ixondata(kk)=ixon_gaussfit(ixondata(kk),gauss_opts);
+    end  
+end
 
 %% PLOTTING : BOX COUNT
 
