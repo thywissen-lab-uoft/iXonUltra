@@ -208,34 +208,30 @@ end
 doRawImageAnalysis=1;
 if doRawImageAnalysis   
 
-% Do basic analysis on raw counts
-ixondata=ixon_computeRawCounts(ixondata);
+    % Do basic analysis on raw counts
+    ixondata=ixon_computeRawCounts(ixondata);
 
-% Plot histogram of raw counts
-hist_opts=struct;
-hist_opts.Outliers=[10 50]; % Histogram wont plot outliers of this many low/high
-hist_opts.GlobalLimits=1;   % Maintain historgram x limits
-hist_opts.BinWidth=1;       % Histogram bin width
-hist_opts.ImageNumber=1;    % Which image to histogram (overwritten)
-hist_opts.YScale='Log';     % Histogram y scale
-% hist_opts.YScale='Linear';
+    % Plot histogram of raw counts
+    hist_opts=struct;
+    hist_opts.Outliers=[10 50]; % Histogram wont plot outliers of this many low/high
+    hist_opts.GlobalLimits=1;   % Maintain historgram x limits
+    hist_opts.BinWidth=1;       % Histogram bin width
+    hist_opts.ImageNumber=1;    % Which image to histogram (overwritten)
+    hist_opts.YScale='Log';     % Histogram y scale
+    % hist_opts.YScale='Linear';
 
-for kk=1:size(ixondata(1).RawImages,3)
-    hist_opts.ImageNumber=kk;
-    hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,xVar,hist_opts);
-    if ixon_doSave
-        ixon_saveFigure(ixondata,hF_ixon_rawhist,['ixon_raw_hist' num2str(kk)]);
+    for kk=1:size(ixondata(1).RawImages,3)
+        hist_opts.ImageNumber=kk;
+        hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,xVar,hist_opts);
+        if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawhist,['ixon_raw_hist' num2str(kk)]);end
     end
-end
 
-% Plot raw count total
-raw_opts=struct;
-raw_opts.FitLinear=0;
-hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,xVar,raw_opts);
+    % Plot raw count total
+    raw_opts=struct;
+    raw_opts.FitLinear=0;
+    hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,xVar,raw_opts);
 
-if ixon_doSave
-    ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);
-end
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
 
 end
 
@@ -265,7 +261,7 @@ end
 %% PLOTTING : BOX COUNT
 
 ixon_boxPopts = struct;
-ixon_boxPopts.NumberExpFit = 0;                  % Fit exponential decay to atom number
+ixon_boxPopts.NumberExpFit = 0;        % Fit exponential decay to atom number
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
 ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
@@ -276,35 +272,35 @@ if ixon_doBoxCount
     [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,xVar,ixon_boxPopts);      
     yl=get(gca,'YLim');
     set(gca,'YLim',[0 yl(2)]); 
-    if ixon_doSave
-        ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number'); 
-    end     
+    
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
     
     % Plot the second moments
     hF_ixon_size=ixon_showBoxMoments(ixondata,xVar);   
-    if ixon_doSave
-        ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size'); 
-    end     
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size');end     
     
     % Plot the cloud center
     hF_ixon_center=ixon_showBoxCentre(ixondata,xVar,ixon_boxPopts); 
-    if ixon_doSave
-        ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre'); 
-    end 
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end 
+end
+
+%% PLOTTING : GAUSSIAN
+if ixon_doGaussFit
+   warning('I will plot results from the Gaussian fit.  Still to do.'); 
 end
 
 %% Animate cloud
 ixon_doAnimate = 1;
 if ixon_doAnimate == 1
-ixon_animateOpts=struct;
-ixon_animateOpts.StartDelay=2; % Time to hold on first picture
-ixon_animateOpts.MidDelay=.25;     % Time to hold in middle picutres
-ixon_animateOpts.EndDelay=2;     % Time to hold final picture
+    ixon_animateOpts=struct;
+    ixon_animateOpts.StartDelay=2; % Time to hold on first picture
+    ixon_animateOpts.MidDelay=.25;     % Time to hold in middle picutres
+    ixon_animateOpts.EndDelay=2;     % Time to hold final picture
 
 
-% animateOpts.Order='descend';    % Asceneding or descending
-ixon_animateOpts.Order='ascend';
-ixon_animateOpts.CLim=[0 20000];   % Color limits
+    % animateOpts.Order='descend';    % Asceneding or descending
+    ixon_animateOpts.Order='ascend';
+    ixon_animateOpts.CLim=[0 20000];   % Color limits
 
-ixon_animate(ixondata,xVar,ixon_animateOpts);
+    ixon_animate(ixondata,xVar,ixon_animateOpts);
 end
