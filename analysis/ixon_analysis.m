@@ -52,10 +52,10 @@ m=40*amu;
 % Choose what kind of variable to plot against (sequencer/camera)
 varType='param'; % always select 'param' for now 
 
-xVar='ExecutionDate';
+xVar='Raman_Power';
 unit='s';
 
-ixon_doSave=1;
+ixon_doSave=0;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
@@ -215,7 +215,7 @@ if doRawImageAnalysis
     hist_opts=struct;
     hist_opts.Outliers=[10 50]; % Histogram wont plot outliers of this many low/high
     hist_opts.GlobalLimits=1;   % Maintain historgram x limits
-    hist_opts.BinWidth=1;       % Histogram bin width
+    hist_opts.BinWidth=10;       % Histogram bin width
     hist_opts.ImageNumber=1;    % Which image to histogram (overwritten)
     hist_opts.YScale='Log';     % Histogram y scale
     % hist_opts.YScale='Linear';
