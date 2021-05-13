@@ -17,7 +17,7 @@ function ixon_gui
 % 
 
 % Enable debug mode?
-doDebug=0;
+doDebug=1;
 if doDebug
    warning(['You are operating in DEBUG MODE. This removes ' ...
        'certain safety precautions. If not intended set the doDebug ' ...
@@ -167,9 +167,12 @@ function SizeChangedFcn(~,~)
         % Grab figure dimensions
         W=hF.Position(3);H=hF.Position(4);         
         
+        % Top bar height
+        Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);
+        
         % Resize image panel  
         if W>360 && H>55        
-            hp.Position=[360 1 W-360 H-55];           
+            hp.Position=[360 1 W-360 H-Ht];           
         end
         
         % Resize plots
@@ -177,13 +180,20 @@ function SizeChangedFcn(~,~)
         
         % Resize Panels
         hpCam.Position(2:3)=[H-hpCam.Position(4) hF.Position(3)];        
-        hpSave.Position(2:3)=[hpCam.Position(2)-hpSave.Position(4) hF.Position(3)-300];
-        hpNav.Position(1:2)=[hpSave.Position(1)+hpSave.Position(3) hpSave.Position(2)];
-        hpAcq.Position(2)=hpSave.Position(2)-hpAcq.Position(4);
+        hpSave.Position(2:3)=[hpCam.Position(2)-hpSave.Position(4) hF.Position(3)];  
+        
+%         
+%         hpNav.Position(1:2)=[hpSave.Position(1)+hpSave.Position(3) hpSave.Position(2)];      
+        
+        hpNav.Position(2:3)=[hpSave.Position(2)-hpSave.Position(4) hF.Position(3)];
+
+        
+        
+        hpAcq.Position(2)=hpNav.Position(2)-hpAcq.Position(4);
         hpADV.Position(2)=hpAcq.Position(2)-hpADV.Position(4);
         hpAnl.Position(2)=hpADV.Position(2)-hpAnl.Position(4);        
         hpDisp.Position(4)=max([hpAnl.Position(2) 1]);        
-        hpFit.Position(4)=H-55;        
+        hpFit.Position(4)=H-Ht;        
         
         % Reposition objects in hpDisp because it has variable height.
         tbl_dispROI.Position(2)=hpDisp.Position(4)-tbl_dispROI.Position(4)-20;
@@ -512,11 +522,12 @@ hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
 hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
     'Position',[0 hpCam.Position(2)-30 hF.Position(3)-150 25]);
 
+
 % Auto Save check box
 ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
     'not override saving to image history.'];
-hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',10,...
-    'backgroundcolor','w','Position',[5 0 100 25],'callback',@saveCheck,...
+hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',8,...
+    'backgroundcolor','w','Position',[0 0 90 25],'callback',@saveCheck,...
     'ToolTipString',ttstr);
 
 % Save checkbox callback
@@ -533,14 +544,14 @@ hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',10
 ttstr='Select directory to save images.';
 cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[20 20]);
 bBrowse=uicontrol(hpSave,'style','pushbutton','CData',cdata,'callback',@browseCB,...
-    'enable','off','backgroundcolor','w','position',[110 2 size(cdata,[1 2])],...
+    'enable','off','backgroundcolor','w','position',[95 2 size(cdata,[1 2])],...
     'tooltipstring',ttstr);
 
 % String for current save directory
 ttstr='The current save directory.';
-tSaveDir=uicontrol(hpSave,'style','text','string','directory','fontsize',8,...
+tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'enable','off','UserData','','Position',[135 0 hF.Position(3)-135 20],...
+    'enable','off','UserData','','Position',[115 0 hF.Position(3)-135 20],...
     'tooltipstring',ttstr);
 
 % Browse button callback
@@ -558,51 +569,74 @@ tSaveDir=uicontrol(hpSave,'style','text','string','directory','fontsize',8,...
         end
     end
 
+
+
 %% History 
 
 hpNav=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[hpSave.Position(1)+hpSave.Position(3) hpSave.Position(2) 300 25]);
+    'Position',[hpSave.Position(1) hpSave.Position(2)-hpSave.Position(4) hF.Position(3) 25]);
 
-% Button to load an image into the acquisition
-ttstr='Load an image into the acquisition GUI.';
-cdata=imresize(imread('icons/browse.jpg'),[20 20]);
+% Checkbox for auto updating when new images are taken
+ttstr='Automatically refresh to most recent image upon new image acquisition.';
+cAutoUpdate=uicontrol('parent',hpNav,'units','pixels','string',...
+    'hold preview?','value',0,'fontsize',8,'backgroundcolor','w',...
+    'Style','checkbox','ToolTipString',ttstr);
+cAutoUpdate.Position=[0 5 90 14];
+
+
+% Button to change navigator directory to default
+ttstr='Revert previewer source directory to default location.';
+cdata=imresize(imread('icons/home.jpg'),[17 17]);
 uicontrol(hpNav,'style','pushbutton','CData',cdata,...
     'callback',@browseImageCB,'enable','on','backgroundcolor','w',...
-    'position',[0 2 size(cdata,[1 2])],'ToolTipString',ttstr);
+    'position',[95 2 20 20],'ToolTipString',ttstr);
+
+% Button to load an image into the acquisition
+ttstr='Load an image into the previer and change the source directory.';
+cdata=imresize(imread('icons/file.jpg'),[17 17]);
+uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+    'callback',@browseImageCB,'enable','on','backgroundcolor','w',...
+    'position',[115 2 20 20],'ToolTipString',ttstr);
 
     function browseImageCB(~,~)
        loadImage; 
     end
 
-% Checkbox for auto updating when new images are taken
-ttstr='Automatically refresh to most recent image upon new image acquisition.';
-cAutoUpdate=uicontrol('parent',hpNav,'units','pixels','string',...
-    'hold?','value',0,'fontsize',7,'backgroundcolor','w',...
-    'Style','checkbox','ToolTipString',ttstr);
-cAutoUpdate.Position=[21 5 45 14];
+% Button to change preview source directory
+ttstr='Change previwer source directory.';
+cdata=imresize(imread('icons/browse.jpg'),[20 20]);
+uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+    'callback',@browseImageCB,'enable','on','backgroundcolor','w',...
+    'position',[135 2 20 20],'ToolTipString',ttstr);
+% 
+%     function browseImageCB(~,~)
+%        loadImage; 
+%     end
+% 
+
 
 ttstr='Jump to most recent image acquired.';
 hbhistoryNow=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',[char(10094) char(10094)],'fontsize',10,...
     'callback',{@chData, '0'},'ToolTipString',ttstr);
-hbhistoryNow.Position=[65 2 24 20];
+hbhistoryNow.Position=[155 2 24 20];
 
 ttstr='Step to next more recent image';
 hbhistoryLeft=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10094),'fontsize',10,...
     'callback',{@chData, '-'},'ToolTipString',ttstr);
-hbhistoryLeft.Position=[89 2 12 20];
+hbhistoryLeft.Position=[179 2 12 20];
 
 thistoryInd=uicontrol(hpNav,'Style','text','units','pixels',...
     'backgroundcolor','w','string','000','fontsize',12);
-thistoryInd.Position=[101 2 30 20];
+thistoryInd.Position=[191 2 30 20];
 
 
 ttstr='Step to later image.';
 hbhistoryRight=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10095),'fontsize',10,...
     'callback',{@chData, '+'},'ToolTipString',ttstr);
-hbhistoryRight.Position=[131 2 12 20];
+hbhistoryRight.Position=[221 2 12 20];
 
     function loadImage(filename)
         if nargin<1
@@ -658,10 +692,10 @@ hbhistoryRight.Position=[131 2 12 20];
 
 
 ttstr='Name of current image';
-tImageFile=uicontrol(hpNav,'style','text','string','FILENAME','fontsize',7,...
+tHistoryName=uicontrol(hpNav,'style','text','string','FILENAME','fontsize',7,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'Position',[145 2 hpNav.Position(3)-133 14],'tooltipstring',ttstr);
-tImageFile.String=data.Name;
+    'Position',[235 2 hpNav.Position(3)-133 14],'tooltipstring',ttstr);
+tHistoryName.String=data.Name;
 %% Image Acqusition Panel
 % Panel for image acquisition controls and settings.
 
@@ -1380,7 +1414,8 @@ frslct.Position(1:2)=[2 5];
 % Panel for parameters and analysis results.
 
 hpFit=uitabgroup(hF,'units','pixels');
-hpFit.Position=[160 0 200 hF.Position(4)-55];
+hpFit.Position=[160 0 200 ...
+    hF.Position(4)-(hpCam.Position(4)+hpSave.Position(4)+hpNav.Position(4))];
 
 tabs(1)=uitab(hpFit,'Title','acq','units','pixels');
 tabs(2)=uitab(hpFit,'Title','param','units','pixels');
@@ -2069,6 +2104,8 @@ end
 
         % Update string
         thistoryInd.String=sprintf('%03d',ind); 
+        tHistoryName.String=data.Name;
+        
     end
 %% Analysis Funciton
 
