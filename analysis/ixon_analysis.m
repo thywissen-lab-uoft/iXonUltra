@@ -32,12 +32,10 @@ disp(' ');
 disp('Choosing global settings for analysis...');
 
 global ixon_imgdir
-global doRotate
 
 lambda=770E-9;
 
-% Choose display rotation
-doRotate=0;
+
 
 % Load pertinent physical constants
 amu=1.660539E-27; 
@@ -52,8 +50,8 @@ m=40*amu;
 % Choose what kind of variable to plot against (sequencer/camera)
 varType='param'; % always select 'param' for now 
 
-xVar='ExecutionDate';
-unit='s';
+xVar='kill_det';
+unit='G';
 
 ixon_doSave=1;
 
@@ -243,7 +241,7 @@ if ixon_doBoxCount
 end
 
 %% ANALYSIS : 2D Gaussian
-ixon_doGaussFit=1;
+ixon_doGaussFit=0;
 % do a very basic PCA to determine angle of the atomic cloud
 ixondata=ixon_simple_pca(ixondata);
 
@@ -262,6 +260,7 @@ end
 
 ixon_boxPopts = struct;
 ixon_boxPopts.NumberExpFit = 0;        % Fit exponential decay to atom number
+ixon_boxPopts.NumberLorentzianFit=1;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
 ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
@@ -300,7 +299,7 @@ if ixon_doAnimate == 1
 
     % animateOpts.Order='descend';    % Asceneding or descending
     ixon_animateOpts.Order='ascend';
-    ixon_animateOpts.CLim=[0 20000];   % Color limits
+    ixon_animateOpts.CLim=[0 5000];   % Color limits
 
     ixon_animate(ixondata,xVar,ixon_animateOpts);
 end
