@@ -1319,13 +1319,14 @@ cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
         % Auto clim to max and min. Clip at lower end to due variable noise
         % floor
         N0=size(data.Z,1)*size(data.Z,2);
-        dN=round(N0*.01);
+        dN=round(N0*.01); % pad by 1% floor
         call=sort(data.Z(:));
         cL=call(dN);
         cH=call(end);
         
         
         dC=round(range(data.Z(:))*0.02); % 2% of range padding
+        dC=0;
         
         axImg.CLim=[cL+dC cH-dC];
         climtbl.Data=[cL+dC cH-dC];

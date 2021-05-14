@@ -51,12 +51,12 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 
-xVar='kill_det';
+ixon_xVar='kill_det';
 unit='G';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=1;
+ixon_doSave=0;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
@@ -86,19 +86,19 @@ for kk=1:length(files)
     try
         disp(['     Image Name     : ' data.Name]);
         disp(['     Execution Time : ' datestr(data.Date)]);
-        disp(['     ' xVar ' : ' num2str(data.Params.(xVar))]);
+        disp(['     ' ixon_xVar ' : ' num2str(data.Params.(ixon_xVar))]);
         disp(' ');
     end    
     
-    if isequal(xVar,'ExecutionDate')
-        data.Params.(xVar)=datenum(data.Params.(xVar))*24*60*60;
+    if isequal(ixon_xVar,'ExecutionDate')
+        data.Params.(ixon_xVar)=datenum(data.Params.(ixon_xVar))*24*60*60;
     end
     
     ixondata(kk)=data;    
 end
 disp(' ');
 
-if isequal(xVar,'ExecutionDate')
+if isequal(ixon_xVar,'ExecutionDate')
    p=[ixondata.Params] ;
    tmin=min([p.ExecutionDate]);
    for kk=1:length(ixondata)
@@ -110,7 +110,7 @@ end
 %% Sort the data
 % Sort the data by your given parameter
 clear x
-disp(['Sorting ixondata by the given ''' xVar '''']);
+disp(['Sorting ixondata by the given ''' ixon_xVar '''']);
 
 % Get the object that contains the variable
 switch varType
@@ -125,11 +125,11 @@ end
 % Make sure that all ixondata have the parameter and record it
 allGood=1;
 for kk=1:length(varList)
-    if isfield(varList(kk),xVar)
-        x(kk)=varList(kk).(xVar);
+    if isfield(varList(kk),ixon_xVar)
+        x(kk)=varList(kk).(ixon_xVar);
     else
         allGood=0;
-        warning(['ixondata(' num2str(kk) ') has no ''' xVar '''']);
+        warning(['ixondata(' num2str(kk) ') has no ''' ixon_xVar '''']);
     end
 end
 
@@ -206,7 +206,7 @@ end
 
 %% Basic Raw Image Analysis
 
-doRawImageAnalysis=1;
+doRawImageAnalysis=0;
 if doRawImageAnalysis   
 
     % Do basic analysis on raw counts
@@ -223,14 +223,14 @@ if doRawImageAnalysis
 
     for kk=1:size(ixondata(1).RawImages,3)
         hist_opts.ImageNumber=kk;
-        hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,xVar,hist_opts);
+        hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,ixon_xVar,hist_opts);
         if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawhist,['ixon_raw_hist' num2str(kk)]);end
     end
 
     % Plot raw count total
     raw_opts=struct;
     raw_opts.FitLinear=0;
-    hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,xVar,raw_opts);
+    hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,ixon_xVar,raw_opts);
 
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
 
@@ -243,26 +243,10 @@ if ixon_doBoxCount
     ixondata=ixon_boxCount(ixondata);
 end
 
-%% ANALYSIS : 2D Gaussian
-ixon_doGaussFit=0;
-% do a very basic PCA to determine angle of the atomic cloud
-ixondata=ixon_simple_pca(ixondata);
-
-gauss_opts=struct;
-gauss_opts.doRescale=1;     % Rescaling the image makes fitting faster
-gauss_opts.doMask=1;        % Apply the image mask
-gauss_opts.Scale=0.5;       % Scale to rescale the image by
-gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
-gauss_opts.Mask=ixon_mask;  % The image mask
-
-if ixon_doGaussFit  
-    ixondata=ixon_gaussFit(ixondata,gauss_opts);
-end
-
 %% PLOTTING : BOX COUNT
 
-ixon_boxPopts = struct;
-ixon_boxPopts.NumberExpFit = 0;        % Fit exponential decay to atom number
+ixon_boxPopts=struct;
+ixon_boxPopts.NumberExpFit = 0;
 ixon_boxPopts.NumberLorentzianFit=1;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
@@ -271,24 +255,92 @@ ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
 
 if ixon_doBoxCount  
     % Plot the atom number
-    [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,xVar,ixon_boxPopts);      
+    [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,ixon_xVar,ixon_boxPopts);      
     yl=get(gca,'YLim');
     set(gca,'YLim',[0 yl(2)]); 
     
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
     
     % Plot the second moments
-    hF_ixon_size=ixon_showBoxMoments(ixondata,xVar);   
+    hF_ixon_size=ixon_showBoxMoments(ixondata,ixon_xVar);   
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size');end     
     
     % Plot the cloud center
-    hF_ixon_center=ixon_showBoxCentre(ixondata,xVar,ixon_boxPopts); 
+    hF_ixon_center=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_boxPopts); 
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end 
 end
 
+%% ANALYSIS : 2D Gaussian
+ixon_doGaussFit=1;
+% do a very basic PCA to determine angle of the atomic cloud
+ixondata=ixon_simple_pca(ixondata);
+
+ixon_gauss_opts=struct;
+ixon_gauss_opts.doRescale=1;     % Rescaling the image makes fitting faster
+ixon_gauss_opts.doMask=1;        % Apply the image mask
+ixon_gauss_opts.Scale=0.5;       % Scale to rescale the image by
+ixon_gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
+ixon_gauss_opts.Mask=ixon_mask;  % The image mask
+
+if ixon_doGaussFit  
+    ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
+end
 %% PLOTTING : GAUSSIAN
+ixon_gauss_opts.NumberExpFit = 0;        % Fit exponential decay to atom number
+ixon_gauss_opts.NumberLorentzianFit=0;   % Fit atom number to lorentzian
+
+ixon_gauss_opts.CenterSineFit = 0;       % Fit sine fit to cloud center
+ixon_gauss_opts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
+ixon_gauss_opts.CenterParabolaFit = 0;
+ixon_gauss_opts.CenterLinearFit = 0;     % Linear fit to cloud center
+
 if ixon_doGaussFit
-   warning('I will plot results from the Gaussian fit.  Still to do.'); 
+    % Statistics if no variable is changing
+    if isequal(ixon_xVar,'ExecutionDate')
+        hF_stats=ixon_showGaussStats(ixondata);     
+        if ixon_doSave;saveFigure(ixondata,hF_stats,'ixon_gauss_stats');end
+    end
+       
+    % Counts
+    [hF_numbergauss,Ndatagauss]=ixon_showGaussNumber(ixondata,ixon_xVar,ixon_gauss_opts);  
+     %ylim([0 max(get(gca,'YLim'))]);
+     %ylim([3.5E6 4.5E6]);
+     %xlim([0 max(get(gca,'XLim'))]);         
+    if ixon_doSave;saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
+    
+    % Size
+    hF_size=ixon_showGaussSize(ixondata,ixon_xVar);    
+    if ixon_doSave;saveFigure(ixondata,hF_size,'ixon_gauss_size');end
+        
+    % Aspect Ratio
+    hF_ratio=ixon_showGaussAspectRatio(ixondata,ixon_xVar);    
+    if ixon_doSave;saveFigure(ixondata,hF_ratio,'ixon_gauss_ratio');end
+    
+    % Centre
+    hF_Centre=ixon_showGaussCentre(ixondata,ixon_xVar,ixon_gauss_opts);    
+    if ixon_doSave;saveFigure(ixondata,hF_Centre,'gauss_position');end
+        
+     % Style of profile --> cut or sum?
+    style='cut';
+%     style='sum';
+    clear hF_X;    
+    clear hF_Y;
+    hF_X=[];
+    hF_Y=[];
+    
+    hF_Xs=ixon_showGaussProfile(ixondata,'X',style,ixon_xVar);        
+    hF_Ys=ixon_showGaussProfile(ixondata,'Y',style,ixon_xVar);  
+
+%   Save the figures (this can be slow)
+    if ixon_doSave
+        for kk=1:length(hF_Xs)            
+            saveFigure(ixondata,hF_Xs(kk),['gauss_profile_X' num2str(rNum) '_' num2str(kk)]);
+        end
+        for kk=1:length(hF_Ys)
+            saveFigure(ixondata,hF_Ys(kk),['gauss_profile_Y' num2str(rNum) '_' num2str(kk)]);
+        end
+    end
+    
 end
 
 %% Animate cloud
@@ -299,10 +351,13 @@ if ixon_doAnimate == 1
     ixon_animateOpts.MidDelay=.25;     % Time to hold in middle picutres
     ixon_animateOpts.EndDelay=2;     % Time to hold final picture
 
-
+    % Animate in ascending or descending order?
     % animateOpts.Order='descend';    % Asceneding or descending
     ixon_animateOpts.Order='ascend';
+    
+    % Color limit for image
     ixon_animateOpts.CLim=[0 5000];   % Color limits
+     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
-    ixon_animate(ixondata,xVar,ixon_animateOpts);
+    ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
