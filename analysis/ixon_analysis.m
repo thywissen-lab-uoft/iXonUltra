@@ -318,7 +318,7 @@ if ixon_doGaussFit
     
     % Centre
     hF_Centre=ixon_showGaussCentre(ixondata,ixon_xVar,ixon_gauss_opts);    
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_Centre,'gauss_position');end
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_Centre,'ixon_gauss_position');end
         
      % Style of profile --> cut or sum?
     style='cut';
@@ -334,10 +334,10 @@ if ixon_doGaussFit
 %   Save the figures (this can be slow)
     if ixon_doSave
         for kk=1:length(hF_Xs)            
-            ixon_saveFigure(ixondata,hF_Xs(kk),['gauss_profile_X' num2str(rNum) '_' num2str(kk)]);
+            ixon_saveFigure(ixondata,hF_Xs(kk),['ixon_gauss_profile_X' num2str(rNum) '_' num2str(kk)]);
         end
         for kk=1:length(hF_Ys)
-            ixon_saveFigure(ixondata,hF_Ys(kk),['gauss_profile_Y' num2str(rNum) '_' num2str(kk)]);
+            ixon_saveFigure(ixondata,hF_Ys(kk),['ixon_gauss_profile_Y' num2str(rNum) '_' num2str(kk)]);
         end
     end
     
