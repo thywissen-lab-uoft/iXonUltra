@@ -5,6 +5,7 @@ global ixon_imgdir;
 if nargin==2
     opts=struct;
     opts.NumberExpFit = 0;
+    opts.NumberLorentzianFit=0;
 end
 
 
@@ -63,6 +64,66 @@ if doExpFit
     end
 end
 
+%% Lorentzian Fit
+
+doLorentzFit=opts.NumberLorentzianFit;
+
+if doLorentzFit && length(ixondata)>4
+        X=xvals';
+        Y=N;
+    
+    
+        % Symmetric Lorentzian Decay
+        myfit=fittype('A*(G/2).^2*((x-x0).^2+(G/2).^2).^(-1)+bg','coefficients',{'A','G','x0','bg'},...
+            'independent','x');
+        opt_fit=fitoptions(myfit);
+        G0=10;
+        bg=max(Y);
+        A0=range(Y);
+        
+        inds=[Y<(bg-A0/2)];      
+        
+        x0=mean(X(inds));     
+        opt_fit.StartPoint=[-A0 G0 x0 bg];   
+        opt_fit.Robust='bisquare';
+        fout_lorentz=fit(X,Y,myfit,opt_fit);
+        
+%         Y=N;
+%         X=xvals';
+% 
+%         Assymmetric
+%         g=@(x,a,x0,G) 2*G./(1+exp(a*(x-x0)));
+%         y=@(x,a,x0,G,A,bg) A./(4*(x-x0).^2./g(x,a,x0,G).^2+1)+bg;        
+%         myfit=fittype(@(a,x0,G,A,bg,x) y(x,a,x0,G,A,bg),'coefficients',{'a','x0','G','A','bg'},...
+%             'independent','x'); 
+%         opt_fit=fitoptions(myfit);
+%         G0=10;
+%         bg=min(Y);
+%         A0=(max(Y)-min(Y))*(G0/2).^2;
+%         inds=[Y<.8*max(Y)];
+%         
+%         
+%         
+%         x0=mean(X(inds));     
+%         opt_fit.Robust='bisquare';     
+% 
+%         
+%         opt_fit.StartPoint=[.2 x0 G0 -A0 max(Y)];  
+%         fout_lorentz=fit(X,Y,myfit,opt_fit);
+
+% 
+%         XF=linspace(min(X),max(X),1000);
+%         pExp=plot(XF,feval(fout_lorentz,XF),'r-','linewidth',2);
+% 
+%         str=['$f_0 = ' num2str(round(fout_lorentz.x0,1)) '$ kHz' newline ...
+%             '$\mathrm{FWHM} = ' num2str(round(abs(fout_lorentz.G),2)) ' $ kHz'];
+%         legend(pExp,{str},'interpreter','latex','location','best');
+%         
+% %         xlim([min(xx*1E-3) max(xx*1E-3)]);
+
+        
+    
+end
 %% Make Figure
 
 
@@ -105,18 +166,31 @@ for nn=1:size(ixondata(1).ROI,1)
 end
 
 if doExpFit
-    strs={};
+    fstrs={};
     xx=linspace(0,max(xvals),100);
     
-    for nn=1:size(Natoms,2)
+    for nn=1:size(N,2)
         pExp(nn)=plot(xx,feval(fout_exp{nn},xx),'r-','linewidth',1);    
-        str=['$N_0 = ' num2str(round(fout_exp{nn}.A)) '$' newline ...
-            '$\tau = ' num2str(round(fout_exp{nn}.tau,1)) ' $'];
-        strs{nn}=str;
+        str1=['$N_0 = ' num2str(fout_exp{nn}.A,'%.2e') '$' newline ...
+            '$\tau = ' num2str(round(fout_exp{nn}.tau,2)) ' $'];
+        fstrs{nn}=str1;
     end   
     
-    legend(pExp,strs,'interpreter','latex','location','best');
+    legend(pExp,fstrs,'interpreter','latex','location','best');
     hax.YLim(1)=0;
+end
+
+if doLorentzFit
+    fstrs={};
+    xx=linspace(0,max(xvals),100);
+    
+    pL=plot(xx,feval(fout_lorentz,xx),'r-','linewidth',1);    
+    str1=['$x_0 = ' num2str(round(fout_lorentz.x0,1)) '$' newline ...
+        '$\Gamma = ' num2str(round(fout_lorentz.G,2)) ' $'];
+    fstrs={str1};
+    
+    legend(pL,fstrs,'interpreter','latex','location','best');
+%     hax.YLim(1)=0;
 end
 
 % Image directory folder string

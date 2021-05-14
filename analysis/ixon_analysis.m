@@ -50,8 +50,9 @@ m=40*amu;
 % Choose what kind of variable to plot against (sequencer/camera)
 varType='param'; % always select 'param' for now 
 
-xVar='Raman_Power';
-unit='s';
+
+xVar='kill_det';
+unit='G';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
@@ -243,7 +244,7 @@ if ixon_doBoxCount
 end
 
 %% ANALYSIS : 2D Gaussian
-ixon_doGaussFit=1;
+ixon_doGaussFit=0;
 % do a very basic PCA to determine angle of the atomic cloud
 ixondata=ixon_simple_pca(ixondata);
 
@@ -262,6 +263,7 @@ end
 
 ixon_boxPopts = struct;
 ixon_boxPopts.NumberExpFit = 0;        % Fit exponential decay to atom number
+ixon_boxPopts.NumberLorentzianFit=1;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
 ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
@@ -300,7 +302,7 @@ if ixon_doAnimate == 1
 
     % animateOpts.Order='descend';    % Asceneding or descending
     ixon_animateOpts.Order='ascend';
-    ixon_animateOpts.CLim=[0 20000];   % Color limits
+    ixon_animateOpts.CLim=[0 5000];   % Color limits
 
     ixon_animate(ixondata,xVar,ixon_animateOpts);
 end
