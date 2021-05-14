@@ -97,7 +97,7 @@ cam_info=struct;
 cam_status=struct;
 cam_status.isConnected=0;       % Are you connected to camera?
 cam_status.Temperature=NaN;     % sensor temperature
-cam_status.TemperatureSP=10;    % Must lie between -120 C and 20 C
+cam_status.TemperatureSP=-80;    % Must lie between -120 C and 20 C
 cam_status.isTempStable=0;      % is sensor tempreature stable?
 cam_status.isCooling=0;         % is the TEC active?
 cam_status.isAcquiring=0;       % is the camera acquiring frames?
@@ -2193,15 +2193,15 @@ end
 function out=disconnectCam
     disp('Disconnecting from the iXon camera.');
     
-    % Shut down cooler
-    fprintf('Turning off cooler ... ');
-    [ret]=SetCoolerMode(1);     
-    disp(error_code(ret));
-
     % Close the shutter
     fprintf('Closing the shutter ... ');
     [ret]=SetShutter(1,2,0,0);  
     disp(error_code(ret));
+    
+    % Shut down cooler
+     fprintf('Turning off cooler ... ');
+     [ret]=SetCoolerMode(1);     
+     disp(error_code(ret));
 
     % Shut down the camera
     fprintf('Shutting down camera ... ');
