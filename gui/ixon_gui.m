@@ -453,7 +453,7 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
     'TimerFcn',@statusTimerFcn,'ExecutionMode','FixedSpacing');
 
     function statusTimerFcn(~,~)
-        
+        try
         % Get the temperature
         [out,temp,outstr]=getTemperature;
         strtemp.String=[num2str(temp) ' C'];        
@@ -480,6 +480,10 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
         [out,outstr]=getCameraStatus;
         strstatus.String=outstr;
         drawnow;
+        catch ME
+            warning('status timer failed');
+            warning(ME.message);
+        end
     end
 
 % Open camera shutter
@@ -596,10 +600,8 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,...
 % Change directory to default
     function defaultDirCB(~,~)
         disp(['Changing previwer directory to ' defaultDir]);
-        if ~isequal(currDir,defaultDir)
-            currDir=defaultDir;
-            chData([],[],0);        
-        end
+        currDir=defaultDir;
+        chData([],[],0);        
     end
 
 % Button to change preview source directory
@@ -837,13 +839,13 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live (be careful)',...
         switch newStr
             case 'Live'
                 msg=['Entering live mode. Verify your settings before ' ...
-                    'starting acquisition'];
+                    'starting acquisition. You can break the camera.'];
                 msgbox(msg,'Live Mode','warn','modal');  
                 acq=defaultLiveAcqSettings;    
-                
+                loadAcquisitionSettings
             case 'Normal'
                 acq=defaultNormalAcqSettings;
-
+                loadAcquisitionSettings
             otherwise
                 warning('Unexpected acqusition mode. What happened?');
         end        
@@ -856,6 +858,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
 
 % Timer function checks if acquisition is over and restarts it
     function acqTimerFcn(src,evt)      
+        try
         % Camera Status
         [out,outstr]=getCameraStatus;        
         switch outstr
@@ -881,7 +884,10 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 end  
                 
                 % Save data to image history
-                saveData(mydata)     
+                % only save to history if not in live mode
+                if ~rbLive.Value
+                    saveData(mydata);
+                end
                 
                 % Save images to save directory
                 if hcauto.Value
@@ -905,6 +911,10 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 warning('Acuisition timer has unexpected result');
                 stopCamCB;
         end        
+        catch ME
+            warning('Acqtimer failed.');
+           warning(ME.essage); 
+        end
     end
 
 

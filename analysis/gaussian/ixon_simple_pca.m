@@ -1,5 +1,5 @@
 function ixondata=ixon_simple_pca(ixondata)
-tic
+%tic
 clear out
 for kk=1:length(ixondata)
     thispca=struct;
@@ -43,7 +43,7 @@ for kk=1:length(ixondata)
     ixondata(kk).PCA=thispca;
 %     out(kk)=thispca;
 end
-toc
+%toc
 
 end
 
