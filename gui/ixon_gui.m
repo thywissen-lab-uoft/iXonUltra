@@ -17,7 +17,7 @@ function ixon_gui
 % 
 
 % Enable debug mode?
-doDebug=1;
+doDebug=0;
 if doDebug
    warning(['You are operating in DEBUG MODE. This removes ' ...
        'certain safety precautions. If not intended set the doDebug ' ...
@@ -77,10 +77,11 @@ addpath(mpath);addpath(genpath(mpath))
 % restarting the GUI which may leave the shutter open.
 h = findall(0,'tag','GUI');
 for kk=1:length(h)
-    if isequal(h(kk).Name,guiname)
-        disp(['iXon GUI instance detected.  Bringing into focus. ' ...
+    
+    if isequal(h(kk).Name,guiname)        
+        warning(['iXon GUI instance detected.  Bringing into focus. ' ...
             ' If you want to start a new instance, close the original iXon GUI.']); 
-       figure(h);
+       figure(h(kk));
        return;
     end    
 end
@@ -600,7 +601,7 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@chDirCB,...
     function chDirCB(~,~)
         str=getDayDir;
         str=uigetdir(str);        
-        if str && ~isequal(str,currDir)       
+        if ~isequal(str,0) && ~isequal(str,currDir)       
             disp(['Changing directory to ' str]);
             currDir=str;
             chData([],[],0);   
@@ -623,13 +624,13 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,...
 ttstr='Jump to most recent image acquired.';
 hbNavNow=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',[char(10094) char(10094)],'fontsize',10,...
-    'callback',{@chData, '0'},'ToolTipString',ttstr);
+    'callback',{@chData, 0},'ToolTipString',ttstr);
 hbNavNow.Position=[155 2 24 20];
 
 ttstr='Step to next more recent image';
 hbNavLeft=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10094),'fontsize',10,...
-    'callback',{@chData, '-'},'ToolTipString',ttstr);
+    'callback',{@chData, -1},'ToolTipString',ttstr);
 hbNavLeft.Position=[179 2 12 20];
 
 tNavInd=uicontrol(hpNav,'Style','text','units','pixels',...
@@ -639,7 +640,7 @@ tNavInd.Position=[191 2 30 20];
 ttstr='Step to later image.';
 hbNavRight=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10095),'fontsize',10,...
-    'callback',{@chData, '+'},'ToolTipString',ttstr);
+    'callback',{@chData, 1},'ToolTipString',ttstr);
 hbNavRight.Position=[221 2 12 20];
 
     function loadImage(filename)
@@ -650,6 +651,7 @@ hbNavRight.Position=[221 2 12 20];
                 return;
             end
             filename=[pathname filename];
+            currDir=pathname;
         end          
         disp(['     Loading ' filename]);        
         olddata=data;
@@ -665,7 +667,7 @@ hbNavRight.Position=[221 2 12 20];
     end
 
 % Callback function for changing number of ROIs
-    function chData(~,~,state)               
+    function chData(~,~,state)        
        % Get mat files in history directory          
        filenames=dir([currDir  filesep '*.mat']);
        filenames={filenames.name};       
@@ -693,16 +695,16 @@ hbNavRight.Position=[221 2 12 20];
        if isempty(i0)
           i0=1; 
        end
-       
+
         switch state
-            case '-'
+            case -1
                 i1=max([i0-1 1]);            
-            case '+'
+            case 1
                 i1=min([i0+1 length(filenames)]);
-            case '0'
+            case 0
                 i1=1;        
         end   
-    
+        
         newfilename=fullfile(currDir,filenames{i1});
         tNavInd.String=sprintf('%03d',i1);
         [a,b,~]=fileparts(newfilename);
@@ -1273,25 +1275,26 @@ climtbl.Position(1:2)=[65 tbl_dispROI.Position(2)-climtext.Position(4)-5];
 
 cAutoColor=uicontrol(hpDisp,'style','checkbox','string','auto clim?',...
     'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cAutoCLIMCB,...
-    'enable','on','value',0);
+    'enable','on','value',1);
 cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
 
     function cAutoCLIMCB(src,~)     
         if src.Value
-            climtbl.Enable='off';
-            axImg.CLimMode='auto';
-            drawnow;
-            
+            drawnow;    
+            autoClim;
             climtbl.Data=axImg.CLim;
-        else
-            climtbl.Enable='on';
-            axImg.CLimMode='manual';            
+        else          
             drawnow;
             climtbl.Data=axImg.CLim;
         end 
     end 
 
-
+    function autoClim
+        cH=round(max(max(data.Z)));
+        cL=round(min(min(data.Z)));        
+        axImg.CLim=[cL cH];
+        climtbl.Data=[cL cH];
+    end
 %%%%%% Plot Options %%%%%%
 
 % Button group for deciding what the X/Y plots show
@@ -1751,6 +1754,10 @@ function data=updateImages(data)
     % Update X, Y, and Z objects
     set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z);
     
+    if cAutoColor.Value
+       autoClim; 
+    end
+    
     % Move cross hair to center of mass
     pCrossX.YData=[1 1]*round(data.BoxCount.Yc);
     pCrossY.XData=[1 1]*round(data.BoxCount.Xc);
@@ -2135,6 +2142,9 @@ end
 
 %% FINISH
 data=updateImages(data);
+
+% Go to most recent image
+chData([],[],0);   
 
 
 drawnow;
