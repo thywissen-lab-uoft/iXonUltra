@@ -66,7 +66,7 @@ t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
 % Make axis
 hax1=subplot(131);
-set(hax1,'box','on','linewidth',1,'fontsize',12,'units','pixels');
+set(hax1,'box','on','linewidth',1,'fontsize',10,'units','pixels');
 hold on
 xlabel(xVar,'interpreter','none','fontsize',10);
 co=get(gca,'colororder');
@@ -87,7 +87,7 @@ text(0.02,.98,str,'units','normalized','fontsize',12,'verticalalignment','cap',.
 % Make axis
 
 hax2=subplot(132);
-set(hax2,'box','on','linewidth',1,'fontsize',12,'units','pixels');
+set(hax2,'box','on','linewidth',1,'fontsize',10,'units','pixels');
 hold on
 xlabel(xVar,'interpreter','none','fontsize',10);
 co=get(gca,'colororder');
@@ -106,7 +106,7 @@ text(0.02,0.98,str,'units','normalized','fontsize',12,'verticalalignment','cap',
 
 % Make axis
 hax3=subplot(133);
-set(hax3,'box','on','linewidth',1,'fontsize',12,'units','pixels');
+set(hax3,'box','on','linewidth',1,'fontsize',10,'units','pixels');
 hold on
 xlabel(xVar,'interpreter','none','fontsize',10);
 co=get(gca,'colororder');
@@ -125,7 +125,7 @@ hax1.Position(4)=hax1.Position(4)-15;
 hax2.Position(4)=hax1.Position(4);
 hax3.Position(4)=hax1.Position(4);
 
-uicontrol('style','text','string','iXon','units','pixels','backgroundcolor',...
+uicontrol('style','text','string','iXon, box','units','pixels','backgroundcolor',...
     'w','horizontalalignment','left','fontsize',12,'fontweight','bold',...
-    'position',[2 2 40 20]);
+    'position',[2 2 80 20]);
 

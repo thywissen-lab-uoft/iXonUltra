@@ -1,7 +1,11 @@
 % ixonAnalysis.m
+%
+% Author : CF Fujiwara
+%
+% This script is the primary analysis file for the iXon MATLAB code. It
+% calls and plots all other analyses.
 
-% This is an imaging analysis script. 
-%   Date
+% Display this filename
 disp(repmat('-',1,60));    
 disp(repmat('-',1,60));    
 disp(['Calling ' mfilename '.m']);
@@ -10,9 +14,7 @@ disp(repmat('-',1,60));
 
 % Add all subdirectories for this m file
 curpath = fileparts(mfilename('fullpath'));
-addpath(curpath);addpath(genpath(curpath))
-    
-
+addpath(curpath);addpath(genpath(curpath));
 %% Close all non GUI figures
 % Close all figures without the GUI tag.
 figs=get(groot,'Children');
@@ -32,12 +34,8 @@ disp(' ');
 disp('Choosing global settings for analysis...');
 
 global ixon_imgdir
-global doRotate
 
 lambda=770E-9;
-
-% Choose display rotation
-doRotate=0;
 
 % Load pertinent physical constants
 amu=1.660539E-27; 
@@ -55,7 +53,9 @@ varType='param'; % always select 'param' for now
 xVar='Raman_Power';
 unit='s';
 
-ixon_doSave=0;
+% Flag whether to save the output figures or not (code is faster if not
+% saving)
+ixon_doSave=1;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored

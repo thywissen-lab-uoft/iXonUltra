@@ -84,9 +84,9 @@ t.Position(4)=t.Extent(4);
 t.Position(3)=hF.Position(3);
 t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
-uicontrol('style','text','string','iXon','units','pixels','backgroundcolor',...
+uicontrol('style','text','string','iXon, box','units','pixels','backgroundcolor',...
     'w','horizontalalignment','left','fontsize',12,'fontweight','bold',...
-    'position',[2 2 40 20]);
+    'position',[2 2 80 20]);
 
 %% Track X
 

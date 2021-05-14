@@ -74,7 +74,7 @@ hax=axes;
 set(hax,'box','on','linewidth',1,'fontsize',14,'units','pixels');
 hold on
 xlabel(xVar,'interpreter','none');
-ylabel('total counts');
+ylabel('total raw counts');
 
 hax.Position(4)=hax.Position(4)-20;
 
