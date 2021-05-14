@@ -56,7 +56,7 @@ unit='G';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=0;
+ixon_doSave=1;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
@@ -298,7 +298,7 @@ if ixon_doGaussFit
     % Statistics if no variable is changing
     if isequal(ixon_xVar,'ExecutionDate')
         hF_stats=ixon_showGaussStats(ixondata);     
-        if ixon_doSave;saveFigure(ixondata,hF_stats,'ixon_gauss_stats');end
+        if ixon_doSave;ixon_saveFigure(ixondata,hF_stats,'ixon_gauss_stats');end
     end
        
     % Counts
@@ -306,19 +306,19 @@ if ixon_doGaussFit
      %ylim([0 max(get(gca,'YLim'))]);
      %ylim([3.5E6 4.5E6]);
      %xlim([0 max(get(gca,'XLim'))]);         
-    if ixon_doSave;saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
     
     % Size
     hF_size=ixon_showGaussSize(ixondata,ixon_xVar);    
-    if ixon_doSave;saveFigure(ixondata,hF_size,'ixon_gauss_size');end
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_size,'ixon_gauss_size');end
         
     % Aspect Ratio
     hF_ratio=ixon_showGaussAspectRatio(ixondata,ixon_xVar);    
-    if ixon_doSave;saveFigure(ixondata,hF_ratio,'ixon_gauss_ratio');end
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ratio,'ixon_gauss_ratio');end
     
     % Centre
     hF_Centre=ixon_showGaussCentre(ixondata,ixon_xVar,ixon_gauss_opts);    
-    if ixon_doSave;saveFigure(ixondata,hF_Centre,'gauss_position');end
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_Centre,'gauss_position');end
         
      % Style of profile --> cut or sum?
     style='cut';
@@ -334,10 +334,10 @@ if ixon_doGaussFit
 %   Save the figures (this can be slow)
     if ixon_doSave
         for kk=1:length(hF_Xs)            
-            saveFigure(ixondata,hF_Xs(kk),['gauss_profile_X' num2str(rNum) '_' num2str(kk)]);
+            ixon_saveFigure(ixondata,hF_Xs(kk),['gauss_profile_X' num2str(rNum) '_' num2str(kk)]);
         end
         for kk=1:length(hF_Ys)
-            saveFigure(ixondata,hF_Ys(kk),['gauss_profile_Y' num2str(rNum) '_' num2str(kk)]);
+            ixon_saveFigure(ixondata,hF_Ys(kk),['gauss_profile_Y' num2str(rNum) '_' num2str(kk)]);
         end
     end
     
