@@ -11,11 +11,17 @@ function ixondata=ixon_gaussFit(ixondata,opts)
        opts.doRotate=0; 
     end
     
+    if opts.doRotate    
+        disp(' Performing 2D rotated gaussian fit.');
+    else
+        disp(' Performing 2D rotated gaussian fit.');
+    end
+
 for n=1:length(ixondata)
-    GaussFit={};    
+    GaussFit={};  
     
-    
-    
+    fprintf([num2str(n) ' of ' num2str(length(ixondata)) ' :']);
+
     for k=1:size(ixondata(n).ROI,1)
         ROI=ixondata(n).ROI(k,:);
 
@@ -88,19 +94,28 @@ for n=1:length(ixondata)
             opt.Upper=[A*1.3 Xc+50 Yc+50 s1*1.5 s2*1.5 1000];
             opt.Lower=[A*0.7 Xc-50 Yc-50 s1*.5 s2*.5 -500];   
             
-            % Display initial guess
-            str1=['(Xc0,Yc0)=(' num2str(round(Xc)) ',' num2str(round(Yc)) ');'];
-            str2=['(Xs0,Ys0)=(' num2str(round(Xs)) ',' num2str(round(Ys)) ')'];
-            fprintf([str1 str2 ';']);
-
+            % Display initial guess            
+            gStr=[' guess (Xc,Yc,s1,s2,A,bg)=(' num2str(round(Xc)) ',' ...
+                num2str(round(Yc)) ',' num2str(round(s1)) ',' num2str(round(s2)) ',' ...
+                num2str(A,'%.e') ',' num2str(round(nbg)) ')' ];     
+            fprintf([gStr ' ... ']);
+            
             % Perform the fit
-            fprintf(' performing 2d gauss fit ... ');
             t1=now;
             [fout,gof,output]=fit([xx2(:) yy2(:)],Z2(:),myfit,opt);
+            t2=now;            
             
-            t2=now;
-            disp([' done (' num2str(round((t2-t1)*24*60*60,1)) ' sec.).']);
-            GaussFit(k)={fout};    
+            % Fit String
+            fStr=['(' num2str(round(fout.Xc)) ',' ...
+                num2str(round(fout.Yc)) ',' num2str(round(fout.s1)) ',' num2str(round(fout.s2)) ',' ...
+                num2str(fout.A,'%.e') ',' num2str(round(fout.nbg)) ')' ];     
+            fprintf([' fit ' fStr]);
+            
+            % dispaly Summary
+            disp([' (' num2str(round((t2-t1)*24*60*60,1)) ' sec.).']);
+            
+            % Append fit to output
+            GaussFit(k)={fout}; 
             
         else
             % Rotated Gaussian Analysis
@@ -141,12 +156,27 @@ for n=1:length(ixondata)
             opt.Upper=[A*1.3 Xc+50 Yc+50 s1*1.5 s2*1.5 theta+5*(pi/180) 1000];
             opt.Lower=[A*0.7 Xc-50 Yc-50 s1*.5 s2*.5 theta-5*(pi/180) -500];
 
+            % Display initial guess  
+            gStr=[' guess (Xc,Yc,s1,s2,theta,A,bg)=(' num2str(round(Xc)) ',' ...
+                num2str(round(Yc)) ',' num2str(round(s1)) ',' num2str(round(s2)) ',' num2str(round(theta*pi/180,1)) ',' ...
+                num2str(A,'%.e') ',' num2str(round(nbg)) ')' ];     
+            fprintf([gStr ' ... ']);
+
             % Perform the fit
-            fprintf(' performing rotated 2d gauss fit ... ');
             t1=now;
             [fout,gof,output]=fit([xx2(:) yy2(:)],Z2(:),myfit,opt);
-            t2=now;
-            disp([' done (' num2str(round((t2-t1)*24*60*60,1)) ' sec.).']);
+            t2=now;            
+            
+            % Fit String
+            fStr=['(' num2str(round(fout.Xc)) ',' ...
+                num2str(round(fout.Yc)) ',' num2str(round(fout.s1)) ',' num2str(round(fout.s2)) ',' num2str(round(fout.theta*pi/180,1)) ',' ...
+                num2str(fout.A,'%.e') ',' num2str(round(fout.nbg)) ')' ];     
+            fprintf([' fit ' fStr]);
+            
+            % dispaly Summary
+            disp([' (' num2str(round((t2-t1)*24*60*60,1)) ' sec.).']);
+            
+            % Append fit to output
             GaussFit(k)={fout};
             
         end
