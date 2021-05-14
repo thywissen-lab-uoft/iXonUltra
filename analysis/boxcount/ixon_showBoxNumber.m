@@ -147,9 +147,9 @@ hF.Position(3)=500;
 hF.Position(4)=400;
 clf
 drawnow;
-uicontrol('style','text','string','iXon','units','pixels','backgroundcolor',...
+uicontrol('style','text','string','iXon, box','units','pixels','backgroundcolor',...
     'w','horizontalalignment','left','fontsize',12,'fontweight','bold',...
-    'position',[2 2 40 20]);
+    'position',[2 2 80 20]);
 
 % Make axis
 hax=axes;
