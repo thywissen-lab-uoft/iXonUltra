@@ -220,6 +220,10 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
 
 % Callback for the connect button
     function connectCB(~,~)
+
+        strstatus.String='CONNECTING';
+        drawnow;
+        
         % Connect to the camera
        out=connectCam; 
        
@@ -227,7 +231,10 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
        if ~out && ~doDebug
            warning('Unable to connect to camera');
            return;
-       end       
+       end     
+       strstatus.String='CONNECTED';
+        drawnow;
+       
        cam_status.isConnected=1;
        
        % Close the shutter
@@ -278,12 +285,17 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         % Stop temperature monitor
         stop(statusTimer);
         
+        strstatus.String='DISCONNECTING';
+        drawnow;
         % Disconnect from camera
         out=disconnectCam; 
        
         if ~out && ~doDebug
            return;
         end
+        
+        strstatus.String='DRV_NOT_INITIALIZED';
+        drawnow;
           
         cam_status.isConnected=0;
         cam_status.isCooling=0;
@@ -467,7 +479,7 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
         % Camera Status
         [out,outstr]=getCameraStatus;
         strstatus.String=outstr;
-        
+        drawnow;
     end
 
 % Open camera shutter
@@ -878,6 +890,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 
                 % Update live preview if new                
                 if ~cAutoUpdate.Value
+                    currDir=defaultDir;
                     data=mydata;   
                     data=updateImages(data); 
                 else
@@ -1273,7 +1286,7 @@ climtbl.Position(1:2)=[65 tbl_dispROI.Position(2)-climtext.Position(4)-5];
         end
     end
 
-cAutoColor=uicontrol(hpDisp,'style','checkbox','string','auto clim?',...
+cAutoColor=uicontrol(hpDisp,'style','checkbox','string','auto clim',...
     'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cAutoCLIMCB,...
     'enable','on','value',1);
 cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
@@ -1290,10 +1303,22 @@ cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
     end 
 
     function autoClim
-        cH=round(max(max(data.Z)));
-        cL=round(min(min(data.Z)));        
-        axImg.CLim=[cL cH];
-        climtbl.Data=[cL cH];
+        %cH=round(max(max(data.Z)));
+        %cL=round(min(min(data.Z)));   
+        
+        % Auto clim to max and min. Clip at lower end to due variable noise
+        % floor
+        N0=size(data.Z,1)*size(data.Z,2);
+        dN=round(N0*.01);
+        call=sort(data.Z(:));
+        cL=call(dN);
+        cH=call(end);
+        
+        
+        dC=round(range(data.Z(:))*0.02); % 2% of range padding
+        
+        axImg.CLim=[cL+dC cH-dC];
+        climtbl.Data=[cL+dC cH-dC];
     end
 %%%%%% Plot Options %%%%%%
 
@@ -2171,6 +2196,7 @@ function out=connectCam
     end
     
 
+
     % Initialize the camera and load DLLs
     currDir = pwd;
     fileDir = fileparts(mfilename('fullpath'));
@@ -2199,9 +2225,9 @@ function out=disconnectCam
     disp(error_code(ret));
     
     % Shut down cooler
-     fprintf('Turning off cooler ... ');
-     [ret]=SetCoolerMode(1);     
-     disp(error_code(ret));
+      fprintf('Turning off cooler ... ');
+      [ret]=SetCoolerMode(1);     
+      disp(error_code(ret));
 
     % Shut down the camera
     fprintf('Shutting down camera ... ');
