@@ -38,6 +38,26 @@ for kk=1:length(uxvals) % Iterate over unique x values
     Zall(:,:,kk)=Zall(:,:,kk)/length(inds);   
 end
 
+%% Auto Clim
+cL0=0;
+cH0=1;
+if isequal(clim,'auto')
+    for kk=1:size(Zall,3)
+        Z=Zall(:,:,kk);
+        N0=size(Z,1)*size(Z,2);
+        dN=round(N0*.01); % pad by 1% floor
+        call=sort(Z(:));
+        cL=call(dN);
+        cH=call(end);       
+       
+        
+        cH0=max([cH0 cH]);
+        cL0=min([cL0 cL]);
+
+    end
+end
+
+clim=[cL0 cH0];
 %% Animation Settings
 startDelay=opts.StartDelay;   % First picture hold time
 midDelay=opts.MidDelay;   % Middle pictures hold time
