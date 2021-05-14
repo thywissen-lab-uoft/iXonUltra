@@ -1326,6 +1326,7 @@ cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
         
         
         dC=round(range(data.Z(:))*0.02); % 2% of range padding
+        dC=0;
         
         axImg.CLim=[cL+dC cH-dC];
         climtbl.Data=[cL+dC cH-dC];
