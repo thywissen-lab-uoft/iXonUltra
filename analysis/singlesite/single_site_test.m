@@ -17,8 +17,8 @@ f2='Spin_Mixture_Evaporated_Double_Gradient_Plane_Selection.mat';
 
 data=load(f2);
 images=data.images;
-xL=[310 400];
-yL=[340 410];
+xL=[220 350];
+yL=[190 300];
 cL1=[0 200];
 cL2=[0 100];
 
@@ -33,17 +33,20 @@ for kk=1:length(images)
    imagesc(Z)
    axis equal tight
    caxis(cL1);
-%    xlim(xL);
-%    ylim(yL);
+   xlim(xL);
+   ylim(yL);
+   colorbar
 end
 colormap(purplemap);
 
 
+Z=images{1}+images{2};
+% Z=imgaussfilt(Z,);
 
 %%
 % Load point spread function
-psf='Y:\Lattice Experiment Programs\Lattice Image Analysis\GUI 1-2-2\Jan_29_PSF.mat';
-psf=load(psf);
+% psf='Y:\Lattice Experiment Programs\Lattice Image Analysis\GUI 1-2-2\Jan_29_PSF.mat';
+psf=load(f1);
 psf=psf.psf;
 
 hf2=figure(2);
@@ -53,10 +56,20 @@ Zpsf=psf.psf;
 Zpsf=Zpsf/max(max(Zpsf));
 Xpsf=psf.x(1,:);
 Ypsf=psf.y(:,1);
+
+subplot(221);
 imagesc(Xpsf,Ypsf,Zpsf)
-
 axis equal tight
+colormap(purplemap);
+caxis([0 1]);
 
+subplot(222);
+plot(Xpsf,Zpsf(:,round(length(Ypsf)/2)));
+colormap(purplemap);
+caxis([0 1]);
+
+subplot(223);
+plot(Ypsf,Zpsf(round(length(Ypsf)/2),:));
 colormap(purplemap);
 caxis([0 1]);
 % caxis([0 300])
@@ -111,31 +124,151 @@ clf
 hf5.Color='w';
 hf5.Name='PSF Example';
 
-N=1000; % size of PSF (NxN)
-s=100;  % gaussian radius (pixels)
-PSF = fspecial('gaussian',1000,100);
+% Create a PSF
+N=70; % size of PSF (NxN)
+s=5;  % gaussian radius (pixels)
+PSF = fspecial('gaussian',N,s);
+PSF=PSF;
 
-supblot(221)
+% Create an ideal image
+I=zeros(200,200);
+I(100,100)=150;
+I(150,150)=150;
+I(180,180)=150;
+I(100,85)=150;
+
+% Convolve the ideal image with the PSF
 blurred = imfilter(I,PSF,'symmetric','conv');
+V = 0*1E-2;
+blurred_noisy = imnoise(blurred,'gaussian',0,V);
+
+% Deconvolve
+tic
+Iout=deconvlucy(blurred_noisy,PSF,10);
+toc
+
+subplot(221)
+imagesc(I);
+axis equal tight
+title('point sources');
+colorbar
+
+str=['$\sum \mathrm{{\bf I}_{i,j}}=' num2str(sum(sum(I))) '$'];
+text(.02,.02,str,'units','normalized','color','w','verticalalignment','bottom',...
+    'interpreter','latex','fontsize',12);
+
 
 subplot(222);
 imagesc(PSF);
 colormap(purplemap);
+axis equal tight
+title('PSF (sum=1)');
+colorbar
 
 
+str=['$\sum \mathrm{{\bf PSF}_{i,j}}=' num2str(sum(sum(PSF))) ',~' ...
+    '\sigma=' num2str(s) '$'];
+text(.02,.02,str,'units','normalized','color','w','verticalalignment','bottom',...
+    'interpreter','latex','fontsize',12);
+
+subplot(223)
+imagesc(blurred_noisy);
+axis equal tight
+title('blurred image w/ noise');
+colorbar
+
+str=['${\bf A}=\mathrm{{\bf PSF}}\star {\bf N}+\epsilon_{ij}$' newline ...
+    '$\sum {\bf A}_{ij} = ' num2str(round(sum(sum(blurred_noisy)),1)) '$'];
+text(.02,.02,str,'units','normalized','color','w','verticalalignment','bottom',...
+    'interpreter','latex','fontsize',12);
+
+subplot(224)
+imagesc(Iout);
+axis equal tight
+title(['deconvolved']);
+colorbar
+% caxis([0 1]);
+
+str=['${\widetilde {\bf I''}}=\widetilde{{\bf A}}/\widetilde{{\bf {\mathrm PSF}}}$' newline ...
+    '$\sum{I''}=' num2str(round(sum(sum(Iout)),1)) '$'];
+text(.02,.02,str,'units','normalized','color','w','verticalalignment','bottom',...
+    'interpreter','latex','fontsize',12);
 
 %% Deconvlution
+mag=[82.6 83.2];         % Magnification x and y
+pxsize=[16 16];          % Pixel size
+pxsize_real=pxsize./mag; % um/pixel in real space
+dPx=mean(pxsize_real);
 
+% Get the sampling of the psf
+dX=Xpsf(2)-Xpsf(1);
+dY=Ypsf(2)-Ypsf(1);
+dL=mean([dX dY]);
+% I think this is units of nanometers
+
+sc=2;
+X=1:512;
+Y=1:512;
+
+% xL=[1 512];
+% yL=[1 512];
+
+Zsub=Z(yL(1):yL(2),xL(1):xL(2));
+Xsub=xL(1):xL(2);
+Ysub=yL(1):yL(2);
+
+Zimg=imresize(Zsub,sc);
+% Ximg=imresize(Xsub,sc);
+% Yimg=imresize(Ysub,sc);
+
+
+
+sfake=260*2; % gaussian radius of PSF fit
+
+sfakePx=sfake*1E-3/(dPx/sc);
+
+fakepsf = fspecial('gaussian',70,sfakePx);
 
 hf4=figure(4);
 clf
 hf4.Color='w';
 hf4.Name='Deconvolved Data';
-out = richlucy(Z,1,5);
-
-imagesc(out)
-
 colormap(purplemap);
-caxis(cL1);
 
+subplot(221);
+imagesc(Zimg);
+axis equal tight
+cc=[0 700];
+colorbar
+caxis(cc);
+% xlim(xL);
+% % ylim(yL);
+drawnow;
+
+subplot(222)
+cla
+
+imagesc(fakepsf);
+axis equal tight
+
+caxis([0 max(max(fakepsf))]);
+
+colorbar
+drawnow;
+
+subplot(224)
+tic
+out = richlucy(Zimg,fakepsf,5);
+toc
+out2=imgaussfilt(out,0.5*sc);
+imagesc(out2);
+axis equal tight
+
+caxis(cc);
+colorbar
+% xlim(xL);
+% % ylim(yL);
+disp('done');
+
+%% Finding the lattice grid
 
