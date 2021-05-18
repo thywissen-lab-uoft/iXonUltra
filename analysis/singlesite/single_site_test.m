@@ -258,7 +258,7 @@ drawnow;
 
 subplot(224)
 tic
-out = richlucy(Zimg,fakepsf,5);
+out = richlucy(Zimg,fakepsf,15);
 toc
 out2=imgaussfilt(out,0.5*sc);
 imagesc(out2);
