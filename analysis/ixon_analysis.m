@@ -51,8 +51,8 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 
-ixon_xVar='kill_det';
-unit='G';
+ixon_xVar='objpzt';
+unit='ms';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
@@ -247,7 +247,7 @@ end
 
 ixon_boxPopts=struct;
 ixon_boxPopts.NumberExpFit = 0;
-ixon_boxPopts.NumberLorentzianFit=1;
+ixon_boxPopts.NumberLorentzianFit=0;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
 ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
@@ -271,7 +271,7 @@ if ixon_doBoxCount
 end
 
 %% ANALYSIS : 2D Gaussian
-ixon_doGaussFit=1;
+ixon_doGaussFit=0;
 % do a very basic PCA to determine angle of the atomic cloud
 ixondata=ixon_simple_pca(ixondata);
 
@@ -356,7 +356,7 @@ if ixon_doAnimate == 1
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 5000];   % Color limits
+    ixon_animateOpts.CLim=[0 4000];   % Color limits
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
