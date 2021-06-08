@@ -51,8 +51,8 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 
-ixon_xVar='objpzt';
-unit='ms';
+ixon_xVar='fb_shift';
+unit='G';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
@@ -356,8 +356,8 @@ if ixon_doAnimate == 1
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 4000];   % Color limits
-     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+    ixon_animateOpts.CLim=[0 500];   % Color limits
+%      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end

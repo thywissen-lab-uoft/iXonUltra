@@ -39,9 +39,10 @@ for kk=1:length(uxvals) % Iterate over unique x values
 end
 
 %% Auto Clim
-cL0=0;
-cH0=1;
+
 if isequal(clim,'auto')
+     cL0=0;
+ cH0=1;
     for kk=1:size(Zall,3)
         Z=Zall(:,:,kk);
         N0=size(Z,1)*size(Z,2);
@@ -55,9 +56,10 @@ if isequal(clim,'auto')
         cL0=min([cL0 cL]);
 
     end
+    clim=[cL0 cH0];
+
 end
 
-clim=[cL0 cH0];
 %% Animation Settings
 startDelay=opts.StartDelay;   % First picture hold time
 midDelay=opts.MidDelay;   % Middle pictures hold time
