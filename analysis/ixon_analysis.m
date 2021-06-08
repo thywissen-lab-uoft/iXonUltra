@@ -51,8 +51,8 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 
-ixon_xVar='fb_shift';
-unit='G';
+ixon_xVar='objpzt';
+unit='V';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
