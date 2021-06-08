@@ -1,4 +1,4 @@
-function ixon_animate(ixondata,xVar,opts)
+function ixon_animateFFT(ixondata,xVar,opts)
 
 clim=opts.CLim;
 global ixon_imgdir
@@ -25,14 +25,14 @@ else
     uxvals=sort(uxvals,'descend');
 end
 
-Zall=zeros(size(ixondata(1).Z,1),size(ixondata(1).Z,2),length(uxvals));
+Zall=zeros(size(ixondata(1).Zfft,1),size(ixondata(1).Z,2),length(uxvals));
 
 for kk=1:length(uxvals) % Iterate over unique x values    
     % Find the indeces which have this unique value
     inds=find(uxvals(kk)==xvals);    
     for ii=1:length(inds)
         ind=inds(ii);
-        Z=ixondata(ind).Z;
+        Z=ixondata(ind).Zfft;
         Zall(:,:,kk)=Zall(:,:,kk)+Z;        
     end        
     Zall(:,:,kk)=Zall(:,:,kk)/length(inds);   
@@ -43,21 +43,19 @@ end
 if isequal(clim,'auto')
     cL0=0;
     cH0=1;
+    
     for kk=1:size(Zall,3)
         Z=Zall(:,:,kk);
         N0=size(Z,1)*size(Z,2);
         dN=round(N0*.01); % pad by 1% floor
         call=sort(Z(:));
         cL=call(dN);
-        cH=call(end);       
-       
+        cH=call(end);              
         
         cH0=max([cH0 cH]);
         cL0=min([cL0 cL]);
-
     end
     clim=[cL0 cH0];
-
 end
 
 %% Animation Settings
@@ -85,7 +83,7 @@ filename=fullfile(figDir,[filename '.gif']);
 %% Make Figure
 
 % grab initial data
-Z=ixondata(1).Z;
+Z=ixondata(1).Zfft;
 Y=1:size(Z,1);
 X=1:size(Z,2);
 
