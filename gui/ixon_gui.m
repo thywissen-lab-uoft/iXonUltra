@@ -674,6 +674,7 @@ hbNavRight.Position=[221 2 12 20];
             data=newdata.data;
             data=updateImages(data);      
         catch ME
+
             warning('Unable to load image, reverting to old data');
             data=olddata;
             data=updateImages(data);      

@@ -51,12 +51,12 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 
-ixon_xVar='kill_det';
-unit='G';
+ixon_xVar='objpzt';
+unit='V';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=0;
+ixon_doSave=1;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
@@ -247,7 +247,7 @@ end
 
 ixon_boxPopts=struct;
 ixon_boxPopts.NumberExpFit = 0;
-ixon_boxPopts.NumberLorentzianFit=1;
+ixon_boxPopts.NumberLorentzianFit=0;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
 ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
@@ -271,7 +271,7 @@ if ixon_doBoxCount
 end
 
 %% ANALYSIS : 2D Gaussian
-ixon_doGaussFit=1;
+ixon_doGaussFit=0;
 % do a very basic PCA to determine angle of the atomic cloud
 ixondata=ixon_simple_pca(ixondata);
 
@@ -298,7 +298,7 @@ if ixon_doGaussFit
     % Statistics if no variable is changing
     if isequal(ixon_xVar,'ExecutionDate')
         hF_stats=ixon_showGaussStats(ixondata);     
-        if ixon_doSave;saveFigure(ixondata,hF_stats,'ixon_gauss_stats');end
+        if ixon_doSave;ixon_saveFigure(ixondata,hF_stats,'ixon_gauss_stats');end
     end
        
     % Counts
@@ -306,19 +306,19 @@ if ixon_doGaussFit
      %ylim([0 max(get(gca,'YLim'))]);
      %ylim([3.5E6 4.5E6]);
      %xlim([0 max(get(gca,'XLim'))]);         
-    if ixon_doSave;saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
     
     % Size
     hF_size=ixon_showGaussSize(ixondata,ixon_xVar);    
-    if ixon_doSave;saveFigure(ixondata,hF_size,'ixon_gauss_size');end
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_size,'ixon_gauss_size');end
         
     % Aspect Ratio
     hF_ratio=ixon_showGaussAspectRatio(ixondata,ixon_xVar);    
-    if ixon_doSave;saveFigure(ixondata,hF_ratio,'ixon_gauss_ratio');end
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ratio,'ixon_gauss_ratio');end
     
     % Centre
     hF_Centre=ixon_showGaussCentre(ixondata,ixon_xVar,ixon_gauss_opts);    
-    if ixon_doSave;saveFigure(ixondata,hF_Centre,'gauss_position');end
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_Centre,'ixon_gauss_position');end
         
      % Style of profile --> cut or sum?
     style='cut';
@@ -334,10 +334,10 @@ if ixon_doGaussFit
 %   Save the figures (this can be slow)
     if ixon_doSave
         for kk=1:length(hF_Xs)            
-            saveFigure(ixondata,hF_Xs(kk),['gauss_profile_X' num2str(rNum) '_' num2str(kk)]);
+            ixon_saveFigure(ixondata,hF_Xs(kk),['ixon_gauss_profile_X' num2str(rNum) '_' num2str(kk)]);
         end
         for kk=1:length(hF_Ys)
-            saveFigure(ixondata,hF_Ys(kk),['gauss_profile_Y' num2str(rNum) '_' num2str(kk)]);
+            ixon_saveFigure(ixondata,hF_Ys(kk),['ixon_gauss_profile_Y' num2str(rNum) '_' num2str(kk)]);
         end
     end
     
@@ -356,8 +356,8 @@ if ixon_doAnimate == 1
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 5000];   % Color limits
-     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+    ixon_animateOpts.CLim=[0 500];   % Color limits
+%      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end

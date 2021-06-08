@@ -41,8 +41,9 @@ end
 %% Auto Clim
 
 if isequal(clim,'auto')
-    cL0=0;
-    cH0=1;
+
+  cL0=0;
+  cH0=1;
     for kk=1:size(Zall,3)
         Z=Zall(:,:,kk);
         N0=size(Z,1)*size(Z,2);
