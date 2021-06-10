@@ -51,8 +51,8 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 
-ixon_xVar='objpzt';
-unit='V';
+ixon_xVar='ExecutionDate';
+unit='s';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
@@ -204,6 +204,7 @@ for kk=1:length(ixondata)
 end
 
 
+
 %% Basic Raw Image Analysis
 
 doRawImageAnalysis=0;
@@ -235,6 +236,18 @@ if doRawImageAnalysis
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
 
 end
+
+%% Calculate FFT
+ixon_doFFT=0;
+
+fft_opts=struct;
+fft_opts.doSmooth=1;
+fft_opts.smoothRadius=5;
+
+if ixon_doFFT
+    ixondata=ixon_computeFFT(ixondata,fft_opts);
+end
+
 
 %% ANALYSIS : BOX COUNT
 ixon_doBoxCount=1;
@@ -360,4 +373,23 @@ if ixon_doAnimate == 1
 %      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
+end
+
+%% Animate cloud FFT
+ixon_doAnimateFFT = 1;
+if ixon_doAnimateFFT == 1 && ixon_doFFT
+    ixon_animateOptsFFT=struct;
+    ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
+    ixon_animateOptsFFT.MidDelay=.25;     % Time to hold in middle picutres
+    ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
+
+    % Animate in ascending or descending order?
+    % animateOpts.Order='descend';    % Asceneding or descending
+    ixon_animateOptsFFT.Order='ascend';
+    
+    % Color limit for image
+%     ixon_animateOptsFFT.CLim=[0 1E5];   % Color limits
+     ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
+
+    ixon_animateFFT(ixondata,ixon_xVar,ixon_animateOptsFFT);
 end

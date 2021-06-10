@@ -67,7 +67,7 @@ strs=strsplit(ixon_imgdir,filesep);
 str=[strs{end-1} filesep strs{end}];
 
 %% Make Filename
-filename='ixon_animate'; 
+filename='ixon_animate_fft'; 
 
 % Create the name of the figure
 [filepath,name,~]=fileparts(ixon_imgdir);
