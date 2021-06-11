@@ -56,7 +56,7 @@ unit='s';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=1;
+ixon_doSave=0;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
