@@ -18,11 +18,9 @@ opt=fitoptions(myfit);
 
 
 
-figure(50);
+hF=figure;
 clf
-
 fRs={};
-
 for kk=1:length(ixondata)
    Z=ixondata(kk).Z;
    Zrot=imrotate(Z,theta);
@@ -30,44 +28,54 @@ for kk=1:length(ixondata)
    
    Zx=sum(Zrot(300:350,:),1);
 %       Zx=sum(Zrot(:,:),1);
-
    x=1:length(Zx);   
+   
+
 %    
-   opt.Start=[max(Zx)     0.5 180 pi 400 100];   
-%    opt.Lower=[0.5*max(Zx) 0 50 0 100 50]; 
-%    opt.Upper=[max(Zx)*1.5 1 250 2*pi 600 300];   
+   opt.Start=[max(Zx)     0.5 180 pi 400 100];      
+   opt.Lower=[0.5*max(Zx) 0 50 -pi 100 50]; 
+   opt.Upper=[max(Zx)*1.5 1 250 3*pi 600 300];   
    
 %     opt.Start=[max(Zx)     0.5 180 100 400 100];   
 %    opt.Lower=[0.5*max(Zx) 0 50 0 100 50]; 
 %    opt.Upper=[max(Zx)*1.5 1 250 200 600 300]; 
    
+    if kk>1
+       cGuess=coeffvalues(fRs{kk-1});
+        opt.Start(4)=cGuess(4);
+    end
+    
+    opt.Start(3)=180;
+%     opt.Lower(3)=175;
+%     opt.Upper(3)=185;
+    
+    
+    inds=[x==0];
+    
+    x(inds)=[];
+    Zx(inds)=[];
+    
    
    fRs{kk}=fit(x',Zx',myfit,opt);     
    
-%    disp(fR);   
    
    subplot(121);
    plot(x,Zx);
    hold on
-   plot(fRs{kk});
-   
+   plot(fRs{kk});   
    subplot(122);
    imagesc(Zrot);
    colormap(purplemap);
-   caxis([0 300]);
-%    waitforbuttonpress
+   caxis([0 300]);  
    
-   clf 
-    
+   
+   clf    
    phis(kk)=fRs{kk}.phi;
-%       phis(kk)=fRs{kk}.dx;
-
-   Ls(kk)=fRs{kk}.L;
-   
+   Ls(kk)=fRs{kk}.L;   
 end
 
 
-figure(1);
+figure;
 clf
 subplot(131);
 plot(phis/pi,'o-','linewidth',2)
