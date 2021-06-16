@@ -19,7 +19,9 @@ end
 params=[atomdata.Params];
 
 xvals=[params.(xVar)];
-
+if isequal(xVar,'ExecutionDate')
+    xvals=xvals-min(xvals);
+end
 %% Make figure
 strs=strsplit(imgdir,filesep);
 str=[strs{end-1} filesep strs{end}];

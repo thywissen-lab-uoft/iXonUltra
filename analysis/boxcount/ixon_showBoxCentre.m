@@ -26,6 +26,10 @@ xvals=[params.(xVar)];
 [xvals,inds]=sort(xvals,'ascend');
 ixondata=ixondata(inds);
 
+if isequal(xVar,'ExecutionDate')
+    xvals=xvals-min(xvals);
+end
+
 %% Grab the box count
 for kk=1:length(ixondata)
    for nn=1:size(ixondata(kk).ROI,1)

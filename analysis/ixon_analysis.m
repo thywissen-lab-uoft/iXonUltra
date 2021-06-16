@@ -98,14 +98,14 @@ for kk=1:length(files)
 end
 disp(' ');
 
-if isequal(ixon_xVar,'ExecutionDate')
-   p=[ixondata.Params] ;
-   tmin=min([p.ExecutionDate]);
-   for kk=1:length(ixondata)
-      ixondata(kk).Params.ExecutionDate= ...
-          ixondata(kk).Params.ExecutionDate-tmin;
-   end     
-end
+% if isequal(ixon_xVar,'ExecutionDate')
+%    p=[ixondata.Params] ;
+%    tmin=min([p.ExecutionDate]);
+%    for kk=1:length(ixondata)
+%       ixondata(kk).Params.ExecutionDate= ...
+%           ixondata(kk).Params.ExecutionDate-tmin;
+%    end     
+% end
 
 %% Sort the data
 % Sort the data by your given parameter

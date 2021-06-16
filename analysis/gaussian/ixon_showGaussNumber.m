@@ -16,7 +16,9 @@ xvals=[params.(xVar)];
 [xvals,inds]=sort(xvals,'ascend');
 ixondata=ixondata(inds);
 
-
+if isequal(xVar,'ExecutionDate')
+    xvals=xvals-min(xvals);
+end
 %% Grab the gaussian fit outputs
 for kk=1:length(ixondata)
    for nn=1:length(ixondata(kk).GaussFit)
