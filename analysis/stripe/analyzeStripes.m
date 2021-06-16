@@ -1,10 +1,12 @@
-function analyzeStripes(ixondata,xVar,opts)
+function [hF,outdata]=analyzeStripes(ixondata,xVar,opts)
+
 global ixon_imgdir
+
 
 %% Sort the data by the parameter given
 params=[ixondata.Params];
 xvals=[params.(xVar)];
-
+times=[params.ExecutionDate];
 
 [xvals,inds]=sort(xvals,'ascend');
 ixondata=ixondata(inds);
@@ -14,16 +16,28 @@ if isequal(xVar,'ExecutionDate')
 end
 
 if nargin==2
-   opts.theta=54;
+   opts.theta=57;
    opts.rotrange=[220 300];
    opts.FitType='Sine';
 %    opts.FitType='SmoothSquare';
    opts.LowThreshold=0.2;
    opts.L0=140;
-   opts.FieldGradient=210;
-   opts.grabMagnetometer=1;
+   opts.phi0=pi/2;
+   opts.saveAnimation=0;
+   opts.B0=0.4;
 end
 
+%% Make Filename
+filename='ixon_animate_stripe'; 
+
+% Create the name of the figure
+[filepath,name,~]=fileparts(ixon_imgdir);
+figDir=fullfile(ixon_imgdir,'figures');
+if ~exist(figDir,'dir')
+   mkdir(figDir); 
+end
+% Make the figure name with the location
+filename=fullfile(figDir,[filename '.gif']);
 
 
 %% Define the fit function
@@ -49,13 +63,12 @@ end
 % opt.Robust='bisquare';
 opt.MaxIter=1000;
 opt.MaxFunEvals=1000;
-opt.MaxFunEvals=1000;
-opt.TolFun=1E-7;
+opt.TolFun=1E-8;
 
 %% Prepare the live figure
 
 hF_live=figure;
-hF_live.Position=[100 100 900 300];
+hF_live.Position=[100 100 800 300];
 hF_live.Color='w';
 clf
 
@@ -78,7 +91,7 @@ ax1=subplot(121);
 pData=plot(0,0,'-');
 hold on
 pFit=plot(0,0,'r-');
-% pThresh=plot(0,0,'k--');
+pThresh=plot(0,0,'k--');
 
 xlabel('rotated vector');
 ylabel('summed counts');
@@ -92,11 +105,12 @@ colormap(purplemap);
 caxis([0 300]);    
 fRs={};
 axis equal tight
-
 Nsum=zeros(length(ixondata),1);
 
+hold on
 
-
+pL=plot(1,1,'g-','linewidth',1);
+pH=plot(1,1,'g-','linewidth',1);
 
 for kk=1:length(ixondata)
     
@@ -115,15 +129,17 @@ for kk=1:length(ixondata)
    theta2=4*pi;
    Z0=max(Zx);
    L0=opts.L0;   
+   phi0=opts.phi0;
+   B0=opts.B0;
    
    % Make an initial Guess
     switch opts.FitType
         case 'SmoothSquare'     
-            opt.Start=[1.0*Z0 0.5 L0     0       xCguess    50      .1];     
+            opt.Start=[1.0*Z0 B0 L0     phi0       xCguess    50      .1];     
             opt.Lower=[0.5*Z0 0.0 L0-50      theta1  min(x)     2 0 ]; 
             opt.Upper=[1.5*Z0 1.5 L0+50 theta2  max(x)     1000 1];  
         case 'Sine'
-          opt.Start=[1.0*Z0 0.5 L0     0       xCguess    50      ];     
+          opt.Start=[1.0*Z0 B0 L0     phi0       xCguess    100      ];     
             opt.Lower=[0.5*Z0 0.0 L0-50      theta1  min(x)     2]; 
             opt.Upper=[1.5*Z0 1.5 L0+50 theta2  max(x)     1000];  
     end
@@ -144,8 +160,10 @@ for kk=1:length(ixondata)
     tt.String=str;
     set(pData,'XData',x,'YData',Zx);
     set(pFit,'XData',x,'YData',feval(fR,x));
-    
-%     set(pThresh,'XData',[x(1) x(end)],'YData',[1 1]*opts.LowThreshold);
+    set(pL,'XData',[min(x) max(x)],'YData',opts.rotrange(1)*[1 1]);
+    set(pH,'XData',[min(x) max(x)],'YData',opts.rotrange(2)*[1 1]);
+
+    set(pThresh,'XData',[x(1) x(end)],'YData',[1 1]*opts.LowThreshold*max(Zx));
     
     set(ax1,'XLim',[1 length(x)],'YLim',[0 max(Zx)+100]);
     set(h1,'XData',1:size(Zrot,2),'YData',1:size(Zrot,1),'CData',Zrot);   
@@ -155,7 +173,29 @@ for kk=1:length(ixondata)
     % Append fit object
     fRs{kk}=fR;
     Nsum(kk)=sum(sum(Zrot));
+
+    if opts.saveAnimation
+    
+         % Write the image data
+        frame = getframe(hF_live);
+        im = frame2im(frame);
+        [A,map] = rgb2ind(im,256);           
+
+        switch kk
+            case 1
+                imwrite(A,map,filename,'gif','LoopCount',Inf,'DelayTime',opts.StartDelay);
+            case length(ixondata)
+                imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',opts.EndDelay);
+            otherwise
+                imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',opts.MidDelay);
+        end
+    end
+    
 end
+
+
+ 
+   
 
 
 %% Process Fit Data
@@ -183,10 +223,9 @@ end
 %% Plot the analysis
 [cface1,cedge1] = ixoncolororder(1);
 
-
-hf2=figure;
-hf2.Color='w';
-hf2.Position=[100 200 600 400];
+hF=figure;
+hF.Color='w';
+hF.Position=[100 200 600 400];
 clf
 
 % Phase
@@ -237,62 +276,17 @@ str=[strs{end-1} filesep strs{end}];
 t=uicontrol('style','text','string',str,'units','pixels','backgroundcolor',...
     'w','horizontalalignment','left','fontsize',6);
 t.Position(4)=t.Extent(4);
-t.Position(3)=hf2.Position(3);
-t.Position(1:2)=[5 hf2.Position(4)-t.Position(4)];
+t.Position(3)=hF.Position(3);
+t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
-%% Phase Analysis
+%% Saveoutput data
 
-
-
-hf3=figure;
-hf3.Color='w';
-hf3.Position=[100 200 400 300];
-clf
-
-aL=532E-9;                  % Plane spacing in meters
-G=opts.FieldGradient*100;   % G/cm to G/m
-
-B0=(phis/(2*pi))*G*aL;
-
-errorbar(xvals,1E3*B0(:,1),B0(:,2)*1E3,'marker','o',...
-    'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
-    'linewidth',1.5,'color',cedge1);
-hold on
-ylabel('magnetic field (mG)');
-xlabel(xVar);
-
-if opts.grabMagnetometer && isequal(xVar,'ExecutionDate')
-    
-    hf4=figure;
-    hf4.Color='w';
-    hf4.Position=[100 600 400 300];
-   t1=ixondata(1).Params.ExecutionDate/(24*60*60);
-   t2=ixondata(end).Params.ExecutionDate/(24*60*60);
-   
-   t1=datevec(t1);
-   t2=datevec(t2);
-   [T,B]=grabMagnetometer(t1,t2);  
-   T=datenum(T)*24*60*60;
-   T=T-min(T); 
-   
-   dT=T(2)-T(1);
-   Nsmooth=20;
-   
-   Tsmooth=round(dT*Nsmooth,1);
-   
-   B0=median(B);
-   
-   str=[num2str(Tsmooth) ' s smoothing time'];
-   
-   plot(T,smooth(B,Nsmooth),'k-','linewidth',1);
-   ylabel('field (mG)');   
-   xlabel('Execution Date (s)');
-   
-   ylim([-1 1]*5+B0);
-   
-   text(0.02,.98,str,'units','normalized',...
-       'verticalalignment','top','fontsize',10);
-end
+outdata=struct;
+outdata.xVar=xVar;
+outdata.Phase=phis;
+outdata.Wavelength=Ls;
+outdata.XData=xvals;
+outdata.ExecutionDate=times;
 
 
 end

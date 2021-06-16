@@ -356,6 +356,44 @@ if ixon_doGaussFit
     
 end
 
+%% STRIPE ANALYSIS
+doStripeAnalysis=1;
+
+stripe_opts=struct;
+
+% Fit stuff
+stripe_opts.theta=57;               % Rotation Angle
+stripe_opts.rotrange=[220 300];     % Sub region to inspect
+stripe_opts.FitType='Sine';         % Fit Type
+stripe_opts.LowThreshold=0.2;       % Low ampltude to ignore
+stripe_opts.L0=80;                 % Guess wavelength (pixels)
+stripe_opts.phi0=pi/2;             % Guess phase (radians)
+stripe_opts.B0=0.4;             % Guess modulation
+% Animate
+stripe_opts.saveAnimation=1;        % save the animation?
+stripe_opts.StartDelay=.25;
+stripe_opts.MidDelay=.25;
+stripe_opts.EndDelay=.25;
+
+
+if doStripeAnalysis
+    [hF_stripe,stripe_data]=analyzeStripes(ixondata,xVar,stripe_opts);
+    
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_stripe,'ixon_stripe');end
+
+    field_gradient=210; % field gradient in G/cm
+    stripe_data.grabMagnetometer=1;
+    stripe_data.Nsmooth=20;    
+    
+    [hF_stripe_field,hF_field_sense]=stripeStability(stripe_data,field_gradient);
+    
+    if ixon_doSave
+        ixon_saveFigure(ixondata,hF_stripe_field,'ixon_stripe_field');        
+        if stripe_data.grabMagnetometer
+            ixon_saveFigure(ixondata,hF_field_sense,'ixon_field_sense');
+        end  
+    end
+end
 %% Animate cloud
 ixon_doAnimate = 1;
 if ixon_doAnimate == 1 && ixon_doSave
