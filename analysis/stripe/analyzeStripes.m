@@ -9,6 +9,10 @@ xvals=[params.(xVar)];
 [xvals,inds]=sort(xvals,'ascend');
 ixondata=ixondata(inds);
 
+if isequal(xVar,'ExecutionDate')
+    xvals=xvals-min(xvals);
+end
+
 if nargin==2
    opts.theta=54;
    opts.rotrange=[220 300];
@@ -17,7 +21,10 @@ if nargin==2
    opts.LowThreshold=0.2;
    opts.L0=140;
    opts.FieldGradient=210;
+   opts.grabMagnetometer=1;
 end
+
+
 
 %% Define the fit function
 
@@ -39,7 +46,7 @@ switch opts.FitType
 end
 
 % Fit tolereances
-opt.Robust='bisquare';
+% opt.Robust='bisquare';
 opt.MaxIter=1000;
 opt.MaxFunEvals=1000;
 opt.MaxFunEvals=1000;
@@ -236,6 +243,7 @@ t.Position(1:2)=[5 hf2.Position(4)-t.Position(4)];
 %% Phase Analysis
 
 
+
 hf3=figure;
 hf3.Color='w';
 hf3.Position=[100 200 400 300];
@@ -252,6 +260,39 @@ errorbar(xvals,1E3*B0(:,1),B0(:,2)*1E3,'marker','o',...
 hold on
 ylabel('magnetic field (mG)');
 xlabel(xVar);
+
+if opts.grabMagnetometer && isequal(xVar,'ExecutionDate')
+    
+    hf4=figure;
+    hf4.Color='w';
+    hf4.Position=[100 600 400 300];
+   t1=ixondata(1).Params.ExecutionDate/(24*60*60);
+   t2=ixondata(end).Params.ExecutionDate/(24*60*60);
+   
+   t1=datevec(t1);
+   t2=datevec(t2);
+   [T,B]=grabMagnetometer(t1,t2);  
+   T=datenum(T)*24*60*60;
+   T=T-min(T); 
+   
+   dT=T(2)-T(1);
+   Nsmooth=20;
+   
+   Tsmooth=round(dT*Nsmooth,1);
+   
+   B0=median(B);
+   
+   str=[num2str(Tsmooth) ' s smoothing time'];
+   
+   plot(T,smooth(B,Nsmooth),'k-','linewidth',1);
+   ylabel('field (mG)');   
+   xlabel('Execution Date (s)');
+   
+   ylim([-1 1]*5+B0);
+   
+   text(0.02,.98,str,'units','normalized',...
+       'verticalalignment','top','fontsize',10);
+end
 
 
 end

@@ -14,6 +14,11 @@ else
     [xvals,inds]=sort(xvals,'descend');
 end
 ixondata=ixondata(inds);
+
+if isequal(xVar,'ExecutionDate')
+    xvals=xvals-min(xvals);
+end
+
 %% Average with unique x variable
 
 % Find and sor the unique values

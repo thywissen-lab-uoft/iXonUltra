@@ -1,4 +1,4 @@
-function grabMagnetometer
+function [T,B]=grabMagnetometer(t1,t2)
 %flowRatePlotter Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -13,53 +13,29 @@ function grabMagnetometer
 fldr='Y:\LabJack\Logging\Magnetometer';
 
 % Start and End times to plot YYYY mm DD HH MM SS
-t1=[2021 06 16 15 20 30];
-t2=[2021 06 16 16 10 0];
-
-% Resampling time in minutes (for average)
-dt=0;
-
-flim=[0 2];
-
-% Load the logs
-tic
-rawTbl=loadLogs(t1,t2);
-toc
-
-
-
-% Resample the data using average to make plotting easier over long times
-if dt
-    tic
-    pTable=retime(rawTbl,'regular','mean','timestep',minutes(dt));
-    toc
-else
-    pTable=rawTbl;
-end
-
-hF=figure;
-hF.Position=[50 100 1600 400];
-set(hF,'color','w');
-fnames=pTable.Properties.VariableNames;
-
+% t1=[2021 06 16 15 20 30];
+% t2=[2021 06 16 16 10 0];
 
 C=500; % mG/V (1V/50uT according to spec sheet)
 
-for kk=1:length(fnames)
-     ps(kk)=plot(pTable.Time,C*pTable.(fnames{kk}),'linewidth',2);
-     hold on
-end
+% Load the logs
 
-ylabel('field (mG)');
-set(gca,'fontsize',12);
+tic
+rawTbl=loadLogs(t1(1:6),t2(1:6));
+toc
 
-legend({'500 mG/V'});
+T=rawTbl.Time;
+fname=rawTbl.Properties.VariableNames{1};
+B=C*rawTbl.(fname);
 
-% ylim([-85 -40]);
-% ylim([-100 -40]);
+i1=T>datetime(t1);
+T=T(i1);
+B=B(i1);
 
-xlim([datetime(t1) datetime(t2)]);
-% 
+i2=T<datetime(t2);
+T=T(i2);
+B=B(i2);
+
 function out=loadLogs(t1,t2)
     t1=datenum(t1);
     t2=datenum(t2);      
