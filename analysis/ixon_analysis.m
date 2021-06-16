@@ -358,7 +358,7 @@ end
 
 %% Animate cloud
 ixon_doAnimate = 1;
-if ixon_doAnimate == 1
+if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts=struct;
     ixon_animateOpts.StartDelay=2; % Time to hold on first picture
     ixon_animateOpts.MidDelay=.25;     % Time to hold in middle picutres
@@ -377,7 +377,7 @@ end
 
 %% Animate cloud FFT
 ixon_doAnimateFFT = 1;
-if ixon_doAnimateFFT == 1 && ixon_doFFT
+if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
     ixon_animateOptsFFT=struct;
     ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
     ixon_animateOptsFFT.MidDelay=.25;     % Time to hold in middle picutres
