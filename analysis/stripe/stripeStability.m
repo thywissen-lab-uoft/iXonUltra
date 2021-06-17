@@ -11,6 +11,12 @@ aL=532E-9;                  % Plane spacing in meters
 G=field_gradient*100;   % G/cm to G/m
 
 B0=(stripe_data.Phase/(2*pi))*G*aL;
+mag=83; % assumed microscope magnification (16 um/pix --> 16/83 um px
+pxsize=16/83;
+
+
+% L0=(stripe_date.Wavelength)
+
 X=stripe_data.XData;
 
 errorbar(X,1E3*B0(:,1),B0(:,2)*1E3,'marker','o',...
@@ -19,6 +25,8 @@ errorbar(X,1E3*B0(:,1),B0(:,2)*1E3,'marker','o',...
 hold on
 ylabel('magnetic field (mG)');
 xlabel(stripe_data.xVar);
+
+ylim([-.1 1.1]*G*aL*1E3);
 
 if stripe_data.grabMagnetometer && isequal(stripe_data.xVar,'ExecutionDate')
     
@@ -36,20 +44,13 @@ if stripe_data.grabMagnetometer && isequal(stripe_data.xVar,'ExecutionDate')
    T=T-min(T); 
    
    dT=T(2)-T(1);
-   Nsmooth=stripe_data.Nsmooth;
-   
-   Tsmooth=round(dT*Nsmooth,1);
-   
-   B0=median(B);
-   
-   str=[num2str(Tsmooth) ' s smoothing time'];
-   
+   Nsmooth=stripe_data.Nsmooth;   
+   Tsmooth=round(dT*Nsmooth,1);   
+   B0=median(B);   
+   str=[num2str(Tsmooth) ' s smoothing time'];   
    plot(T,smooth(B,Nsmooth),'k-','linewidth',1);
    ylabel('field (mG)');   
-   xlabel('Execution Date (s)');
-   
-   ylim([-1 1]*5+B0);
-   
+   xlabel('Execution Date (s)'); 
    text(0.02,.98,str,'units','normalized',...
        'verticalalignment','top','fontsize',10);
 end

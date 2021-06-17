@@ -140,8 +140,8 @@ for kk=1:length(ixondata)
             opt.Upper=[1.5*Z0 1.5 L0+50 theta2  max(x)     1000 1];  
         case 'Sine'
           opt.Start=[1.0*Z0 B0 L0     phi0       xCguess    100      ];     
-            opt.Lower=[0.5*Z0 0.0 L0-50      theta1  min(x)     2]; 
-            opt.Upper=[1.5*Z0 1.5 L0+50 theta2  max(x)     1000];  
+            opt.Lower=[0.5*Z0 0.0 L0-20      theta1  min(x)     2]; 
+            opt.Upper=[1.5*Z0 1.5 L0+20 theta2  max(x)     1000];  
     end
 
     % Find data point to exclue

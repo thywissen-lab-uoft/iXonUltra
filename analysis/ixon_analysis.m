@@ -368,7 +368,8 @@ stripe_opts.FitType='Sine';         % Fit Type
 stripe_opts.LowThreshold=0.2;       % Low ampltude to ignore
 stripe_opts.L0=80;                 % Guess wavelength (pixels)
 stripe_opts.phi0=pi/2;             % Guess phase (radians)
-stripe_opts.B0=0.4;             % Guess modulation
+stripe_opts.B0=0.4;                 % Guess modulation
+
 % Animate
 stripe_opts.saveAnimation=1;        % save the animation?
 stripe_opts.StartDelay=.25;
@@ -383,12 +384,12 @@ if doStripeAnalysis
 
     field_gradient=210; % field gradient in G/cm
     stripe_data.grabMagnetometer=1;
-    stripe_data.Nsmooth=20;    
+    stripe_data.Nsmooth=10;    
     
-    [hF_stripe_field,hF_field_sense]=stripeStability(stripe_data,field_gradient);
+    [hF_field_stripe,hF_field_sense]=stripeStability(stripe_data,field_gradient);
     
     if ixon_doSave
-        ixon_saveFigure(ixondata,hF_stripe_field,'ixon_stripe_field');        
+        ixon_saveFigure(ixondata,hF_field_stripe,'ixon_field_stripe');        
         if stripe_data.grabMagnetometer
             ixon_saveFigure(ixondata,hF_field_sense,'ixon_field_sense');
         end  
