@@ -51,8 +51,8 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 
-ixon_xVar='ExecutionDate';
-unit='s';
+ixon_xVar='yshimd';
+unit='A';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
@@ -238,7 +238,7 @@ if doRawImageAnalysis
 end
 
 %% Calculate FFT
-ixon_doFFT=0;
+ixon_doFFT=1;
 
 fft_opts=struct;
 fft_opts.doSmooth=1;
@@ -247,6 +247,7 @@ fft_opts.smoothRadius=5;
 if ixon_doFFT
     ixondata=ixon_computeFFT(ixondata,fft_opts);
 end
+
 
 
 %% ANALYSIS : BOX COUNT
@@ -279,7 +280,7 @@ if ixon_doBoxCount
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size');end     
     
     % Plot the cloud center
-    hF_ixon_center=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_boxPopts); 
+    [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_boxPopts); 
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end 
 end
 
@@ -357,7 +358,7 @@ if ixon_doGaussFit
 end
 
 %% STRIPE ANALYSIS
-doStripeAnalysis=1;
+doStripeAnalysis=0;
 
 stripe_opts=struct;
 
@@ -376,6 +377,11 @@ stripe_opts.StartDelay=.25;
 stripe_opts.MidDelay=.25;
 stripe_opts.EndDelay=.25;
 
+% Field Analysis
+field_opts=struct;
+field_opts.FieldGradient=210;   % In G/cm
+field_opts.LatticeSpacing=532E-9; % in meter
+field_opts.FitType='Exp';
 
 if doStripeAnalysis
     [hF_stripe,stripe_data]=analyzeStripes(ixondata,xVar,stripe_opts);
@@ -386,11 +392,13 @@ if doStripeAnalysis
     stripe_data.grabMagnetometer=1;
     stripe_data.Nsmooth=10;    
     
-    [hF_field_stripe,hF_field_sense]=stripeStability(stripe_data,field_gradient);
+    [hF_field_stripe1,hF_field_stripe2,hF_field_sense]=fieldAnalysis(stripe_data,field_opts);
     
     if ixon_doSave
-        ixon_saveFigure(ixondata,hF_field_stripe,'ixon_field_stripe');        
-        if stripe_data.grabMagnetometer
+        ixon_saveFigure(ixondata,hF_field_stripe1,'ixon_field_stripe1');  
+        ixon_saveFigure(ixondata,hF_field_stripe2,'ixon_field_stripe2');        
+
+         if stripe_data.grabMagnetometer
             ixon_saveFigure(ixondata,hF_field_sense,'ixon_field_sense');
         end  
     end
@@ -423,12 +431,12 @@ if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
     ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
 
     % Animate in ascending or descending order?
-    % animateOpts.Order='descend';    % Asceneding or descending
+    % animateOpts.Order='descend';    % Asceneding or de    scending
     ixon_animateOptsFFT.Order='ascend';
     
     % Color limit for image
-%     ixon_animateOptsFFT.CLim=[0 1E5];   % Color limits
-     ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
+     ixon_animateOptsFFT.CLim=[0 1E5];   % Color limits
+    % ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animateFFT(ixondata,ixon_xVar,ixon_animateOptsFFT);
 end

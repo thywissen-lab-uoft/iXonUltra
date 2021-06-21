@@ -1,5 +1,5 @@
 function ixondata = ixon_computeFFT(ixondata,opts)
-
+disp('computing 2d fft');
     if nargin==1
         opts=struct;
         opts.doSmooth=0;

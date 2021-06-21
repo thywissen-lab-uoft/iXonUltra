@@ -1,4 +1,4 @@
-function hF=ixon_showBoxCentre(ixondata,xVar,opts)
+function [hF,Xc,Yc]=ixon_showBoxCentre(ixondata,xVar,opts)
 
 
 global ixon_imgdir;

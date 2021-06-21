@@ -44,7 +44,7 @@ filename=fullfile(figDir,[filename '.gif']);
 
 switch opts.FitType
     case 'Sine'
-        foo=@(A,B,L,phi,xc,s,x) A*0.5*(1+B*sin(2*pi/L*x+phi)).*exp(-(x-xc).^2/(2*s^2));
+        foo=@(A,B,L,phi,xc,s,x) A*0.5*(1+B*sin(2*pi/L*(x)+phi+pi/2)).*exp(-(x-xc).^2/(2*s^2));
         myfit=fittype(@(A,B,L,phi,xc,s,x) foo(A,B,L,phi,xc,s,x),...
             'independent','x','coefficients',{'A','B','L','phi','xc','s'});
         opt=fitoptions(myfit);
@@ -125,8 +125,8 @@ for kk=1:length(ixondata)
 
    % Construct some initial guessing
    xCguess=sum(Zx.*x)/sum(Zx);
-   theta1=-4*pi;
-   theta2=4*pi;
+   theta1=-400*pi;
+   theta2=400*pi;
    Z0=max(Zx);
    L0=opts.L0;   
    phi0=opts.phi0;
@@ -143,6 +143,17 @@ for kk=1:length(ixondata)
             opt.Lower=[0.5*Z0 0.0 L0-20      theta1  min(x)     2]; 
             opt.Upper=[1.5*Z0 1.5 L0+20 theta2  max(x)     1000];  
     end
+    
+    if isequal(xVar,'ExecutionDate')
+       if kk>1
+            opt.Start(1)=fRs{kk-1}.A;
+            opt.Start(2)=fRs{kk-1}.B;
+            opt.Start(3)=fRs{kk-1}.L;
+            opt.Start(4)=fRs{kk-1}.phi;
+            opt.Start(5)=fRs{kk-1}.xc;
+            opt.Start(6)=fRs{kk-1}.s;
+       end
+    end
 
     % Find data point to exclue
     ilow=(Zx<Zx/max(Zx*opts.LowThreshold));   
@@ -152,7 +163,7 @@ for kk=1:length(ixondata)
     fR=fit(x',Zx',myfit,opt);
     
     % Fit string label
-    str=['$\phi=' num2str(fR.phi/pi,2) '\pi$' newline ...
+    str=['$\phi=' num2str(round(fR.phi/pi,2)) '\pi$' newline ...
        '$\lambda=' num2str(round(fR.L,1)) '~\mathrm{px}$' newline ...
        '$\mathrm{depth}=' num2str(round(100*fR.B,1)) '\%$'];   
   
@@ -202,16 +213,23 @@ end
 phis=zeros(length(fRs),2);
 Ls=zeros(length(fRs),2);
 Bs=zeros(length(fRs),2);
+Xc=zeros(length(fRs),2);
 for kk=1:length(fRs)
     % Get Confidence interval
     ci=confint(fRs{kk});
     
     % Phase
-    phis(kk,1)=mod(fRs{kk}.phi,2*pi);
+%     phis(kk,1)=mod(fRs{kk}.phi,2*pi);
+    phis(kk,1)=fRs{kk}.phi;
+
     phis(kk,2)=(ci(2,4)-ci(1,4))/2;   
     
     % Wavelength
-    Ls(kk,1)=fRs{kk}.L;
+    Xc(kk,1)=fRs{kk}.xc;
+    Xc(kk,2)=(ci(2,5)-ci(1,5))/2;   
+    
+    % Wavelength
+    Ls(kk,1)=fRs{kk}.L;    
     Ls(kk,2)=(ci(2,3)-ci(1,3))/2;   
     
     % Modulation Depth
@@ -230,7 +248,7 @@ clf
 
 % Phase
 subplot(221);
-errorbar(xvals,phis(:,1)/pi,phis(:,2)/pi,'marker','o',...
+errorbar(xvals,mod(phis(:,1),2*pi)/pi,phis(:,2)/pi,'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
 hold on
@@ -279,13 +297,18 @@ t.Position(4)=t.Extent(4);
 t.Position(3)=hF.Position(3);
 t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
+figure
+plot(xvals,phis(:,1)/pi,'ko');
+
 %% Saveoutput data
 
 outdata=struct;
 outdata.xVar=xVar;
 outdata.Phase=phis;
 outdata.Wavelength=Ls;
-outdata.XData=xvals;
+outdata.Center=Xc;
+
+outdata.XData=xvals';
 outdata.ExecutionDate=times;
 
 
