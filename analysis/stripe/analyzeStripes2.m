@@ -1,4 +1,4 @@
-function [hF,outdata]=analyzeStripes2(ixondata,xVar,opts)
+function [hF2,outdata]=analyzeStripes2(ixondata,xVar,opts)
 
 global ixon_imgdir
 % maskname=fullfile('ixon_mask.mat');
@@ -7,7 +7,17 @@ global ixon_imgdir
 
 doDebug=0;
 
+if nargin==2
+   opts=struct;
+   opts.saveAnimation=1;
+   opts.StartDelay=1;
+   opts.MidDelay=0.2;
+   opts.EndDelay=1;
+   opts.ShimFit=0;
+end
 %% Sort the data by the parameter given
+% Sort the data by the xVar and grab it.
+
 params=[ixondata.Params];
 xvals=[params.(xVar)];
 times=[params.ExecutionDate];
@@ -19,33 +29,22 @@ if isequal(xVar,'ExecutionDate')
     xvals=xvals-min(xvals);
 end
 
-if nargin==2
-   opts.theta=57;
-   opts.rotrange=[220 300];
-   opts.FitType='Sine';
-%    opts.FitType='SmoothSquare';
-   opts.LowThreshold=0.2;
-   opts.L0=140;
-   opts.phi0=pi/2;
-   opts.saveAnimation=0;
-   opts.B0=0.4;
-end
-
 %% Fitting Function
-% The fitting function is 2D gaussian who is modulated by a sine wave at
-% an angle
+% Define the fitting function. It is a 2D gaussian who is modulated by a
+% sine wave at an angle
 
 gauss2dSine=@(A,xC,yC,sG,B,theta,L,phi,xx,yy) A*...
         exp(-((xx-xC).^2+(yy-yC).^2)/(2*sG^2)).*...
         (1+B*sin(2*pi/L*(cosd(theta)*xx+sind(theta)*yy)+phi));    
 
-myfit=fittype(@(A,xC,yC,sG,B,theta,L,phi,xx,yy) gauss2dSine(A,xC,yC,sG,B,theta,L,phi,xx,yy),...
-    'independent',{'xx','yy'},'coefficients',{'A','xC','yC','sG','B','theta',...
-    'L','phi'});
+myfit=fittype(@(A,xC,yC,sG,B,theta,L,phi,xx,yy) ...
+    gauss2dSine(A,xC,yC,sG,B,theta,L,phi,xx,yy),...
+    'independent',{'xx','yy'},...
+    'coefficients',{'A','xC','yC','sG','B','theta','L','phi'});
 
 opt=fitoptions(myfit);
 
-% Fit tolereances
+% Define fit options
 % opt.Robust='bisquare';
 opt.MaxIter=1000;
 opt.MaxFunEvals=1000;
@@ -196,6 +195,8 @@ for kk=1:length(ixondata)
     tt=linspace(0,2*pi,100);    
     
     if doDebug
+        % If in debug mode, plot the guess and some plots to show how it is
+        % obtained.
         figure(hf_guess);
         clf
         colormap(purplemap);
@@ -262,10 +263,22 @@ disp(['done (' num2str(round((t2-t1)*24*60*60),2) ' s)']);
 %% Fit it
 
 fRs={};
-hF=figure;
-hF.Color='w';
-hF.Position(3:4)=[1000 400];
+hF_live=figure;
+hF_live.Color='w';
+hF_live.Position(3:4)=[1000 400];
 clf
+
+% Folder directory
+strs=strsplit(ixon_imgdir,filesep);
+str=[strs{end-1} filesep strs{end}];
+% Image directory folder string
+t=uicontrol('style','text','string',str,'units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left','fontsize',6);
+t.Position(4)=t.Extent(4);
+t.Position(3)=hF_live.Position(3);
+t.Position(1:2)=[5 hF_live.Position(4)-t.Position(4)];
+
+
 for kk=1:length(ixondata)
     fprintf(['Fitting ' num2str(kk) ' of ' num2str(length(ixondata)) ' ... ']);
     pG=[AG(kk),xCG(kk),yCG(kk),sG(kk),BG(kk),thetaG(kk),LG(kk),phiG(kk)];
@@ -294,11 +307,13 @@ for kk=1:length(ixondata)
     Zsc(Zsc<10)=[];
 
     % Create live update figure for fitting    
-    figure(hF);
-    clf
+    figure(hF_live);
+%     clf
     colormap(purplemap);
 
+    % Show the raw data
     subplot(231);    
+    cla
     imagesc(x,y,Z);
     set(gca,'ydir','normal');
     axis equal tight
@@ -306,6 +321,7 @@ for kk=1:length(ixondata)
     
     % Plot the initial guess
     subplot(232)
+    cla
     imagesc(Zg)    
     set(gca,'ydir','normal');
     axis equal tight
@@ -317,32 +333,90 @@ for kk=1:length(ixondata)
     % Evalulate the fit
     Zf=feval(fout,xx,yy);
     
+    % Overwrite the guess with the fit
     subplot(232)
+    cla
     imagesc(Zf)    
     set(gca,'ydir','normal');
     colorbar
     
+    % Show the residue
     subplot(233)
+    cla
     imagesc(Zf-Z);
     set(gca,'ydir','normal');
     colorbar
 
+    % Show the sum counts along the stripe axis
     subplot(234)
+    cla
     plot(x,sum(imrotate(Zf,fout.theta,'crop'),1),'r-')
     hold on
     plot(x,sum(imrotate(Z,fout.theta,'crop'),1),'k-'); 
     set(gca,'ydir','normal');
-    xlabel('rotated position 1');
+    xlabel('position along frine');
+    ylabel('sum counts');
     xlim([min(x) max(x)]);
     
+    % Show the sum counts orthogonal to the stripe axis
     subplot(235)
+    cla
     plot(y,sum(imrotate(Zf,fout.theta,'crop'),2),'r-')
     hold on
     plot(y,sum(imrotate(Z,fout.theta,'crop'),2),'k-'); 
     set(gca,'ydir','normal');
-    xlabel('rotated position 2');
+    xlabel('position perpendicular');
+    ylabel('sum counts');
     xlim([min(y) max(y)]);
     disp('done');
+    
+    % Summary table
+    ax6=subplot(236);
+    tbl=uitable('units','normalized','fontsize',8);
+    tbl.RowName={};
+    tbl.ColumnName={};
+    tbl.ColumnFormat={'numeric','numeric'};
+    tbl.ColumnWidth={120,80};
+    
+    data={'Wavelength (px)', num2str(round(fout.L,3));
+        'Angle (deg.)', num2str(round(fout.theta,3));
+        'Phase (pi)', num2str(round(fout.phi/pi,3));
+        'Mod Depth', num2str(round(fout.B,2));
+        'Xc', num2str(round(fout.xC,2));
+        'Yc', num2str(round(fout.yC,2));
+        'Amplitude', num2str(round(fout.A,2));
+        'Sigma (px)', num2str(round(fout.sG,2))};
+    
+    tbl.Data=data;
+    tbl.Position(3:4)=tbl.Extent(3:4);
+    tbl.Position(1:2)=ax6.Position(1:2);
+    delete(ax6);
+    
+    cla
+    plot(y,sum(imrotate(Zf,fout.theta,'crop'),2),'r-')
+    hold on
+    plot(y,sum(imrotate(Z,fout.theta,'crop'),2),'k-'); 
+    set(gca,'ydir','normal');
+    xlabel('position perpendicular');
+    ylabel('sum counts');
+    xlim([min(y) max(y)]);
+    disp('done');   
+    
+    
+    if opts.saveAnimation    
+         % Write the image data
+        frame = getframe(hF_live);
+        im = frame2im(frame);
+        [A,map] = rgb2ind(im,256);           
+        switch kk
+            case 1
+                imwrite(A,map,filename,'gif','LoopCount',Inf,'DelayTime',opts.StartDelay);
+            case length(ixondata)
+                imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',opts.EndDelay);
+            otherwise
+                imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',opts.MidDelay);
+        end
+    end
 end
 
 %% Process Fits
@@ -356,22 +430,33 @@ for kk=1:length(fRs)
     ci=confint(fRs{kk});
     
     % Get fit value
-   Ls(kk,1)=fRs{kk}.L; 
-   thetas(kk,1)=fRs{kk}.theta;
-      phis(kk,1)=fRs{kk}.phi;
+    Ls(kk,1)=fRs{kk}.L; 
+    thetas(kk,1)=fRs{kk}.theta;
+    phis(kk,1)=fRs{kk}.phi;
 
-
-   % Get errors (average +-)
+    % Get the 95% confidence interval
     Ls(kk,2)=(ci(2,7)-ci(1,7))/2;   
     thetas(kk,2)=(ci(2,6)-ci(1,6))/2;    
     phis(kk,2)=(ci(2,8)-ci(1,8))/2;       
 
 end
 
+% Summarize the results
 hF2=figure;
 hF2.Position=[100 100 700 250];
 hF2.Color='w';
 clf;
+
+% Folder directory
+strs=strsplit(ixon_imgdir,filesep);
+str=[strs{end-1} filesep strs{end}];
+% Image directory folder string
+t=uicontrol('style','text','string',str,'units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left','fontsize',6);
+t.Position(4)=t.Extent(4);
+t.Position(3)=hF2.Position(3);
+t.Position(1:2)=[5 hF2.Position(4)-t.Position(4)];
+
 
 % Wavelength
 subplot(131);
@@ -396,6 +481,13 @@ errorbar(xvals,phis(:,1),phis(:,2),'marker','o',...
     'linewidth',1.5,'color',cedge1);
 xlabel(xVar);
 ylabel('phase (\pi)');
+
+if opts.ShimFit
+    % This fitting algotrithm is specifically for when a shim varied and
+    % the other one is held constant
+    wave_func=@(A,x0,x1,x) A*sqrt(1/((x-x0).^2+x1.^2));
+    theta_func=@(A,x0,x1,x) atan2(x-x0,x1);
+end
 
 %% Prepare output data
 outdata=struct;
