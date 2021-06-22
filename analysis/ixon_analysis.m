@@ -56,7 +56,7 @@ unit='A';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=1;
+ixon_doSave=0;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
@@ -358,7 +358,7 @@ if ixon_doGaussFit
 end
 
 %% STRIPE ANALYSIS
-doStripeAnalysis=0;
+doStripeAnalysis=1;
 
 stripe_opts=struct;
 
@@ -384,7 +384,7 @@ field_opts.LatticeSpacing=532E-9; % in meter
 field_opts.FitType='Exp';
 
 if doStripeAnalysis
-    [hF_stripe,stripe_data]=analyzeStripes(ixondata,xVar,stripe_opts);
+    [hF_stripe,stripe_data]=analyzeStripes(ixondata,ixon_xVar,stripe_opts);
     
     if ixon_doSave;ixon_saveFigure(ixondata,hF_stripe,'ixon_stripe');end
 
