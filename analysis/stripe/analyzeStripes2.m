@@ -94,7 +94,16 @@ if doDebug
 end
 
 for kk=1:length(ixondata)    
-    thetaVec=linspace(-90,90,100);    
+    switch xVar
+        case 'xshimd'
+            thetaVec=linspace(0,180,100);
+        case 'yshimd'
+            thetaVec=linspace(-90,90,100);
+        otherwise
+            thetaVec=linspace(-90,90,100);
+    end
+
+        
     
     % Get raw data
     Z2=ixondata(kk).Z;
@@ -128,15 +137,8 @@ for kk=1:length(ixondata)
     for jj=1:length(thetaVec)        
         Zrot=imrotate(Z2,thetaVec(jj));        
         Zsum=sum(Zrot,1);
-        
-%         ZsumSmooth=smooth(Zsum1,10)
-        
-%         CC(jj)=sum(Zsum.^2);
-
-        CC(jj)=sum(abs(diff(Zsum)));
-        
-%         CC(jj)=sum(Zsum);
-%         CC(jj)=range(Zsum);
+        Zsum=smooth(Zsum,5);
+        CC(jj)=sum(abs(diff(Zsum)).^2);    
     end
     
     % Find the angle which maximizes the contrast
@@ -281,6 +283,9 @@ fRs={};
 hF_live=figure;
 hF_live.Color='w';
 hF_live.Position(3:4)=[1000 400];
+
+co=get(gca,'colororder');
+
 clf
 colormap(purplemap);
 
@@ -296,6 +301,13 @@ set(gca,'ydir','normal');
 axis equal tight
 colorbar
 
+hold on
+pFringe=plot(0,0,'-','color',co(1,:),'linewidth',1);
+pPerp=plot(0,0,'-','color',co(5,:),'linewidth',1);     
+pBar=plot(0,0,':','color','w','linewidth',1);     
+pCirc=plot(0,0,'-','color',co(1,:),'linewidth',1);     
+
+
 ax3=subplot(233);    
 hImg_err=imagesc(ixondata(1).Z);
 set(gca,'ydir','normal');
@@ -303,18 +315,18 @@ axis equal tight
 colorbar
 
 ax4=subplot(234);    
-pSum1_fit=plot(0,0,'r-');
+pSum1_fit=plot(0,0,'r-','linewidth',2);
 hold on
-pSum1_data=plot(0,0,'k-');
-set(gca,'ydir','normal');
+pSum1_data=plot(0,0,'-','color',co(1,:),'linewidth',2);
+% set(gca,'ydir','normal');
 xlabel('position along fringe');
 ylabel('sum counts');
     
 ax5=subplot(235);    
-pSum2_fit=plot(0,0,'r-');
+pSum2_fit=plot(0,0,'r-','linewidth',2);
 hold on
-pSum2_data=plot(0,0,'k-');
-set(gca,'ydir','normal');
+pSum2_data=plot(0,0,'-','color',co(5,:),'linewidth',1);
+% set(gca,'ydir','normal');
 xlabel('position perpendicular');
 ylabel('sum counts');
 
@@ -351,12 +363,23 @@ t=uicontrol('style','text','string',str,'units','pixels','backgroundcolor',...
 t.Position(4)=t.Extent(4);
 t.Position(3)=hF_live.Position(3);
 t.Position(1:2)=[5 hF_live.Position(4)-t.Position(4)];
+sse=zeros(length(ixondata),1);
 
+
+uicontrol('style','text','string','iXon, stripe','units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left','fontsize',12,'fontweight','bold',...
+    'position',[2 2 100 20]);
+
+vart=uicontrol('style','text','string','variable','units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left','fontsize',8,'fontweight','normal',...
+    'position',[2 25 100 20]);
 
 for kk=1:length(ixondata)
     fprintf(['Fitting ' num2str(kk) ' of ' num2str(length(ixondata)) ' ... ']);
     pG=[AG(kk),xCG(kk),yCG(kk),sG(kk),BG(kk),thetaG(kk),LG(kk),phiG(kk)];
     opt.StartPoint=pG;
+    
+    vart.String=[xVar ' : ' num2str(xvals(kk))];
     
     % Grab the data
     Z=ixondata(kk).Z;
@@ -369,7 +392,7 @@ for kk=1:length(ixondata)
     
     % Create the initial guess
     Zg=gauss2dSine(pG(1),pG(2),pG(3),pG(4),pG(5),pG(6),pG(7),pG(8),xx,yy); 
-    disp(pG)
+%     disp(pG)
     
     % Rescale the data for fitting
     sc=0.3;
@@ -390,6 +413,7 @@ for kk=1:length(ixondata)
     % Perform the fit
     [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit,opt);
     fRs{kk}=fout;
+    sse(kk)=gof.sse;
     % Evalulate the fit
     Zf=feval(fout,xx,yy);
     
@@ -397,6 +421,22 @@ for kk=1:length(ixondata)
     set(hImg_fit,'CData',Zf);
     set(hImg_err,'CData',Zf-Z);
     
+    set(pFringe,'XData',fout.xC+[0 1]*200*cosd(fout.theta),...
+        'Ydata',fout.yC+[0 1]*200*sind(fout.theta));
+    set(pPerp,'XData',fout.xC+[-1 1]*100*cosd(fout.theta+90),...
+        'Ydata',fout.yC+[-1 1]*100*sind(fout.theta+90));
+     set(pBar,'XData',fout.xC+[-300 300],...
+        'Ydata',fout.yC*[1 1]);
+    
+    tt=linspace(0,fout.theta,100);
+    set(pCirc,'XData',fout.xC+50*cosd(tt),...
+        'YData',fout.yC+50*sind(tt));
+    
+    set(ax1,'XLim',[min(x) max(x)]);
+    set(ax2,'XLim',[min(x) max(x)]);
+    set(ax3,'XLim',[min(x) max(x)]);
+
+        
     % Show the sum counts along the stripe axis    
     set(pSum1_fit,'XData',x,'YData',sum(imrotate(Zf,fout.theta,'crop'),1));
     set(pSum1_data,'XData',x,'YData',sum(imrotate(Z,fout.theta,'crop'),1));
@@ -433,6 +473,7 @@ for kk=1:length(ixondata)
                 imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',opts.MidDelay);
         end
     end
+    disp('done');
 end
 
 %% Process Fits
@@ -459,9 +500,13 @@ end
 
 % Summarize the results
 hF2=figure;
-hF2.Position=[100 100 700 250];
+hF2.Position=[100 100 900 250];
 hF2.Color='w';
 clf;
+
+uicontrol('style','text','string','iXon, stripe','units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left','fontsize',12,'fontweight','bold',...
+    'position',[2 2 100 20]);
 
 % Folder directory
 strs=strsplit(ixon_imgdir,filesep);
@@ -481,14 +526,16 @@ errorbar(xvals,Ls(:,1),Ls(:,2),'marker','o',...
     'linewidth',1.5,'color',cedge1);
 xlabel(xVar);
 ylabel('wavelength (px)');
+grid on
 
 % Angle
-subplot(132);
+axb2=subplot(132);
 errorbar(xvals,thetas(:,1),thetas(:,2),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
 xlabel(xVar);
 ylabel('angle (deg.)');
+grid on
 
 % Phase
 subplot(133);
@@ -497,12 +544,61 @@ errorbar(xvals,phis(:,1),phis(:,2),'marker','o',...
     'linewidth',1.5,'color',cedge1);
 xlabel(xVar);
 ylabel('phase (\pi)');
+grid on
+
+% Error
+% subplot(144);
+% plot(xvals,sse,'marker','o',...
+%     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
+%     'linewidth',1.5,'color',cedge1);
+% xlabel(xVar);
+% ylabel('sse (au)');
 
 if opts.ShimFit
     % This fitting algotrithm is specifically for when a shim varied and
     % the other one is held constant
-    wave_func=@(A,x0,x1,x) A*sqrt(1/((x-x0).^2+x1.^2));
-    theta_func=@(A,x0,x1,x) atan2(x-x0,x1);
+%     wave_func=@(A,x0,x1,x) A*sqrt(1/((x-x0).^2+x1.^2));
+%     theta_func=@(A,x0,x1,x) atan2(x-x0,x1);
+%     
+    switch xVar
+        case 'xshimd'
+            theta_c=59.8;            
+        case 'yshimd'
+            theta_c=-31.3;            
+        otherwise
+            warning('uh oh, go ask cora what went wrong');
+            theta_c=-45;        
+    end
+    
+    % Find angles close by to the critical one
+    inds=[abs(thetas(:,1)-theta_c)<10];
+    
+    [~,i0]=min(xvals);
+    b0=thetas(i0,1);
+   
+    
+    xp=xvals(inds)';
+    yp=thetas(inds,1);
+    
+    
+    
+    m0=range(yp)./range(xp);
+    
+    myfit2=fittype('m*x+b','independent','x','coefficients',{'m','b'});
+    opt2=fitoptions(myfit2);
+    opt2.StartPoint=[m0 b0];
+    
+    fout_theta=fit(xp,yp,myfit2,opt2);
+    
+    axes(axb2)
+    hold on
+    tt=linspace(min(xp),max(xp),10);
+    pFit=plot(tt,feval(fout_theta,tt),'k-','linewidth',1);
+    
+    pstr=['(' num2str(round(fout_theta.m,3)) ')x + ' num2str(round(fout_theta.b,3))];
+    
+    legend(pFit,pstr,'location','best');
+    
 end
 
 %% Prepare output data

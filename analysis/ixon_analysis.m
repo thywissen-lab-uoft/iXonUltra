@@ -51,7 +51,7 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='uwave_freq_offset';
+ixon_xVar='xshimd';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
@@ -430,7 +430,7 @@ end
 
 %% 2D Stripe Analysis
 
-do_2dStripeAnalysis=0;
+do_2dStripeAnalysis=1;
 
 stripe_2d_opts=struct;
 
@@ -440,8 +440,8 @@ stripe_2d_opts.ShimFit=0;
 
 stripe_2d_opts.saveAnimation=1;        % save the animation?
 stripe_2d_opts.StartDelay=1;
-stripe_2d_opts.MidDelay=.2;
-stripe_2d_opts.EndDelay=.1;
+stripe_2d_opts.MidDelay=.5;
+stripe_2d_opts.EndDelay=1;
 
 if do_2dStripeAnalysis
     [hF_stripe_2d,stripe_data]=analyzeStripes2(ixondata,ixon_xVar,stripe_2d_opts);
@@ -451,7 +451,7 @@ if do_2dStripeAnalysis
     end
     
 end
-%% Animate cloud
+%% Animate cloud 
 ixon_doAnimate = 1;
 if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts=struct;
