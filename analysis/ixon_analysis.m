@@ -51,7 +51,7 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='xshimd';
+ixon_xVar='ExecutionDate';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
@@ -116,6 +116,10 @@ if ixon_autoUnit && isfield(ixondata(1),'Units')  && isequal(varType,'param')
     ixon_unit=ixondata(1).Units.(ixon_xVar);
 else
     ixon_unit=ixon_overrideUnit;
+end
+
+if isequal(ixon_xVar,'ExecutionDate')
+   ixon_unit='s'; 
 end
 %% Sort the data
 % Sort the data by your given parameter
@@ -430,7 +434,7 @@ end
 
 %% 2D Stripe Analysis
 
-do_2dStripeAnalysis=1;
+do_2dStripeAnalysis=0;
 
 stripe_2d_opts=struct;
 

@@ -1,4 +1,4 @@
-function hF=showSizes(atomdata,xVar)
+function hF=showSizes(atomdata,xVar,opts)
 
 global imgdir
 global pxsize
@@ -44,7 +44,7 @@ co=get(gca,'colororder');
 subplot(131);
 plot(xvals, X*1e3, 'o','MarkerEdgeColor',.5*co(1,:),'LineWidth',2,...
     'MarkerSize',8,'MarkerFaceColor',co(1,:)); 
-xlabel(xVar,'interpreter','none'); 
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 set(gca,'FontSize',12,'XGrid','On','YGrid','On','Box','On',...
     'Yminortick','on','xminortick','on','linewidth',1);
 text(.02,.99,'$\sigma_x$ (mm)','units','normalized','FontSize',14,...
@@ -55,7 +55,7 @@ hold on
 subplot(132);
 plot(xvals, Y*1e3, 'o','MarkerEdgeColor',.5*co(2,:),'LineWidth',2,...
     'MarkerSize',8,'MarkerFaceColor',co(2,:)); 
-xlabel(xVar,'interpreter','none'); 
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 set(gca,'FontSize',12,'XGrid','On','YGrid','On','Box','On',...
     'Yminortick','on','xminortick','on','linewidth',1);
 text(.02,.99,'$\sigma_y$ (mm)','units','normalized','FontSize',14,...
@@ -67,7 +67,7 @@ subplot(133);
 Adata=pi*X.*Y;
 plot(xvals,Adata*1e6,'o','LineWidth',2,'MarkerSize',8,'MarkerFaceColor',co(3,:),...
     'markeredgecolor',co(3,:)*.5);
-xlabel(xVar,'interpreter','none'); 
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 set(gca,'FontSize',12,'XGrid','On','YGrid','On','Box','On',...
     'Yminortick','on','xminortick','on','linewidth',1);
 text(.02,.99,'$\pi\sigma_x \sigma_y $ (mm$^2$)','units','normalized','FontSize',14,...

@@ -1,4 +1,4 @@
-function hFs=ixon_showGaussProfile(ixondata,direction,style,xVar)
+function hFs=ixon_showGaussProfile(ixondata,direction,style,xVar,opts)
 global ixon_imgdir
 
 pMax=36;

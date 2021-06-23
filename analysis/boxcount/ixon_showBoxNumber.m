@@ -18,6 +18,7 @@ ixondata=ixondata(inds);
 if isequal(xVar,'ExecutionDate')
     xvals=xvals-min(xvals);
 end
+
 %% Grab the box count
 for kk=1:length(ixondata)
    for nn=1:size(ixondata(kk).ROI,1)
@@ -157,7 +158,7 @@ uicontrol('style','text','string','iXon, box','units','pixels','backgroundcolor'
 hax=axes;
 set(hax,'box','on','linewidth',1,'fontsize',12,'units','pixels');
 hold on
-xlabel(xVar,'interpreter','none');
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('box counts');
 hax.Position(4)=hax.Position(4)-20;
 

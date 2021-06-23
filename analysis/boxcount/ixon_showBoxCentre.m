@@ -102,7 +102,7 @@ end
 
 set(hax1,'box','on','linewidth',1,'fontsize',10,'units','pixels');
 hold on
-xlabel(xVar,'interpreter','none','fontsize',10);
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 co=get(gca,'colororder');
 for nn=1:size(ixondata(1).ROI,1)
     [cface,cedge] = ixoncolororder(nn);
@@ -137,7 +137,7 @@ end
 
 set(hax2,'box','on','linewidth',1,'fontsize',10,'units','pixels');
 hold on
-xlabel(xVar,'interpreter','none','fontsize',10);
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 co=get(gca,'colororder');
 for nn=1:size(ixondata(1).ROI,1)
     [cface,cedge] = ixoncolororder(nn);

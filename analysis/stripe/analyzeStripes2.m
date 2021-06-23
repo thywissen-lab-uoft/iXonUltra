@@ -524,7 +524,7 @@ subplot(131);
 errorbar(xvals,Ls(:,1),Ls(:,2),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
-xlabel(xVar);
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('wavelength (px)');
 grid on
 
@@ -533,7 +533,7 @@ axb2=subplot(132);
 errorbar(xvals,thetas(:,1),thetas(:,2),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
-xlabel(xVar);
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('angle (deg.)');
 grid on
 
@@ -542,7 +542,7 @@ subplot(133);
 errorbar(xvals,phis(:,1),phis(:,2),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
-xlabel(xVar);
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('phase (\pi)');
 grid on
 

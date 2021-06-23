@@ -1,4 +1,4 @@
-function hF=ixon_showBoxMoments(ixondata,xVar)
+function hF=ixon_showBoxMoments(ixondata,xVar,opts)
 
 
 global ixon_imgdir
@@ -70,7 +70,7 @@ t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 hax1=subplot(131);
 set(hax1,'box','on','linewidth',1,'fontsize',10,'units','pixels');
 hold on
-xlabel(xVar,'interpreter','none','fontsize',10);
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 co=get(gca,'colororder');
 
 for nn=1:size(ixondata(1).ROI,1)
@@ -91,7 +91,7 @@ text(0.02,.98,str,'units','normalized','fontsize',12,'verticalalignment','cap',.
 hax2=subplot(132);
 set(hax2,'box','on','linewidth',1,'fontsize',10,'units','pixels');
 hold on
-xlabel(xVar,'interpreter','none','fontsize',10);
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 co=get(gca,'colororder');
 for nn=1:size(ixondata(1).ROI,1)
     [cface,cedge] = ixoncolororder(nn);
@@ -110,7 +110,7 @@ text(0.02,0.98,str,'units','normalized','fontsize',12,'verticalalignment','cap',
 hax3=subplot(133);
 set(hax3,'box','on','linewidth',1,'fontsize',10,'units','pixels');
 hold on
-xlabel(xVar,'interpreter','none','fontsize',10);
+xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 co=get(gca,'colororder');
 for nn=1:size(ixondata(1).ROI,1)
     [cface,cedge] = ixoncolororder(nn);
