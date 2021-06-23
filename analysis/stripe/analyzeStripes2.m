@@ -93,8 +93,7 @@ if doDebug
     hf_guess.Position=[50 50 1000 400];
 end
 
-for kk=1:length(ixondata)
-    clf
+for kk=1:length(ixondata)    
     thetaVec=linspace(-90,90,100);    
     
     % Get raw data
@@ -127,9 +126,17 @@ for kk=1:length(ixondata)
 
     % Compute sum contrasts at many angles
     for jj=1:length(thetaVec)        
-        Zrot=imrotate(Z2,thetaVec(jj),'crop');        
+        Zrot=imrotate(Z2,thetaVec(jj));        
         Zsum=sum(Zrot,1);
-        CC(jj)=range(Zsum);
+        
+%         ZsumSmooth=smooth(Zsum1,10)
+        
+%         CC(jj)=sum(Zsum.^2);
+
+        CC(jj)=sum(abs(diff(Zsum)));
+        
+%         CC(jj)=sum(Zsum);
+%         CC(jj)=range(Zsum);
     end
     
     % Find the angle which maximizes the contrast
@@ -155,7 +162,12 @@ for kk=1:length(ixondata)
         'MaxNumExtrema',4,'MinProminence',range(ZsumSmooth)*0.05);
     xA=diff(x2(yA));
     L=mean(xA);
-    LG(kk)=L; 
+    
+    if isnan(L) || isinf(L) || isinf(-L) || L<50
+       L=80; 
+    end
+    
+    LG(kk)=L;
     
     % Find the initial phase of the data
     % Compute correlations of the image with a plane wave at the guess
@@ -184,8 +196,7 @@ for kk=1:length(ixondata)
     % Construct the initial guess
     pG=[A,xC,yC,s,B,theta,L,phi];
     Zguess=gauss2dSine(pG(1),pG(2),pG(3),pG(4),pG(5),pG(6),pG(7),pG(8),xx,yy);
-    
-    
+        
     % Plot the initial guess metrics    
     yL=[-1 1]*200.*sind(theta);
     xL=[-1 1]*200.*cosd(theta);
@@ -211,9 +222,8 @@ for kk=1:length(ixondata)
 
         plot(s*cos(tt)+xC,s*sin(tt)+yC,'r-')
         colorbar
-
         
-        % Show guess
+        % Show guess        
         subplot(232)   
         imagesc(x2,y2,Zguess);
         set(gca,'ydir','normal');
@@ -234,6 +244,10 @@ for kk=1:length(ixondata)
         xlabel('rotation angle (deg.)')
         ylabel('contrast (au)');
         xlim([min(thetaVec) max(thetaVec)]);
+        hold on
+        plot([1 1]*theta,get(gca,'YLim'),'r--');
+
+        
         drawnow;    
 
         % Sum along non styriep direction local maxima
@@ -255,6 +269,7 @@ for kk=1:length(ixondata)
         xlabel('initial phase (\pi)')
         ylabel('correlation');
         drawnow;  
+%         keyboard
         waitforbuttonpress
     end
 end
@@ -267,6 +282,65 @@ hF_live=figure;
 hF_live.Color='w';
 hF_live.Position(3:4)=[1000 400];
 clf
+colormap(purplemap);
+
+ax1=subplot(231);    
+hImg_raw=imagesc(ixondata(1).Z);
+set(gca,'ydir','normal');
+axis equal tight
+colorbar
+    
+ax2=subplot(232);    
+hImg_fit=imagesc(ixondata(1).Z);
+set(gca,'ydir','normal');
+axis equal tight
+colorbar
+
+ax3=subplot(233);    
+hImg_err=imagesc(ixondata(1).Z);
+set(gca,'ydir','normal');
+axis equal tight
+colorbar
+
+ax4=subplot(234);    
+pSum1_fit=plot(0,0,'r-');
+hold on
+pSum1_data=plot(0,0,'k-');
+set(gca,'ydir','normal');
+xlabel('position along fringe');
+ylabel('sum counts');
+    
+ax5=subplot(235);    
+pSum2_fit=plot(0,0,'r-');
+hold on
+pSum2_data=plot(0,0,'k-');
+set(gca,'ydir','normal');
+xlabel('position perpendicular');
+ylabel('sum counts');
+
+ax6=subplot(236);
+tbl=uitable('units','normalized','fontsize',8);
+tbl.RowName={};
+tbl.ColumnName={};
+tbl.ColumnFormat={'char','char'};
+tbl.ColumnWidth={120,80};
+
+data={'Wavelength (px)', '';
+    'Angle (deg.)','';
+    'Phase (pi)', '';
+    'Mod Depth','';
+    'Xc', '';
+    'Yc', '';
+    'Amplitude', '';
+    'Sigma (px)', ''};
+
+
+tbl.Data=data;
+tbl.Position(3:4)=tbl.Extent(3:4);
+tbl.Position(1:2)=ax6.Position(1:2);
+delete(ax6);    
+    
+    
 
 % Folder directory
 strs=strsplit(ixon_imgdir,filesep);
@@ -294,7 +368,8 @@ for kk=1:length(ixondata)
     [xx,yy]=meshgrid(x,y);
     
     % Create the initial guess
-    Zg=gauss2dSine(pG(1),pG(2),pG(3),pG(4),pG(5),pG(6),pG(7),pG(8),xx,yy);    
+    Zg=gauss2dSine(pG(1),pG(2),pG(3),pG(4),pG(5),pG(6),pG(7),pG(8),xx,yy); 
+    disp(pG)
     
     % Rescale the data for fitting
     sc=0.3;
@@ -306,26 +381,11 @@ for kk=1:length(ixondata)
     yysc(Zsc<10)=[];
     Zsc(Zsc<10)=[];
 
-    % Create live update figure for fitting    
-    figure(hF_live);
-%     clf
-    colormap(purplemap);
-
-    % Show the raw data
-    subplot(231);    
-    cla
-    imagesc(x,y,Z);
-    set(gca,'ydir','normal');
-    axis equal tight
-    colorbar
-    
-    % Plot the initial guess
-    subplot(232)
-    cla
-    imagesc(Zg)    
-    set(gca,'ydir','normal');
-    axis equal tight
-    colorbar
+    % Show the raw data and the initial guess
+    set(hImg_raw,'XData',x,'YData',y,'CData',Z);
+    set(hImg_fit,'XData',x,'YData',y,'CData',Zg);
+    set(hImg_err,'CData',Zg-Z);
+    drawnow;   
     
     % Perform the fit
     [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit,opt);
@@ -334,74 +394,30 @@ for kk=1:length(ixondata)
     Zf=feval(fout,xx,yy);
     
     % Overwrite the guess with the fit
-    subplot(232)
-    cla
-    imagesc(Zf)    
-    set(gca,'ydir','normal');
-    colorbar
+    set(hImg_fit,'CData',Zf);
+    set(hImg_err,'CData',Zf-Z);
     
-    % Show the residue
-    subplot(233)
-    cla
-    imagesc(Zf-Z);
-    set(gca,'ydir','normal');
-    colorbar
-
-    % Show the sum counts along the stripe axis
-    subplot(234)
-    cla
-    plot(x,sum(imrotate(Zf,fout.theta,'crop'),1),'r-')
-    hold on
-    plot(x,sum(imrotate(Z,fout.theta,'crop'),1),'k-'); 
-    set(gca,'ydir','normal');
-    xlabel('position along frine');
-    ylabel('sum counts');
-    xlim([min(x) max(x)]);
+    % Show the sum counts along the stripe axis    
+    set(pSum1_fit,'XData',x,'YData',sum(imrotate(Zf,fout.theta,'crop'),1));
+    set(pSum1_data,'XData',x,'YData',sum(imrotate(Z,fout.theta,'crop'),1));
+    set(ax4,'XLim',[min(x) max(x)]);
     
     % Show the sum counts orthogonal to the stripe axis
-    subplot(235)
-    cla
-    plot(y,sum(imrotate(Zf,fout.theta,'crop'),2),'r-')
-    hold on
-    plot(y,sum(imrotate(Z,fout.theta,'crop'),2),'k-'); 
-    set(gca,'ydir','normal');
-    xlabel('position perpendicular');
-    ylabel('sum counts');
-    xlim([min(y) max(y)]);
-    disp('done');
+    set(pSum2_fit,'XData',y,'YData',sum(imrotate(Zf,fout.theta,'crop'),2));
+    set(pSum2_data,'XData',y,'YData',sum(imrotate(Z,fout.theta,'crop'),2));
+    set(ax5,'XLim',[min(y) max(y)]);
     
     % Summary table
-    ax6=subplot(236);
-    tbl=uitable('units','normalized','fontsize',8);
-    tbl.RowName={};
-    tbl.ColumnName={};
-    tbl.ColumnFormat={'numeric','numeric'};
-    tbl.ColumnWidth={120,80};
-    
-    data={'Wavelength (px)', num2str(round(fout.L,3));
-        'Angle (deg.)', num2str(round(fout.theta,3));
-        'Phase (pi)', num2str(round(fout.phi/pi,3));
-        'Mod Depth', num2str(round(fout.B,2));
-        'Xc', num2str(round(fout.xC,2));
-        'Yc', num2str(round(fout.yC,2));
-        'Amplitude', num2str(round(fout.A,2));
-        'Sigma (px)', num2str(round(fout.sG,2))};
-    
-    tbl.Data=data;
-    tbl.Position(3:4)=tbl.Extent(3:4);
-    tbl.Position(1:2)=ax6.Position(1:2);
-    delete(ax6);
-    
-    cla
-    plot(y,sum(imrotate(Zf,fout.theta,'crop'),2),'r-')
-    hold on
-    plot(y,sum(imrotate(Z,fout.theta,'crop'),2),'k-'); 
-    set(gca,'ydir','normal');
-    xlabel('position perpendicular');
-    ylabel('sum counts');
-    xlim([min(y) max(y)]);
-    disp('done');   
-    
+    tbl.Data{1,2}=num2str(round(fout.L,3));
+    tbl.Data{2,2}=num2str(round(fout.theta,3));    
+    tbl.Data{3,2}=num2str(round(fout.phi/pi,3));
+    tbl.Data{4,2}=num2str(round(fout.B,2));
+    tbl.Data{5,2}=num2str(round(fout.xC,2));
+    tbl.Data{6,2}=num2str(round(fout.yC,2));
+    tbl.Data{7,2}=num2str(round(fout.A,2));
+    tbl.Data{8,2}=num2str(round(fout.sG,2));
+    drawnow;
+
     
     if opts.saveAnimation    
          % Write the image data

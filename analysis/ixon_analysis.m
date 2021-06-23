@@ -51,12 +51,12 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 
-ixon_xVar='yshimd';
-unit='A';
+ixon_xVar='uwave_freq_offset';
+ixon_unit='kHz';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=0;
+ixon_doSave=1;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
@@ -238,7 +238,7 @@ if doRawImageAnalysis
 end
 
 %% Calculate FFT
-ixon_doFFT=1;
+ixon_doFFT=0;
 
 fft_opts=struct;
 fft_opts.doSmooth=1;
@@ -358,7 +358,7 @@ if ixon_doGaussFit
 end
 
 %% STRIPE ANALYSIS
-doStripeAnalysis=1;
+doStripeAnalysis=0;
 
 stripe_opts=struct;
 
@@ -403,6 +403,28 @@ if doStripeAnalysis
         end  
     end
 end
+
+%% 2D Stripe Analysis
+
+do_2dStripeAnalysis=0;
+
+stripe_2d_opts=struct;
+
+stripe_2d_opts.ShimFit=0;
+
+stripe_2d_opts.saveAnimation=1;        % save the animation?
+stripe_2d_opts.StartDelay=1;
+stripe_2d_opts.MidDelay=.2;
+stripe_2d_opts.EndDelay=.1;
+
+if do_2dStripeAnalysis
+    [hF_stripe_2d,stripe_data]=analyzeStripes2(ixondata,ixon_xVar,stripe_2d_opts);
+
+    if ixon_doSave
+        ixon_saveFigure(ixondata,hF_stripe_2d,'ixon_field_stripe_2d');        
+    end
+    
+end
 %% Animate cloud
 ixon_doAnimate = 1;
 if ixon_doAnimate == 1 && ixon_doSave
@@ -423,7 +445,7 @@ if ixon_doAnimate == 1 && ixon_doSave
 end
 
 %% Animate cloud FFT
-ixon_doAnimateFFT = 1;
+ixon_doAnimateFFT = 0;
 if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
     ixon_animateOptsFFT=struct;
     ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
