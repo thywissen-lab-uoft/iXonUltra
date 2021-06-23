@@ -50,9 +50,14 @@ m=40*amu;
 % Choose what kind of variable to plot against (sequencer/camera)
 varType='param'; % always select 'param' for now 
 
-
+% The variable to plot against
 ixon_xVar='uwave_freq_offset';
-ixon_unit='kHz';
+
+% Should the analysis attempt to automatically find the unit?
+ixon_autoUnit=1;
+
+% If ixon_autoUnit=0, this will be used.
+ixon_overideUnit='??';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
@@ -92,8 +97,7 @@ for kk=1:length(files)
     
     if isequal(ixon_xVar,'ExecutionDate')
         data.Params.(ixon_xVar)=datenum(data.Params.(ixon_xVar))*24*60*60;
-    end
-    
+    end    
     ixondata(kk)=data;    
 end
 disp(' ');
@@ -107,6 +111,12 @@ disp(' ');
 %    end     
 % end
 
+%% Grab the Unit
+if ixon_autoUnit && isfield(ixondata(1),'Units')  && isequal(varType,'param')
+    ixon_unit=ixondata(1).Units.(ixon_xVar);
+else
+    ixon_unit=ixon_overrideUnit;
+end
 %% Sort the data
 % Sort the data by your given parameter
 clear x
@@ -214,7 +224,10 @@ if doRawImageAnalysis
     ixondata=ixon_computeRawCounts(ixondata);
 
     % Plot histogram of raw counts
-    hist_opts=struct;
+    hist_opts=struct;    
+    hist_opts.xUnit=ixon_unit;
+
+    % Specify the plot variable and units    
     hist_opts.Outliers=[10 50]; % Histogram wont plot outliers of this many low/high
     hist_opts.GlobalLimits=1;   % Maintain historgram x limits
     hist_opts.BinWidth=10;       % Histogram bin width
@@ -229,8 +242,12 @@ if doRawImageAnalysis
     end
 
     % Plot raw count total
-    raw_opts=struct;
+    raw_opts=struct;   
+    raw_opts.xUnit=ixon_unit;
+    
+    % Define the variable and units    
     raw_opts.FitLinear=0;
+    
     hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,ixon_xVar,raw_opts);
 
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
@@ -260,6 +277,8 @@ end
 %% PLOTTING : BOX COUNT
 
 ixon_boxPopts=struct;
+ixon_boxPopts.xUnit=ixon_unit;
+
 ixon_boxPopts.NumberExpFit = 0;
 ixon_boxPopts.NumberLorentzianFit=0;
 
@@ -276,7 +295,7 @@ if ixon_doBoxCount
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
     
     % Plot the second moments
-    hF_ixon_size=ixon_showBoxMoments(ixondata,ixon_xVar);   
+    hF_ixon_size=ixon_showBoxMoments(ixondata,ixon_xVar,ixon_boxPopts);   
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size');end     
     
     % Plot the cloud center
@@ -300,6 +319,7 @@ if ixon_doGaussFit
     ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
 end
 %% PLOTTING : GAUSSIAN
+ixon_gauss_opts.xUnit=ixon_unit;
 ixon_gauss_opts.NumberExpFit = 0;        % Fit exponential decay to atom number
 ixon_gauss_opts.NumberLorentzianFit=0;   % Fit atom number to lorentzian
 
@@ -323,11 +343,11 @@ if ixon_doGaussFit
     if ixon_doSave;ixon_saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
     
     % Size
-    hF_size=ixon_showGaussSize(ixondata,ixon_xVar);    
+    hF_size=ixon_showGaussSize(ixondata,ixon_xVar,ixon_gauss_opts);    
     if ixon_doSave;ixon_saveFigure(ixondata,hF_size,'ixon_gauss_size');end
         
     % Aspect Ratio
-    hF_ratio=ixon_showGaussAspectRatio(ixondata,ixon_xVar);    
+    hF_ratio=ixon_showGaussAspectRatio(ixondata,ixon_xVar,ixon_gauss_opts);    
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ratio,'ixon_gauss_ratio');end
     
     % Centre
@@ -342,8 +362,8 @@ if ixon_doGaussFit
     hF_X=[];
     hF_Y=[];
     
-    hF_Xs=ixon_showGaussProfile(ixondata,'X',style,ixon_xVar);        
-    hF_Ys=ixon_showGaussProfile(ixondata,'Y',style,ixon_xVar);  
+    hF_Xs=ixon_showGaussProfile(ixondata,'X',style,ixon_xVar,ixon_gauss_opts);        
+    hF_Ys=ixon_showGaussProfile(ixondata,'Y',style,ixon_xVar,ixon_gauss_opts);  
 
 %   Save the figures (this can be slow)
     if ixon_doSave
@@ -362,6 +382,9 @@ doStripeAnalysis=0;
 
 stripe_opts=struct;
 
+% X plot unit
+strope_opts.xUnit=ixon_unit;
+
 % Fit stuff
 stripe_opts.theta=57;               % Rotation Angle
 stripe_opts.rotrange=[220 300];     % Sub region to inspect
@@ -379,6 +402,7 @@ stripe_opts.EndDelay=.25;
 
 % Field Analysis
 field_opts=struct;
+field_opts.xUnit=ixon_unit;
 field_opts.FieldGradient=210;   % In G/cm
 field_opts.LatticeSpacing=532E-9; % in meter
 field_opts.FitType='Exp';
@@ -410,6 +434,8 @@ do_2dStripeAnalysis=0;
 
 stripe_2d_opts=struct;
 
+stripe_2d_opts.xUnit=ixon_unit;
+
 stripe_2d_opts.ShimFit=0;
 
 stripe_2d_opts.saveAnimation=1;        % save the animation?
@@ -429,6 +455,8 @@ end
 ixon_doAnimate = 1;
 if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts=struct;
+    
+    ixon_animateOpts.xUnit=ixon_unit;
     ixon_animateOpts.StartDelay=2; % Time to hold on first picture
     ixon_animateOpts.MidDelay=.25;     % Time to hold in middle picutres
     ixon_animateOpts.EndDelay=2;     % Time to hold final picture
@@ -448,6 +476,7 @@ end
 ixon_doAnimateFFT = 0;
 if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
     ixon_animateOptsFFT=struct;
+    ixon_animateOptsFFT.xUnit=ixon_unit;
     ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
     ixon_animateOptsFFT.MidDelay=.25;     % Time to hold in middle picutres
     ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
