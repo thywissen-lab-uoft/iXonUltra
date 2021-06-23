@@ -2118,8 +2118,9 @@ end
 
 
         % Grab the sequence parameters
-        [mydata.Params,dstr]=grabSequenceParams;        
-        mydata.Params.ExecutionDate=dstr;    
+%         [mydata.Params,dstr]=grabSequenceParams;        
+%         mydata.Params.ExecutionDate=dstr;            
+        [mydata.Params,mydata.Units]=grabSequenceParams2;
 
         % Append acquisition information
         mydata.CameraInformation=cam_info;
@@ -2438,4 +2439,17 @@ function [out,dstr]=grabSequenceParams(src)
     % Convert the string into a structure
     out=cell2struct(num2cell(str2double(params{2})),params{1});
 end
+
+
+function [vals,units]=grabSequenceParams2(src)
+    if nargin~=1
+        src='Y:\_communication\control2.mat';
+    end    
+    data=load(src);    
+    disp(['Opening information from from ' src]);
+    vals=data.vals;
+    units=data.units;   
+end
+
+
 
