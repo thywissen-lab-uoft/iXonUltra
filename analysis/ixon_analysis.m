@@ -51,17 +51,20 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='ExecutionDate';
+ixon_xVar='uwave_freq_offset';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
 
 % If ixon_autoUnit=0, this will be used.
-ixon_overideUnit='??';
+ixon_overrideUnit='ms';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
 ixon_doSave=1;
+
+% Define the output data
+outdata=struct;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
@@ -110,6 +113,7 @@ disp(' ');
 %           ixondata(kk).Params.ExecutionDate-tmin;
 %    end     
 % end
+
 
 %% Grab the Unit
 if ixon_autoUnit && isfield(ixondata(1),'Units')  && isequal(varType,'param')
@@ -162,6 +166,9 @@ switch varType
     otherwise
         error('uhh you chose the wrong thing to plot');
 end
+%% Assign Params to outdata
+
+outdata.Params=ixondata.Params;
 
 
 %% Analysis ROI
@@ -192,7 +199,7 @@ ixon_mask=ixon_mask.BW;
 
 % Gauss Filter
 doGaussFilter=1;
-filter_radius=0.25;  % Gaussian filter radius
+filter_radius=0.75;  % Gaussian filter radius
 
 
 for kk=1:length(ixondata)
@@ -259,7 +266,7 @@ if doRawImageAnalysis
 end
 
 %% Calculate FFT
-ixon_doFFT=0;
+ixon_doFFT=1;
 
 fft_opts=struct;
 fft_opts.doSmooth=1;
@@ -283,6 +290,9 @@ end
 ixon_boxPopts=struct;
 ixon_boxPopts.xUnit=ixon_unit;
 
+% ixon_boxPopts.NumberScale='Log';
+ixon_boxPopts.NumberScale='Linear';
+
 ixon_boxPopts.NumberExpFit = 0;
 ixon_boxPopts.NumberLorentzianFit=0;
 
@@ -305,6 +315,8 @@ if ixon_doBoxCount
     % Plot the cloud center
     [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_boxPopts); 
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end 
+
+    outdata.Ndatabox=Ndatabox;
 end
 
 %% ANALYSIS : 2D Gaussian
@@ -379,6 +391,7 @@ if ixon_doGaussFit
         end
     end
     
+    outdata.Ndatagauss=Ndatagauss;    
 end
 
 %% STRIPE ANALYSIS
@@ -430,6 +443,8 @@ if doStripeAnalysis
             ixon_saveFigure(ixondata,hF_field_sense,'ixon_field_sense');
         end  
     end
+    
+    outdata.stripe_data=stripe_data;   
 end
 
 %% 2D Stripe Analysis
@@ -441,19 +456,20 @@ stripe_2d_opts=struct;
 stripe_2d_opts.xUnit=ixon_unit;
 
 stripe_2d_opts.ShimFit=0;
-
+stripe_2d_opts.Theta=[-90 90]; % Specify the domain (MUST BE 180 DEGREES)
 stripe_2d_opts.saveAnimation=1;        % save the animation?
 stripe_2d_opts.StartDelay=1;
 stripe_2d_opts.MidDelay=.5;
 stripe_2d_opts.EndDelay=1;
 
 if do_2dStripeAnalysis
-    [hF_stripe_2d,stripe_data]=analyzeStripes2(ixondata,ixon_xVar,stripe_2d_opts);
+    [hF_stripe_2d,stripe_data2d]=analyzeStripes2(ixondata,ixon_xVar,stripe_2d_opts);
 
     if ixon_doSave
         ixon_saveFigure(ixondata,hF_stripe_2d,'ixon_field_stripe_2d');        
     end
     
+    outdata.stripe_data2d=stripe_data2d;   
 end
 %% Animate cloud 
 ixon_doAnimate = 1;
@@ -462,7 +478,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     ixon_animateOpts.xUnit=ixon_unit;
     ixon_animateOpts.StartDelay=2; % Time to hold on first picture
-    ixon_animateOpts.MidDelay=.25;     % Time to hold in middle picutres
+    ixon_animateOpts.MidDelay=.5;     % Time to hold in middle picutres
     ixon_animateOpts.EndDelay=2;     % Time to hold final picture
 
     % Animate in ascending or descending order?
@@ -470,7 +486,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 500];   % Color limits
+    ixon_animateOpts.CLim=[0 200];   % Color limits
 %      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
@@ -491,7 +507,13 @@ if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
     
     % Color limit for image
      ixon_animateOptsFFT.CLim=[0 1E5];   % Color limits
-    % ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
+%     ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animateFFT(ixondata,ixon_xVar,ixon_animateOptsFFT);
+end
+
+%% save output data
+if ixon_doSave
+    filename=fullfile(ixon_imgdir,'figures','outdata.mat');
+    save(filename,'outdata');
 end

@@ -6,6 +6,8 @@ if nargin==2
     opts=struct;
     opts.NumberExpFit = 0;
     opts.NumberLorentzianFit=0;
+    opts.NumberScale='Linear';
+
 end
 
 
@@ -55,7 +57,7 @@ if doExpFit
     opt=fitoptions(myfit);
     
     % Get some initial guesses
-    tau0=max(xvals)/2;   
+    tau0=max(xvals)/4;   
     
     fout_exp={};
     for nn=1:size(N,2)  
@@ -195,6 +197,9 @@ if doLorentzFit
     legend(pL,fstrs,'interpreter','latex','location','best');
 %     hax.YLim(1)=0;
 end
+
+set(gca,'YScale',opts.NumberScale);
+
 
 % Image directory folder string
 t=uicontrol('style','text','string',str,'units','pixels','backgroundcolor',...

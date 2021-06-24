@@ -94,14 +94,16 @@ if doDebug
 end
 
 for kk=1:length(ixondata)    
-    switch xVar
-        case 'xshimd'
-            thetaVec=linspace(0,180,100);
-        case 'yshimd'
-            thetaVec=linspace(-90,90,100);
-        otherwise
-            thetaVec=linspace(-90,90,100);
-    end
+    
+    thetaVec=linspace(opts.Theta(1),opts.Theta(2),100);
+%     switch xVar
+%         case 'xshimd'
+%             thetaVec=linspace(-90,90,100);
+%         case 'yshimd'
+%             thetaVec=linspace(-90,90,100);
+%         otherwise
+%             thetaVec=linspace(-90,90,100);
+%     end
 
         
     
