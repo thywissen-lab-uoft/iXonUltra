@@ -192,14 +192,14 @@ doSubBias=1;
 offset=200; % (Doesnt affect calculations)
 
 % Ixon mask
-doApplyMask=1;
+doApplyMask=0;
 maskname=fullfile('ixon_mask.mat');
 ixon_mask=load(maskname);
 ixon_mask=ixon_mask.BW;
 
 % Gauss Filter
 doGaussFilter=0;
-filter_radius=.5;  % Gaussian filter radius
+filter_radius=.75;  % Gaussian filter radius
 
 
 for kk=1:length(ixondata)
@@ -224,7 +224,11 @@ for kk=1:length(ixondata)
     ixondata(kk).Z=Z;
 end
 
-
+%% PSF Sharpening
+doSharpenPSF=1;
+if doSharpenPSF
+   ixondata=sharpenPSF(ixondata); 
+end
 
 %% Basic Raw Image Analysis
 
@@ -369,7 +373,7 @@ end
 %% ANALYSIS : 2D Gaussian
 ixon_doGaussFit=0;
 % do a very basic PCA to determine angle of the atomic cloud
-ixondata=ixon_simple_pca(ixondata);
+% ixondata=ixon_simple_pca(ixondata);
 
 ixon_gauss_opts=struct;
 ixon_gauss_opts.doRescale=1;     % Rescaling the image makes fitting faster
