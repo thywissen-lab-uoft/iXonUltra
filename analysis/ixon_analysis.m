@@ -51,7 +51,7 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='uwave_freq_offset';
+ixon_xVar='objpzt';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
@@ -198,8 +198,8 @@ ixon_mask=load(maskname);
 ixon_mask=ixon_mask.BW;
 
 % Gauss Filter
-doGaussFilter=1;
-filter_radius=0.75;  % Gaussian filter radius
+doGaussFilter=0;
+filter_radius=.5;  % Gaussian filter radius
 
 
 for kk=1:length(ixondata)
@@ -270,13 +270,58 @@ ixon_doFFT=1;
 
 fft_opts=struct;
 fft_opts.doSmooth=1;
-fft_opts.smoothRadius=5;
+fft_opts.smoothRadius=1;
+fft_opts.fft_N=2^11; % Can go higher for smoother data
+
+fft_opts.maskIR=0;
+fft_opts.maskUV=0;
+fft_opts.LMax=50;
+fft_opts.LMin=5;
+
 
 if ixon_doFFT
     ixondata=ixon_computeFFT(ixondata,fft_opts);
 end
 
+% Apply makss to FFT Data
+ixon_mask_IR=1;
+ixon_mask_UV=0;
 
+
+if fft_opts.maskIR
+    ixondata=ixon_fft_maskIR(ixondata,fft_opts.LMax);    
+end
+
+if fft_opts.maskUV
+    ixondata=ixon_fft_maskUV(ixondata,fft_opts.LMin);    
+end
+
+%% ANALYSIS : FFT BOX COUNT
+ixon_fft_doBoxCount=1;
+
+fft_boxOpts=struct;
+fft_boxOpts.maskIR=fft_opts.maskIR;
+fft_boxOpts.LMax=fft_opts.LMax;
+fft_boxOpts.maskUV=fft_opts.maskUV;
+fft_boxOpts.LMin=fft_opts.LMin;
+
+if ixon_fft_doBoxCount && ixon_doFFT
+    ixondata=ixon_fft_boxCount(ixondata,fft_boxOpts);
+
+end
+
+%% PLOTTING : FFT BOX COUNT
+
+ixon_fft_boxPopts=struct;
+ixon_fft_boxPopts.xUnit=ixon_unit;
+
+if ixon_fft_doBoxCount  && ixon_doFFT
+ 
+    % Plot the second moments
+    hF_ixon_size=ixon_fft_showBoxMoments(ixondata,ixon_xVar,ixon_boxPopts);   
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_fft_box_size');end     
+     
+end
 
 %% ANALYSIS : BOX COUNT
 ixon_doBoxCount=1;
@@ -318,6 +363,8 @@ if ixon_doBoxCount
 
     outdata.Ndatabox=Ndatabox;
 end
+
+
 
 %% ANALYSIS : 2D Gaussian
 ixon_doGaussFit=0;
@@ -493,22 +540,37 @@ if ixon_doAnimate == 1 && ixon_doSave
 end
 
 %% Animate cloud FFT
-ixon_doAnimateFFT = 0;
+ixon_doAnimateFFT = 1;
+
+ixon_animateOptsFFT=struct;   
+
+% Variable to animate versus
+ixon_animateOptsFFT.xUnit=ixon_unit;
+
+% Animation Timings
+ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
+ixon_animateOptsFFT.MidDelay=.25;     % Time to hold in middle picutres
+ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
+
+% Animate in ascending or descending order?
+% animateOpts.Order='descend';    
+ixon_animateOptsFFT.Order='ascend';
+
+% Color limit for image
+ixon_animateOptsFFT.CLim=[0 .5];   % Color limits 
+% ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
+
+% FFT UV Cutoff
+% Reduce the animation view to within a frequency of 1/L
+ixon_animateOptsFFT.mask_UV=1;
+ixon_animateOptsFFT.LMin=5;
+
+% FFT IR Cutoff
+% Apply mask to interior regions to mask 
+ixon_animateOptsFFT.mask_IR=1;
+ixon_animateOptsFFT.LMax=200;
+
 if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
-    ixon_animateOptsFFT=struct;
-    ixon_animateOptsFFT.xUnit=ixon_unit;
-    ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
-    ixon_animateOptsFFT.MidDelay=.25;     % Time to hold in middle picutres
-    ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
-
-    % Animate in ascending or descending order?
-    % animateOpts.Order='descend';    % Asceneding or de    scending
-    ixon_animateOptsFFT.Order='ascend';
-    
-    % Color limit for image
-     ixon_animateOptsFFT.CLim=[0 1E5];   % Color limits
-%     ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
-
     ixon_animateFFT(ixondata,ixon_xVar,ixon_animateOptsFFT);
 end
 

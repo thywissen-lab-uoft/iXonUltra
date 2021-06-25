@@ -29,33 +29,56 @@ else
     uxvals=sort(uxvals,'descend');
 end
 
-Zall=zeros(size(ixondata(1).Zfft,1),size(ixondata(1).Z,2),length(uxvals));
+%% Gather data
+
+% Initialize data matrix
+[Ny,Nx]=size(ixondata(1).fft_Z);
+Zall=zeros(Ny,Nx,length(uxvals));
 
 for kk=1:length(uxvals) % Iterate over unique x values    
     % Find the indeces which have this unique value
     inds=find(uxvals(kk)==xvals);    
     for ii=1:length(inds)
         ind=inds(ii);
-        Z=ixondata(ind).Zfft;
+        Z=ixondata(ind).fft_Z;
         Zall(:,:,kk)=Zall(:,:,kk)+Z;        
     end        
     Zall(:,:,kk)=Zall(:,:,kk)/length(inds);   
 end
 
+%% Add IR Cuttoff
+
+if opts.mask_IR
+    F_IR=1/opts.LMax;
+
+    X=ixondata(1).fft_F;
+    Y=ixondata(1).fft_F;
+
+    [xx,yy]=meshgrid(X,Y);
+
+    rr=sqrt(xx.^2+yy.^2);
+
+    IR_mask=rr>F_IR;
+
+    for kk=1:size(Zall,3)
+       Zall(:,:,kk)= Zall(:,:,kk).*IR_mask;
+    end
+end
+
 %% Auto Clim
+
+% Iterate over everything to find max
 
 if isequal(clim,'auto')
     cL0=0;
-    cH0=1;
-    
+    cH0=1;    
     for kk=1:size(Zall,3)
         Z=Zall(:,:,kk);
         N0=size(Z,1)*size(Z,2);
         dN=round(N0*.01); % pad by 1% floor
         call=sort(Z(:));
         cL=call(dN);
-        cH=call(end);              
-        
+        cH=call(end);     
         cH0=max([cH0 cH]);
         cL0=min([cL0 cL]);
     end
@@ -87,21 +110,14 @@ filename=fullfile(figDir,[filename '.gif']);
 %% Make Figure
 
 % grab initial data
-Z=ixondata(1).Zfft;
-Y=1:size(Z,1);
-X=1:size(Z,2);
+Z=ixondata(1).fft_Z;
+Y=ixondata(1).fft_F;
+X=ixondata(1).fft_F;
 
 % long dimennion of figure
-L1=800;
+% L1=600;
 
 
-if size(Z,1)>size(Z,2) 
-   W=L1;
-   H=L1*size(Z,1)/size(Z,2);
-else
-   H=L1;
-   W=L1*size(Z,2)/size(Z,1);
-end
 
 
 
@@ -109,9 +125,9 @@ hF=figure('Name',[str ' : Ixon Animate'],...
     'units','pixels','color','w','Menubar','none','Resize','off',...
     'WindowStyle','modal');
 hF.Position(1)=10;
-hF.Position(2)=5;
-hF.Position(3)=W;
-hF.Position(4)=H;
+hF.Position(2)=50;
+hF.Position(3)=600;
+hF.Position(4)=550;
 drawnow;
 
 % Image directory folder string
@@ -124,21 +140,19 @@ t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 % Axes for data
 hAxImg=axes('parent',hF,'units','pixels','Box','on','XGrid','on',...
     'YGrid','on','YDir','normal','XAxisLocation','bottom');
-% hAxImg.Position(2)=60;
-% hAxImg.Position(1)=60;
-% hAxImg.Position(3)=hAxImg.Position(4);
-% hAxImg.Position(3:4)=hAxImg.Position(3:4)-[100 100];
+hAxImg.Position(2)=50;
+hAxImg.Position(1)=60;
+hAxImg.Position(3)=hAxImg.Position(4);
+hAxImg.Position(3:4)=hF.Position(3:4)-[80 80];
 drawnow;
 
-% Text label for folder name
-tt=text(0,.98,str,'units','normalized','fontsize',8,'color','r',...
-    'interpreter','none','verticalalignment','cap',...
-    'fontweight','bold','margin',1,'backgroundcolor',[1 1 1 .5]);
+% % Text label for folder name
+% tt=text(0,.98,str,'units','normalized','fontsize',8,'color','r',...
+%     'interpreter','none','verticalalignment','cap',...
+%     'fontweight','bold','margin',1,'backgroundcolor',[1 1 1 .5]);
 % tt.Position(2)=hAxImg.Position(4)-100;
 % tt.Position(3)=hAxImg.Position(3);
 % tt.Position(4)=30;
-
-% get(tt)
 
 % Text label for variable name
 t=text(5,5,'hi','units','pixels','fontsize',14,'color','r',...
@@ -150,24 +164,18 @@ hold on
 hImg=imagesc(X,Y,Z);
 axis equal tight
 caxis(clim);
-co=get(gca,'colororder');
-
 hold on
 colorbar
-
 set(gca,'units','pixels','box','on','linewidth',2,'ydir','normal');
 
-% Add ROI
-for kk=1:size(ixondata(1).ROI,1)
-    ROI=ixondata(1).ROI(kk,:);
-    x0=ROI(1);
-    y0=ROI(3);
-    H=ROI(4)-ROI(3);
-    W=ROI(2)-ROI(1);
-    pROI=rectangle('position',[x0 y0 W H],'edgecolor',co(kk,:),'linewidth',2);
+if opts.mask_UV
+    xlim([-1 1]/opts.LMin);
+    ylim([-1 1]/opts.LMin);
 end
-
 drawnow;
+
+xlabel('frequency (1/px)');
+ylabel('frequency (1/px)');
 
 %% Animate
 

@@ -17,11 +17,15 @@ disp('Computing 2d fft');
     dL=1;  
     
     for kk=1:length(ixondata)
+        fprintf([num2str(kk) ' of ' num2str(length(ixondata)) ' ... ']);
         % Compute the FFT
-        fft_Z=fft2(ixondata(kk).Z,opts.fft_N,opts.fft_N);
+        fft_Z=fft2(ixondata(kk).Z,opts.fft_N,opts.fft_N);    
         
         % Renormalize the FFT
         fft_Z=fft_Z/(size(ixondata(kk).Z,1)^2);
+        
+        % Take absolute value
+        fft_Z=abs(fft_Z);
         
         % Calculate the frequency vector
         fft_F=1/(2*dL)*linspace(-1,1,opts.fft_N);
@@ -35,6 +39,7 @@ disp('Computing 2d fft');
         ixondata(kk).fft_Z=fft_Z;
         ixondata(kk).fft_F=fft_F;
         ixondata(kk).fft_N=opts.fft_N;
+        disp('done');
     end
 
 end
