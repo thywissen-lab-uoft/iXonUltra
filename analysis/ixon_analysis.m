@@ -51,13 +51,13 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='objpzt';
+ixon_xVar='ExecutionDate';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
 
 % If ixon_autoUnit=0, this will be used.
-ixon_overrideUnit='ms';
+ixon_overrideUnit='V';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
@@ -266,7 +266,7 @@ if doRawImageAnalysis
 end
 
 %% Calculate FFT
-ixon_doFFT=1;
+ixon_doFFT=0;
 
 fft_opts=struct;
 fft_opts.doSmooth=1;
@@ -318,7 +318,7 @@ ixon_fft_boxPopts.xUnit=ixon_unit;
 if ixon_fft_doBoxCount  && ixon_doFFT
  
     % Plot the second moments
-    hF_ixon_size=ixon_fft_showBoxMoments(ixondata,ixon_xVar,ixon_boxPopts);   
+    hF_ixon_size=ixon_fft_showBoxMoments(ixondata,ixon_xVar,ixon_fft_boxPopts);   
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_fft_box_size');end     
      
 end

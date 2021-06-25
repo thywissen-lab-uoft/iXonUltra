@@ -27,8 +27,8 @@ images=data.images;
 % images{2}=imgaussfilt(data.RawImages(:,:,2)-200,1);
 % images{3}=imgaussfilt(data.RawImages(:,:,1)-200,1);
 
-xL=[220 350];xL=[1 512];
-yL=[190 300];yL=[1 512];
+xL=[220 350];%xL=[1 512];
+yL=[190 300];%yL=[1 512];
 cL1=[0 300];
 cL2=[0 50];
 
