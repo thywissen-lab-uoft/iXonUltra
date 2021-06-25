@@ -13,16 +13,26 @@
 
 f1='2018_PSF_Test.mat';
 f2='Spin_Mixture_Evaporated_Double_Gradient_Plane_Selection.mat';
+
 %% Load Raw Data 
 
 data=load(f2);
 images=data.images;
-xL=[220 350];
-yL=[190 300];
-cL1=[0 200];
-cL2=[0 100];
+% 
+% 
+% f2='Y:\Data\2021\2021.06\06.24\iXonUltra_2021-06-24_21-46-02.mat';
+% data=load(f2);
+% data=data.data;
+% images{1}=imgaussfilt(data.RawImages(:,:,2)-200,1);
+% images{2}=imgaussfilt(data.RawImages(:,:,2)-200,1);
+% images{3}=imgaussfilt(data.RawImages(:,:,1)-200,1);
 
-hf=figure(1);
+xL=[220 350];xL=[1 512];
+yL=[190 300];yL=[1 512];
+cL1=[0 300];
+cL2=[0 50];
+
+hf=figure;
 clf
 hf.Color='w';
 hf.Name='Raw Data';
@@ -40,8 +50,10 @@ end
 colormap(purplemap);
 
 
-Z=images{1}+images{2};
+% Z=images{1}+images{2};
 % Z=imgaussfilt(Z,);
+
+Z=images{2}-images{1};
 
 %%
 % Load point spread function
@@ -49,7 +61,7 @@ Z=images{1}+images{2};
 psf=load(f1);
 psf=psf.psf;
 
-hf2=figure(2);
+hf2=figure;
 hf2.Name='Measured Point Spread Function';
 clf
 Zpsf=psf.psf;
@@ -119,7 +131,7 @@ caxis([0 1]);
 %
 %
 
-hf5=figure(5);
+hf5=figure;
 clf
 hf5.Color='w';
 hf5.Name='PSF Example';
@@ -229,7 +241,7 @@ sfakePx=sfake*1E-3/(dPx/sc);
 
 fakepsf = fspecial('gaussian',70,sfakePx);
 
-hf4=figure(4);
+hf4=figure;
 clf
 hf4.Color='w';
 hf4.Name='Deconvolved Data';
