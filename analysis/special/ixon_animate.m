@@ -1,9 +1,10 @@
 function ixon_animate(ixondata,xVar,opts)
-
 clim=opts.CLim;
 global ixon_imgdir
 
+
 %% Sort Data
+% Sort the data by xVar in either ascending or descending order
 direction=opts.Order;
 
 params=[ixondata.Params];
@@ -46,7 +47,6 @@ end
 %% Auto Clim
 
 if isequal(clim,'auto')
-
   cL0=0;
   cH0=1;
     for kk=1:size(Zall,3)
@@ -55,15 +55,11 @@ if isequal(clim,'auto')
         dN=round(N0*.01); % pad by 1% floor
         call=sort(Z(:));
         cL=call(dN);
-        cH=call(end);       
-       
-        
+        cH=call(end);     
         cH0=max([cH0 cH]);
         cL0=min([cL0 cL]);
-
     end
     clim=[cL0 cH0];
-
 end
 
 %% Animation Settings
@@ -95,27 +91,14 @@ Z=ixondata(1).Z;
 Y=1:size(Z,1);
 X=1:size(Z,2);
 
-% long dimennion of figure
-L1=800;
-
-
-if size(Z,1)>size(Z,2) 
-   W=L1;
-   H=L1*size(Z,1)/size(Z,2);
-else
-   H=L1;
-   W=L1*size(Z,2)/size(Z,1);
-end
-
-
 
 hF=figure('Name',[str ' : Ixon Animate'],...
     'units','pixels','color','w','Menubar','none','Resize','off',...
     'WindowStyle','modal');
 hF.Position(1)=10;
 hF.Position(2)=5;
-hF.Position(3)=W;
-hF.Position(4)=H;
+hF.Position(3)=600;
+hF.Position(4)=550;
 drawnow;
 
 % Image directory folder string
@@ -128,16 +111,16 @@ t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 % Axes for data
 hAxImg=axes('parent',hF,'units','pixels','Box','on','XGrid','on',...
     'YGrid','on','YDir','normal','XAxisLocation','bottom');
-% hAxImg.Position(2)=60;
-% hAxImg.Position(1)=60;
-% hAxImg.Position(3)=hAxImg.Position(4);
-% hAxImg.Position(3:4)=hAxImg.Position(3:4)-[100 100];
+hAxImg.Position(2)=50;
+hAxImg.Position(1)=60;
+hAxImg.Position(3)=hAxImg.Position(4);
+hAxImg.Position(3:4)=hF.Position(3:4)-[80 80];
 drawnow;
 
 % Text label for folder name
-tt=text(0,.98,str,'units','normalized','fontsize',8,'color','r',...
-    'interpreter','none','verticalalignment','cap',...
-    'fontweight','bold','margin',1,'backgroundcolor',[1 1 1 .5]);
+% tt=text(0,.98,str,'units','normalized','fontsize',8,'color','r',...
+%     'interpreter','none','verticalalignment','cap',...
+%     'fontweight','bold','margin',1,'backgroundcolor',[1 1 1 .5]);
 % tt.Position(2)=hAxImg.Position(4)-100;
 % tt.Position(3)=hAxImg.Position(3);
 % tt.Position(4)=30;

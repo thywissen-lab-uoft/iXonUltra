@@ -51,7 +51,7 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='ExecutionDate';
+ixon_xVar='Raman_Power2';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
@@ -225,7 +225,8 @@ for kk=1:length(ixondata)
 end
 
 %% PSF Sharpening
-doSharpenPSF=1;
+
+doSharpenPSF=0;
 if doSharpenPSF
    ixondata=sharpenPSF(ixondata); 
 end
@@ -353,7 +354,8 @@ if ixon_doBoxCount
     % Plot the atom number
     [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,ixon_xVar,ixon_boxPopts);      
     yl=get(gca,'YLim');
-    set(gca,'YLim',[0 yl(2)]); 
+    set(gca,'YLim',[0 yl(2)]);
+    set(gca,'YLim',[2.5e8 3.5e8]);
     
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
     
@@ -537,14 +539,14 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 200];   % Color limits
-%      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+%     ixon_animateOpts.CLim=[0 200];   % Color limits
+     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
 
 %% Animate cloud FFT
-ixon_doAnimateFFT = 1;
+ixon_doAnimateFFT = 0;
 
 ixon_animateOptsFFT=struct;   
 
@@ -561,7 +563,7 @@ ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
 ixon_animateOptsFFT.Order='ascend';
 
 % Color limit for image
-ixon_animateOptsFFT.CLim=[0 .5];   % Color limits 
+ixon_animateOptsFFT.CLim=[0 0.5];   % Color limits 
 % ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
 
 % FFT UV Cutoff
