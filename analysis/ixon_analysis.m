@@ -51,7 +51,7 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='Raman_Power2';
+ixon_xVar='Raman_Power1';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
@@ -302,7 +302,7 @@ if fft_opts.maskUV
 end
 
 %% ANALYSIS : FFT BOX COUNT
-ixon_fft_doBoxCount=1;
+ixon_fft_doBoxCount=0;
 
 fft_boxOpts=struct;
 fft_boxOpts.maskIR=fft_opts.maskIR;
@@ -355,7 +355,7 @@ if ixon_doBoxCount
     [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,ixon_xVar,ixon_boxPopts);      
     yl=get(gca,'YLim');
     set(gca,'YLim',[0 yl(2)]);
-    set(gca,'YLim',[2.5e8 3.5e8]);
+%     set(gca,'YLim',[2.5e8 3.5e8]);
     
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
     

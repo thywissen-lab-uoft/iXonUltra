@@ -195,7 +195,7 @@ if doLorentzFit
     fstrs={str1};
     
     legend(pL,fstrs,'interpreter','latex','location','best');
-%     hax.YLim(1)=0;
+    hax.YLim(1)=0;
 end
 
 set(gca,'YScale',opts.NumberScale);
