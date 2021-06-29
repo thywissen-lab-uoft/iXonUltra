@@ -156,6 +156,8 @@ end
 
 drawnow;
 
+% keyboard
+
 %% Animate
 
 for kk=1:length(uxvals)   % Iterate over all unique xvalues

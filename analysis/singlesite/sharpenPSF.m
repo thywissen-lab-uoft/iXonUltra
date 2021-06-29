@@ -11,7 +11,7 @@ pxsize_real=pxsize./mag; % um/pixel in real space
 dPx=1e3*mean(pxsize_real);   % Size of pixel in nm
 
 %% Lucy Number 
-nLucy=5;
+nLucy=4;
 
 %% Rescale Settings
 % It is useful to rescale the image so that the PSF is super resolved.
@@ -89,7 +89,7 @@ for kk=1:length(ixondata)
     % Resize the data back down
     Zout = imresize(Zout,1/sc);
     
-    Zout = imgaussfilt(Zout,1);
+    Zout = imgaussfilt(Zout,.75);
     
     if doDebug
        figure(hF_debug);

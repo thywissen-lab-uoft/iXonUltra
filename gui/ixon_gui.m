@@ -2117,10 +2117,10 @@ end
         mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
 
 
-        % Grab the sequence parameters
+        % Grab the sequence parameters and flags
 %         [mydata.Params,dstr]=grabSequenceParams;        
 %         mydata.Params.ExecutionDate=dstr;            
-        [mydata.Params,mydata.Units]=grabSequenceParams2;
+        [mydata.Params,mydata.Units,mydata.Flags]=grabSequenceParams2;
 
         % Append acquisition information
         mydata.CameraInformation=cam_info;
@@ -2441,7 +2441,7 @@ function [out,dstr]=grabSequenceParams(src)
 end
 
 
-function [vals,units]=grabSequenceParams2(src)
+function [vals,units,flags]=grabSequenceParams2(src)
     if nargin~=1
         src='Y:\_communication\control2.mat';
     end    
@@ -2449,6 +2449,7 @@ function [vals,units]=grabSequenceParams2(src)
     disp(['Opening information from from ' src]);
     vals=data.vals;
     units=data.units;   
+    flags=data.flags;
 end
 
 
