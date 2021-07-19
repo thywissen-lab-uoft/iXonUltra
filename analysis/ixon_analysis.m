@@ -51,7 +51,7 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='ExecutionDate';
+ixon_xVar='power_val';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
@@ -226,7 +226,7 @@ end
 
 %% PSF Sharpening
 
-doSharpenPSF=1;
+doSharpenPSF=0;
 if doSharpenPSF
    ixondata=sharpenPSF(ixondata); 
 end
@@ -531,7 +531,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     ixon_animateOpts.xUnit=ixon_unit;
     ixon_animateOpts.StartDelay=2; % Time to hold on first picture
-    ixon_animateOpts.MidDelay=.5;     % Time to hold in middle picutres
+    ixon_animateOpts.MidDelay=1;     % Time to hold in middle picutres
     ixon_animateOpts.EndDelay=2;     % Time to hold final picture
 
     % Animate in ascending or descending order?
@@ -539,7 +539,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 300];   % Color limits
+    ixon_animateOpts.CLim=[0 500];   % Color limits
 %      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
