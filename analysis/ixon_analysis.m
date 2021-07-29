@@ -51,10 +51,10 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='power_val';
+ixon_xVar='DMD_power_val';
 
 % Should the analysis attempt to automatically find the unit?
-ixon_autoUnit=1;
+ixon_autoUnit=0;
 
 % If ixon_autoUnit=0, this will be used.
 ixon_overrideUnit='V';
@@ -180,7 +180,7 @@ outdata.Params=ixondata.Params;
 % this is currently disabled because it creates code issues at the moment.
 
 % Full ROI
-ixonROI = [1 512 1 512];   
+ixonROI = [210 330 185 300];   
 
 
 [ixondata.ROI]=deal(ixonROI);
@@ -539,7 +539,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 500];   % Color limits
+    ixon_animateOpts.CLim=[0 2000];   % Color limits
 %      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
@@ -563,7 +563,7 @@ ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
 ixon_animateOptsFFT.Order='ascend';
 
 % Color limit for image
-ixon_animateOptsFFT.CLim=[0 0.5];   % Color limits 
+ixon_animateOptsFFT.CLim=[0 1000];   % Color limits 
 % ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
 
 % FFT UV Cutoff
