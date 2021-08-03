@@ -51,7 +51,7 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='DMD_power_val';
+ixon_xVar='ExecutionDate';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=0;
@@ -180,7 +180,8 @@ outdata.Params=ixondata.Params;
 % this is currently disabled because it creates code issues at the moment.
 
 % Full ROI
-ixonROI = [210 330 185 300];   
+ixonROI = [210 330 185 300]; 
+ixonROI = [1 512 1 512]; 
 
 
 [ixondata.ROI]=deal(ixonROI);
@@ -448,7 +449,7 @@ if ixon_doGaussFit
 end
 
 %% STRIPE ANALYSIS
-doStripeAnalysis=0;
+doStripeAnalysis=1;
 
 stripe_opts=struct;
 
@@ -539,7 +540,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 2000];   % Color limits
+    ixon_animateOpts.CLim=[0 500];   % Color limits
 %      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
