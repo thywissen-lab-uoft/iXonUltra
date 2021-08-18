@@ -51,10 +51,10 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='ExecutionDate';
+ixon_xVar='n_sweeps_mix';
 
 % Should the analysis attempt to automatically find the unit?
-ixon_autoUnit=0;
+ixon_autoUnit=1;
 
 % If ixon_autoUnit=0, this will be used.
 ixon_overrideUnit='V';
@@ -180,7 +180,8 @@ outdata.Params=ixondata.Params;
 % this is currently disabled because it creates code issues at the moment.
 
 % Full ROI
-ixonROI = [210 330 185 300]; 
+ixonROI = [210 297 324 188]; 
+ixonROI = [220 324 188 297]; 
 ixonROI = [1 512 1 512]; 
 
 
@@ -356,7 +357,7 @@ if ixon_doBoxCount
     [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,ixon_xVar,ixon_boxPopts);      
     yl=get(gca,'YLim');
     set(gca,'YLim',[0 yl(2)]);
-%     set(gca,'YLim',[2.5e8 3.5e8]);
+%     set(gca,'YLim',[2.0e8 2.5e8]);
     
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
     
@@ -448,15 +449,21 @@ if ixon_doGaussFit
     outdata.Ndatagauss=Ndatagauss;    
 end
 
-%% STRIPE ANALYSIS
-doStripeAnalysis=1;
+%% 1D STRIPE ANALYSIS
+% This analyzes the stripes for field stability.  This is a 1D analysis,
+% where a 1D sine wave with a gaussain envelope is fitted over a sub ROI of
+% the data.
+%
+% This one dimensional analysis requires a variety of inputs to fit.  See
+% the "1D Fit Parameters" below.
+doStripeAnalysis=0;
 
 stripe_opts=struct;
 
 % X plot unit
 strope_opts.xUnit=ixon_unit;
 
-% Fit stuff
+% 1D Fit Parameters
 stripe_opts.theta=57;               % Rotation Angle
 stripe_opts.rotrange=[220 300];     % Sub region to inspect
 stripe_opts.FitType='Sine';         % Fit Type
@@ -502,6 +509,12 @@ if doStripeAnalysis
 end
 
 %% 2D Stripe Analysis
+% This analzyes the stripes for take from the ixon camera.  This is a 2D
+% fit over the entire cloud.  This fits a 2D gaussian modulated by a sine
+% wave at a particular angle.  This is pariticularly useful to fit the
+% angular dependence of the data. 
+%
+% The input fit parameters are specified in the options structure.
 
 do_2dStripeAnalysis=0;
 
@@ -540,7 +553,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 500];   % Color limits
+    ixon_animateOpts.CLim=[0 28000];   % Color limits
 %      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);

@@ -914,7 +914,8 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
         end        
         catch ME
             warning('Acqtimer failed.');
-           warning(ME.essage); 
+            disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);
+        
         end
     end
 
@@ -1824,8 +1825,24 @@ function data=updateImages(data)
     % Update table parameters (alphebetically)
     [~,inds] = sort(lower(fieldnames(data.Params)));
     params = orderfields(data.Params,inds);    
-    tbl_params.Data=[fieldnames(params), ...
-        struct2cell(params)];    
+%     tbl_params.Data=[fieldnames(params), ...
+%         struct2cell(params)];   
+                
+    fnames=fieldnames(params);
+    for nn=1:length(fnames)
+      tbl_params.Data{nn,1}=fnames{nn};
+        val=data.Params.(fnames{nn});
+        if isa(val,'double')
+            tbl_params.Data{nn,2}=num2str(val);
+        end
+
+        if isa(val,'struct')
+           tbl_params.Data{nn,2}='[struct]'; 
+        end  
+    end      
+    
+    
+    
     
     % Update parameter for fit results
     frVar=frslct.String{frslct.Value};   % Old fitresults variable
