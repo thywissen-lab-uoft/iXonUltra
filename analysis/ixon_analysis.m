@@ -51,7 +51,7 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='n_sweeps_mix';
+ixon_xVar='Lattice_loading_field';
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
@@ -553,7 +553,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim=[0 28000];   % Color limits
+    ixon_animateOpts.CLim=[0 2000];   % Color limits
 %      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
