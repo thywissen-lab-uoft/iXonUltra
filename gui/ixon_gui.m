@@ -889,18 +889,17 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 if ~rbLive.Value
                     saveData(mydata);
                 end
-                
                 % Save images to save directory
                 if hcauto.Value
                    saveData(mydata,tSaveDir.UserData); 
                 end              
-                
                 % Update live preview if new                
                 if ~cAutoUpdate.Value
                     currDir=defaultDir;
                     data=mydata;   
                     data=updateImages(data); 
-                else
+                    
+                else                    
                     % Just update index
                     updateHistoryInd(data);   
                 end  
@@ -1758,8 +1757,13 @@ function data=updateImages(data)
         end
     end
 
-    % For now always assumed that its PWA,BKGD
-    data.Z=imgs(:,:,2)-imgs(:,:,1);    
+%     if size(data.Z,3)>1
+        % For now always assumed that its PWA,BKGD
+        data.Z=imgs(:,:,2)-imgs(:,:,1);    
+%     else
+%         data.Z = imgs;
+%     end
+    
     
     % Create sub image to do center of mass analysis
     Zsub=data.Z(y,x);
@@ -2130,9 +2134,13 @@ end
         mydata.X=1:size(mydata.RawImages,2);
         mydata.Y=1:size(mydata.RawImages,1);    
 
-        % For now always assumed that its PWA,BKGD
-        mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
-
+        if size(mydata.RawImages,3) > 1
+        
+            % For now always assumed that its PWA,BKGD
+            mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
+        else
+            mydata.Z=mydata.RawImages(:,:,1);
+        end
 
         % Grab the sequence parameters and flags
 %         [mydata.Params,dstr]=grabSequenceParams;        

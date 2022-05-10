@@ -52,19 +52,20 @@ outdata.N=N;
 doExpFit=opts.NumberExpFit;
 
 if doExpFit
-    myfit=fittype('A*exp(-t/tau)','coefficients',{'A','tau'},...
+    myfit=fittype('A*exp(-t/tau)+B','coefficients',{'A','tau','B'},...
     'independent','t');
     opt=fitoptions(myfit);
     
     % Get some initial guesses
     tau0=max(xvals)/4;   
+    tau0=0.02;
     
     fout_exp={};
     for nn=1:size(N,2)  
         A0=max(N(:,nn));
         
         % Assign start point
-        opt.StartPoint=[A0 tau0];
+        opt.StartPoint=[A0 tau0 0];
         fout_exp{nn}=fit(xvals',N,myfit,opt);
     end
 end
@@ -177,7 +178,8 @@ if doExpFit
     for nn=1:size(N,2)
         pExp(nn)=plot(xx,feval(fout_exp{nn},xx),'r-','linewidth',1);    
         str1=['$N_0 = ' num2str(fout_exp{nn}.A,'%.2e') '$' newline ...
-            '$\tau = ' num2str(round(fout_exp{nn}.tau,2)) ' $'];
+            '$\tau = ' num2str(round(fout_exp{nn}.tau,2)) '$' newline...
+            'bg $= ' num2str(fout_exp{nn}.B,'%.2e') '$'];
         fstrs{nn}=str1;
     end   
     
