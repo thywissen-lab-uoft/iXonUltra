@@ -167,7 +167,7 @@ hax=axes;
 set(hax,'box','on','linewidth',1,'fontsize',12,'units','pixels');
 hold on
 xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
-ylabel('box counts');
+ylabel('gauss counts');
 hax.Position(4)=hax.Position(4)-20;
 
 for nn=1:size(ixondata(1).ROI,1)
@@ -175,6 +175,7 @@ for nn=1:size(ixondata(1).ROI,1)
    plot(xvals,N(:,nn),'o','color',cedge,'linewidth',1,'markersize',8,...
        'markerfacecolor',cface,'markeredgecolor',cedge);
 end
+hax.YLim(1)=0;
 
 if doExpFit
     fstrs={};

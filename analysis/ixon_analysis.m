@@ -194,14 +194,14 @@ doSubBias=1;
 offset=200; % (Doesnt affect calculations)
 
 % Ixon mask
-doApplyMask=1;
+doApplyMask=0;
 maskname=fullfile('ixon_mask.mat');
 ixon_mask=load(maskname);
 ixon_mask=ixon_mask.BW;
 
 % Gauss Filter
-doGaussFilter=0;
-filter_radius=.75;  % Gaussian filter radius
+doGaussFilter=1;
+filter_radius=.5;  % Gaussian filter radius
 
 
 for kk=1:length(ixondata)
@@ -375,7 +375,7 @@ end
 
 
 %% ANALYSIS : 2D Gaussian
-ixon_doGaussFit=0;
+ixon_doGaussFit=1;
 % do a very basic PCA to determine angle of the atomic cloud
 % ixondata=ixon_simple_pca(ixondata);
 
@@ -385,7 +385,7 @@ ixon_gauss_opts.doMask=1;        % Apply the image mask
 ixon_gauss_opts.Scale=0.5;       % Scale to rescale the image by
 ixon_gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
 ixon_gauss_opts.Mask=ixon_mask;  % The image mask
-
+% ixon_gauss_opts.doBackground = 0; % Enable a background to the fit
 if ixon_doGaussFit  
     ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
 end
@@ -439,10 +439,10 @@ if ixon_doGaussFit
 %   Save the figures (this can be slow)
     if ixon_doSave
         for kk=1:length(hF_Xs)            
-            ixon_saveFigure(ixondata,hF_Xs(kk),['ixon_gauss_profile_X' num2str(rNum) '_' num2str(kk)]);
+            ixon_saveFigure(ixondata,hF_Xs(kk),['ixon_gauss_profile_X'  num2str(kk)]);
         end
         for kk=1:length(hF_Ys)
-            ixon_saveFigure(ixondata,hF_Ys(kk),['ixon_gauss_profile_Y' num2str(rNum) '_' num2str(kk)]);
+            ixon_saveFigure(ixondata,hF_Ys(kk),['ixon_gauss_profile_Y' '_' num2str(kk)]);
         end
     end
     
@@ -557,6 +557,7 @@ if ixon_doAnimate == 1 && ixon_doSave
 %         ixon_animateOpts.CLim=[50 500];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+%         ixon_animateOpts.CLim=[2000 18000];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
@@ -579,7 +580,7 @@ ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
 ixon_animateOptsFFT.Order='ascend';
 
 % Color limit for image
-ixon_animateOptsFFT.CLim=[0 1];   % Color limits 
+ixon_animateOptsFFT.CLim=[0 .5];   % Color limits 
 % ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
 
 % FFT UV Cutoff
