@@ -26,15 +26,11 @@ for kk=1:length(figs)
    end
 end
 disp(' ');
-
 %% Select global settings
 % This section of code sets some global settings for the analysis which the
 % imaging GUI is unaware of.  
-
 disp('Choosing global settings for analysis...');
-
 global ixon_imgdir
-
 lambda=770E-9;
 
 % Load pertinent physical constants
@@ -50,14 +46,14 @@ m=40*amu;
 % Choose what kind of variable to plot against (sequencer/camera)
 varType='param'; % always select 'param' for now 
 
-% The variable to plot against
-ixon_xVar='ExecutionDate';
-
 % Should the analysis attempt to automatically find the xvariable?
-% ixon_autoXVar = 1;
+ixon_autoXVar = 1;
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
+
+% The variable to plot against
+ixon_xVar='ExecutionDate';
 
 % If ixon_autoUnit=0, this will be used.
 ixon_overrideUnit='V';
@@ -68,6 +64,12 @@ ixon_doSave=1;
 
 % Define the output data
 outdata=struct;
+
+%% Analysis Flags
+
+doRawImageHistogram=0;
+
+doDarkImageAnalysis = 1;
 
 %% Select image directory
 % Choose the directory where the images to analyze are stored
@@ -97,7 +99,10 @@ for kk=1:length(files)
     try
         disp(['     Image Name     : ' data.Name]);
         disp(['     Execution Time : ' datestr(data.Date)]);
-        disp(['     ' ixon_xVar ' : ' num2str(data.Params.(ixon_xVar))]);
+        if ~ixon_autoXVar
+            disp(['     ' ixon_xVar ' : ' num2str(data.Params.(ixon_xVar))]);
+        end
+
         disp(' ');
     end    
     
@@ -108,17 +113,29 @@ for kk=1:length(files)
 end
 disp(' ');
 
-% if isequal(ixon_xVar,'ExecutionDate')
-%    p=[ixondata.Params] ;
-%    tmin=min([p.ExecutionDate]);
-%    for kk=1:length(ixondata)
-%       ixondata(kk).Params.ExecutionDate= ...
-%           ixondata(kk).Params.ExecutionDate-tmin;
-%    end     
-% end
+ixondata = ixon_matchParamsFlags(ixondata);
 
+%% X Variable and Units
 
-%% Grab the Unit
+if ixon_autoXVar
+    xVars = ixon_findXVars(ixondata);
+    disp([' Found ' num2str(length(xVars)) ...
+        ' valid variables that are changing to plot against.']);
+    disp(xVars);
+    
+    % Select the first one
+    ind = 1;    
+    ixon_xVar = xVars{ind};
+    
+    disp([' Setting ' ixon_xVar ' to be the x-variable']);
+    
+    for kk=1:length(ixondata)
+        disp([' (' num2str(kk) ') (' num2str(ixondata(kk).Params.(ixon_xVar)) ') ' ...
+            ixondata(kk).Name]); 
+    end
+    disp(' ');
+end
+
 if ixon_autoUnit && isfield(ixondata(1),'Units')  && isequal(varType,'param')
     ixon_unit=ixondata(1).Units.(ixon_xVar);
 else
@@ -128,37 +145,21 @@ end
 if isequal(ixon_xVar,'ExecutionDate')
    ixon_unit='s'; 
 end
-%% Sort the data
-% Sort the data by your given parameter
-clear x
-disp(['Sorting ixondata by the given ''' ixon_xVar '''']);
 
-% Get the object that contains the variable
-switch varType
-    case 'param'
-        varList=[ixondata.Params];
-    case 'acq'
-        varList=[ixondata.AcquisitionInformation];        
-    otherwise
-        error('uhh you chose the wrong thing to plot');
-end
-       
-% Make sure that all ixondata have the parameter and record it
-allGood=1;
-for kk=1:length(varList)
-    if isfield(varList(kk),ixon_xVar)
-        x(kk)=varList(kk).(ixon_xVar);
+% Sort the data by your given parameter
+disp(['Sorting atomdata by the given ''' ixon_xVar '''']);
+x=zeros(length(ixondata),1);
+for kk=1:length(ixondata)
+    if isfield(ixondata(kk).Params,ixon_xVar)
+        x(kk)=ixondata(kk).Params.(ixon_xVar);
     else
-        allGood=0;
-        warning(['ixondata(' num2str(kk) ') has no ''' ixon_xVar '''']);
+        warning(['atomdata(' num2str(kk) ') has no ''' ixon_xVar '''']);
     end
 end
 
-% Sort if all the data has that parameter
-if allGood
-    [~, inds]=sort(x);
-    ixondata=ixondata(inds);
-end
+% Sort it
+[~, inds]=sort(x);
+ixondata=ixondata(inds);
 
 % Get the object that contains the variable
 switch varType
@@ -170,9 +171,7 @@ switch varType
         error('uhh you chose the wrong thing to plot');
 end
 %% Assign Params to outdata
-
 outdata.Params=ixondata.Params;
-
 
 %% Analysis ROI
 % Analysis ROI is an Nx4 matrix of [X1 X2 Y1 Y2] which specifies a region
@@ -183,18 +182,15 @@ outdata.Params=ixondata.Params;
 % this is currently disabled because it creates code issues at the moment.
 
 % Full ROI
-ixonROI = [210 297 324 188]; 
-ixonROI = [220 324 188 297]; 
 ixonROI = [1 512 1 512]; 
-
 
 [ixondata.ROI]=deal(ixonROI);
 
-%% Image Processing
+%% Image Processing : Bias, Mask, and Filtering
 
 % Electronic bias offset
 doSubBias=1;
-offset=200; % (Doesnt affect calculations)
+offset=200; 
 
 % Ixon mask
 doApplyMask=0;
@@ -206,25 +202,28 @@ ixon_mask=ixon_mask.BW;
 doGaussFilter=1;
 filter_radius=.5;  % Gaussian filter radius
 
-
 for kk=1:length(ixondata)
     imgs=ixondata(kk).RawImages;    
     
     for jj=1:size(ixondata(kk).RawImages,3)   
+        
+        % Subtract an offset from the data (is this digital?)
         if doSubBias
            imgs(:,:,jj)=imgs(:,:,jj)-offset; 
         end
         
+        % Apply image mask
         if doApplyMask
            imgs(:,:,jj)=imgs(:,:,jj).*ixon_mask;
         end
         
+        % Filter the data
         if doGaussFilter
            imgs(:,:,jj)=imgaussfilt(imgs(:,:,jj),filter_radius);
         end
     end
     
-    % For now we assume only two images
+    % Subtract background image
     Z=imgs(:,:,2)-imgs(:,:,1);
     ixondata(kk).Z=Z;
 end
@@ -236,10 +235,15 @@ if doSharpenPSF
    ixondata=sharpenPSF(ixondata); 
 end
 
+%% Dark Image Analysis
+if doDarkImageAnalysis
+  ixon_showDarkImageAnalysis(ixondata,ixon_xVar);
+  
+end
+
 %% Basic Raw Image Analysis
 
-doRawImageAnalysis=0;
-if doRawImageAnalysis   
+if doRawImageHistogram   
 
     % Do basic analysis on raw counts
     ixondata=ixon_computeRawCounts(ixondata);
@@ -374,8 +378,6 @@ if ixon_doBoxCount
 
     outdata.Ndatabox=Ndatabox;
 end
-
-
 
 %% ANALYSIS : 2D Gaussian
 ixon_doGaussFit=1;
