@@ -51,7 +51,10 @@ m=40*amu;
 varType='param'; % always select 'param' for now 
 
 % The variable to plot against
-ixon_xVar='Objective_Piezo_Z';
+ixon_xVar='ExecutionDate';
+
+% Should the analysis attempt to automatically find the xvariable?
+% ixon_autoXVar = 1;
 
 % Should the analysis attempt to automatically find the unit?
 ixon_autoUnit=1;
@@ -408,9 +411,7 @@ if ixon_doGaussFit
        
     % Counts
     [hF_numbergauss,Ndatagauss]=ixon_showGaussNumber(ixondata,ixon_xVar,ixon_gauss_opts);  
-     %ylim([0 max(get(gca,'YLim'))]);
-     %ylim([3.5E6 4.5E6]);
-     %xlim([0 max(get(gca,'XLim'))]);         
+ 
     if ixon_doSave;ixon_saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
     
     % Size
@@ -424,6 +425,10 @@ if ixon_doGaussFit
     % Centre
     hF_Centre=ixon_showGaussCentre(ixondata,ixon_xVar,ixon_gauss_opts);    
     if ixon_doSave;ixon_saveFigure(ixondata,hF_Centre,'ixon_gauss_position');end
+    
+%     hF_stats=ixon_showGaussStats(ixondata,ixon_gauss_opts);     
+%     if ixon_doSave;ixon_saveFigure(ixondata,hF_stats,'ixon_stats');end
+
         
      % Style of profile --> cut or sum?
     style='cut';
@@ -557,7 +562,7 @@ if ixon_doAnimate == 1 && ixon_doSave
 %         ixon_animateOpts.CLim=[50 500];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-%         ixon_animateOpts.CLim=[2000 18000];   % Color limits
+        ixon_animateOpts.CLim=[2000 20000];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
