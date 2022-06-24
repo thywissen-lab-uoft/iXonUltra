@@ -237,7 +237,7 @@ end
 
 %% Dark Image Analysis
 if doDarkImageAnalysis
-  ixon_showDarkImageAnalysis(ixondata,ixon_xVar);
+%   ixon_showDarkImageAnalysis(ixondata,ixon_xVar);
   
 end
 
