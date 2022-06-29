@@ -60,7 +60,7 @@ ixon_overrideUnit='V';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=1;
+ixon_doSave=0;
 
 % Define the output data
 outdata=struct;
@@ -71,15 +71,57 @@ doRawImageHistogram=0;
 
 doDarkImageAnalysis = 1;
 
+% Fast Fourier Transform Analysis
+% Use if you are looking for astigmatism in the image
+ixon_doFFT=1;
+ixon_fft_doBoxCount=0;
+
+% Stripe Analysis
+% This is used to analyze the field during the plane selection
+do_2dStripeAnalysis=0;
+doStripeAnalysis=0;
+
+
 %% Select image directory
-% Choose the directory where the images to analyze are stored
-disp([datestr(now,13) ' Choose an image analysis folder...']);
-dialog_title='Choose the root dire ctory of the images';
-ixon_imgdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
-if isequal(ixon_imgdir,0)
+% % Choose the directory where the images to analyze are stored
+% disp([datestr(now,13) ' Choose an image analysis folder...']);
+% dialog_title='Choose the root dire ctory of the images';
+% ixon_imgdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
+% if isequal(ixon_imgdir,0)
+%     disp('Canceling.');
+%     return 
+% end
+% 
+% % Choose the directory where the images to analyze are stored
+% disp([datestr(now,13) ' Choose an image analysis folder...']);
+% dialog_title='Choose the root directory of the images';
+
+
+if getImageDir(datevec(now))
+    newdir=uigetdir(getImageDir(datevec(now)),dialog_title);
+    saveOpts = struct;
+
+    if isequal(newdir,0)
+        disp('Canceling.');    
+        return; 
+    else
+        ixon_imgdir = imgdir;
+        imgdir = newdir;
+        saveDir = [imgdir filesep 'figures'];
+
+        if ~exist(saveDir,'dir'); mkdir(saveDir);end    
+
+        saveOpts.saveDir=saveDir;
+        saveOpts.Quality = 'auto';
+
+        strs=strsplit(imgdir,filesep);
+        FigLabel=[strs{end-1} filesep strs{end}];
+    end
+else
     disp('Canceling.');
-    return 
+    return;
 end
+
 
 %% Load the data
 clear ixondata
@@ -116,6 +158,10 @@ disp(' ');
 ixondata = ixon_matchParamsFlags(ixondata);
 
 %% X Variable and Units
+% If auto unit and variable are chosen, search through the parameters and
+% data to find which variable(s) are being changed.
+
+% Also, sort the data by that chosen variable.
 
 if ixon_autoXVar
     xVars = ixon_findXVars(ixondata);
@@ -123,7 +169,7 @@ if ixon_autoXVar
         ' valid variables that are changing to plot against.']);
     disp(xVars);
     
-    % Select the first one
+    % Select the first variable that is changed
     ind = 1;    
     ixon_xVar = xVars{ind};
     
@@ -177,9 +223,6 @@ outdata.Params=ixondata.Params;
 % Analysis ROI is an Nx4 matrix of [X1 X2 Y1 Y2] which specifies a region
 % to analyze. Each new row in the matrix indicates a separate ROI to
 % perform analysis on.
-%
-% While in principle different images can have different analysis ROIs,
-% this is currently disabled because it creates code issues at the moment.
 
 % Full ROI
 ixonROI = [1 512 1 512]; 
@@ -189,7 +232,7 @@ ixonROI = [1 512 1 512];
 %% Image Processing : Bias, Mask, and Filtering
 
 % Electronic bias offset
-doSubBias=1;
+doSubBias=0;
 offset=200; 
 
 % Ixon mask
@@ -199,6 +242,7 @@ ixon_mask=load(maskname);
 ixon_mask=ixon_mask.BW;
 
 % Gauss Filter
+% Smooth the data by a gaussian filter
 doGaussFilter=1;
 filter_radius=.5;  % Gaussian filter radius
 
@@ -228,18 +272,33 @@ for kk=1:length(ixondata)
     ixondata(kk).Z=Z;
 end
 
-%% PSF Sharpening
+%% Dark Image Analysis
+% Analyze the dark image of your data sets.  The dark image is assumed to
+% be the first image. Having a low number of background counts is important
+% to be able to resolve single atoms
 
+opts_darkImage = struct;
+opts_darkImage.FigLabel = FigLabel;
+opts_darkImage.xVar = ixon_xVar;
+opts_darkImage.xUnit = ixon_unit;
+opts_darkImage.AvgLimits = [0 1500];    % Limits for average of counts
+opts_darkImage.StdLimits = [0 200];     % Limits for deviation of counts
+
+
+if doDarkImageAnalysis
+  [hF_darkImage, dark_data] =ixon_analyzeDarkImage(...
+      ixondata,opts_darkImage);  
+end
+
+
+%% PSF Sharpening
+% For single-site image
+dark_opts = struct;
 doSharpenPSF=0;
 if doSharpenPSF
    ixondata=sharpenPSF(ixondata); 
 end
 
-%% Dark Image Analysis
-if doDarkImageAnalysis
-%   ixon_showDarkImageAnalysis(ixondata,ixon_xVar);
-  
-end
 
 %% Basic Raw Image Analysis
 
@@ -280,7 +339,6 @@ if doRawImageHistogram
 end
 
 %% Calculate FFT
-ixon_doFFT=1;
 
 fft_opts=struct;
 fft_opts.doSmooth=1;
@@ -311,7 +369,6 @@ if fft_opts.maskUV
 end
 
 %% ANALYSIS : FFT BOX COUNT
-ixon_fft_doBoxCount=0;
 
 fft_boxOpts=struct;
 fft_boxOpts.maskIR=fft_opts.maskIR;
@@ -321,7 +378,6 @@ fft_boxOpts.LMin=fft_opts.LMin;
 
 if ixon_fft_doBoxCount && ixon_doFFT
     ixondata=ixon_fft_boxCount(ixondata,fft_boxOpts);
-
 end
 
 %% PLOTTING : FFT BOX COUNT
@@ -394,6 +450,7 @@ ixon_gauss_opts.Mask=ixon_mask;  % The image mask
 if ixon_doGaussFit  
     ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
 end
+
 %% PLOTTING : GAUSSIAN
 ixon_gauss_opts.xUnit=ixon_unit;
 ixon_gauss_opts.NumberExpFit = 0;        % Fit exponential decay to atom number
@@ -456,95 +513,7 @@ if ixon_doGaussFit
     outdata.Ndatagauss=Ndatagauss;    
 end
 
-%% 1D STRIPE ANALYSIS
-% This analyzes the stripes for field stability.  This is a 1D analysis,
-% where a 1D sine wave with a gaussain envelope is fitted over a sub ROI of
-% the data.
-%
-% This one dimensional analysis requires a variety of inputs to fit.  See
-% the "1D Fit Parameters" below.
-doStripeAnalysis=0;
 
-stripe_opts=struct;
-
-% X plot unit
-strope_opts.xUnit=ixon_unit;
-
-% 1D Fit Parameters
-stripe_opts.theta=57;               % Rotation Angle
-stripe_opts.rotrange=[220 300];     % Sub region to inspect
-stripe_opts.FitType='Sine';         % Fit Type
-stripe_opts.LowThreshold=0.2;       % Low ampltude to ignore
-stripe_opts.L0=80;                 % Guess wavelength (pixels)
-stripe_opts.phi0=pi/2;             % Guess phase (radians)
-stripe_opts.B0=0.4;                 % Guess modulation
-
-% Animate
-stripe_opts.saveAnimation=1;        % save the animation?
-stripe_opts.StartDelay=.25;
-stripe_opts.MidDelay=.25;
-stripe_opts.EndDelay=.25;
-
-% Field Analysis
-field_opts=struct;
-field_opts.xUnit=ixon_unit;
-field_opts.FieldGradient=210;   % In G/cm
-field_opts.LatticeSpacing=532E-9; % in meter
-field_opts.FitType='Exp';
-
-if doStripeAnalysis
-    [hF_stripe,stripe_data]=analyzeStripes(ixondata,ixon_xVar,stripe_opts);
-    
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_stripe,'ixon_stripe');end
-
-    field_gradient=210; % field gradient in G/cm
-    stripe_data.grabMagnetometer=1;
-    stripe_data.Nsmooth=10;    
-    
-    [hF_field_stripe1,hF_field_stripe2,hF_field_sense]=fieldAnalysis(stripe_data,field_opts);
-    
-    if ixon_doSave
-        ixon_saveFigure(ixondata,hF_field_stripe1,'ixon_field_stripe1');  
-        ixon_saveFigure(ixondata,hF_field_stripe2,'ixon_field_stripe2');        
-
-         if stripe_data.grabMagnetometer
-            ixon_saveFigure(ixondata,hF_field_sense,'ixon_field_sense');
-        end  
-    end
-    
-    outdata.stripe_data=stripe_data;   
-end
-
-%% 2D Stripe Analysis
-% This analzyes the stripes for take from the ixon camera.  This is a 2D
-% fit over the entire cloud.  This fits a 2D gaussian modulated by a sine
-% wave at a particular angle.  This is pariticularly useful to fit the
-% angular dependence of the data. 
-%
-% The input fit parameters are specified in the options structure.
-
-do_2dStripeAnalysis=0;
-
-stripe_2d_opts=struct;
-
-stripe_2d_opts.xUnit=ixon_unit;
-
-stripe_2d_opts.ShimFit=0;
-stripe_2d_opts.Theta=[-90 90]; % Specify the domain (MUST BE 180 DEGREES)
-stripe_2d_opts.saveAnimation=1;        % save the animation?
-stripe_2d_opts.StartDelay=1;
-stripe_2d_opts.MidDelay=.5;
-stripe_2d_opts.EndDelay=1;
-
-if do_2dStripeAnalysis
-    [hF_stripe_2d,stripe_data2d]=analyzeStripes2(ixondata,ixon_xVar,stripe_2d_opts);
-
-    if ixon_doSave
-        ixon_saveFigure(ixondata,hF_stripe_2d,'ixon_field_stripe_2d');        
-    end
-    
-    outdata.stripe_data2d=stripe_data2d;   
-end
 %% Animate cloud 
 ixon_doAnimate = 1;
 if ixon_doAnimate == 1 && ixon_doSave
