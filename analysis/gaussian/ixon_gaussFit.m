@@ -91,8 +91,8 @@ for n=1:length(ixondata)
                 'independent',{'xx','yy'},'coefficients',{'A','Xc','Yc','s1','s2','nbg'});
             opt=fitoptions(myfit);
             opt.StartPoint=[A Xc Yc s1 s2 nbg];
-            opt.Upper=[A*1.3 Xc+50 Yc+50 s1*2.5 s2*1.5 inf];
-            opt.Lower=[A*0.7 Xc-50 Yc-50 s1*.5 s2*.5 -500];   
+%             opt.Upper=[A*1.3 Xc+50 Yc+50 s1*2.5 s2*1.5 inf];
+%             opt.Lower=[A*0.1 Xc-50 Yc-50 s1*.1 s2*.5 -500];   
             
             % Display initial guess            
             gStr=[' guess (Xc,Yc,s1,s2,A,bg)=(' num2str(round(Xc)) ',' ...

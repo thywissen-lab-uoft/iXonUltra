@@ -1820,8 +1820,19 @@ function data=updateImages(data)
     
     % Update plots if cut
     if rbCut.Value
-        Zy=data.Z(:,pCrossX.YData(1));
-        Zx=data.Z(pCrossY.XData(1),:);
+        
+        if pCrossX.YData(1)<=512 && pCrossX.YData(1)>0
+            Zy=data.Z(:,pCrossX.YData(1));
+        else
+            Zy=data.Z(:,250);
+        end
+        
+        if pCrossY.XData(1)<=512 && pCrossY.XData(1)>0
+            Zx=data.Z(pCrossY.XData(1),:);
+        else
+            Zx=data.Z(250,:);
+        end
+        
         set(pX,'XData',data.X,'YData',Zx);
         set(pY,'XData',Zy,'YData',data.Y);
         drawnow;

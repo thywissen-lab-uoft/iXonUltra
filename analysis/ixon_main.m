@@ -53,14 +53,14 @@ ixon_autoXVar = 1;
 ixon_autoUnit=1;
 
 % The variable to plot against
-ixon_xVar='ExecutionDate';
+ixon_xVar='Objective_Piezo_Z';
 
 % If ixon_autoUnit=0, this will be used.
 ixon_overrideUnit='V';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=0;
+ixon_doSave=1;
 
 % Define the output data
 outdata=struct;
@@ -97,16 +97,17 @@ doStripeAnalysis=0;
 % dialog_title='Choose the root directory of the images';
 
 
-if getImageDir(datevec(now))
-    newdir=uigetdir(getImageDir(datevec(now)),dialog_title);
+if ixon_getImageDir(datevec(now))
+    newdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
     saveOpts = struct;
 
     if isequal(newdir,0)
         disp('Canceling.');    
         return; 
     else
+                imgdir = newdir;
+
         ixon_imgdir = imgdir;
-        imgdir = newdir;
         saveDir = [imgdir filesep 'figures'];
 
         if ~exist(saveDir,'dir'); mkdir(saveDir);end    
@@ -243,7 +244,7 @@ ixon_mask=ixon_mask.BW;
 
 % Gauss Filter
 % Smooth the data by a gaussian filter
-doGaussFilter=1;
+doGaussFilter=0;
 filter_radius=.5;  % Gaussian filter radius
 
 for kk=1:length(ixondata)
@@ -281,8 +282,8 @@ opts_darkImage = struct;
 opts_darkImage.FigLabel = FigLabel;
 opts_darkImage.xVar = ixon_xVar;
 opts_darkImage.xUnit = ixon_unit;
-opts_darkImage.AvgLimits = [0 1500];    % Limits for average of counts
-opts_darkImage.StdLimits = [0 200];     % Limits for deviation of counts
+opts_darkImage.AvgLimits = [190 350];    % Limits for average of counts
+opts_darkImage.StdLimits = [0 100];     % Limits for deviation of counts
 
 
 if doDarkImageAnalysis
@@ -446,7 +447,7 @@ ixon_gauss_opts.doMask=1;        % Apply the image mask
 ixon_gauss_opts.Scale=0.5;       % Scale to rescale the image by
 ixon_gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
 ixon_gauss_opts.Mask=ixon_mask;  % The image mask
-% ixon_gauss_opts.doBackground = 0; % Enable a background to the fit
+ixon_gauss_opts.doBackground = 1; % Enable a background to the fit
 if ixon_doGaussFit  
     ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
 end
@@ -455,6 +456,8 @@ end
 ixon_gauss_opts.xUnit=ixon_unit;
 ixon_gauss_opts.NumberExpFit = 0;        % Fit exponential decay to atom number
 ixon_gauss_opts.NumberLorentzianFit=0;   % Fit atom number to lorentzian
+ixon_gauss_opts.NumberScale = 'linear'; 
+% ixon_gauss_opts.NumberScale = 'log'; 
 
 ixon_gauss_opts.CenterSineFit = 0;       % Fit sine fit to cloud center
 ixon_gauss_opts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
@@ -470,7 +473,7 @@ if ixon_doGaussFit
        
     % Counts
     [hF_numbergauss,Ndatagauss]=ixon_showGaussNumber(ixondata,ixon_xVar,ixon_gauss_opts);  
- 
+%  xlim([0 1.4]);
     if ixon_doSave;ixon_saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
     
     % Size
@@ -530,10 +533,10 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     % Color limit for image
 %     ixon_animateOpts.CLim=[50 200];   % Color limits
-%         ixon_animateOpts.CLim=[50 500];   % Color limits
+%          ixon_animateOpts.CLim=[0 1500];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-        ixon_animateOpts.CLim=[2000 20000];   % Color limits
+%         ixon_animateOpts.CLim=[100 400];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end

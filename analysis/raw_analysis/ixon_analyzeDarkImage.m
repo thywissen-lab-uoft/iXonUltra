@@ -18,9 +18,14 @@ end
 img_dark_avg = mean(img_dark,3);
 img_dark_std = std(img_dark,0,3);
 
+img_dark_tot = sum(sum(img_dark,1),2);
+img_dark_tot = img_dark_tot(:);
 
-v1=linspace(c1(1),c1(2),100);
-v2=linspace(c1(1),c2(2),100);
+
+% v1=linspace(c1(1),c1(2),100);
+v1=c1(1):1:c1(2);
+v2=c2(1):1:c2(2);
+% v2=linspace(c2(1),c2(2),100);
 
 hF = figure;
 hF.Color='w';
@@ -48,6 +53,12 @@ subplot(224)
 histogram(img_dark_std,v2);
 title('deviation of dark image');
 xlabel('deviation of counts');
+
+
+hF = figure;
+hF.Color='w';
+hF.Position = [10 50 600 450];
+plot(img_dark_tot);
 
 
 disp('done');
