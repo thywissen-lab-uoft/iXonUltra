@@ -53,7 +53,7 @@ ixon_autoXVar = 1;
 ixon_autoUnit=1;
 
 % The variable to plot against
-ixon_xVar='Objective_Piezo_Z';
+ixon_xVar='qgm_raman_2photon_detuning';
 
 % If ixon_autoUnit=0, this will be used.
 ixon_overrideUnit='V';
@@ -71,6 +71,10 @@ doRawImageHistogram=0;
 
 doDarkImageAnalysis = 1;
 
+ixon_doBoxCount=1;
+
+ixon_doGaussFit=0;
+
 % Fast Fourier Transform Analysis
 % Use if you are looking for astigmatism in the image
 ixon_doFFT=1;
@@ -80,6 +84,8 @@ ixon_fft_doBoxCount=0;
 % This is used to analyze the field during the plane selection
 do_2dStripeAnalysis=0;
 doStripeAnalysis=0;
+
+
 
 
 %% Select image directory
@@ -93,8 +99,8 @@ doStripeAnalysis=0;
 % end
 % 
 % % Choose the directory where the images to analyze are stored
-% disp([datestr(now,13) ' Choose an image analysis folder...']);
-% dialog_title='Choose the root directory of the images';
+disp([datestr(now,13) ' Choose an image analysis folder...']);
+dialog_title='Choose the root directory of the images';
 
 
 if ixon_getImageDir(datevec(now))
@@ -395,7 +401,6 @@ if ixon_fft_doBoxCount  && ixon_doFFT
 end
 
 %% ANALYSIS : BOX COUNT
-ixon_doBoxCount=1;
 
 if ixon_doBoxCount
     ixondata=ixon_boxCount(ixondata);
@@ -437,7 +442,6 @@ if ixon_doBoxCount
 end
 
 %% ANALYSIS : 2D Gaussian
-ixon_doGaussFit=1;
 % do a very basic PCA to determine angle of the atomic cloud
 % ixondata=ixon_simple_pca(ixondata);
 
@@ -536,7 +540,7 @@ if ixon_doAnimate == 1 && ixon_doSave
 %          ixon_animateOpts.CLim=[0 1500];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-%         ixon_animateOpts.CLim=[100 400];   % Color limits
+       ixon_animateOpts.CLim=[0 1000];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
@@ -560,6 +564,8 @@ ixon_animateOptsFFT.Order='ascend';
 
 % Color limit for image
 ixon_animateOptsFFT.CLim=[0 .5];   % Color limits 
+ixon_animateOptsFFT.CLim=[0 3];   % Color limits 
+
 % ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
 
 % FFT UV Cutoff

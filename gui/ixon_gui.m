@@ -866,7 +866,9 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
         switch outstr
             case 'DRV_IDLE'
                 % Grab the images from the camera
-                imgs=grabRawImages;       
+                imgs=grabRawImages;    
+                
+                
                 
                 % Assign images metadata
                 mydata=processImages(imgs);
@@ -1203,8 +1205,8 @@ hbSlctLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         end       
         if ROI(1)<1; ROI(1)=1; end       
         if ROI(3)<1; ROI(3)=1; end   
-        if ROI(4)>512; ROI(4)=512;end       
-        if ROI(2)>512; ROI(2)=512;end       
+%         if ROI(4)>512; ROI(4)=512;end       
+%         if ROI(2)>512; ROI(2)=512;end       
         src.Data=ROI;       
         try
             set(axImg,'XLim',ROI(1:2),'YLim',ROI(3:4));
@@ -1254,8 +1256,8 @@ hbSlctLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         % Constrain ROI to image
         if ROI(1)<1; ROI(1)=1; end       
         if ROI(3)<1; ROI(3)=1; end   
-        if ROI(4)>512; ROI(4)=512; end       
-        if ROI(2)>512; ROI(2)=512; end   
+%         if ROI(4)>512; ROI(4)=512; end       
+%         if ROI(2)>512; ROI(2)=512; end   
         
         % Try to update ROI graphics
         tbl_dispROI.Data=ROI;
@@ -1737,7 +1739,7 @@ function data=updateImages(data)
     y=ROI(3):ROI(4); 
     
     imgs=data.RawImages;
-    
+        
     if hcSubBias.Value
         for p=1:size(imgs,3)
             imgs(:,:,p)=imgs(:,:,p)-200;
@@ -1756,16 +1758,22 @@ function data=updateImages(data)
         for p=1:size(imgs,3)
             imgs(:,:,p)=imgaussfilt(imgs(:,:,p),tblGaussFilter.Data); 
         end
+    end    
+    
+    if size(imgs,3) > 1        
+        iD = imgs(:,:,1);
+        imgs(:,:,1)=[];     
+        N = size(imgs,3);            
+        imgs = reshape(imgs,size(imgs,1),[],1);
+        Zme = imgs - repmat(iD,1,N);            
+        data.Z = Zme;            
+    else
+        data.Z = imgs;
     end
-
-%     if size(data.Z,3)>1
-        % For now always assumed that its PWA,BKGD
-        data.Z=imgs(:,:,2)-imgs(:,:,1);    
-%     else
-%         data.Z = imgs;
-%     end
     
-    
+    data.X = 1:size(data.Z,2);
+    data.Y = 1:size(data.Z,1);
+        
     % Create sub image to do center of mass analysis
     Zsub=data.Z(y,x);
     
@@ -2141,18 +2149,30 @@ end
 
         % Add magnification
         mydata.Magnification=mag;
-
-        % Add X and Y vectors
-        mydata.X=1:size(mydata.RawImages,2);
-        mydata.Y=1:size(mydata.RawImages,1);    
-
-        if size(mydata.RawImages,3) > 1
         
-            % For now always assumed that its PWA,BKGD
-            mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
+        % For now, we assume that the dark image is taken first (why is
+        % this a good idea?)
+        
+        
+        if size(mydata.RawImages,3) > 1        
+            imgs = mydata.RawImages;  
+            iD = imgs(:,:,1);
+            imgs(:,:,1)=[];     
+            N = size(imgs,3);            
+            imgs = reshape(imgs,size(imgs,1),[],1);
+            Zme = imgs - repmat(iD,1,N);            
+            mydata.Z = Zme;            
+%           mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
         else
             mydata.Z=mydata.RawImages(:,:,1);
         end
+        
+
+        % Add X and Y vectors
+        mydata.X=1:size(mydata.Z,2);
+        mydata.Y=1:size(mydata.Z,1);    
+        
+
 
         % Grab the sequence parameters and flags
 %         [mydata.Params,dstr]=grabSequenceParams;        
@@ -2357,6 +2377,27 @@ function out=coolCamera(state)
         out=0;
     end
 end
+
+% Get Timing
+function out=getAcquisitionTimings
+%     if state
+%         fprintf('Engaging TEC to cool sensor ... ');
+%         ret=CoolerON;
+%     else
+%         fprintf('Disengaging TEC to cool sensor ... ');
+%         ret=CoolerOFF;
+%     end    
+%     disp(error_code(ret));
+    
+    [ret,texp,taccum,tkin] = GetAcquisitionTimings;
+    
+    if isequal(error_code(ret),'DRV_SUCCESS')
+        out = [texp taccum tkin];
+    else
+        warning('Unable to read iXon timing.');
+    end
+end
+
 
 % Set the camera shutter
 function out=setCameraShutter(state)
