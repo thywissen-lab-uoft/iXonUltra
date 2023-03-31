@@ -1,14 +1,20 @@
 function ixondata = ixon_matchParamsFlags(ixondata)
 
 pAll = sort(fieldnames(ixondata(1).Params));
-fAll = sort(fieldnames(ixondata(1).Flags));
+
+if isfield(ixondata(1),'Flags')
+    fAll = sort(fieldnames(ixondata(1).Flags));
+else
+    badFlags=1;
+end
 
 badParams = 0;
 badFlags  = 0;
 
 % Find Master list of all params and flags
 for kk=1:length(ixondata)
-    pThis = sort(fieldnames(ixondata(kk).Params));      
+    pThis = sort(fieldnames(ixondata(kk).Params));     
+    
     fThis = sort(fieldnames(ixondata(kk).Flags));
     
     if ~isequal(pThis,pAll)
@@ -20,17 +26,18 @@ for kk=1:length(ixondata)
             end  
        end
     end 
-    
-    if ~isequal(fThis,fAll)
-        badFlags = 1;
-        for nn=1:length(fThis)      
-            ind=findStr(fAll,fThis{nn});             
-            if isempty(ind)
-                fAll{end+1}=fThis{nn}; 
-            end  
-       end
-    end 
+    if isfield(ixondata(kk),'Flags')
 
+        if ~isequal(fThis,fAll)
+            badFlags = 1;
+            for nn=1:length(fThis)      
+                ind=findStr(fAll,fThis{nn});             
+                if isempty(ind)
+                    fAll{end+1}=fThis{nn}; 
+                end  
+           end
+        end 
+    end
 end
 
 if badParams
@@ -55,7 +62,8 @@ for kk=1:length(ixondata)
             end       
        end
     end
-    
+        if isfield(ixondata(kk),'Flags')
+
     if ~isequal(fAll,fThis)        
        for nn=1:length(fAll)      
             ind=findStr(fThis,fAll{nn});   
@@ -64,6 +72,7 @@ for kk=1:length(ixondata)
             end       
        end 
     end 
+        end
     
 end
 

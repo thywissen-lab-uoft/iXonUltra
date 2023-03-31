@@ -194,7 +194,7 @@ if ixon_autoUnit && isfield(ixondata(1),'Units')  && isequal(varType,'param')
 else
     ixon_unit=ixon_overrideUnit;
 end
-
+5
 if isequal(ixon_xVar,'ExecutionDate')
    ixon_unit='s'; 
 end
