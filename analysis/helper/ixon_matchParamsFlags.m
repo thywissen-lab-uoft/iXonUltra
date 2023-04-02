@@ -2,6 +2,8 @@ function ixondata = ixon_matchParamsFlags(ixondata)
 
 pAll = sort(fieldnames(ixondata(1).Params));
 
+
+
 if isfield(ixondata(1),'Flags')
     fAll = sort(fieldnames(ixondata(1).Flags));
 else
@@ -15,7 +17,6 @@ badFlags  = 0;
 for kk=1:length(ixondata)
     pThis = sort(fieldnames(ixondata(kk).Params));     
     
-    fThis = sort(fieldnames(ixondata(kk).Flags));
     
     if ~isequal(pThis,pAll)
         badParams = 1;
@@ -26,7 +27,9 @@ for kk=1:length(ixondata)
             end  
        end
     end 
+    
     if isfield(ixondata(kk),'Flags')
+    fThis = sort(fieldnames(ixondata(kk).Flags));
 
         if ~isequal(fThis,fAll)
             badFlags = 1;
@@ -51,7 +54,6 @@ end
 % Add blank values from the master list
 for kk=1:length(ixondata)
     pThis = sort(fieldnames(ixondata(kk).Params));      
-    fThis = sort(fieldnames(ixondata(kk).Flags));
     
     if ~isequal(pAll,pThis)        
        for nn=1:length(pAll)      
@@ -63,6 +65,7 @@ for kk=1:length(ixondata)
        end
     end
         if isfield(ixondata(kk),'Flags')
+    fThis = sort(fieldnames(ixondata(kk).Flags));
 
     if ~isequal(fAll,fThis)        
        for nn=1:length(fAll)      
@@ -79,8 +82,9 @@ end
 if badParams
     for kk=1:length(ixondata)
         ixondata(kk).Params = orderfields(ixondata(kk).Params);
-        ixondata(kk).Units = orderfields(ixondata(kk).Units);
-
+        if isfield(ixondata(kk),'Units') && ~isempty(ixondata(kk).Units)
+            ixondata(kk).Units = orderfields(ixondata(kk).Units);
+        end
     end
 end
 

@@ -252,6 +252,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         disp(' ');
         disp(cam_info);
         
+        
         % Set the temperature set point
         setTemperature(tblTemp.Data);
         hbCamInfo.Enable='on';       
@@ -332,6 +333,10 @@ hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,
     function infoCB(~,~)        
         cam_info=getCamInfo;        
         disp(cam_info); 
+        disp(cam_info.NumHSSpeeds)
+        disp(cam_info.AvailableHSSpeeds{1});
+        disp(cam_info.AvailableHSSpeeds{2});
+
     end
 
 % Capabilities button
@@ -862,7 +867,8 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
     function acqTimerFcn(src,evt)      
         try
         % Camera Status
-        [out,outstr]=getCameraStatus;        
+        [out,outstr]=getCameraStatus;  
+%         disp(now)
         switch outstr
             case 'DRV_IDLE'
                 % Grab the images from the camera
@@ -2148,41 +2154,31 @@ end
         mydata.RawImages=imgs;
 
         % Add magnification
-        mydata.Magnification=mag;
+        mydata.Magnification=mag;        
         
-        % For now, we assume that the dark image is taken first (why is
-        % this a good idea?)
+        % Grab the sequence parameters and flags   
+        [mydata.Params,mydata.Units,mydata.Flags]=grabSequenceParams2;      
         
+        imgs = mydata.RawImages;  
         
-        if size(mydata.RawImages,3) > 1        
-            imgs = mydata.RawImages;  
+        % Remove the first image if there is a buffer
+        if isfield(mydata.Flags,'qgm_doClearBufferExposure') && size(imgs,3)>1
             iD = imgs(:,:,1);
-            imgs(:,:,1)=[];     
-            N = size(imgs,3);            
-            imgs = reshape(imgs,size(imgs,1),[],1);
-            Zme = imgs - repmat(iD,1,N);            
-            mydata.Z = Zme;            
-%           mydata.Z=mydata.RawImages(:,:,2)-mydata.RawImages(:,:,1);
-        else
-            mydata.Z=mydata.RawImages(:,:,1);
+            imgs(:,:,1)=[];    
         end
         
+        imgs = reshape(imgs,size(imgs,1),[],1);        
+        mydata.Z = imgs;        
 
         % Add X and Y vectors
         mydata.X=1:size(mydata.Z,2);
-        mydata.Y=1:size(mydata.Z,1);    
-        
-
-
-        % Grab the sequence parameters and flags
-%         [mydata.Params,dstr]=grabSequenceParams;        
-%         mydata.Params.ExecutionDate=dstr;            
-        [mydata.Params,mydata.Units,mydata.Flags]=grabSequenceParams2;
+        mydata.Y=1:size(mydata.Z,1);     
 
         % Append acquisition information
         mydata.CameraInformation=cam_info;
         mydata.AcquisitionInformation=acq;
         mydata.AcquisitionDescription=desc;
+        
     end
 
 
@@ -2380,14 +2376,7 @@ end
 
 % Get Timing
 function out=getAcquisitionTimings
-%     if state
-%         fprintf('Engaging TEC to cool sensor ... ');
-%         ret=CoolerON;
-%     else
-%         fprintf('Disengaging TEC to cool sensor ... ');
-%         ret=CoolerOFF;
-%     end    
-%     disp(error_code(ret));
+
     
     [ret,texp,taccum,tkin] = GetAcquisitionTimings;
     

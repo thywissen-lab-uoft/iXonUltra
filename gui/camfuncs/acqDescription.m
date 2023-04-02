@@ -61,12 +61,30 @@ desc.EMAdvanced=strs{acq.EMAdvanced+1};
 desc.EMCCDGain='xN gain';
 
 % AmpTypeIndex
-strs={'EM/convential','convential/NIR'};
+strs={'EM/conventonial','conventional/NIR'};
 desc.AmpTypeIndex=strs{acq.AmpTypeIndex+1};
 
 % VSSpeedIndex
+[~,sp] = GetVSSpeed(acq.VSSpeedIndex);
+desc.VSSpeedIndex = [num2str(sp) ' us'];
 
 % HSSpeedIndex
+
+[~,sp]=GetHSSpeed(acq.ADChannelIndex,acq.AmpTypeIndex,acq.HSSpeedIndex);
+desc.HSSpeedIndex = [num2str(sp) ' MHz'];
+% keyboard
+% [ret, nfo.NumAmp] = GetNumberAmp;
+% [ret, nfo.NumADChannels] = GetNumberADChannels;
+% for amp = 0:nfo.NumAmp-1
+%     for adc = 0:nfo.NumADChannels-1
+%         [ret, nfo.NumHSSpeeds{amp+1,adc+1}] = GetNumberHSSpeeds(adc,amp);
+%         nfo.AvailableHSSpeeds{amp+1,adc+1} = zeros(1,nfo.NumHSSpeeds{amp+1,adc+1});
+%         for j = 0:nfo.NumHSSpeeds{amp+1,adc+1}-1
+%             [ret,nfo.AvailableHSSpeeds{amp+1,adc+1}(j+1)] = GetHSSpeed(adc,amp,j);
+%         end
+%     end
+% end
+
 
 % TriggerMode
 switch acq.TriggerMode

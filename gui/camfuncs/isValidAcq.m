@@ -107,8 +107,8 @@ try
         isValid=0;
     end
 
-    % VSSpeedIndex (hardcode to [0 1 2], but this could be read)
-    if isempty(find(acq.VSSpeedIndex==[0 1 2 3],1)); warning('Bad VSSpeedIndex'); isValid=0; end
+    % VSSpeedIndex (hardcode to [0 1 2 3 4], but this could be read)
+    if isempty(find(acq.VSSpeedIndex==[0 1 2 3 4],1)); warning('Bad VSSpeedIndex'); isValid=0; end
 
     % AmpTypeIndex
     if isempty(find(acq.AmpTypeIndex==[0 1],1)); warning('Bad AmpTypeIndex'); isValid=0; end

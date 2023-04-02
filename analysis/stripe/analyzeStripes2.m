@@ -23,6 +23,8 @@ xvals=[params.(xVar)];
 times=[params.ExecutionDate];
 
 [xvals,inds]=sort(xvals,'ascend');
+
+
 ixondata=ixondata(inds);
 
 if isequal(xVar,'ExecutionDate')
@@ -379,6 +381,20 @@ vart=uicontrol('style','text','string','variable','units','pixels','backgroundco
 for kk=1:length(ixondata)
     fprintf(['Fitting ' num2str(kk) ' of ' num2str(length(ixondata)) ' ... ']);
     pG=[AG(kk),xCG(kk),yCG(kk),sG(kk),BG(kk),thetaG(kk),LG(kk),phiG(kk)];
+    
+    
+    if kk>1 && isequal(xVar,'ExecutionDate')
+        pG(end-2) = fout.theta;
+        pG(end-1) = fout.L;
+        pG(end) = fout.phi;
+        
+
+    end
+        opt.Lower = [0 0 0 0 0 pG(end-2)-2 pG(end-1)-3 pG(end)-1];
+        opt.Upper = [AG(kk)*1.5 xCG(kk)+50 yCG(kk)+50 sG(kk)+50 BG(kk)+2000 pG(end-2)+2 pG(end-1)+3 pG(end)+1];
+
+
+    
     opt.StartPoint=pG;
     
     vart.String=[xVar ' : ' num2str(xvals(kk))];

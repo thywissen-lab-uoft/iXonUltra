@@ -60,7 +60,7 @@ ixon_overrideUnit='V';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=1;
+ixon_doSave=0;
 
 % Define the output data
 outdata=struct;
@@ -155,9 +155,12 @@ for kk=1:length(files)
         disp(' ');
     end    
     
-    if isequal(ixon_xVar,'ExecutionDate')
-        data.Params.(ixon_xVar)=datenum(data.Params.(ixon_xVar))*24*60*60;
-    end    
+    data.Params.ExecutionDate = datenum(data.Params.ExecutionDate);
+data.Params.ExecutionDateStr = datestr(data.Params.ExecutionDate);    
+%     
+%     if isequal(ixon_xVar,'ExecutionDate')
+%         data.Params.(ixon_xVar)=datenum(data.Params.(ixon_xVar))*24*60*60;
+%     end    
     ixondata(kk)=data;    
 end
 disp(' ');
@@ -194,7 +197,7 @@ if ixon_autoUnit && isfield(ixondata(1),'Units')  && isequal(varType,'param')
 else
     ixon_unit=ixon_overrideUnit;
 end
-5
+
 if isequal(ixon_xVar,'ExecutionDate')
    ixon_unit='s'; 
 end
@@ -581,6 +584,16 @@ ixon_animateOptsFFT.LMax=200;
 if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
     ixon_animateFFT(ixondata,ixon_xVar,ixon_animateOptsFFT);
 end
+
+%% Stripe Analysis
+if do_2dStripeAnalysis
+   ixon_stripe_2d; 
+end
+
+if doStripeAnalysis
+   ixon_stripe_1d; 
+end
+
 
 %% save output data
 if ixon_doSave
