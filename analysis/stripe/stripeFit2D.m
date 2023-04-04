@@ -6,6 +6,7 @@ if nargin == 1
    opt = struct;
    opt.FitType = 'sinesquare2';
    opt.doDebug = 0;
+   opt.fig = figure;
 end
 
     x = 1:size(z,2);
@@ -143,7 +144,7 @@ switch opt.FitType
         
 %% Perform Fit
 
-    figure(2);
+    figure(fig);
     clf
     subplot(321)
     imagesc(x,y,z)

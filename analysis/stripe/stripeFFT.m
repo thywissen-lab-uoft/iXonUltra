@@ -14,7 +14,7 @@ end
 
 %% OPtions
 
-maskR = 3;
+maskR = 2;
 
 R=20;
 %%
@@ -89,7 +89,7 @@ zf_abs_masked = zf_abs;
 zf_abs_masked(iy,ix) = 0;  
 
 % Get rid of maximal point
-zf_abs_masked(zf_abs_masked<max(max(zf_abs_masked))*.3)=0;
+zf_abs_masked(zf_abs_masked<max(max(zf_abs_masked))*.2)=0;
 
 % Compute the moments
 m00 = computeMoment(zf_abs_masked,0,0);
@@ -118,8 +118,13 @@ zfr = imrotate(zf,theta*180/pi,'bilinear','crop');
 
 % Find the 3 biggest peaks
 yp = sum(zfr_abs,2);
-[vals,p]= findpeaks(yp,'Npeaks',3);
 
+% [vals,p]= findpeaks(yp,'Npeaks',3);
+[~,p]=islocalmax(yp);
+[p,ind]=sort(p,'descend');
+p=ind(2:3);
+
+% keyboard
 % Momentum in pixel of the peak
 k = range(p)/2;
 
@@ -166,7 +171,7 @@ if opt.doDebug
     f=figure(913);
     clf
     
-    subplot(211)
+    subplot(221)
     imagesc(z)
     axis equal tight
     caxis([0 A]);
@@ -190,7 +195,7 @@ if opt.doDebug
     set(gca,'YDir','normal');
 
    
-    subplot(212)
+    subplot(222)
     imagesc(fx,fy,zf_abs)
     axis equal tight
     caxis([0 n*.25]);
@@ -202,6 +207,20 @@ if opt.doDebug
     plot(r*cos(theta+pi/2),r*sin(theta+pi/2),'r-','linewidth',1)
     
        set(gca,'YDir','normal');
+       
+           subplot(223)
+    imagesc(fx,fy,zf_abs_masked)
+    axis equal tight
+    caxis([0 n*.25]);
+    xlabel('kx')
+    ylabel('ky')
+    hold on
+    
+    r=linspace(-max(fx),max(fx),2);
+    plot(r*cos(theta+pi/2),r*sin(theta+pi/2),'r-','linewidth',1)
+    
+       set(gca,'YDir','normal');
+       
 
 end
 

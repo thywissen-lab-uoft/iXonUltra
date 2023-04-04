@@ -85,6 +85,8 @@ if isequal(clim,'auto')
     clim=[cL0 cH0];
 end
 
+clim = [0 cH0*.5];
+
 %% Animation Settings
 startDelay=opts.StartDelay;   % First picture hold time
 midDelay=opts.MidDelay;   % Middle pictures hold time
@@ -171,6 +173,16 @@ set(gca,'units','pixels','box','on','linewidth',2,'ydir','normal');
 if opts.mask_UV
     xlim([-1 1]/opts.LMin);
     ylim([-1 1]/opts.LMin);
+end
+
+
+if opts.mask_IR
+    tt = linspace(0,2*pi,100);
+    F_IR=1/opts.LMax;
+
+    plot(cos(tt)*F_IR,sin(tt)*F_IR,'r-','linewidth',1);
+%     xlim([-1 1]/opts.LMin);
+%     ylim([-1 1]/opts.LMin);
 end
 drawnow;
 

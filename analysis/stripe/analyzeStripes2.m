@@ -28,7 +28,8 @@ times=[params.ExecutionDate];
 ixondata=ixondata(inds);
 
 if isequal(xVar,'ExecutionDate')
-    xvals=xvals-min(xvals);
+%     xvals=datetime(datevec(xvals));
+%     xvals = xvals;
 end
 
 %% Fitting Function
@@ -97,17 +98,7 @@ end
 
 for kk=1:length(ixondata)    
     
-    thetaVec=linspace(opts.Theta(1),opts.Theta(2),100);
-%     switch xVar
-%         case 'xshimd'
-%             thetaVec=linspace(-90,90,100);
-%         case 'yshimd'
-%             thetaVec=linspace(-90,90,100);
-%         otherwise
-%             thetaVec=linspace(-90,90,100);
-%     end
-
-        
+    thetaVec=linspace(opts.Theta(1),opts.Theta(2),90);        
     
     % Get raw data
     Z2=ixondata(kk).Z;
@@ -120,9 +111,6 @@ for kk=1:length(ixondata)
     Z2=imresize(Z2,sc);
     x2=imresize(x2,sc);
     y2=imresize(y2,sc);
-    
-    % Fitler
-%     Z=imgaussfilt(Z,1);    
     
     % Calculate cetner
     Zx=sum(Z2,1)'/sum(sum(Z2));    
@@ -286,55 +274,55 @@ disp(['done (' num2str(round((t2-t1)*24*60*60),2) ' s)']);
 fRs={};
 hF_live=figure;
 hF_live.Color='w';
-hF_live.Position(3:4)=[1000 400];
+hF_live.Position=[100 100 1100 500];
 
 co=get(gca,'colororder');
 
 clf
 colormap(purplemap);
 
-ax1=subplot(231);    
+ax1=subplot(4,4,[1 2 5 6 9 10 13 14]);    
 hImg_raw=imagesc(ixondata(1).Z);
 set(gca,'ydir','normal');
 axis equal tight
-colorbar
+% colorbar
     
-ax2=subplot(232);    
-hImg_fit=imagesc(ixondata(1).Z);
-set(gca,'ydir','normal');
-axis equal tight
-colorbar
+% ax2=subplot(4,4,7);    
+% hImg_fit=imagesc(ixondata(1).Z);
+% set(gca,'ydir','normal');
+% axis equal tight
+% % colorbar
 
 hold on
-pFringe=plot(0,0,'-','color',co(1,:),'linewidth',1);
-pPerp=plot(0,0,'-','color',co(5,:),'linewidth',1);     
-pBar=plot(0,0,':','color','w','linewidth',1);     
-pCirc=plot(0,0,'-','color',co(1,:),'linewidth',1);     
+pFringe=plot(0,0,'-','color',co(1,:),'linewidth',2);
+pPerp=plot(0,0,'-','color',co(5,:),'linewidth',2);     
+pBar=plot(0,0,'-','color',co(1,:),'linewidth',2);     
+pCirc=plot(0,0,'-','color',co(1,:),'linewidth',2);     
 
 
-ax3=subplot(233);    
+ax3=subplot(4,4,[11 15]);    
 hImg_err=imagesc(ixondata(1).Z);
 set(gca,'ydir','normal');
 axis equal tight
-colorbar
+% colorbar
 
-ax4=subplot(234);    
+ax4=subplot(4,4,[3 4 7 8]);    
 pSum1_fit=plot(0,0,'r-','linewidth',2);
 hold on
 pSum1_data=plot(0,0,'-','color',co(1,:),'linewidth',2);
 % set(gca,'ydir','normal');
-xlabel('position along fringe');
+xlabel('rotated position');
 ylabel('sum counts');
-    
-ax5=subplot(235);    
-pSum2_fit=plot(0,0,'r-','linewidth',2);
-hold on
+%     
+% ax5=subplot(4,4,[3 4]);    
+
+pSum2_fit=plot(0,0,'r-','linewidth',1);
 pSum2_data=plot(0,0,'-','color',co(5,:),'linewidth',1);
 % set(gca,'ydir','normal');
-xlabel('position perpendicular');
-ylabel('sum counts');
+% xlabel('position perpendicular');
+% ylabel('sum counts');
 
-ax6=subplot(236);
+ax6=subplot(4,4,[12 16]);
 tbl=uitable('units','normalized','fontsize',8);
 tbl.RowName={};
 tbl.ColumnName={};
@@ -396,8 +384,7 @@ for kk=1:length(ixondata)
 
     
     opt.StartPoint=pG;
-    
-    vart.String=[xVar ' : ' num2str(xvals(kk))];
+
     
     % Grab the data
     Z=ixondata(kk).Z;
@@ -424,7 +411,7 @@ for kk=1:length(ixondata)
 
     % Show the raw data and the initial guess
     set(hImg_raw,'XData',x,'YData',y,'CData',Z);
-    set(hImg_fit,'XData',x,'YData',y,'CData',Zg);
+%     set(hImg_fit,'XData',x,'YData',y,'CData',Zg);
     set(hImg_err,'CData',Zg-Z);
     drawnow;   
     
@@ -434,36 +421,42 @@ for kk=1:length(ixondata)
     sse(kk)=gof.sse;
     % Evalulate the fit
     Zf=feval(fout,xx,yy);
-    
+    disp(fout);
     % Overwrite the guess with the fit
-    set(hImg_fit,'CData',Zf);
-    set(hImg_err,'CData',Zf-Z);
     
-    set(pFringe,'XData',fout.xC+[0 1]*200*cosd(fout.theta),...
-        'Ydata',fout.yC+[0 1]*200*sind(fout.theta));
-    set(pPerp,'XData',fout.xC+[-1 1]*100*cosd(fout.theta+90),...
-        'Ydata',fout.yC+[-1 1]*100*sind(fout.theta+90));
-     set(pBar,'XData',fout.xC+[-300 300],...
-        'Ydata',fout.yC*[1 1]);
+%     set(hImg_fit,'CData',Zf);
+    
+    set(hImg_err,'CData',Zf-Z);
+    set(ax1,'CLim',[0 fout.A*(1+fout.B)]);
+
+%     set(ax2,'CLim',[0 fout.A]);
+    set(ax3,'CLim',[-1 1]*fout.A*.5);
+
+    set(pFringe,'XData',255+[0 1]*200*cosd(fout.theta),...
+        'Ydata',255+[0 1]*200*sind(fout.theta));
+    set(pPerp,'XData',255+[-1 1]*100*cosd(fout.theta+90),...
+        'Ydata',255+[-1 1]*100*sind(fout.theta+90));
+     set(pBar,'XData',255+[-50 50],...
+        'Ydata',255*[1 1]);
     
     tt=linspace(0,fout.theta,100);
-    set(pCirc,'XData',fout.xC+50*cosd(tt),...
-        'YData',fout.yC+50*sind(tt));
+    set(pCirc,'XData',255+50*cosd(tt),...
+        'YData',255+50*sind(tt));
     
     set(ax1,'XLim',[min(x) max(x)]);
-    set(ax2,'XLim',[min(x) max(x)]);
+%     set(ax2,'XLim',[min(x) max(x)]);
     set(ax3,'XLim',[min(x) max(x)]);
 
         
     % Show the sum counts along the stripe axis    
     set(pSum1_fit,'XData',x,'YData',sum(imrotate(Zf,fout.theta,'crop'),1));
     set(pSum1_data,'XData',x,'YData',sum(imrotate(Z,fout.theta,'crop'),1));
-    set(ax4,'XLim',[min(x) max(x)]);
+    set(ax4,'XLim',[min(1) max([max(x) max(y)])]);
     
     % Show the sum counts orthogonal to the stripe axis
     set(pSum2_fit,'XData',y,'YData',sum(imrotate(Zf,fout.theta,'crop'),2));
     set(pSum2_data,'XData',y,'YData',sum(imrotate(Z,fout.theta,'crop'),2));
-    set(ax5,'XLim',[min(y) max(y)]);
+%     set(ax5,'XLim',[min(y) max(y)]);
     
     % Summary table
     tbl.Data{1,2}=num2str(round(fout.L,3));
@@ -539,12 +532,19 @@ t.Position(1:2)=[5 hF2.Position(4)-t.Position(4)];
 
 % Wavelength
 subplot(131);
+
+
 errorbar(xvals,Ls(:,1),Ls(:,2),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
 xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('wavelength (px)');
 grid on
+
+if isequal(xVar,'ExecutionDate')
+    datetick('x');
+    xlabel('time','fontsize',10);
+end
 
 % Angle
 axb2=subplot(132);
@@ -554,16 +554,22 @@ errorbar(xvals,thetas(:,1),thetas(:,2),'marker','o',...
 xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('angle (deg.)');
 grid on
-
+if isequal(xVar,'ExecutionDate')
+    datetick('x');
+    xlabel('time','fontsize',10);
+end
 % Phase
 subplot(133);
-errorbar(xvals,phis(:,1),phis(:,2),'marker','o',...
+errorbar(xvals,phis(:,1)/pi,phis(:,2)/pi,'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
 xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('phase (\pi)');
 grid on
-
+if isequal(xVar,'ExecutionDate')
+    datetick('x');
+    xlabel('time','fontsize',10);
+end
 % Error
 % subplot(144);
 % plot(xvals,sse,'marker','o',...

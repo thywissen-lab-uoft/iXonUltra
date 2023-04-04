@@ -60,7 +60,7 @@ ixon_overrideUnit='V';
 
 % Flag whether to save the output figures or not (code is faster if not
 % saving)
-ixon_doSave=0;
+ixon_doSave=1;
 
 % Define the output data
 outdata=struct;
@@ -82,9 +82,10 @@ ixon_fft_doBoxCount=0;
 
 % Stripe Analysis
 % This is used to analyze the field during the plane selection
-do_2dStripeAnalysis=0;
+do_2dStripeAnalysis=1;
 doStripeAnalysis=0;
 
+ixon_doAnimate = 1;
 
 
 
@@ -199,7 +200,7 @@ else
 end
 
 if isequal(ixon_xVar,'ExecutionDate')
-   ixon_unit='s'; 
+   ixon_unit='days'; 
 end
 
 % Sort the data by your given parameter
@@ -525,7 +526,6 @@ end
 
 
 %% Animate cloud 
-ixon_doAnimate = 1;
 if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts=struct;
     
@@ -553,6 +553,7 @@ ixon_doAnimateFFT = 1;
 
 ixon_animateOptsFFT=struct;   
 
+
 % Variable to animate versus
 ixon_animateOptsFFT.xUnit=ixon_unit;
 
@@ -569,12 +570,12 @@ ixon_animateOptsFFT.Order='ascend';
 ixon_animateOptsFFT.CLim=[0 .5];   % Color limits 
 ixon_animateOptsFFT.CLim=[0 3];   % Color limits 
 
-% ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
+ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
 
 % FFT UV Cutoff
 % Reduce the animation view to within a frequency of 1/L
 ixon_animateOptsFFT.mask_UV=1;
-ixon_animateOptsFFT.LMin=5;
+ixon_animateOptsFFT.LMin=20;
 
 % FFT IR Cutoff
 % Apply mask to interior regions to mask 

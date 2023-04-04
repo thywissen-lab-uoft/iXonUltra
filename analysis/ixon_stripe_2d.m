@@ -15,7 +15,7 @@ stripe_2d_opts.ShimFit=0;
 stripe_2d_opts.Theta=[-90 90]; % Specify the domain (MUST BE 180 DEGREES)
 stripe_2d_opts.saveAnimation=1;        % save the animation?
 stripe_2d_opts.StartDelay=1;
-stripe_2d_opts.MidDelay=.5;
+stripe_2d_opts.MidDelay=.25;
 stripe_2d_opts.EndDelay=1;
 
 if do_2dStripeAnalysis

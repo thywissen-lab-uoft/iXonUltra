@@ -1,7 +1,7 @@
 function ixondata=sharpenPSF(ixondata)
 disp('Sharpening with PSF');
 
-doDebug=0;
+doDebug=1;
 %% Image Parameters
 % These will be the assumed image parameters
 
@@ -73,7 +73,7 @@ for kk=1:length(ixondata)
        colormap(purplemap);
        subplot(121);
        imagesc(X,Y,Z);
-       caxis([0 300]);
+      caxis([0 1500]);
              axis equal tight
 
     end    
@@ -95,7 +95,7 @@ for kk=1:length(ixondata)
        figure(hF_debug);
        subplot(122);
        imagesc(X,Y,Zout);
-      caxis([0 300]);
+      caxis([0 1500]);
       axis equal tight
     end
     
