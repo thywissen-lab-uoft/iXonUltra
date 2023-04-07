@@ -16,9 +16,6 @@ else
 end
 ixondata=ixondata(inds);
 
-if isequal(xVar,'ExecutionDate')
-    xvals=xvals-min(xvals);
-end
 
 %% Average with unique x variable
 
@@ -117,18 +114,9 @@ hAxImg.Position(3)=hAxImg.Position(4);
 hAxImg.Position(3:4)=hF.Position(3:4)-[80 80];
 drawnow;
 
-% Text label for folder name
-% tt=text(0,.98,str,'units','normalized','fontsize',8,'color','r',...
-%     'interpreter','none','verticalalignment','cap',...
-%     'fontweight','bold','margin',1,'backgroundcolor',[1 1 1 .5]);
-% tt.Position(2)=hAxImg.Position(4)-100;
-% tt.Position(3)=hAxImg.Position(3);
-% tt.Position(4)=30;
-
-% get(tt)
 
 % Text label for variable name
-t=text(5,5,'hi','units','pixels','fontsize',14,'color','r',...
+t=text(2,2,'hi','units','pixels','fontsize',12,'color','r',...
     'interpreter','none','verticalalignment','bottom',...
     'fontweight','bold');
 
@@ -159,11 +147,16 @@ drawnow;
 % keyboard
 
 %% Animate
-
+disp('ANIMATING');
 for kk=1:length(uxvals)   % Iterate over all unique xvalues
     
     %%%% Update the graphics
-    t.String=[xVar ' = ' num2str(uxvals(kk))];          % Variable string
+    
+    if isequal(xVar,'ExecutionDate')
+            t.String=[xVar ': ' datestr(uxvals(kk),'YYYY-mm-DD_HH-MM-SS')];          % Variable string
+    else
+            t.String=[xVar ': ' num2str(uxvals(kk))];          % Variable string
+    end
 
 
     set(hImg,'XData',X,'YData',Y,'CData',Zall(:,:,kk));  % Image data
@@ -189,6 +182,6 @@ for kk=1:length(uxvals)   % Iterate over all unique xvalues
 
 end
 close;
-    
+    disp('done');
 end
 

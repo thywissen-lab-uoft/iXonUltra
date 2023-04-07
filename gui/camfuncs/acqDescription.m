@@ -97,7 +97,7 @@ switch acq.TriggerMode
     case 7
         desc.TriggerMode='External Exposure';
     case 9
-        desc.TriggerMOde='External FVB EM';
+        desc.TriggerMode='External FVB EM';
     case 10
         desc.TriggerMode='Software Trigger';
     case 12

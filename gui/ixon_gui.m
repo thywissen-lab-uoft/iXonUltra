@@ -1536,6 +1536,7 @@ tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
         if isValidAcq(temp_acq)
             acq=temp_acq;
             desc=acqDescription(acq);
+
             loadAcquisitionSettings;
         else
             src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;     

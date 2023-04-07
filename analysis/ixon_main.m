@@ -77,12 +77,12 @@ ixon_doGaussFit=0;
 
 % Fast Fourier Transform Analysis
 % Use if you are looking for astigmatism in the image
-ixon_doFFT=1;
+ixon_doFFT=0;
 ixon_fft_doBoxCount=0;
 
 % Stripe Analysis
 % This is used to analyze the field during the plane selection
-do_2dStripeAnalysis=1;
+do_2dStripeAnalysis=0;
 doStripeAnalysis=0;
 
 ixon_doAnimate = 1;
@@ -287,19 +287,19 @@ end
 % Analyze the dark image of your data sets.  The dark image is assumed to
 % be the first image. Having a low number of background counts is important
 % to be able to resolve single atoms
-
-opts_darkImage = struct;
-opts_darkImage.FigLabel = FigLabel;
-opts_darkImage.xVar = ixon_xVar;
-opts_darkImage.xUnit = ixon_unit;
-opts_darkImage.AvgLimits = [190 350];    % Limits for average of counts
-opts_darkImage.StdLimits = [0 100];     % Limits for deviation of counts
-
-
-if doDarkImageAnalysis
-  [hF_darkImage, dark_data] =ixon_analyzeDarkImage(...
-      ixondata,opts_darkImage);  
-end
+% OBSOLTE AS THE FIRST IMAGE IS NOT A DARK IMAGE ASK CF FOR DETAILS
+% opts_darkImage = struct;
+% opts_darkImage.FigLabel = FigLabel;
+% opts_darkImage.xVar = ixon_xVar;
+% opts_darkImage.xUnit = ixon_unit;
+% opts_darkImage.AvgLimits = [190 350];    % Limits for average of counts
+% opts_darkImage.StdLimits = [0 100];     % Limits for deviation of counts
+% 
+% 
+% if doDarkImageAnalysis
+%   [hF_darkImage, dark_data] =ixon_analyzeDarkImage(...
+%       ixondata,opts_darkImage);  
+% end
 
 
 %% PSF Sharpening
