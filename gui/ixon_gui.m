@@ -5,16 +5,6 @@ function ixon_gui
 %
 % This code operates the iXon Ultra camera that the lattice experiment
 % uses to take fluorescence images of the quantum gas microscope.
-%
-% This rewrite is primary meant to improve the user experience running the
-% camera and to simplify the code.  Furthermore, this code does not use the
-% GUIDE interface, which is a GUI designer from MATLAB.  The GUIDE protocl
-% has depreciated as of 2021.  This code does not utilize the uifigure
-% interface from MATLAB, but uses the figure interface for desinging GUIs.
-% This design choice is because CF is not as familiar with the uifigure
-% interface.
-%
-% 
 
 % Enable debug mode?
 doDebug=0;
@@ -35,8 +25,6 @@ ixon_mask=ixon_mask.BW;
 
 % Add analysis paths
 addpath(analysis_path);addpath(genpath(analysis_path))
-
-
 
 %% Other Settings
 
@@ -183,7 +171,9 @@ function SizeChangedFcn(~,~)
         hpAcq.Position(2)=hpNav.Position(2)-hpAcq.Position(4);
         hpADV.Position(2)=hpAcq.Position(2)-hpADV.Position(4);
         hpAnl.Position(2)=hpADV.Position(2)-hpAnl.Position(4);        
-        hpDisp.Position(4)=max([hpAnl.Position(2) 1]);        
+        hpKspace.Position(2) = hpAnl.Position(2)-hpKspace.Position(4);
+        
+        hpDisp.Position(4)=max([hpKspace.Position(2) 1]);        
         hpFit.Position(4)=H-Ht;        
         
         % Reposition objects in hpDisp because it has variable height.
@@ -199,8 +189,8 @@ function SizeChangedFcn(~,~)
         cGaussRet.Position(2)=bgPlot.Position(2)-20;
         cCoMStr.Position(2)=cGaussRet.Position(2)-20;
         cCross.Position(2)=cCoMStr.Position(2)-20;
-        cDrag.Position(2)=cCross.Position(2);
-        tblcross.Position(2)=cCross.Position(2)-tblcross.Position(4);
+%         cDrag.Position(2)=cCross.Position(2);
+%         tblcross.Position(2)=cCross.Position(2)-tblcross.Position(4);
         
         
         % Move status string
@@ -818,10 +808,10 @@ bgAcq.Position(3:4)=[175 40];
 bgAcq.Position(1:2)=[5 hpAcq.Position(4)-95];    
 
 % Radio buttons for cuts vs sum
-rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','Normal (pwa,pwa,...,bkgd)',...
+rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','triggered',...
     'Position',[1 0 200 20],'units','pixels','backgroundcolor','w','Value',1,...
     'UserData','Normal','Enable','off');
-rbLive=uicontrol(bgAcq,'Style','radiobutton','String','Live (be careful)',...
+rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
     'Position',[1 20 200 20],'units','pixels','backgroundcolor','w',...
     'UserData','Live','Enable','off');
 
@@ -906,8 +896,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 if ~cAutoUpdate.Value
                     currDir=defaultDir;
                     data=mydata;   
-                    data=updateImages(data); 
-                    
+                    data=updateImages(data);                     
                 else                    
                     % Just update index
                     updateHistoryInd(data);   
@@ -932,34 +921,41 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
 %% Image Process Panel
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-60 160 100],'title','processing');
+    'Position',[0 hpAcq.Position(2)-160 160 160],'title','processing');
 
 % Checkbox for applying point spread function (should this be a separate
 % panel?)
-ttstr='Sharpen image using point spread function';
-hcPSF=uicontrol(hpADV,'style','checkbox','string','sharpen w/ PSF','fontsize',8,...
-    'backgroundcolor','w','Position',[5 0 100 20],'callback',@() disp('hi'),...
-    'ToolTipString',ttstr,'enable','off');
+ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
+hcPSF=uicontrol(hpADV,'style','checkbox','string','PSF Rich-Lucy','fontsize',8,...
+    'backgroundcolor','w','Position',[5 60 100 20],...
+    'ToolTipString',ttstr,'enable','on');
+
+tblPSF=uitable('parent',hpADV,'units','pixels',...
+    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 50 5],'columneditable',[true],...
+    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
+tblPSF.Position(3:4) = tblPSF.Extent(3:4);
+tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];
+
 
 % Checkbox for new processings
 ttstr='Apply mask to image to eliminate aperture clipping';
 hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',8,...
-    'backgroundcolor','w','Position',[5 20 120 20],...
-    'ToolTipString',ttstr,'enable','on','Value',1);
-
-% Checkbox for new processings
-ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
-hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',8,...
-    'backgroundcolor','w','Position',[5 40 100 20],...
-    'ToolTipString',ttstr,'enable','on','Value',1);
-
+    'backgroundcolor','w','Position',[5 80 120 20],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
 
 % Checkbox for enabling 2D gauss fitting
 ttstr='Apply gaussian filter to smooth image';
 cGaussFilter=uicontrol('style','checkbox','string','gauss filter',...
     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',1,'ToolTipString',ttstr);
-cGaussFilter.Position=[5 60 80 20];
+    'value',0,'ToolTipString',ttstr);
+cGaussFilter.Position=[5 100 80 20];
+
+% Subtract bias
+ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
+hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',8,...
+    'backgroundcolor','w','Position',[5 120 100 20],...
+    'ToolTipString',ttstr,'enable','on','Value',1);
+
 
 tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
     'rowname',{},'columnname',{},'Data',.25,'columneditable',[true],...
@@ -983,8 +979,8 @@ hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
     end
 
 %% Analysis Panel
-hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','analysis');
-hpAnl.Position=[0 hpADV.Position(2)-250 160 250];
+hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
+hpAnl.Position=[0 hpADV.Position(2)-150 160 150];
 
 % Table of ROIs
 tblROI=uitable(hpAnl,'units','pixels','ColumnWidth',{30 30 30 30},...
@@ -1155,11 +1151,115 @@ hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
         data=updateImages(data);
     end
 
+
+%% Momentum Panel
+hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
+hpKspace.Position=[0 hpAnl.Position(2)-150 160 150];
+
+% Table of ROIs
+tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{30 30 30 30},...
+    'ColumnEditable',true(ones(1,4)),'ColumnName',{'X1','X2','Y1','Y2'},...
+    'Data',[1 512 1 512],'FontSize',8,...
+    'CellEditCallback',@chROIK,'RowName',{});
+tblROIK.Position(3:4)=tblROIK.Extent(3:4)+0*[18 0];
+tblROIK.Position(1:2)=[5 tblROIK.Position(4)-tblROIK.Position(4)-20];
+
+% Callback function for changing ROI via table
+    function chROIK(src,evt)
+        m=evt.Indices(1); n=evt.Indices(2);
+        
+        ROI=src.Data(m,:);
+        % Check that the data is numeric
+        if sum(~isnumeric(ROI)) || sum(isinf(ROI)) || sum(isnan(ROI))
+            warning('Incorrect data type provided for ROI.');
+            src.Data(m,n)=evt.PreviousData;
+            return;
+        end
+        
+        ROI=round(ROI);      % Make sure this ROI are integers   
+        % Check that limits go from low to high
+        if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
+           warning('Bad ROI specification given.');
+           ROI(evt.Indices(2))=evt.PreviousData;
+        end               
+        % Check that ROI is within image bounds
+        if ROI(1)<1; ROI(1)=1; end       
+        if ROI(3)<1; ROI(3)=1; end   
+        if ROI(4)>512; ROI(4)=512; end       
+        if ROI(2)>512; ROI(2)=512; end         
+        % Reassign the ROI
+        src.Data(m,:)=ROI;      
+        % Try to update ROI graphics
+        try
+            pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+            set(pROI_K(m),'Position',pos);
+        catch
+           warning('Unable to change display ROI.');
+           src.Data(m,n)=evt.PreviousData;
+        end
+    end
+% 
+% % Button to enable GUI selection of analysis ROI
+% ttstr='Select the analysis ROI.';
+% cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
+% hbSlctROI=uicontrol(tblROIK,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+%     'Backgroundcolor','w','Position',[130 tblROI.Position(2)+2 18 18],'Callback',@slctROICB,...
+%     'ToolTipString',ttstr);
+
+
+% Callback for selecting an ROI based upon mouse click input.
+    function slctROICBK(~,~)
+        disp(['Selecting display ROI .' ...
+            ' Click two points that form the rectangle ROI.']);
+        axes(axImg)                 % Select the OD image axis
+        [x1,y1]=ginput(1);          % Get a mouse click
+        x1=round(x1);y1=round(y1);  % Round to interger        
+        p1=plot(x1,y1,'+','color','k','linewidth',1); % Plot it
+        
+        [x2,y2]=ginput(1);          % Get a mouse click
+        x2=round(x2);y2=round(y2);  % Round it        
+        p2=plot(x2,y2,'+','color','k','linewidth',1);  % Plot it
+
+        % Create the ROI
+        ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
+
+        % Constrain ROI to image
+        if ROI(1)<1; ROI(1)=1; end       
+        if ROI(3)<1; ROI(3)=1; end   
+        if ROI(4)>512; ROI(4)=512; end       
+        if ROI(2)>512; ROI(2)=512; end   
+        
+        % Try to update ROI graphics
+        tblROI.Data=ROI;   
+        
+        try
+            pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+            set(pROI(1),'Position',pos);
+            drawnow;        
+        catch
+           warning('Unable to change display ROI.');
+        end
+        delete(p1);delete(p2);                   % Delete markers
+
+    end
+
+
+
+% % Refit button
+% hbfit=uicontrol(hpAnl,'style','pushbutton','string','analyze',...
+%     'units','pixels','callback',@cbrefit,'parent',hpAnl,'backgroundcolor','w');
+% hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
+% 
+% % Callback function for redoing fits button
+%     function cbrefit(~,~)
+%         disp('Redoing fits...');
+%         data=updateImages(data);
+%     end
 %% Display Options Panel
 
 % Initialize panel object
 hpDisp=uipanel(hF,'units','pixels','backgroundcolor','w','title','display');
-hpDisp.Position=[0 0 160 hpAnl.Position(2)];
+hpDisp.Position=[0 0 160 hpKspace.Position(2)];
 
 %%%%%% Display ROI %%%%%%
 
@@ -1391,9 +1491,9 @@ cCoMStr.Position=[2 cGaussRet.Position(2)-20 125 20];
 
 
 % Checkbox for showing/hiding crosshair
-cCross=uicontrol(hpDisp,'style','checkbox','string','cross hair?',...
+cCross=uicontrol(hpDisp,'style','checkbox','string','show cross hair?',...
     'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCrossCB,...
-    'enable','on','value',1);
+    'enable','on','value',0);
 cCross.Position=[2 cCoMStr.Position(2)-20 80 20];
 
     function cCrossCB(src,~)        
@@ -1401,73 +1501,73 @@ cCross.Position=[2 cCoMStr.Position(2)-20 80 20];
         set(pCrossY,'Visible',src.Value);
     end
 
-% Checkbox for dragging cross-hair
-cDrag=uicontrol(hpDisp,'style','checkbox','string','can drag?',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cDragCB,...
-    'enable','on','value',1);
-cDrag.Position=[cCross.Position(1)+cCross.Position(3)+2 cCross.Position(2) 125 20];
-
-% Callback for dragging the crosshair (matches cut plots with crosshair)
-    function cDragCB(src,~)    
-        if src.Value            
-            pCrossXDrag=draggable(pCrossX);
-            pCrossYDrag=draggable(pCrossY);
-            pCrossXDrag.on_move_callback=@Xupdate;
-            pCrossYDrag.on_move_callback=@Yupdate;
-            pCrossYDrag.constraint="horizontal";
-            pCrossXDrag.constraint="vertical";
-
-        else
-            delete(pCrossXDrag)
-            delete(pCrossYDrag)
-        end
-    end
-
-
-% Table to adjust cross hai
-tblcross=uitable('parent',hpDisp,'units','pixels','RowName',{},'ColumnName',{},...
-    'Data',[200 200],'ColumnWidth',{40,40},'ColumnEditable',[true true],...
-    'CellEditCallback',@tblcrossCB);
-tblcross.Position(3:4)=tblcross.Extent(3:4);
-tblcross.Position(1:2)=[20 cCross.Position(2)-tblcross.Position(4)];
-
-    function tblcrossCB(src,evt)
-        m=evt.Indices(1); n=evt.Indices(2);
-        
-        newPos=src.Data(m,n);
-        % Check that the data is numeric
-        if sum(~isnumeric(newPos)) || sum(isinf(newPos)) || sum(isnan(newPos))
-            warning('Incorrect data type provided for cross hair.');
-            src.Data(m,n)=evt.PreviousData;
-            return;
-        end
-        
-        newPos=round(newPos);      % Make sure the cross hair is an integer
-
-        % Check that limits go from low to high
-        if newPos<1 || newPos>512
-           warning('Bad cross hair position given.');
-           src.Data(m,n)=evt.PreviousData;
-           return;
-        end
-        
-        src.Data(m,n)=newPos;
-        % Try to update ROI graphics
-        try
-            % Update the cross hair position
-            pCrossY.XData=[1 1]* tblcross.Data(1,1); 
-            pCrossX.YData=[1 1]* tblcross.Data(1,2);     
-            
-            updateDataPlots(data);
-
-            if hcGauss.Value
-               updateGaussPlot(data); 
-            end
-            
-        catch
-           warning('Unable to change cross hair position.');
-        end
-    end
+% % Checkbox for dragging cross-hair
+% cDrag=uicontrol(hpDisp,'style','checkbox','string','can drag?',...
+%     'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cDragCB,...
+%     'enable','on','value',1);
+% cDrag.Position=[cCross.Position(1)+cCross.Position(3)+2 cCross.Position(2) 125 20];
+% 
+% % Callback for dragging the crosshair (matches cut plots with crosshair)
+%     function cDragCB(src,~)    
+%         if src.Value            
+%             pCrossXDrag=draggable(pCrossX);
+%             pCrossYDrag=draggable(pCrossY);
+%             pCrossXDrag.on_move_callback=@Xupdate;
+%             pCrossYDrag.on_move_callback=@Yupdate;
+%             pCrossYDrag.constraint="horizontal";
+%             pCrossXDrag.constraint="vertical";
+% 
+%         else
+%             delete(pCrossXDrag)
+%             delete(pCrossYDrag)
+%         end
+%     end
+% 
+% 
+% % Table to adjust cross hai
+% tblcross=uitable('parent',hpDisp,'units','pixels','RowName',{},'ColumnName',{},...
+%     'Data',[200 200],'ColumnWidth',{40,40},'ColumnEditable',[true true],...
+%     'CellEditCallback',@tblcrossCB);
+% tblcross.Position(3:4)=tblcross.Extent(3:4);
+% tblcross.Position(1:2)=[20 cCross.Position(2)-tblcross.Position(4)];
+% 
+%     function tblcrossCB(src,evt)
+%         m=evt.Indices(1); n=evt.Indices(2);
+%         
+%         newPos=src.Data(m,n);
+%         % Check that the data is numeric
+%         if sum(~isnumeric(newPos)) || sum(isinf(newPos)) || sum(isnan(newPos))
+%             warning('Incorrect data type provided for cross hair.');
+%             src.Data(m,n)=evt.PreviousData;
+%             return;
+%         end
+%         
+%         newPos=round(newPos);      % Make sure the cross hair is an integer
+% 
+%         % Check that limits go from low to high
+%         if newPos<1 || newPos>512
+%            warning('Bad cross hair position given.');
+%            src.Data(m,n)=evt.PreviousData;
+%            return;
+%         end
+%         
+%         src.Data(m,n)=newPos;
+%         % Try to update ROI graphics
+%         try
+%             % Update the cross hair position
+%             pCrossY.XData=[1 1]* tblcross.Data(1,1); 
+%             pCrossX.YData=[1 1]* tblcross.Data(1,2);     
+%             
+%             updateDataPlots(data);
+% 
+%             if hcGauss.Value
+%                updateGaussPlot(data); 
+%             end
+%             
+%         catch
+%            warning('Unable to change cross hair position.');
+%         end
+%     end
 
 % Text label for fit results output variable
 frtext=uicontrol('parent',hpDisp,'units','pixels','string','fit results variable',...
@@ -1495,7 +1595,8 @@ tabs(3)=uitab(hpFit,'Title','1','units','pixels');
 % Table for acquisition
 tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
     'ColumnName',{},'ColumnWidth',{80 30 69},'columneditable',[false true false],...
-    'Position',[0 0 1 1],'celleditcallback',@acqTblCB,'ColumnFormat',{'char','numeric','char'},'enable','off');
+    'Position',[0 0 1 1],'celleditcallback',@acqTblCB,'ColumnFormat',...
+    {'char','numeric','char'},'enable','off');
 
     function loadAcquisitionSettings
         if ~isValidAcq(acq)            
@@ -1565,6 +1666,14 @@ tbl_analysis=uitable(tabs(3),'units','normalized','RowName',{},'ColumnName',{},.
 
 
 %% Initialize the image panel
+
+% hp=uitabgroup(hF,'units','pixels');
+% hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
+% 
+% 
+% t1 = uitab(hp,'title','data');
+
+
 hp=uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
     'Position',[400 0 hF.Position(3)-200 hF.Position(4)-130],...
     'bordertype','beveledin');
@@ -1622,15 +1731,16 @@ hold on
 axImg.Position=[50 150 hp.Position(3)-200 hp.Position(4)-200];
 axis equal tight
 
+
 % Cross Hair Plots
-pCrossX=plot([1 512],[512/2 512/2],'-','color',co(5,:),'linewidth',1);
-pCrossY=plot([512/2 512/2],[1 512],'-','color',co(5,:),'linewidth',1);
+pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 1 1 .2],'linewidth',1);
+pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 1 1 .2],'linewidth',1);
 
 % Make cross hair draggable. This declaration makes this variable global
-pCrossXDrag=draggable(pCrossX);
-pCrossYDrag=draggable(pCrossY);
-pCrossXDrag.on_move_callback=@Xupdate;
-pCrossYDrag.on_move_callback=@Yupdate;
+% pCrossXDrag=draggable(pCrossX);
+% pCrossYDrag=draggable(pCrossY);
+% pCrossXDrag.on_move_callback=@Xupdate;
+% pCrossYDrag.on_move_callback=@Yupdate;
 
 % Delete so that it is initially undraggable. 
 % delete(pCrossXDrag)
@@ -1726,9 +1836,11 @@ pYF=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'line
 
 
 set(axImg,'XLim',tbl_dispROI.Data(1:2),'YLim',tbl_dispROI.Data(3:4));
+drawnow
 
 
-
+linkaxes([ axImg hAxY],'y');
+linkaxes([ axImg hAxX],'x');
 
 
 %%
@@ -1744,38 +1856,67 @@ function data=updateImages(data)
     x=ROI(1):ROI(2);
     y=ROI(3):ROI(4); 
     
-    imgs=data.RawImages;
-        
+    % Grab the Raw Data
+    imgs=data.RawImages;           
+    
+    % Remove the first image if there is a buffer
+    if isfield(data,'Flags') && isfield(data.Flags,'qgm_doClearBufferExposure') 
+        if data.Flags.qgm_doClearBufferEposure && size(imgs,3)>1
+            imgs(:,:,1)=[];    
+        end
+    else
+        if size(imgs,3)>1
+            imgs(:,:,1)=[];   
+        end
+    end     
+            
+    % Subtract the digital bias from the data
     if hcSubBias.Value
-        for p=1:size(imgs,3)
-            imgs(:,:,p)=imgs(:,:,p)-200;
-        end
+        imgs = imgs - 200;
     end
     
+    % Apply an image mask
     if hcMask.Value
-        disp('Applying mask.');
-        for p=1:size(imgs,3)
-            imgs(:,:,p)=imgs(:,:,p).*ixon_mask; 
+        for ii=1:size(imgs,3)  
+          imgs(:,:,ii) = imgs(:,:,ii).*ixon_mask;        
         end
     end
     
+    % Apply gaussian filter
     if cGaussFilter.Value  
-        disp('Applying gaussian filter.');
-        for p=1:size(imgs,3)
-            imgs(:,:,p)=imgaussfilt(imgs(:,:,p),tblGaussFilter.Data); 
+        for ii=1:size(imgs,3)  
+          imgs(:,:,ii) = imgaussfilt(imgs(:,:,ii),tblGaussFilter.Data);
         end
     end    
     
-    if size(imgs,3) > 1        
-        iD = imgs(:,:,1);
-        imgs(:,:,1)=[];     
-        N = size(imgs,3);            
-        imgs = reshape(imgs,size(imgs,1),[],1);
-        Zme = imgs - repmat(iD,1,N);            
-        data.Z = Zme;            
-    else
-        data.Z = imgs;
+    % Devoncolve data
+    if hcPSF.Value        
+        tic
+        fprintf('Deconvoling PSF ...')
+        s = tblPSF.Data(1);
+        N = tblPSF.Data(2);
+        Niter = tblPSF.Data(3);
+        psf = fspecial('gaussian',N,s);        
+        for ii=1:size(imgs,3)  
+            imgs(:,:,ii) = deconvlucy(imgs(:,:,ii),psf,Niter);
+        end
+        t=toc;
+        disp(['done (' num2str(t) ' seconds']);
     end
+        
+    data.Z = imgs;
+%         imgs = reshape(imgs,size(imgs,1),[],1);        
+
+%     if size(imgs,3) > 1        
+%         iD = imgs(:,:,1);
+%         imgs(:,:,1)=[];     
+%         N = size(imgs,3);            
+%         imgs = reshape(imgs,size(imgs,1),[],1);
+%         Zme = imgs - repmat(iD,1,N);            
+%         data.Z = Zme;            
+%     else
+%         data.Z = imgs;
+%     end
     
     data.X = 1:size(data.Z,2);
     data.Y = 1:size(data.Z,1);
@@ -1834,22 +1975,7 @@ function data=updateImages(data)
     
     % Update plots if cut
     if rbCut.Value
-        
-        if pCrossX.YData(1)<=512 && pCrossX.YData(1)>0
-            Zy=data.Z(:,pCrossX.YData(1));
-        else
-            Zy=data.Z(:,250);
-        end
-        
-        if pCrossY.XData(1)<=512 && pCrossY.XData(1)>0
-            Zx=data.Z(pCrossY.XData(1),:);
-        else
-            Zx=data.Z(250,:);
-        end
-        
-        set(pX,'XData',data.X,'YData',Zx);
-        set(pY,'XData',Zy,'YData',data.Y);
-        drawnow;
+        foo;   
     end           
         
     % Update table parameters (alphebetically)
@@ -2162,11 +2288,19 @@ end
         imgs = mydata.RawImages;  
         
         % Remove the first image if there is a buffer
-        if isfield(mydata.Flags,'qgm_doClearBufferExposure') && size(imgs,3)>1
-            iD = imgs(:,:,1);
-            imgs(:,:,1)=[];    
+        if isfield(mydata.Flags,'qgm_doClearBufferExposure') 
+            if mydata.Flags.qgm_doClearBufferEposure && size(imgs,3)>1
+                iD = imgs(:,:,1);
+                imgs(:,:,1)=[];    
+            end
+        else
+            if size(imgs,3)>1
+                iD = imgs(:,:,1);
+                imgs(:,:,1)=[];   
+            end
         end
         
+        % Smush all images together
         imgs = reshape(imgs,size(imgs,1),[],1);        
         mydata.Z = imgs;        
 
@@ -2177,8 +2311,7 @@ end
         % Append acquisition information
         mydata.CameraInformation=cam_info;
         mydata.AcquisitionInformation=acq;
-        mydata.AcquisitionDescription=desc;
-        
+        mydata.AcquisitionDescription=desc;        
     end
 
 
@@ -2243,7 +2376,67 @@ SizeChangedFcn
 axes(axImg);
 
 
+addlistener(axImg,'XLim','PostSet',@foo); 
+addlistener(axImg,'YLim','PostSet',@foo); 
+
+    function foo(~,~)        
+        set(pCrossX,'XData',axImg.XLim,'YData',[1 1]*mean(axImg.YLim));
+        set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*mean(axImg.XLim));
+        
+          % Update plots if sum
+        if rbSum.Value
+            
+%             
+%             Zsub = sum(hImg.CData(axImg.YLim(1):axImg.YLim(2),axImg.XLim(1):axImg.XLim(2)));
+%             Zy=sum(Zsub,2);
+%             Zx=sum(Zsub,1);          
+%             set(pX,'XData',linspace(axImg.XLim(1),axImg.XLim(2),length(Zx)),'YData',Zx);
+%             set(pY,'XData',Zy,'YData',linspace(axImg.YLim(1),axImg.YLim(2),length(Zy)));
+        end
+
+        % Update plots if cut
+        if rbCut.Value
+            set(pX,'XData',data.X,'YData',hImg.CData(round(pCrossX.YData(1)),:));
+            set(pY,'YData',data.Y,'XData',hImg.CData(:,round(pCrossY.XData(1))));
+        end     
+        
+
+    end
+
+
+ mouse_figure(hF)
+ 
+ set(axImg,'XLim',[1 512],'YLim',[ 1 512]);
 end
+  %% Mouse Button Callbacks
+    function down_fcn(hObj, evt)
+        clickType = evt.Source.SelectionType;
+
+        % Panning action
+        panBt = 1;
+        
+        
+        if (panBt > 0)
+            if (panBt == 1 && strcmp(clickType, 'normal')) || ...
+                (panBt == 2 && strcmp(clickType, 'alt')) || ...
+                (panBt == 3 && strcmp(clickType, 'extend'))
+
+                guiArea = hittest(hObj);
+                parentAxes = ancestor(guiArea,'axes');
+
+                % if the mouse is over the desired axis, trigger the pan fcn
+                if ~isempty(parentAxes)
+                    pan(parentAxes);
+                else
+                    setptr(evt.Source,'forbidden')
+                end
+            end
+        end
+    end 
+    
+    
+
+
 
 %% Camera Functions
 
