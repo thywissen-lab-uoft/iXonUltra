@@ -935,8 +935,8 @@ hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',8,...
 
 % Checkbox for applying point spread function 
 ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
-hcPSF=uicontrol(hpADV,'style','checkbox','string','PSF Rich-Lucy','fontsize',8,...
-    'backgroundcolor','w','Position',[5 100 100 20],...
+hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',8,...
+    'backgroundcolor','w','Position',[5 100 155 20],...
     'ToolTipString',ttstr,'enable','on');
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
@@ -1165,10 +1165,14 @@ hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
 hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
 hpKspace.Position=[0 hpAnl.Position(2)-150 160 150];
 
+
+
+
+
 % Table of ROIs
-tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{30 30 30 30},...
+tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{35 35 35 35},...
     'ColumnEditable',true(ones(1,4)),'ColumnName',{'kx1','kx2','ky1','ky2'},...
-    'Data',[1 512 1 512],'FontSize',8,...
+    'Data',[-.5 .5 -.5 .5],'FontSize',6,...
     'CellEditCallback',@chROIK,'RowName',{});
 tblROIK.Position(3:4)=tblROIK.Extent(3:4)+0*[18 0];
 tblROIK.Position(1:2)=[5 hpKspace.Position(4)-tblROIK.Position(4)-20];
@@ -1192,10 +1196,10 @@ tblROIK.Position(1:2)=[5 hpKspace.Position(4)-tblROIK.Position(4)-20];
            ROI(evt.Indices(2))=evt.PreviousData;
         end               
         % Check that ROI is within image bounds
-        if ROI(1)<1; ROI(1)=1; end       
-        if ROI(3)<1; ROI(3)=1; end   
-        if ROI(4)>512; ROI(4)=512; end       
-        if ROI(2)>512; ROI(2)=512; end         
+        if ROI(1)<-.5; ROI(1)=-.5; end       
+        if ROI(3)<-.5; ROI(3)=-.5; end   
+        if ROI(4)>.5; ROI(4)=.5; end       
+        if ROI(2)>.5; ROI(2)=.5; end         
         % Reassign the ROI
         src.Data(m,:)=ROI;      
         % Try to update ROI graphics
@@ -1207,48 +1211,30 @@ tblROIK.Position(1:2)=[5 hpKspace.Position(4)-tblROIK.Position(4)-20];
            src.Data(m,n)=evt.PreviousData;
         end
     end
-% 
-% % Button to enable GUI selection of analysis ROI
-% ttstr='Select the analysis ROI.';
-% cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
-% hbSlctROI=uicontrol(tblROIK,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-%     'Backgroundcolor','w','Position',[130 tblROI.Position(2)+2 18 18],'Callback',@slctROICB,...
-%     'ToolTipString',ttstr);
+
+% Mask IR Checkbox
+hcIRMask=uicontrol(hpKspace,'style','checkbox','string','mask IR','fontsize',8,...
+    'backgroundcolor','w','Position',[5 0 100 20],...
+    'ToolTipString',ttstr,'enable','on');
+hcIRMask.Position(2) = tblROIK.Position(2) - hcIRMask.Position(4);
+
+% IR Mask Value
+tblIRMask=uitable('parent',hpKspace,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',.001,'columneditable',[true],...
+    'columnwidth',{60},'fontsize',8,'ColumnFormat',{'numeric'});
+tblIRMask.Position=[65 hcIRMask.Position(2)-1 65 20];
+
+% Pixels label
+uicontrol('parent',hpKspace,'units','pixels',...
+    'style','text','string','/px','position',[130 hcIRMask.Position(2)+1 30 15],...
+    'fontsize',8,'backgroundcolor','w');
 
 
-
-
-% % Refit button
-% hbfit=uicontrol(hpAnl,'style','pushbutton','string','analyze',...
-%     'units','pixels','callback',@cbrefit,'parent',hpAnl,'backgroundcolor','w');
-% hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
-% 
-% % Callback function for redoing fits button
-%     function cbrefit(~,~)
-%         disp('Redoing fits...');
-%         data=updateImages(data);
-%     end
-
-%    img = mydata(kk).Z;  %image =data
-%     Nfft = 2^9;         % points infft
-% 
-%     % time it
-%     tic  
-%     
-%     % FFT on raw image
-%     zf_raw = fft2(img,Nfft,Nfft);
-%     zf_raw=fftshift(zf_raw);
-%     f_raw=1/2*linspace(-1,1,size(zf_raw,1));
-% 
-%     % Deconvolve
-%     psf = fspecial('gaussian',50,s);
-%     img2 = deconvlucy(img,psf,5);
-% 
-%     % FFT on raw image
-%     zf_lucy=fft2(img2,Nfft,Nfft);
-%     zf_lucy=fftshift(zf_lucy);
-%     f_lucy=1/2*linspace(-1,1,size(zf_lucy,1));
-
+% Mask IR Checkbox
+hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','find lattice','fontsize',8,...
+    'backgroundcolor','w','Position',[5 0 80 20],...
+    'ToolTipString',ttstr,'enable','on');
+hcFindLattice.Position(2) = hcIRMask.Position(2) - hcFindLattice.Position(4)-2;
 
 
 % Refit button
@@ -1258,18 +1244,7 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 % Callback function for redoing fits button
     function analyze_k(~,~)
-        Nfft = 2^10;
-        
-        % Compute FFT
-        zf = fft2(data.Z,Nfft,Nfft);
-        zf = fftshift(zf);        
-        f = 1/2*linspace(-1,1,size(zf,1));        
-        
-        sum(sum(data.Z))
-        sum(sum(abs(zf)))
-        
-        data.Zf = zf;
-        data.f  = f;
+        disp('hi');
     end
 
 %% Display Options Panel
