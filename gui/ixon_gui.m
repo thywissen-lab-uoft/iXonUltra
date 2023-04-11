@@ -141,19 +141,10 @@ function SizeChangedFcn(~,~)
         % This resize fucntion ensures that the X and Y cut/sum plot has
         % commenserate positioning with respect the actual image shown
         
-        % Grab figure dimensions
-        W=hF.Position(3);H=hF.Position(4);         
-        
-        % Top bar height
-        Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);
-        
-        % Resize image panel  
-        if W>360 && H>55        
-            hp.Position=[360 1 W-360 H-Ht];           
-        end
-        
-        % Resize plots
-        resizePlots;                            
+        W=hF.Position(3);H=hF.Position(4);                          % Figure size
+        Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);  % Top Bar
+        if (W>360 && H>55); hp.Position=[360 1 W-360 H-Ht]; end     % image panel        
+        resizePlots;                                                % Resize plots                          
         
         % Resize Panels
         hpCam.Position(2:3)=[H-hpCam.Position(4) hF.Position(3)];        
@@ -163,28 +154,14 @@ function SizeChangedFcn(~,~)
         hpADV.Position(2)=hpAcq.Position(2)-hpADV.Position(4);
         hpAnl.Position(2)=hpADV.Position(2)-hpAnl.Position(4);        
         hpKspace.Position(2) = hpAnl.Position(2)-hpKspace.Position(4);
-        hpDisp.Position(4)=max([hpKspace.Position(2) 1]);        
+        hpDisp.Position(2)=hpKspace.Position(2) - hpDisp.Position(4);        
         hpFit.Position(4)=H-Ht;        
-        
-        % Reposition objects in hpDisp because it has variable height.
-        tbl_dispROI.Position(2)=hpDisp.Position(4)-tbl_dispROI.Position(4)-20;
-        hbFullLim.Position(2)=tbl_dispROI.Position(2)+2;
-        hbSnapLim.Position(2)=tbl_dispROI.Position(2)+2;
-        hbSlctLim.Position(2)=tbl_dispROI.Position(2)+2;
-        climtbl.Position(2)=tbl_dispROI.Position(2)-climtbl.Position(4)-5;
-        climtext.Position(2)=climtbl.Position(2);
-        cAutoColor.Position(2)=climtext.Position(2)-25;
-        
-        bgPlot.Position(2)=cAutoColor.Position(2)-bgPlot.Position(4)-2;
-        cGaussRet.Position(2)=bgPlot.Position(2)-20;
-        cCoMStr.Position(2)=cGaussRet.Position(2)-20;
-        cCross.Position(2)=cCoMStr.Position(2)-20;
-        
+                
         % Move status string
         strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;
         
-        bgImg.Position(1:2)=[2 hp.Position(4)-bgImg.Position(4)];
+%         bgImg.Position(1:2)=[2 hp.Position(4)-bgImg.Position(4)];
 
 end
 
@@ -1144,9 +1121,10 @@ hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize'
         
     end
 
-hcSingleAtoms=uicontrol(hpAnl,'style','checkbox','string','find single atoms','fontsize',8,...
-    'backgroundcolor','w','Position',[5 0 100 20],'callback',@(~,~) disp('hi'),...
-    'ToolTipString',ttstr,'enable','off');
+ttstr='Analyze stripe pattern in image to measure field stability';
+hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize',8,...
+    'backgroundcolor','w','Position',[5 0 100 20],...
+    'ToolTipString',ttstr);
 
 
 % Refit button
@@ -1170,7 +1148,7 @@ hpKspace.Position=[0 hpAnl.Position(2)-150 160 150];
 
 
 % Table of ROIs
-tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{35 35 35 35},...
+tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{30 30 30 30},...
     'ColumnEditable',true(ones(1,4)),'ColumnName',{'kx1','kx2','ky1','ky2'},...
     'Data',[-.5 .5 -.5 .5],'FontSize',6,...
     'CellEditCallback',@chROIK,'RowName',{});
@@ -1249,39 +1227,110 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 %% Display Options Panel
 
-% Initialize panel object
-hpDisp=uipanel(hF,'units','pixels','backgroundcolor','w','title','display');
-hpDisp.Position=[0 0 160 hpKspace.Position(2)];
+hpDisp=uitabgroup(hF,'units','pixels','SelectionChangedFcn',@chDisp);
+hpDisp.Position=[0 0 160 250];
 
-%%%%%% Display ROI %%%%%%
+% Tab Groups for each display
+tX=uitab(hpDisp,'Title','X','units','pixels','backgroundcolor','w');
+tK=uitab(hpDisp,'Title','K','units','pixels','backgroundcolor','w');
+tD=uitab(hpDisp,'Title','dig','units','pixels','backgroundcolor','w');
+tH=uitab(hpDisp,'Title','hop','units','pixels','backgroundcolor','w');
+
+    function chDisp(~,b)
+        disp('hi')
+        switch b.NewValue.Title
+            case 'X'
+                updateGraphics = @updateGraphics_X;
+            case 'K'
+                updateGraphics = @updateGraphics_K;
+            case 'dig'
+                updateGraphics = @updateGraphics_dig;
+            case 'hop'
+                updateGraphics = @updateGraphics_dig;
+            otherwise
+                warning('oh no');
+
+        end
+    end
+
+updateGraphics = @updateGraphics_X;
+
+
+%% X Space Display Options
 
 % Table for changing display limits
-tbl_dispROI=uitable('parent',hpDisp,'units','pixels','RowName',{},'columnname',{},...
+tbl_dispROI=uitable('parent',tX,'units','pixels','RowName',{},...
+    'columnname',{'x1','x2','y1','y2'},...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
-    'ColumnWidth',{24 24 24 24},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
+    'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
 tbl_dispROI.Position(3:4)=tbl_dispROI.Extent(3:4);
-tbl_dispROI.Position(1:2)=[2 hpDisp.Position(4)-tbl_dispROI.Position(4)-20];
+tbl_dispROI.Position(1:2)=[2 tX.Position(4)-tbl_dispROI.Position(4)-10];
 
 % Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
 cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
-hbFullLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-    'Backgroundcolor','w','Position',[102 tbl_dispROI.Position(2)+2 18 18],'Callback',@fullDispCB,...
-    'ToolTipString',ttstr);
+hbFullLim=uicontrol(tX,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+    'Backgroundcolor','w','Callback',@fullDispCB,'ToolTipString',ttstr);
+hbFullLim.Position = [tbl_dispROI.Position(1)+tbl_dispROI.Position(3) ...
+    tbl_dispROI.Position(2) 18 18];
 
 % Button to snap display ROI to the data ROI
 ttstr='Snap display ROI to data ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','snapLim.png')),[15 15]);
-hbSnapLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-    'Backgroundcolor','w','Position',[120 tbl_dispROI.Position(2)+2 18 18],'Callback',@snapDispCB,...
-    'ToolTipString',ttstr);
+hbSnapLim=uicontrol(tX,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+    'Backgroundcolor','w','Position',hbFullLim.Position,...
+    'Callback',@snapDispCB,'ToolTipString',ttstr);
+hbSnapLim.Position(2) = [hbSnapLim.Position(2)+18];
 
 % Button to enable GUI selection of display limits
 ttstr='Select the display ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
-hbSlctLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-    'Backgroundcolor','w','Position',[138 tbl_dispROI.Position(2)+2 18 18],'Callback',@slctDispCB,...
-    'ToolTipString',ttstr);
+hbSlctLim=uicontrol(tX,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+    'Backgroundcolor','w','Position',hbFullLim.Position,...
+    'Callback',@slctDispCB,'ToolTipString',ttstr);
+hbSlctLim.Position(2) = [hbSnapLim.Position(2)+18];
+
+% Table to adjust color limits on image
+climtbl=uitable('parent',tX,'units','pixels','RowName',{},'ColumnName',{'c1','c2'},...
+    'Data',[0 12000],'ColumnWidth',{50,50},'ColumnEditable',[true true],...
+    'CellEditCallback',@climCB);
+climtbl.Position(3:4)=climtbl.Extent(3:4);
+climtbl.Position(1:2)=[2 tbl_dispROI.Position(2)-climtbl.Position(4)-2];
+
+cAutoColor=uicontrol(tX,'style','checkbox','string','auto?',...
+    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cAutoCLIMCB,...
+    'enable','on','value',1);
+cAutoColor.Position=[climtbl.Position(1)+climtbl.Position(3)+1 climtbl.Position(2) 50 20];
+
+
+%%%%%% Plot Options %%%%%%
+
+% Button group for deciding what the X/Y plots show
+bgPlot = uibuttongroup(tX,'units','pixels','backgroundcolor','w','BorderType','None',...
+    'SelectionChangeFcn',@chPlotCB);  
+bgPlot.Position(3:4)=[125 20];
+bgPlot.Position(1:2)=[2 climtbl.Position(2)-bgPlot.Position(4)-2];
+    
+% Radio buttons for cuts vs sum
+rbCut=uicontrol(bgPlot,'Style','radiobutton','String','plot cut',...
+    'Position',[0 0 60 20],'units','pixels','backgroundcolor','w','Value',1);
+rbSum=uicontrol(bgPlot,'Style','radiobutton','String','plot sum',...
+    'Position',[60 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
+
+% Checkbox for enabling display of the CoM analysis
+cCoMStr=uicontrol(tX,'style','checkbox','string','center-of-mass',...
+    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCoMCB,...
+    'enable','on','value',1);
+cCoMStr.Position=[2 bgPlot.Position(2)-20 125 20];
+
+% Checkbox for showing/hiding crosshair
+cCross=uicontrol(tX,'style','checkbox','string','cross hair',...
+    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCrossCB,...
+    'enable','on','value',1);
+cCross.Position=[2 cCoMStr.Position(2)-20 120 20];
+
+%% Display Callbacks
+
 
 % Callback for changing display table ROI
     function tbl_dispROICB(src,evt)
@@ -1340,11 +1389,11 @@ hbSlctLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         disp(['Selecting display ROI .' ...
             ' Click two points that form the rectangle ROI.']);
         axes(axImg)                 % Select the OD image axis
-        [x1,y1]=ginput(1);          % Get a mouse click
+        [x1,y1]=ginputMe(1);          % Get a mouse click
         x1=round(x1);y1=round(y1);  % Round to interger        
         p1=plot(x1,y1,'+','color','k','linewidth',1); % Plot it
         
-        [x2,y2]=ginput(1);          % Get a mouse click
+        [x2,y2]=ginputMe(1);          % Get a mouse click
         x2=round(x2);y2=round(y2);  % Round it        
         p2=plot(x2,y2,'+','color','k','linewidth',1);  % Plot it
 
@@ -1365,29 +1414,6 @@ hbSlctLim=uicontrol(hpDisp,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         delete(p1);delete(p2);                   % Delete markers
     end
 
-
-%%%%%% Color Limits %%%%%%
-
-% Text label for color limit table on OD image
-climtext=uicontrol('parent',hpDisp,'units','pixels','string','color limits : ',...
-    'fontsize',8,'backgroundcolor','w','style','text');
-climtext.Position(3:4)=climtext.Extent(3:4);
-climtext.Position(1:2)=[2 tbl_dispROI.Position(2)-climtext.Position(4)-5];
-
-% Table to adjust color limits on image
-climtbl=uitable('parent',hpDisp,'units','pixels','RowName',{},'ColumnName',{},...
-    'Data',[0 12000],'ColumnWidth',{40,40},'ColumnEditable',[true true],...
-    'CellEditCallback',@climCB);
-climtbl.Position(3:4)=climtbl.Extent(3:4);
-climtbl.Position(1:2)=[65 tbl_dispROI.Position(2)-climtext.Position(4)-5];
-
-
-    function beep(~,~)
-        disp('hello');
-        climtbl.Data=axImg.CLim;
-        drawnow;
-    end
-
 % Callback for changing the color limits table
     function climCB(src,evt)
         try
@@ -1397,11 +1423,6 @@ climtbl.Position(1:2)=[65 tbl_dispROI.Position(2)-climtext.Position(4)-5];
             src.Data(evt.Indices)=evt.PreviousData;
         end
     end
-
-cAutoColor=uicontrol(hpDisp,'style','checkbox','string','auto clim',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cAutoCLIMCB,...
-    'enable','on','value',1);
-cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
 
     function cAutoCLIMCB(src,~)     
         if src.Value
@@ -1414,18 +1435,14 @@ cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
         end 
     end 
 
-    function autoClim
-        %cH=round(max(max(data.Z)));
-        %cL=round(min(min(data.Z)));   
-        
+    function autoClim          
         % Auto clim to max and min. Clip at lower end to due variable noise
         % floor
         N0=size(data.Z,1)*size(data.Z,2);
         dN=round(N0*.01); % pad by 1% floor
         call=sort(data.Z(:));
         cL=call(dN);
-        cH=call(end);
-        
+        cH=call(end);       
         
         dC=round(range(data.Z(:))*0.02); % 2% of range padding
         dC=0;
@@ -1433,19 +1450,6 @@ cAutoColor.Position=[2 climtext.Position(2)-40 80 20];
         axImg.CLim=[cL+dC cH-dC];
         climtbl.Data=[cL+dC cH-dC];
     end
-%%%%%% Plot Options %%%%%%
-
-% Button group for deciding what the X/Y plots show
-bgPlot = uibuttongroup(hpDisp,'units','pixels','backgroundcolor','w','BorderType','None',...
-    'SelectionChangeFcn',@chPlotCB);  
-bgPlot.Position(3:4)=[125 20];
-bgPlot.Position(1:2)=[2 climtbl.Position(2)-bgPlot.Position(4)-2];
-    
-% Radio buttons for cuts vs sum
-rbCut=uicontrol(bgPlot,'Style','radiobutton','String','plot cut',...
-    'Position',[0 0 60 20],'units','pixels','backgroundcolor','w','Value',1);
-rbSum=uicontrol(bgPlot,'Style','radiobutton','String','plot sum',...
-    'Position',[60 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
 
     function chPlotCB(~,~)
         % Update Data Plot
@@ -1456,54 +1460,14 @@ rbSum=uicontrol(bgPlot,'Style','radiobutton','String','plot sum',...
         end
     end
 
-%%%%%% Extra Display Stuff %%%%%%
-
-% Checkbox for enabling display of the gaussian reticle
-cGaussRet=uicontrol(hpDisp,'style','checkbox','string','show gauss reticle?',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cGaussRetCB,...
-    'enable','off');
-cGaussRet.Position=[2 bgPlot.Position(2)-20 125 20];
-
-    function cGaussRetCB(src,~)
-       for n=1:size(tblROI.Data,1)
-           pGaussRet(n).Visible=src.Value;
-       end        
-    end
-
-
-% Checkbox for enabling display of the CoM analysis
-cCoMStr=uicontrol(hpDisp,'style','checkbox','string','show CoM result?',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCoMCB,...
-    'enable','on','value',1);
-cCoMStr.Position=[2 cGaussRet.Position(2)-20 125 20];
-
     function cCoMCB(src,~)        
         set(tCoMAnalysis,'Visible',src.Value);    
     end
-
-
-% Checkbox for showing/hiding crosshair
-cCross=uicontrol(hpDisp,'style','checkbox','string','show cross hair?',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCrossCB,...
-    'enable','on','value',0);
-cCross.Position=[2 cCoMStr.Position(2)-20 80 20];
 
     function cCrossCB(src,~)        
         set(pCrossX,'Visible',src.Value);
         set(pCrossY,'Visible',src.Value);
     end
-
-% Text label for fit results output variable
-frtext=uicontrol('parent',hpDisp,'units','pixels','string','fit results variable',...
-    'fontsize',7,'backgroundcolor','w','style','text');
-frtext.Position(3:4)=frtext.Extent(3:4);
-frtext.Position(1:2)=[2 20];
-
-% Drop down menu for fit results output
-frslct=uicontrol('parent',hpDisp','units','pixels','style','popupmenu',...
-    'String',{'a','b','c'},'fontsize',8);
-frslct.Position(3)=hpDisp.Position(3)-10;
-frslct.Position(1:2)=[2 5];
 
 %% Tabular Data Results Panel
 % Panel for parameters and analysis results.
@@ -1613,50 +1577,20 @@ hp=uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
     'Position',[400 0 hF.Position(3)-200 hF.Position(4)-130],...
     'bordertype','beveledin');
 
+% Text label for fit results output variable
+frtext=uicontrol('parent',hp,'units','pixels','string','fit results variable',...
+    'fontsize',7,'backgroundcolor','w','style','text');
+frtext.Position(3:4)=frtext.Extent(3:4);
+frtext.Position(1:2)=[2 20];
+
+% Drop down menu for fit results output
+frslct=uicontrol('parent',hp','units','pixels','style','popupmenu',...
+    'String',{'a','b','c'},'fontsize',8);
+frslct.Position(3)=120;
+frslct.Position(1:2)=[2 5];
+
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary
-
-bgImg = uibuttongroup(hp,'units','pixels','backgroundcolor','w','BorderType','None',...
-    'SelectionChangeFcn',@chImgDisp);  
-bgImg.Position(3:4)=[255 20];
-bgImg.Position(1:2)=[2 hp.Position(4)-bgImg.Position(4)];
-
-% Radio buttons for cuts vs sum
-rbNormal=uicontrol(bgImg,'Style','radiobutton','String','position',...
-    'Position',[0 0 60 20],'units','pixels','backgroundcolor','w','Value',1);
-rbFFT=uicontrol(bgImg,'Style','radiobutton','String','momentum',...
-    'Position',[60 0 80 20],'units','pixels','backgroundcolor','w','Value',0);
-rbHop=uicontrol(bgImg,'Style','radiobutton','String','hopping',...
-    'Position',[135 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
-rbDig=uicontrol(bgImg,'Style','radiobutton','String','digitized',...
-    'Position',[195 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
-
-    function chImgDisp(a,b)
-
-        
-        switch b.NewValue.String
-            
-            case 'position'
-                
-            case 'momentum'
-                if isfield(data,'Zf')
-                   set(hImg,'XData',data.f,'YData',data.f,'CData',abs(data.Zf)); 
-                   set(axImg,'XLim',[min(data.f) max(data.f)],'YLim',[min(data.f) max(data.f)]);
-                else
-                    warning('not FFT to show');
-                end
-                
-            case 'hopping'
-                warning('not enabled yet');
-                a.SelectedObject = b.OldValue;
-            case 'digitized'
-                warning('not enabled yet');
-                a.SelectedObject = b.OldValue;    
-                
-                
-        end
-   
-    end
 
 % Resize the X/Y plots and images to maximize area in figure and line up
 % properly
