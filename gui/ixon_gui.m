@@ -79,6 +79,7 @@ end
 disp('Initializing iXon GUI...');
 
 %% Camera Settings
+% Initialization camera status structure
 
 % Declare cam_info struct;
 cam_info=struct;
@@ -87,17 +88,13 @@ cam_info=struct;
 cam_status=struct;
 cam_status.isConnected=0;       % Are you connected to camera?
 cam_status.Temperature=NaN;     % sensor temperature
-cam_status.TemperatureSP=-80;    % Must lie between -120 C and 20 C
+cam_status.TemperatureSP=-80;   % temperature set point
 cam_status.isTempStable=0;      % is sensor tempreature stable?
 cam_status.isCooling=0;         % is the TEC active?
 cam_status.isAcquiring=0;       % is the camera acquiring frames?
 
-% Load default acquisition settings
-acq=defaultNormalAcqSettings;
-
-% Description of Acquisitino settings
-desc=acqDescription(acq);
-
+acq=defaultNormalAcqSettings;   % load default settings
+desc=acqDescription(acq);       % Get description of settings
 
 %% Initialize Figure
 
@@ -112,20 +109,19 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
         answer = questdlg('Close the iXon GUI?','Close iXon?',...
             'Yes','No','No') ;
         
-         doClose=0;
-        % Handle response
         switch answer
             case 'Yes'
                 disp('Closing the iXon GUI ...')
                 doClose = 1;
             case 'No'
                 disp('Not closing the iXon GUI.')
-                doClose=0;
+                doClose = 0;
+            otherwise
+                doClose = 0;
         end
         
         if doClose
             disp('Closing iXon GUI...');      
-
             stop(statusTimer);
             if cam_status.isConnected
                 disconnectCam;
@@ -161,20 +157,12 @@ function SizeChangedFcn(~,~)
         
         % Resize Panels
         hpCam.Position(2:3)=[H-hpCam.Position(4) hF.Position(3)];        
-        hpSave.Position(2:3)=[hpCam.Position(2)-hpSave.Position(4) hF.Position(3)];  
-        
-%         
-%         hpNav.Position(1:2)=[hpSave.Position(1)+hpSave.Position(3) hpSave.Position(2)];      
-        
-        hpNav.Position(2:3)=[hpSave.Position(2)-hpSave.Position(4) hF.Position(3)];
-
-        
-        
+        hpSave.Position(2:3)=[hpCam.Position(2)-hpSave.Position(4) hF.Position(3)];                 
+        hpNav.Position(2:3)=[hpSave.Position(2)-hpSave.Position(4) hF.Position(3)];               
         hpAcq.Position(2)=hpNav.Position(2)-hpAcq.Position(4);
         hpADV.Position(2)=hpAcq.Position(2)-hpADV.Position(4);
         hpAnl.Position(2)=hpADV.Position(2)-hpAnl.Position(4);        
         hpKspace.Position(2) = hpAnl.Position(2)-hpKspace.Position(4);
-        
         hpDisp.Position(4)=max([hpKspace.Position(2) 1]);        
         hpFit.Position(4)=H-Ht;        
         
@@ -209,12 +197,11 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
 
 % Callback for the connect button
     function connectCB(~,~)
-
         strstatus.String='CONNECTING';
         drawnow;
-        
+
         % Connect to the camera
-       out=connectCam; 
+        out=connectCam; 
        
        % Give warning if connection fails
        if ~out && ~doDebug
@@ -2305,10 +2292,8 @@ function out=connectCam
     if ncams~=1
         warning('Invalid number of cameras detected.');
         return;
-    end
+    end 
     
-
-
     % Initialize the camera and load DLLs
     currDir = pwd;
     fileDir = fileparts(mfilename('fullpath'));
@@ -2421,9 +2406,7 @@ function out=coolCamera(state)
 end
 
 % Get Timing
-function out=getAcquisitionTimings
-
-    
+function out=getAcquisitionTimings    
     [ret,texp,taccum,tkin] = GetAcquisitionTimings;
     
     if isequal(error_code(ret),'DRV_SUCCESS')
@@ -2432,7 +2415,6 @@ function out=getAcquisitionTimings
         warning('Unable to read iXon timing.');
     end
 end
-
 
 % Set the camera shutter
 function out=setCameraShutter(state)
@@ -2458,7 +2440,6 @@ function out=setCameraShutter(state)
         out=0;
     end
 end
-
 
 % Start Acquisition
 function out=startCamera
