@@ -69,8 +69,10 @@ for kk=1:length(h)
     if isequal(h(kk).Name,guiname)        
         warning(['iXon GUI instance detected.  Bringing into focus. ' ...
             ' If you want to start a new instance, close the original iXon GUI.']); 
-       figure(h(kk));
-       return;
+%        figure(h(kk));
+%        return;
+              close(figure(h(kk)));
+%        return;
     end    
 end
 
@@ -189,9 +191,6 @@ function SizeChangedFcn(~,~)
         cGaussRet.Position(2)=bgPlot.Position(2)-20;
         cCoMStr.Position(2)=cGaussRet.Position(2)-20;
         cCross.Position(2)=cCoMStr.Position(2)-20;
-%         cDrag.Position(2)=cCross.Position(2);
-%         tblcross.Position(2)=cCross.Position(2)-tblcross.Position(4);
-        
         
         % Move status string
         strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;        
@@ -1501,74 +1500,6 @@ cCross.Position=[2 cCoMStr.Position(2)-20 80 20];
         set(pCrossY,'Visible',src.Value);
     end
 
-% % Checkbox for dragging cross-hair
-% cDrag=uicontrol(hpDisp,'style','checkbox','string','can drag?',...
-%     'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cDragCB,...
-%     'enable','on','value',1);
-% cDrag.Position=[cCross.Position(1)+cCross.Position(3)+2 cCross.Position(2) 125 20];
-% 
-% % Callback for dragging the crosshair (matches cut plots with crosshair)
-%     function cDragCB(src,~)    
-%         if src.Value            
-%             pCrossXDrag=draggable(pCrossX);
-%             pCrossYDrag=draggable(pCrossY);
-%             pCrossXDrag.on_move_callback=@Xupdate;
-%             pCrossYDrag.on_move_callback=@Yupdate;
-%             pCrossYDrag.constraint="horizontal";
-%             pCrossXDrag.constraint="vertical";
-% 
-%         else
-%             delete(pCrossXDrag)
-%             delete(pCrossYDrag)
-%         end
-%     end
-% 
-% 
-% % Table to adjust cross hai
-% tblcross=uitable('parent',hpDisp,'units','pixels','RowName',{},'ColumnName',{},...
-%     'Data',[200 200],'ColumnWidth',{40,40},'ColumnEditable',[true true],...
-%     'CellEditCallback',@tblcrossCB);
-% tblcross.Position(3:4)=tblcross.Extent(3:4);
-% tblcross.Position(1:2)=[20 cCross.Position(2)-tblcross.Position(4)];
-% 
-%     function tblcrossCB(src,evt)
-%         m=evt.Indices(1); n=evt.Indices(2);
-%         
-%         newPos=src.Data(m,n);
-%         % Check that the data is numeric
-%         if sum(~isnumeric(newPos)) || sum(isinf(newPos)) || sum(isnan(newPos))
-%             warning('Incorrect data type provided for cross hair.');
-%             src.Data(m,n)=evt.PreviousData;
-%             return;
-%         end
-%         
-%         newPos=round(newPos);      % Make sure the cross hair is an integer
-% 
-%         % Check that limits go from low to high
-%         if newPos<1 || newPos>512
-%            warning('Bad cross hair position given.');
-%            src.Data(m,n)=evt.PreviousData;
-%            return;
-%         end
-%         
-%         src.Data(m,n)=newPos;
-%         % Try to update ROI graphics
-%         try
-%             % Update the cross hair position
-%             pCrossY.XData=[1 1]* tblcross.Data(1,1); 
-%             pCrossX.YData=[1 1]* tblcross.Data(1,2);     
-%             
-%             updateDataPlots(data);
-% 
-%             if hcGauss.Value
-%                updateGaussPlot(data); 
-%             end
-%             
-%         catch
-%            warning('Unable to change cross hair position.');
-%         end
-%     end
-
 % Text label for fit results output variable
 frtext=uicontrol('parent',hpDisp,'units','pixels','string','fit results variable',...
     'fontsize',7,'backgroundcolor','w','style','text');
@@ -1735,59 +1666,6 @@ axis equal tight
 % Cross Hair Plots
 pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 1 1 .2],'linewidth',1);
 pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 1 1 .2],'linewidth',1);
-
-% Make cross hair draggable. This declaration makes this variable global
-% pCrossXDrag=draggable(pCrossX);
-% pCrossYDrag=draggable(pCrossY);
-% pCrossXDrag.on_move_callback=@Xupdate;
-% pCrossYDrag.on_move_callback=@Yupdate;
-
-% Delete so that it is initially undraggable. 
-% delete(pCrossXDrag)
-% delete(pCrossYDrag)
-
-% Callback for adjusting the X crosshair
-    function Xupdate(g,~)
-        % If you drag, you're not plotting a sum
-        rbCut.Value=1;
-        rbSum.Value=0;
-        
-        
-        
-        % Get the cross hair poisition
-        Ycross=round(g.YData(1));
-        Zx=data.Z(Ycross,:);
-        set(pX,'XData',data.X,'YData',Zx);
-        tblcross.Data(1,2)=Ycross;
-        
-        if hcGauss.Value || hcGaussRot.Value
-            updateGaussPlot(data);
-        end
-            
-        g.YData=round(g.YData);
-        drawnow;       
-    end
-
-% Callback 
-    function Yupdate(g,~)
-        % If you drag, you're not plotting a sum
-        rbCut.Value=1;
-        rbSum.Value=0;       
-        
-        % Get the cross hair poisition
-        Xcross=round(g.XData(1));
-        Zy=data.Z(:,Xcross);
-        set(pY,'YData',data.Y,'XData',Zy);
-        tblcross.Data(1,1)=Xcross;
-        
-        if hcGauss.Value || hcGaussRot.Value
-            updateGaussPlot(data);
-        end
-        g.XData=round(g.XData);
-
-
-        drawnow;       
-    end
 
 % file name string
 tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
@@ -2379,6 +2257,8 @@ axes(axImg);
 addlistener(axImg,'XLim','PostSet',@foo); 
 addlistener(axImg,'YLim','PostSet',@foo); 
 
+set(hF,'WindowState','maximized');
+
     function foo(~,~)        
         set(pCrossX,'XData',axImg.XLim,'YData',[1 1]*mean(axImg.YLim));
         set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*mean(axImg.XLim));
@@ -2408,34 +2288,7 @@ addlistener(axImg,'YLim','PostSet',@foo);
  
  set(axImg,'XLim',[1 512],'YLim',[ 1 512]);
 end
-  %% Mouse Button Callbacks
-    function down_fcn(hObj, evt)
-        clickType = evt.Source.SelectionType;
-
-        % Panning action
-        panBt = 1;
-        
-        
-        if (panBt > 0)
-            if (panBt == 1 && strcmp(clickType, 'normal')) || ...
-                (panBt == 2 && strcmp(clickType, 'alt')) || ...
-                (panBt == 3 && strcmp(clickType, 'extend'))
-
-                guiArea = hittest(hObj);
-                parentAxes = ancestor(guiArea,'axes');
-
-                % if the mouse is over the desired axis, trigger the pan fcn
-                if ~isempty(parentAxes)
-                    pan(parentAxes);
-                else
-                    setptr(evt.Source,'forbidden')
-                end
-            end
-        end
-    end 
-    
-    
-
+ 
 
 
 %% Camera Functions
@@ -2671,35 +2524,6 @@ function s3=getDayDir
     if ~exist(s2,'dir'); mkdir(s2); end
     if ~exist(s3,'dir'); mkdir(s3); end
 end
-
-function [out,dstr]=grabSequenceParams(src)
-    if nargin~=1
-        src='Y:\_communication\control.txt';
-    end
-    disp(['Opening information from from ' src]);
-    out=struct;
-    % Open the control file
-    [fid,errmsg] = fopen(src,'rt');
-    if ~isempty(errmsg)
-       warning('Unable to read control.txt. Aborting association');
-       return
-    end
-    % Read the first six lines (and throw them away)
-    fgetl(fid);
-    fgetl(fid);
-    dstr=fgetl(fid);   % Date line
-    dstr=dstr(17:end-1); % get date string (this is a bit risky coding)
-    fgetl(fid);
-    fgetl(fid);
-    fgetl(fid);
-    % Read the parameters (each line looks like "k_cMOT_detuning: 5")
-    params = textscan(fid,'%[^:] %*s %s');
-    % Close the file
-    fclose(fid);
-    % Convert the string into a structure
-    out=cell2struct(num2cell(str2double(params{2})),params{1});
-end
-
 
 function [vals,units,flags]=grabSequenceParams2(src)
     if nargin~=1
