@@ -183,6 +183,9 @@ function SizeChangedFcn(~,~)
         % Move status string
         strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;
+        
+        bgImg.Position(1:2)=[2 hp.Position(4)-bgImg.Position(4)];
+
 end
 
 %% Camera Panel
@@ -848,12 +851,10 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
         switch outstr
             case 'DRV_IDLE'
                 % Grab the images from the camera
-                imgs=grabRawImages;    
-                
-                
+                imgs=grabRawImages;          
                 
                 % Assign images metadata
-                mydata=processImages(imgs);
+                mydata=makeImgDataStruct(imgs);
 
                 % Restart Acquisition if desired (auto-stopts)
                 if hcAcqRpt.Value
@@ -907,13 +908,35 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
 %% Image Process Panel
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-160 160 160],'title','processing');
+    'Position',[0 hpAcq.Position(2)-160 160 200],'title','processing');
 
-% Checkbox for applying point spread function (should this be a separate
-% panel?)
+ttstr='Apply gaussian filter to smooth image';
+cKGaussFilter=uicontrol('style','checkbox','string','FFT filter',...
+    'units','pixels','parent',hpADV,'backgroundcolor','w',...
+    'value',0,'ToolTipString',ttstr);
+cKGaussFilter.Position=[5 20 80 20];
+
+% Fitlering the FFT
+tblKGaussFilter=uitable('parent',hpADV,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',1,'columneditable',[true],...
+    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
+tblKGaussFilter.Position=[80 cKGaussFilter.Position(2)-1 45 20];
+
+% Pixels label
+uicontrol('parent',hpADV,'units','pixels',...
+    'style','text','string','pixels','position',[125 cKGaussFilter.Position(2)+1 30 15],...
+    'fontsize',8,'backgroundcolor','w');
+
+% Checkbox for computing FFT
+ttstr='Compute FFT';
+hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',8,...
+    'backgroundcolor','w','Position',[5 40 100 20],...
+    'ToolTipString',ttstr,'enable','on');
+
+% Checkbox for applying point spread function 
 ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
 hcPSF=uicontrol(hpADV,'style','checkbox','string','PSF Rich-Lucy','fontsize',8,...
-    'backgroundcolor','w','Position',[5 60 100 20],...
+    'backgroundcolor','w','Position',[5 100 100 20],...
     'ToolTipString',ttstr,'enable','on');
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
@@ -926,7 +949,7 @@ tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];
 % Checkbox for new processings
 ttstr='Apply mask to image to eliminate aperture clipping';
 hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',8,...
-    'backgroundcolor','w','Position',[5 80 120 20],...
+    'backgroundcolor','w','Position',[5 120 120 20],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
 % Checkbox for enabling 2D gauss fitting
@@ -934,12 +957,12 @@ ttstr='Apply gaussian filter to smooth image';
 cGaussFilter=uicontrol('style','checkbox','string','gauss filter',...
     'units','pixels','parent',hpADV,'backgroundcolor','w',...
     'value',0,'ToolTipString',ttstr);
-cGaussFilter.Position=[5 100 80 20];
+cGaussFilter.Position=[5 140 80 20];
 
 % Subtract bias
 ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
 hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',8,...
-    'backgroundcolor','w','Position',[5 120 100 20],...
+    'backgroundcolor','w','Position',[5 160 100 20],...
     'ToolTipString',ttstr,'enable','on','Value',1);
 
 
@@ -1144,11 +1167,11 @@ hpKspace.Position=[0 hpAnl.Position(2)-150 160 150];
 
 % Table of ROIs
 tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{30 30 30 30},...
-    'ColumnEditable',true(ones(1,4)),'ColumnName',{'X1','X2','Y1','Y2'},...
+    'ColumnEditable',true(ones(1,4)),'ColumnName',{'kx1','kx2','ky1','ky2'},...
     'Data',[1 512 1 512],'FontSize',8,...
     'CellEditCallback',@chROIK,'RowName',{});
 tblROIK.Position(3:4)=tblROIK.Extent(3:4)+0*[18 0];
-tblROIK.Position(1:2)=[5 tblROIK.Position(4)-tblROIK.Position(4)-20];
+tblROIK.Position(1:2)=[5 hpKspace.Position(4)-tblROIK.Position(4)-20];
 
 % Callback function for changing ROI via table
     function chROIK(src,evt)
@@ -1193,42 +1216,6 @@ tblROIK.Position(1:2)=[5 tblROIK.Position(4)-tblROIK.Position(4)-20];
 %     'ToolTipString',ttstr);
 
 
-% Callback for selecting an ROI based upon mouse click input.
-    function slctROICBK(~,~)
-        disp(['Selecting display ROI .' ...
-            ' Click two points that form the rectangle ROI.']);
-        axes(axImg)                 % Select the OD image axis
-        [x1,y1]=ginput(1);          % Get a mouse click
-        x1=round(x1);y1=round(y1);  % Round to interger        
-        p1=plot(x1,y1,'+','color','k','linewidth',1); % Plot it
-        
-        [x2,y2]=ginput(1);          % Get a mouse click
-        x2=round(x2);y2=round(y2);  % Round it        
-        p2=plot(x2,y2,'+','color','k','linewidth',1);  % Plot it
-
-        % Create the ROI
-        ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
-
-        % Constrain ROI to image
-        if ROI(1)<1; ROI(1)=1; end       
-        if ROI(3)<1; ROI(3)=1; end   
-        if ROI(4)>512; ROI(4)=512; end       
-        if ROI(2)>512; ROI(2)=512; end   
-        
-        % Try to update ROI graphics
-        tblROI.Data=ROI;   
-        
-        try
-            pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
-            set(pROI(1),'Position',pos);
-            drawnow;        
-        catch
-           warning('Unable to change display ROI.');
-        end
-        delete(p1);delete(p2);                   % Delete markers
-
-    end
-
 
 
 % % Refit button
@@ -1241,6 +1228,50 @@ tblROIK.Position(1:2)=[5 tblROIK.Position(4)-tblROIK.Position(4)-20];
 %         disp('Redoing fits...');
 %         data=updateImages(data);
 %     end
+
+%    img = mydata(kk).Z;  %image =data
+%     Nfft = 2^9;         % points infft
+% 
+%     % time it
+%     tic  
+%     
+%     % FFT on raw image
+%     zf_raw = fft2(img,Nfft,Nfft);
+%     zf_raw=fftshift(zf_raw);
+%     f_raw=1/2*linspace(-1,1,size(zf_raw,1));
+% 
+%     % Deconvolve
+%     psf = fspecial('gaussian',50,s);
+%     img2 = deconvlucy(img,psf,5);
+% 
+%     % FFT on raw image
+%     zf_lucy=fft2(img2,Nfft,Nfft);
+%     zf_lucy=fftshift(zf_lucy);
+%     f_lucy=1/2*linspace(-1,1,size(zf_lucy,1));
+
+
+
+% Refit button
+hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','analyze',...
+    'units','pixels','callback',@analyze_k,'parent',hpKspace,'backgroundcolor','w');
+hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
+
+% Callback function for redoing fits button
+    function analyze_k(~,~)
+        Nfft = 2^10;
+        
+        % Compute FFT
+        zf = fft2(data.Z,Nfft,Nfft);
+        zf = fftshift(zf);        
+        f = 1/2*linspace(-1,1,size(zf,1));        
+        
+        sum(sum(data.Z))
+        sum(sum(abs(zf)))
+        
+        data.Zf = zf;
+        data.f  = f;
+    end
+
 %% Display Options Panel
 
 % Initialize panel object
@@ -1508,7 +1539,11 @@ hpFit.Position=[160 0 200 ...
 
 tabs(1)=uitab(hpFit,'Title','acq','units','pixels');
 tabs(2)=uitab(hpFit,'Title','param','units','pixels');
-tabs(3)=uitab(hpFit,'Title','1','units','pixels');
+tabs(3)=uitab(hpFit,'Title','flags','units','pixels');
+
+tabs(4)=uitab(hpFit,'Title','pos','units','pixels');
+tabs(5)=uitab(hpFit,'Title','fft','units','pixels');
+tabs(6)=uitab(hpFit,'Title','hop','units','pixels');
 
 % Table for acquisition
 tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
@@ -1577,20 +1612,27 @@ tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...
     'ColumnName',{},'ColumnWidth',{125 50},'columneditable',[false false],...
     'Position',[0 0 1 1]);
 
-% Table for analysis outputs
-tbl_analysis=uitable(tabs(3),'units','normalized','RowName',{},'ColumnName',{},...
+% Table for run flags
+tbl_flags=uitable(tabs(3),'units','normalized','RowName',{},'fontsize',8,...
+    'ColumnName',{},'ColumnWidth',{125 50},'columneditable',[false false],...
+    'Position',[0 0 1 1]);
+
+% Table for pos analysis outputs
+tbl_pos_analysis=uitable(tabs(4),'units','normalized','RowName',{},'ColumnName',{},...
     'fontsize',8,'ColumnWidth',{100 85},'columneditable',false(ones(1,2)),...
     'Position',[0 0 1 1]);
 
+% Table for fft analysis outputs
+tbl_fft_analysis=uitable(tabs(5),'units','normalized','RowName',{},'ColumnName',{},...
+    'fontsize',8,'ColumnWidth',{100 85},'columneditable',false(ones(1,2)),...
+    'Position',[0 0 1 1]);
+
+% Table for hopping analysis outputs
+tbl_hop_analysis=uitable(tabs(6),'units','normalized','RowName',{},'ColumnName',{},...
+    'fontsize',8,'ColumnWidth',{100 85},'columneditable',false(ones(1,2)),...
+    'Position',[0 0 1 1]);
 
 %% Initialize the image panel
-
-% hp=uitabgroup(hF,'units','pixels');
-% hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
-% 
-% 
-% t1 = uitab(hp,'title','data');
-
 
 hp=uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
     'Position',[400 0 hF.Position(3)-200 hF.Position(4)-130],...
@@ -1598,6 +1640,48 @@ hp=uipanel('parent',hF,'units','pixels','backgroundcolor','w',...
 
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary
+
+bgImg = uibuttongroup(hp,'units','pixels','backgroundcolor','w','BorderType','None',...
+    'SelectionChangeFcn',@chImgDisp);  
+bgImg.Position(3:4)=[255 20];
+bgImg.Position(1:2)=[2 hp.Position(4)-bgImg.Position(4)];
+
+% Radio buttons for cuts vs sum
+rbNormal=uicontrol(bgImg,'Style','radiobutton','String','position',...
+    'Position',[0 0 60 20],'units','pixels','backgroundcolor','w','Value',1);
+rbFFT=uicontrol(bgImg,'Style','radiobutton','String','momentum',...
+    'Position',[60 0 80 20],'units','pixels','backgroundcolor','w','Value',0);
+rbHop=uicontrol(bgImg,'Style','radiobutton','String','hopping',...
+    'Position',[135 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
+rbDig=uicontrol(bgImg,'Style','radiobutton','String','digitized',...
+    'Position',[195 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
+
+    function chImgDisp(a,b)
+
+        
+        switch b.NewValue.String
+            
+            case 'position'
+                
+            case 'momentum'
+                if isfield(data,'Zf')
+                   set(hImg,'XData',data.f,'YData',data.f,'CData',abs(data.Zf)); 
+                   set(axImg,'XLim',[min(data.f) max(data.f)],'YLim',[min(data.f) max(data.f)]);
+                else
+                    warning('not FFT to show');
+                end
+                
+            case 'hopping'
+                warning('not enabled yet');
+                a.SelectedObject = b.OldValue;
+            case 'digitized'
+                warning('not enabled yet');
+                a.SelectedObject = b.OldValue;    
+                
+                
+        end
+   
+    end
 
 % Resize the X/Y plots and images to maximize area in figure and line up
 % properly
@@ -1714,6 +1798,96 @@ linkaxes([ axImg hAxX],'x');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initial function call to update basic analysis graphics on new data input
 
+    function data = processImages(data)
+        
+        % Grab the Raw Data
+        imgs=data.RawImages;           
+
+        % Remove the first image if there is a buffer
+        if isfield(data,'Flags') && isfield(data.Flags,'qgm_doClearBufferExposure') 
+            if data.Flags.qgm_doClearBufferEposure && size(imgs,3)>1
+                imgs(:,:,1)=[];    
+            end
+        else
+            if size(imgs,3)>1
+                imgs(:,:,1)=[];   
+            end
+        end     
+
+        % Subtract the digital bias from the data
+        if hcSubBias.Value
+            imgs = imgs - 200;
+        end
+
+        % Apply an image mask
+        if hcMask.Value
+            for ii=1:size(imgs,3)  
+              imgs(:,:,ii) = imgs(:,:,ii).*ixon_mask;        
+            end
+        end
+
+        % Apply gaussian filter
+        if cGaussFilter.Value  
+            for ii=1:size(imgs,3)  
+              imgs(:,:,ii) = imgaussfilt(imgs(:,:,ii),tblGaussFilter.Data);
+            end
+        end    
+
+        % Devoncolve data
+        if hcPSF.Value        
+            tic
+            fprintf('Deconvoling PSF ...')
+            s = tblPSF.Data(1);
+            N = tblPSF.Data(2);
+            Niter = tblPSF.Data(3);
+            psf = fspecial('gaussian',N,s);        
+            for ii=1:size(imgs,3)  
+                imgs(:,:,ii) = deconvlucy(imgs(:,:,ii),psf,Niter);
+            end
+            t=toc;
+            disp(['done (' num2str(t) ' seconds)']);
+        end
+
+        data.Z = imgs;
+        data.X = 1:size(data.Z,2);
+        data.Y = 1:size(data.Z,1); 
+
+        if hcFFT.Value
+            tic
+            fprintf('Computing FFT ...')
+            % Compute FFT
+            Nfft = 2^10;
+            data.Zf = zeros(Nfft,Nfft,size(data.Z,3));
+            data.ZfNorm = zeros(Nfft,Nfft,size(data.Z,3));
+            data.ZfPhase = zeros(Nfft,Nfft,size(data.Z,3));
+
+            for ii=1:size(data.Z,3)
+                zf = fft2(data.Z(:,:,ii),Nfft,Nfft);
+                zf = fftshift(zf);        
+                f = 1/2*linspace(-1,1,size(zf,1));       
+                data.Zf(:,:,ii) = zf;
+                data.ZfNorm(:,:,ii) = abs(zf);
+                data.ZfPhase(:,:,ii) = angle(zf);
+            end
+            t=toc;
+            disp(['done (' num2str(t) ' seconds)']);
+            data.f  = f;     
+        end
+
+
+        if cKGaussFilter.Value
+            tic
+            fprintf('Filtering FFT ...')
+            for ii=1:size(data.Zf,3)  
+                data.ZfNorm(:,:,ii) = imgaussfilt(data.ZfNorm(:,:,ii),tblKGaussFilter.Data);
+                data.ZfPhase(:,:,ii) = imgaussfilt(data.ZfPhase(:,:,ii),tblKGaussFilter.Data);
+            end
+            t=toc;
+            disp(['done (' num2str(t) ' seconds)']);
+        end
+
+    end
+
 function data=updateImages(data)
     % Grab the ROI
     ROI=tblROI.Data;
@@ -1721,71 +1895,8 @@ function data=updateImages(data)
     x=ROI(1):ROI(2);
     y=ROI(3):ROI(4); 
     
-    % Grab the Raw Data
-    imgs=data.RawImages;           
+    data = processImages(data);
     
-    % Remove the first image if there is a buffer
-    if isfield(data,'Flags') && isfield(data.Flags,'qgm_doClearBufferExposure') 
-        if data.Flags.qgm_doClearBufferEposure && size(imgs,3)>1
-            imgs(:,:,1)=[];    
-        end
-    else
-        if size(imgs,3)>1
-            imgs(:,:,1)=[];   
-        end
-    end     
-            
-    % Subtract the digital bias from the data
-    if hcSubBias.Value
-        imgs = imgs - 200;
-    end
-    
-    % Apply an image mask
-    if hcMask.Value
-        for ii=1:size(imgs,3)  
-          imgs(:,:,ii) = imgs(:,:,ii).*ixon_mask;        
-        end
-    end
-    
-    % Apply gaussian filter
-    if cGaussFilter.Value  
-        for ii=1:size(imgs,3)  
-          imgs(:,:,ii) = imgaussfilt(imgs(:,:,ii),tblGaussFilter.Data);
-        end
-    end    
-    
-    % Devoncolve data
-    if hcPSF.Value        
-        tic
-        fprintf('Deconvoling PSF ...')
-        s = tblPSF.Data(1);
-        N = tblPSF.Data(2);
-        Niter = tblPSF.Data(3);
-        psf = fspecial('gaussian',N,s);        
-        for ii=1:size(imgs,3)  
-            imgs(:,:,ii) = deconvlucy(imgs(:,:,ii),psf,Niter);
-        end
-        t=toc;
-        disp(['done (' num2str(t) ' seconds']);
-    end
-        
-    data.Z = imgs;
-%         imgs = reshape(imgs,size(imgs,1),[],1);        
-
-%     if size(imgs,3) > 1        
-%         iD = imgs(:,:,1);
-%         imgs(:,:,1)=[];     
-%         N = size(imgs,3);            
-%         imgs = reshape(imgs,size(imgs,1),[],1);
-%         Zme = imgs - repmat(iD,1,N);            
-%         data.Z = Zme;            
-%     else
-%         data.Z = imgs;
-%     end
-    
-    data.X = 1:size(data.Z,2);
-    data.Y = 1:size(data.Z,1);
-        
     % Create sub image to do center of mass analysis
     Zsub=data.Z(y,x);
     
@@ -1801,7 +1912,7 @@ function data=updateImages(data)
         ['box Y' char(963) ' (px)'],bc.Ys;
         ['box X' char(963) ' (px)'],bc.Xs};   
     
-    tbl_analysis.Data=stranl;
+    tbl_pos_analysis.Data=stranl;
     
     % Update box count string
     str=[ num2str(max(max(Zsub)),'%.2e') ' max counts ' newline ...
@@ -1846,8 +1957,6 @@ function data=updateImages(data)
     % Update table parameters (alphebetically)
     [~,inds] = sort(lower(fieldnames(data.Params)));
     params = orderfields(data.Params,inds);    
-%     tbl_params.Data=[fieldnames(params), ...
-%         struct2cell(params)];   
                 
     fnames=fieldnames(params);
     for nn=1:length(fnames)
@@ -1860,10 +1969,26 @@ function data=updateImages(data)
         if isa(val,'struct')
            tbl_params.Data{nn,2}='[struct]'; 
         end  
-    end      
+    end        
     
+    if isfield(data,'Flags')
+        flags = data.Flags;
+%         flags = orderfields(data.Flags,inds);    
+        fnames=fieldnames(flags);
+        for nn=1:length(fnames)
+          tbl_flags.Data{nn,1}=fnames{nn};
+            val=flags.(fnames{nn});
+            if isa(val,'double')
+                tbl_flags.Data{nn,2}=num2str(val);
+            end
+
+            if isa(val,'struct')
+               tbl_flags.Data{nn,2}='[struct]'; 
+            end  
+        end     
+    end
     
-    
+%     tbl_flags
     
     % Update parameter for fit results
     frVar=frslct.String{frslct.Value};   % Old fitresults variable
@@ -2001,7 +2126,7 @@ function data=updateAnalysis(data)
             ['pca xc (px)'],out.Mean(1);
             ['pca yc (px)'],out.Mean(2);};
 
-        tbl_analysis.Data=[tbl_analysis.Data; stranl];
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];
         
         set(pPCA(1),'XData',x1,'YData',y1,'Visible','on');
         set(pPCA(2),'XData',x2,'YData',y2,'Visible','on');
@@ -2029,7 +2154,7 @@ function data=updateAnalysis(data)
             ['gauss xc (px)'],data.GaussFit{1}.Xc;
             ['gauss yc (px)'],data.GaussFit{1}.Yc;
             ['gauss nbg (counts)'],data.GaussFit{1}.nbg;};
-        tbl_analysis.Data=[tbl_analysis.Data; stranl];  
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
         updateGaussPlot(data);
     end
     
@@ -2055,7 +2180,7 @@ function data=updateAnalysis(data)
             ['gauss yc (px)'],data.GaussFit{1}.Yc;
             ['gauss nbg (counts)'],data.GaussFit{1}.nbg;
             ['gauss ' char(952) ' (deg)'],data.GaussFit{1}.theta*180/pi};
-        tbl_analysis.Data=[tbl_analysis.Data; stranl];  
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
 
         updateGaussPlot(data);
 
@@ -2063,7 +2188,7 @@ function data=updateAnalysis(data)
     
     
     
-    fr=tbl_analysis.Data(:,2)';
+    fr=tbl_pos_analysis.Data(:,2)';
     
     % Ensure fit results is a number
     for n=1:length(fr)
@@ -2134,7 +2259,7 @@ end
         imgs=imgmats;  
     end
 
-    function mydata=processImages(imgs)
+    function mydata=makeImgDataStruct(imgs)
         mydata=struct;
         % Create the image data structure
         mydata=struct;
