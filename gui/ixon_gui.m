@@ -954,9 +954,13 @@ hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','f
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
     'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 50 5],'columneditable',[true],...
-    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
+    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'},'CellEditCallback',@boop);
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
 tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];
+
+    function boop(src,evt)
+        drawPSFK(cPSF_K.Value);
+    end
 
 
 % Checkbox for new processings
@@ -1316,7 +1320,7 @@ cCross_X.Position=[2 cCoMStr_X.Position(2)-20 120 20];
 %% Display Options Panel
 
 hpDisp_K = uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum display');
-hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 180];
+hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 200];
 
 % Table for changing display limits
 tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
@@ -1386,6 +1390,13 @@ cCross_K=uicontrol(hpDisp_K,'style','checkbox','string','cross hair',...
     'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCrossCB,...
     'enable','on','value',1);
 cCross_K.Position=[2 cCoMStr_K.Position(2)-20 120 20];
+
+
+% Checkbox for showing/hiding PSF in fourier domain
+cPSF_K=uicontrol(hpDisp_K,'style','checkbox','string','PSF',...
+    'units','pixels','fontsize',8,'backgroundcolor','w','callback',{@(src,evt) drawPSFK(src.Value)} ,...
+    'enable','on','value',0);
+cPSF_K.Position=[2 cCross_K.Position(2)-20 120 20];
 
 %% Display Callbacks
 
@@ -1566,6 +1577,37 @@ cCross_K.Position=[2 cCoMStr_K.Position(2)-20 120 20];
         set(pCrossX,'Visible',src.Value);
         set(pCrossY,'Visible',src.Value);
     end
+
+%% Specific Callbacks
+
+    function drawPSFK(state)
+        d = axImg_K.Children;
+        p = [];
+        for nn=1:length(d)
+           if isprop(d(nn),'UserData') && isequal(d(nn).UserData,'PSF')
+              p=d(nn);
+              break;
+           end
+        end        
+        
+        if state
+            tt=linspace(0,2*pi,100);
+            s=tblPSF.Data(1);
+            kR = sqrt(1/(4*pi*s^2));
+            
+            if isempty(p)
+               p=plot(kR*cos(tt),kR*sin(tt),'-','linewidth',1,...
+                    'color',[0 0.4470 0.7410],'parent',axImg_K,'UserData','PSF');
+            else
+                set(p,'Xdata',kR*cos(tt),'Ydata',kR*sin(tt));
+            end     
+        else
+            if ~isempty(p)
+               delete(p); 
+            end            
+        end        
+    end
+
 
 %% Tabular Data Results Panel
 % Panel for parameters and analysis results.
@@ -1854,7 +1896,9 @@ tCoMAnalysis_K=text(.99,0.01,'FILENAME','units','normalized','fontsize',12,'font
 pROI_K=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2,'parent',axImg_K);
 
 % Reticle for gaussian fit (this will become an array later)
-pGaussRet_K=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:),'parent',axImg_K);
+% pGaussRet_K=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:),'parent',axImg_K);
+
+
 % Color bar
 cBar_K=colorbar('fontsize',8,'units','pixels','location','northoutside');
 
