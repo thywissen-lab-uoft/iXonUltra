@@ -962,7 +962,6 @@ tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];
         drawPSFK(cPSF_K.Value);
     end
 
-
 % Checkbox for new processings
 ttstr='Apply mask to image to eliminate aperture clipping';
 hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',8,...
@@ -1240,8 +1239,19 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 % Callback function for redoing fits button
     function analyze_k(~,~)
-        disp('hi');
+
+        if hcFindLattice.Value && isfield(data,'Zf')
+            tic;
+            fprintf('finding lattice wavevectors...');
+            data.LatticeK = findLatticeK(data.f,data.f,data.Zf);
+            t=toc;
+            disp([' done (' num2str(t) ' seconds']);
+        end
+        
+        
     end
+
+%% Momentum Space Analysis
 
 %% Display Options Panel
 
@@ -1320,7 +1330,7 @@ cCross_X.Position=[2 cCoMStr_X.Position(2)-20 120 20];
 %% Display Options Panel
 
 hpDisp_K = uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum display');
-hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 200];
+hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 220];
 
 % Table for changing display limits
 tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
@@ -1397,6 +1407,12 @@ cPSF_K=uicontrol(hpDisp_K,'style','checkbox','string','PSF',...
     'units','pixels','fontsize',8,'backgroundcolor','w','callback',{@(src,evt) drawPSFK(src.Value)} ,...
     'enable','on','value',0);
 cPSF_K.Position=[2 cCross_K.Position(2)-20 120 20];
+
+% Checkbox for showing/hiding lattice in fourier domain
+cLat_K=uicontrol(hpDisp_K,'style','checkbox','string','lattice wavevectors',...
+    'units','pixels','fontsize',8,'backgroundcolor','w','callback',{@(src,evt) drawLatK(src.Value)} ,...
+    'enable','on','value',0);
+cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
 
 %% Display Callbacks
 
@@ -1608,7 +1624,48 @@ cPSF_K.Position=[2 cCross_K.Position(2)-20 120 20];
         end        
     end
 
+ function drawLatK(state)
+        d = axImg_K.Children;
+        ps = {};
+        for nn=1:length(d)
+           if isprop(d(nn),'UserData') && isequal(d(nn).UserData,'lattice_wavector')
+              ps{end+1}=d(nn);
+           end
+        end        
+        
+        if state && isfield(data,'LatticeK')
+            tt=linspace(0,2*pi,100);
 
+            k1 = data.LatticeK.k1;
+            k2 = data.LatticeK.k2;
+            
+            s1 = data.LatticeK.s1;
+            s2 = data.LatticeK.s2;
+            
+            if isempty(ps)
+               plot(k1(1)+4*s1*cos(tt),k1(2)+4*s1*sin(tt),'-','linewidth',1,...
+                    'color','g','parent',axImg_K,'UserData','lattice_wavector');
+               plot(-k1(1)+4*s1*cos(tt),-k1(2)+4*s1*sin(tt),'-','linewidth',1,...
+                    'color','g','parent',axImg_K,'UserData','lattice_wavector');                
+               plot(k2(1)+4*s2*cos(tt),k2(2)+4*s2*sin(tt),'-','linewidth',1,...
+                    'color','g','parent',axImg_K,'UserData','lattice_wavector');
+               plot(-k2(1)+4*s2*cos(tt),-k2(2)+4*s2*sin(tt),'-','linewidth',1,...
+                    'color','g','parent',axImg_K,'UserData','lattice_wavector');
+            else
+                set(ps{1},'Xdata',k1(1)+2*s1*cos(tt),'Ydata',k1(2)+2*s1*sin(tt));
+                set(ps{2},'Xdata',-k1(1)+2*s1*cos(tt),'Ydata',-k1(2)+2*s1*sin(tt));
+                set(ps{3},'Xdata',k2(1)+2*s2*cos(tt),'Ydata',k2(2)+2*s2*sin(tt));
+                set(ps{4},'Xdata',-k2(1)+2*s2*cos(tt),'Ydata',-k2(2)+2*s2*sin(tt));
+
+            end     
+        else
+            if ~isempty(ps)
+                for jj=1:length(ps)
+                    delete(ps{jj}); 
+                end
+            end            
+        end        
+    end
 %% Tabular Data Results Panel
 % Panel for parameters and analysis results.
 
