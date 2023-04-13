@@ -107,19 +107,6 @@ img_process.IRMaskRadius        = 0.01;
 img_process.doFFTFilter         = 1;
 img_process.FFTFilterRadius     = 1;
 
-% Electronic bias offset
-doSubBias=0;
-offset=200; 
-
-% Ixon mask
-doApplyMask=0;
-
-
-% Gauss Filter
-% Smooth the data by a gaussian filter
-doGaussFilter=0;
-filter_radius=.5;  % Gaussian filter radius
-
 
 %% Select image directory
 % % Choose the directory where the images to analyze are stored
@@ -274,56 +261,8 @@ ixonROI = [1 512 1 512];
 
 %% Image Processing : Bias, Mask, and Filtering
 
-% Electronic bias offset
-doSubBias=0;
-offset=200; 
+ixondata = processRawData(ixondata);
 
-% Ixon mask
-doApplyMask=0;
-maskname=fullfile('ixon_mask.mat');
-ixon_mask=load(maskname);
-ixon_mask=ixon_mask.BW;
-
-% Gauss Filter
-% Smooth the data by a gaussian filter
-doGaussFilter=0;
-filter_radius=.5;  % Gaussian filter radius
-
-for kk=1:length(ixondata)
-    imgs=ixondata(kk).RawImages;    
-    
-    for jj=1:size(ixondata(kk).RawImages,3)   
-        
-        % Subtract an offset from the data (is this digital?)
-        if doSubBias
-           imgs(:,:,jj)=imgs(:,:,jj)-offset; 
-        end
-        
-        % Apply image mask
-        if doApplyMask
-           imgs(:,:,jj)=imgs(:,:,jj).*ixon_mask;
-        end
-        
-        % Filter the data
-        if doGaussFilter
-           imgs(:,:,jj)=imgaussfilt(imgs(:,:,jj),filter_radius);
-        end
-    end
-    
-    % Subtract background image
-    Z=imgs(:,:,2)-imgs(:,:,1);
-    ixondata(kk).Z=Z;
-end
-
-%% Image Processing New
-% ixondata = processRawData(ixondata);
-%% PSF Sharpening
-% For single-site image
-dark_opts = struct;
-doSharpenPSF=0;
-if doSharpenPSF
-   ixondata=sharpenPSF(ixondata); 
-end
 
 
 %% Basic Raw Image Analysis
@@ -365,34 +304,34 @@ if doRawImageHistogram
 end
 
 %% Calculate FFT
-
-fft_opts=struct;
-fft_opts.doSmooth=1;
-fft_opts.smoothRadius=1;
-fft_opts.fft_N=2^11; % Can go higher for smoother data
-
-fft_opts.maskIR=0;
-fft_opts.maskUV=0;
-fft_opts.LMax=50;
-fft_opts.LMin=5;
-
-
-if ixon_doFFT
-    ixondata=ixon_computeFFT(ixondata,fft_opts);
-end
-
-% Apply makss to FFT Data
-ixon_mask_IR=1;
-ixon_mask_UV=0;
-
-
-if fft_opts.maskIR
-    ixondata=ixon_fft_maskIR(ixondata,fft_opts.LMax);    
-end
-
-if fft_opts.maskUV
-    ixondata=ixon_fft_maskUV(ixondata,fft_opts.LMin);    
-end
+% 
+% fft_opts=struct;
+% fft_opts.doSmooth=1;
+% fft_opts.smoothRadius=1;
+% fft_opts.fft_N=2^11; % Can go higher for smoother data
+% 
+% fft_opts.maskIR=0;
+% fft_opts.maskUV=0;
+% fft_opts.LMax=50;
+% fft_opts.LMin=5;
+% 
+% 
+% if ixon_doFFT
+%     ixondata=ixon_computeFFT(ixondata,fft_opts);
+% end
+% 
+% % Apply makss to FFT Data
+% ixon_mask_IR=1;
+% ixon_mask_UV=0;
+% 
+% 
+% if fft_opts.maskIR
+%     ixondata=ixon_fft_maskIR(ixondata,fft_opts.LMax);    
+% end
+% 
+% if fft_opts.maskUV
+%     ixondata=ixon_fft_maskUV(ixondata,fft_opts.LMin);    
+% end
 
 %% ANALYSIS : FFT BOX COUNT
 
@@ -564,42 +503,42 @@ if ixon_doAnimate == 1 && ixon_doSave
 end
 
 %% Animate cloud FFT
-ixon_doAnimateFFT = 1;
-
-ixon_animateOptsFFT=struct;   
-
-
-% Variable to animate versus
-ixon_animateOptsFFT.xUnit=ixon_unit;
-
-% Animation Timings
-ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
-ixon_animateOptsFFT.MidDelay=.25;     % Time to hold in middle picutres
-ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
-
-% Animate in ascending or descending order?
-% animateOpts.Order='descend';    
-ixon_animateOptsFFT.Order='ascend';
-
-% Color limit for image
-ixon_animateOptsFFT.CLim=[0 .5];   % Color limits 
-ixon_animateOptsFFT.CLim=[0 3];   % Color limits 
-
-ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
-
-% FFT UV Cutoff
-% Reduce the animation view to within a frequency of 1/L
-ixon_animateOptsFFT.mask_UV=1;
-ixon_animateOptsFFT.LMin=20;
-
-% FFT IR Cutoff
-% Apply mask to interior regions to mask 
-ixon_animateOptsFFT.mask_IR=1;
-ixon_animateOptsFFT.LMax=200;
-
-if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
-    ixon_animateFFT(ixondata,ixon_xVar,ixon_animateOptsFFT);
-end
+% ixon_doAnimateFFT = 1;
+% 
+% ixon_animateOptsFFT=struct;   
+% 
+% 
+% % Variable to animate versus
+% ixon_animateOptsFFT.xUnit=ixon_unit;
+% 
+% % Animation Timings
+% ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
+% ixon_animateOptsFFT.MidDelay=.25;     % Time to hold in middle picutres
+% ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
+% 
+% % Animate in ascending or descending order?
+% % animateOpts.Order='descend';    
+% ixon_animateOptsFFT.Order='ascend';
+% 
+% % Color limit for image
+% ixon_animateOptsFFT.CLim=[0 .5];   % Color limits 
+% ixon_animateOptsFFT.CLim=[0 3];   % Color limits 
+% 
+% ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
+% 
+% % FFT UV Cutoff
+% % Reduce the animation view to within a frequency of 1/L
+% ixon_animateOptsFFT.mask_UV=1;
+% ixon_animateOptsFFT.LMin=20;
+% 
+% % FFT IR Cutoff
+% % Apply mask to interior regions to mask 
+% ixon_animateOptsFFT.mask_IR=1;
+% ixon_animateOptsFFT.LMax=200;
+% 
+% if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
+%     ixon_animateFFT(ixondata,ixon_xVar,ixon_animateOptsFFT);
+% end
 
 %% Stripe Analysis
 if do_2dStripeAnalysis
