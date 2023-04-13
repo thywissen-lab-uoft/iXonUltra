@@ -1997,114 +1997,6 @@ set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initial function call to update basic analysis graphics on new data input
 
-    function data = processImages(data)
-        disp(' ');
-        disp('Processing image');
-        t1=now;
-        
-        % Grab the Raw Data
-        imgs=data.RawImages;           
-
-        % Remove the first image if there is a buffer
-        if isfield(data,'Flags') && isfield(data.Flags,'qgm_doClearBufferExposure') 
-            if data.Flags.qgm_doClearBufferEposure && size(imgs,3)>1
-                imgs(:,:,1)=[];    
-            end
-        else
-            if size(imgs,3)>1
-                imgs(:,:,1)=[];   
-            end
-        end     
-
-        % Subtract the digital bias from the data
-        if hcSubBias.Value
-            imgs = imgs - 200;
-        end
-
-        % Apply an image mask
-        if hcMask.Value
-            for ii=1:size(imgs,3)  
-              imgs(:,:,ii) = imgs(:,:,ii).*ixon_mask;        
-            end
-        end
-
-        % Apply gaussian filter
-        if cGaussFilter.Value  
-            for ii=1:size(imgs,3)  
-              imgs(:,:,ii) = imgaussfilt(imgs(:,:,ii),tblGaussFilter.Data);
-            end
-        end    
-
-        % Devoncolve data
-        if hcPSF.Value        
-            tic
-            fprintf('Deconvoling PSF ...')
-            s = tblPSF.Data(1);
-            N = tblPSF.Data(2);
-            Niter = tblPSF.Data(3);
-            psf = fspecial('gaussian',N,s);        
-            for ii=1:size(imgs,3)  
-                imgs(:,:,ii) = deconvlucy(imgs(:,:,ii),psf,Niter);
-            end
-            t=toc;
-            disp(['done (' num2str(t) ' seconds)']);
-        end
-
-        data.Z = imgs;
-        data.X = 1:size(data.Z,2);
-        data.Y = 1:size(data.Z,1); 
-
-        if hcFFT.Value
-            tic
-            fprintf('Computing FFT ...')
-            % Compute FFT
-            Nfft = 2^10;
-            data.Zf = zeros(Nfft,Nfft,size(data.Z,3));
-            data.ZfNorm = zeros(Nfft,Nfft,size(data.Z,3));
-            data.ZfPhase = zeros(Nfft,Nfft,size(data.Z,3));
-
-            for ii=1:size(data.Z,3)
-                zf = fft2(data.Z(:,:,ii),Nfft,Nfft);
-                zf = fftshift(zf);        
-                f = 1/2*linspace(-1,1,size(zf,1));       
-                data.Zf(:,:,ii) = zf;
-                data.ZfNorm(:,:,ii) = abs(zf);
-                data.ZfPhase(:,:,ii) = angle(zf);
-            end
-            t=toc;
-            disp(['done (' num2str(t) ' seconds)']);
-            data.f  = f;     
-        end
-        
-        if hcIRMask.Value
-           kR = tblIRMask.Data;
-           [fxx,fyy]=meshgrid(data.f,data.f);
-           fmag = sqrt(fxx.^2+fyy.^2);
-           iMask = fmag>kR;
-           
-           for ii=1:size(data.Zf,3)
-                data.Zf(:,:,ii) = data.Zf(:,:,ii).*iMask;
-                data.ZfNorm(:,:,ii) = data.ZfNorm(:,:,ii).*iMask;
-                data.ZfPhase(:,:,ii) = data.ZfPhase(:,:,ii).*iMask;
-           end
-        end
-
-
-        if cKGaussFilter.Value
-            tic
-            fprintf('Filtering FFT ...')
-            for ii=1:size(data.Zf,3)  
-                data.ZfNorm(:,:,ii) = imgaussfilt(data.ZfNorm(:,:,ii),tblKGaussFilter.Data);
-                data.ZfPhase(:,:,ii) = imgaussfilt(data.ZfPhase(:,:,ii),tblKGaussFilter.Data);
-            end
-            t=toc;
-            disp(['done (' num2str(t) ' seconds)']);
-        end
-        
-        t2 = now;
-
-        disp(['Imaging processing time ' num2str((t2-t1)*24*60*60) ' seconds']);
-    end
 
     function updateGraphics(data)
         tic;
@@ -2134,7 +2026,25 @@ function data=updateImages(data)
     x=ROI(1):ROI(2);
     y=ROI(3):ROI(4); 
     
-    data = processImages(data);
+    
+    opt = struct;
+    opt.doSubtractBias     = hcSubBias.Value;
+    opt.doGaussFilter      = cGaussFilter.Value;
+    opt.GaussFilterRadius  = tblGaussFilter.Data;
+    opt.doMask             = hcMask.Value;
+    opt.Mask               = ixon_mask;
+    opt.doPSF              = hcPSF.Value ;    
+    opt.PSF                = tblPSF.Data;    
+        
+    % Momentum Space
+    opt.doFFT              = hcFFT.Value;
+    opt.doMaskIR           = hcIRMask.Value;
+    opt.IRMaskRadius       = tblIRMask.Data;
+    opt.doFFTFilter        = cKGaussFilter.Value;
+    opt.FFTFilterRadius    = tblKGaussFilter.Data;    
+    
+%     data = processImages(data);
+    data = processRawData(data,opt);
     
     updateGraphics(data);
     
