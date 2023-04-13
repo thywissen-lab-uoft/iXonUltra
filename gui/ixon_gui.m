@@ -2024,8 +2024,7 @@ function data=updateImages(data)
     ROI=tblROI.Data;
     data.ROI=ROI;       
     x=ROI(1):ROI(2);
-    y=ROI(3):ROI(4); 
-    
+    y=ROI(3):ROI(4);     
     
     opt = struct;
     opt.doSubtractBias     = hcSubBias.Value;
@@ -2043,7 +2042,6 @@ function data=updateImages(data)
     opt.doFFTFilter        = cKGaussFilter.Value;
     opt.FFTFilterRadius    = tblKGaussFilter.Data;    
     
-%     data = processImages(data);
     data = processRawData(data,opt);
     
     updateGraphics(data);
