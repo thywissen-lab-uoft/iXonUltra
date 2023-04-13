@@ -653,8 +653,7 @@ hbNavRight.Position=[221 2 12 20];
             
             data=newdata.data;
             data=updateImages(data);      
-        catch ME
-            keyboard
+        catch ME       
             warning('Unable to load image, reverting to old data');
             disp(['FileName : ' filename]);
             data=olddata;
@@ -1263,7 +1262,7 @@ hpDisp_X.Position=[160 500 160 200];
 
 % Button group for acquisition mode
 bgPosImg = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w',...
-    'BorderType','None','SelectionChangeFcn',{@(a,b) disp('hi')});  
+    'BorderType','None','SelectionChangeFcn',{@(a,b) updateGraphics;});  
 bgPosImg.Position(3:4)=[160 20];
 bgPosImg.Position(1:2)=[0 hpDisp_X.Position(4)-bgPosImg.Position(4)-15];    
 
@@ -1351,7 +1350,7 @@ hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 240];
 
 % Button group for acquisition mode
 bgKImg = uibuttongroup(hpDisp_K,'units','pixels','backgroundcolor','w',...
-    'BorderType','None','SelectionChangeFcn',{@(a,b) disp('hi')});  
+    'BorderType','None','SelectionChangeFcn',{@(a,b) updateGraphics;});  
 bgKImg.Position(3:4)=[160 20];
 bgKImg.Position(1:2)=[0 hpDisp_K.Position(4)-bgKImg.Position(4)-15];    
 
@@ -2044,7 +2043,7 @@ set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 % Initial function call to update basic analysis graphics on new data input
 
 
-    function updateGraphics(data)
+    function updateGraphics
         
         tic;
         fprintf('Updating image graphics ...');
@@ -2106,8 +2105,8 @@ function data=updateImages(data)
         rbK2.Enable = 'off';
     end
     
-    updateGraphics(data);
-    
+    updateGraphics;
+
     % Create sub image to do center of mass analysis
     Zsub=data.Z(y,x,bgPosImg.SelectedObject.UserData);
     
