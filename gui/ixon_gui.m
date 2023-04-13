@@ -881,7 +881,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 if ~cAutoUpdate.Value
                     currDir=defaultDir;
                     data=mydata;   
-                    data=updateImages;                     
+                    updateImages;                     
                 else                    
                     % Just update index
                     updateHistoryInd(data);   
@@ -1002,7 +1002,7 @@ hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
 hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
     function processCB(~,~)
-        data=updateImages;
+        updateImages;
     end
 
 %% Analysis Panel
@@ -1176,7 +1176,7 @@ hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
 % Callback function for redoing fits button
     function cbrefit(~,~)
         disp('Redoing fits...');
-        data=updateImages;
+        updateImages;
     end
 
 
