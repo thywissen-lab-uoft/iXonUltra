@@ -12,8 +12,8 @@ kL = 1/a;
 fmat = sqrt(fxx.^2+fyy.^2);
 
 % Make Mask about the lattice k-vectors
-fmat(fmat>(kL*1.05)) = 0;
-fmat(fmat<(kL*0.95)) = 0;
+fmat(fmat>(kL*1.1)) = 0;
+fmat(fmat<(kL*0.9)) = 0;
 
 % Mask the data
 ss = (fmat~=0).*abs(Zf);

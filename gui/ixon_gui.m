@@ -69,9 +69,9 @@ for kk=1:length(h)
     if isequal(h(kk).Name,guiname)        
         warning(['iXon GUI instance detected.  Bringing into focus. ' ...
             ' If you want to start a new instance, close the original iXon GUI.']); 
-%        figure(h(kk));
-%        return;
-              close(figure(h(kk)));
+       figure(h(kk));
+       return;
+%               close(figure(h(kk)));
 %        return;
     end    
 end

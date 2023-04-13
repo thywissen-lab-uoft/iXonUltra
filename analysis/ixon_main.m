@@ -65,7 +65,8 @@ ixon_doSave=1;
 % Define the output data
 outdata=struct;
 
-%% Analysis Flags
+%% Analysis Options
+% Select what kinds of analyses you'd like to perform
 
 doRawImageHistogram=0;
 
@@ -86,7 +87,38 @@ do_2dStripeAnalysis=0;
 doStripeAnalysis=0;
 
 ixon_doAnimate = 1;
+%% Image Processing Options
+% What do you do to the raw data?
+maskname=fullfile('ixon_mask.mat');
+ixon_mask=load(maskname);
+ixon_mask=ixon_mask.BW;
 
+img_process = struct;
+img_process.doSubtractBias      = 1;
+img_process.doGaussFilter       = 0;
+img_process.GaussFilterRadius   = 1;
+img_process.doMask              = 0;
+img_process.Mask                = ixon_mask;
+img_process.doPSF               = 0;
+img_process.PSF                 = [1.3 50 5]; % [sigma, N, Niter]
+img_process.doFFT               = 1;
+img_process.doMaskIR            = 1;
+img_process.IRMaskRadius        = 0.01;
+img_process.doFFTFilter         = 1;
+img_process.FFTFilterRadius     = 1;
+
+% Electronic bias offset
+doSubBias=0;
+offset=200; 
+
+% Ixon mask
+doApplyMask=0;
+
+
+% Gauss Filter
+% Smooth the data by a gaussian filter
+doGaussFilter=0;
+filter_radius=.5;  % Gaussian filter radius
 
 
 %% Select image directory
@@ -283,25 +315,8 @@ for kk=1:length(ixondata)
     ixondata(kk).Z=Z;
 end
 
-%% Dark Image Analysis
-% Analyze the dark image of your data sets.  The dark image is assumed to
-% be the first image. Having a low number of background counts is important
-% to be able to resolve single atoms
-% OBSOLTE AS THE FIRST IMAGE IS NOT A DARK IMAGE ASK CF FOR DETAILS
-% opts_darkImage = struct;
-% opts_darkImage.FigLabel = FigLabel;
-% opts_darkImage.xVar = ixon_xVar;
-% opts_darkImage.xUnit = ixon_unit;
-% opts_darkImage.AvgLimits = [190 350];    % Limits for average of counts
-% opts_darkImage.StdLimits = [0 100];     % Limits for deviation of counts
-% 
-% 
-% if doDarkImageAnalysis
-%   [hF_darkImage, dark_data] =ixon_analyzeDarkImage(...
-%       ixondata,opts_darkImage);  
-% end
-
-
+%% Image Processing New
+% ixondata = processRawData(ixondata);
 %% PSF Sharpening
 % For single-site image
 dark_opts = struct;
