@@ -652,12 +652,13 @@ hbNavRight.Position=[221 2 12 20];
             newdata=load(filename);
             
             data=newdata.data;
-            data=updateImages(data);      
+            updateImages;      
         catch ME       
+            
             warning('Unable to load image, reverting to old data');
             disp(['FileName : ' filename]);
             data=olddata;
-            data=updateImages(data);      
+            updateImages;      
         end
     end
 
@@ -880,7 +881,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 if ~cAutoUpdate.Value
                     currDir=defaultDir;
                     data=mydata;   
-                    data=updateImages(data);                     
+                    data=updateImages;                     
                 else                    
                     % Just update index
                     updateHistoryInd(data);   
@@ -1001,7 +1002,7 @@ hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
 hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
     function processCB(~,~)
-        data=updateImages(data);
+        data=updateImages;
     end
 
 %% Analysis Panel
@@ -1175,7 +1176,7 @@ hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
 % Callback function for redoing fits button
     function cbrefit(~,~)
         disp('Redoing fits...');
-        data=updateImages(data);
+        data=updateImages;
     end
 
 
@@ -1259,6 +1260,7 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
 hpDisp_X.Position=[160 500 160 200];
+
 
 % Button group for acquisition mode
 bgPosImg = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w',...
@@ -2050,6 +2052,15 @@ set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
         
         imgNumX = bgPosImg.SelectedObject.UserData;
         imgNumK = bgKImg.SelectedObject.UserData;
+        
+        if size(data.Z,3)<imgNumX
+            
+            imgNumX = 1;
+            imgNumK = 1;
+            bgPosImg.SelectedObject = rbX1;
+            bgKImg.SelectedObject = rbK1;
+            
+        end
 
         set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,imgNumX));
         
@@ -2068,7 +2079,7 @@ set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
         disp([' done (' num2str(t2) ' seconds)']);
     end
 
-function data=updateImages(data)
+function updateImages
     % Grab the ROI
     ROI=tblROI.Data;
     data.ROI=ROI;       
@@ -2092,7 +2103,6 @@ function data=updateImages(data)
     opt.FFTFilterRadius    = tblKGaussFilter.Data;    
     
     data = processRawData(data,opt);
-    
     if size(data.Z,3)>1
         rbX2.Enable = 'on';
         rbK2.Enable = 'on';
@@ -2100,7 +2110,6 @@ function data=updateImages(data)
     else
         bgPosImg.SelectedObject = rbX1;
         bgKImg.SelectedObject = rbK1;
-
         rbX2.Enable = 'off';
         rbK2.Enable = 'off';
     end
@@ -2567,7 +2576,7 @@ end
 
 
 %% FINISH
-data=updateImages(data);
+updateImages;
 
 % Go to most recent image
 chData([],[],0);   
@@ -2584,12 +2593,6 @@ addlistener(axImg,'YLim','PostSet',@foo);
 addlistener(axImg_K,'XLim','PostSet',@foo3); 
 addlistener(axImg_K,'YLim','PostSet',@foo3); 
 
-% addlistener(axImg_K,'CLim','PostSet',@go); 
-% addlistener(axImg_K,'ZLim','PostSet',@go); 
-
-%     function go(a,b)
-%        keyboard 
-%     end
 
 set(hF,'WindowState','maximized');
 
