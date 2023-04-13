@@ -650,10 +650,11 @@ hbNavRight.Position=[221 2 12 20];
         olddata=data;
         try
             newdata=load(filename);
+            
             data=newdata.data;
             data=updateImages(data);      
         catch ME
-            
+            keyboard
             warning('Unable to load image, reverting to old data');
             disp(['FileName : ' filename]);
             data=olddata;
@@ -704,6 +705,8 @@ hbNavRight.Position=[221 2 12 20];
         tNavInd.String=sprintf('%03d',i1);
         [a,b,~]=fileparts(newfilename);
         tNavName.String=fullfile(a,b);    
+        
+        
         
         drawnow;   
         loadImage(newfilename);
@@ -2096,6 +2099,9 @@ function data=updateImages(data)
         rbK2.Enable = 'on';
 
     else
+        bgPosImg.SelectedObject = rbX1;
+        bgKImg.SelectedObject = rbK1;
+
         rbX2.Enable = 'off';
         rbK2.Enable = 'off';
     end
@@ -2103,7 +2109,7 @@ function data=updateImages(data)
     updateGraphics(data);
     
     % Create sub image to do center of mass analysis
-    Zsub=data.Z(y,x);
+    Zsub=data.Z(y,x,bgPosImg.SelectedObject.UserData);
     
     % Perform Box Count ALWAYS DONE
     data=ixon_boxCount(data);
@@ -2131,7 +2137,7 @@ function data=updateImages(data)
     set(tCoMAnalysis,'String',str);    
     
     % Update X, Y, and Z objects
-    set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z);
+    set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,bgPosImg.SelectedObject.UserData));
     
     if cAutoColor_X.Value
 %        autoClim; 

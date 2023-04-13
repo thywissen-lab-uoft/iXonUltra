@@ -43,6 +43,7 @@ for kk=1:length(data)
             data(kk).Z(:,:,1)=[];   
         end
     end     
+    
 %% Subtract Digital Bias
     if opts.doSubtractBias  
         fprintf(' biasing ...');
