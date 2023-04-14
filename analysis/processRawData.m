@@ -34,7 +34,6 @@ for kk=1:length(data)
 %% Remove extra exposure data
     if isfield(data(kk),'Flags') && isfield(data(kk).Flags,'qgm_doClearBufferExposure') 
         fprintf('removing extra exposure ...');
-
         if data(kk).Flags.qgm_doClearBufferEposure && size(data(kk).Z,3)>1
             data(kk).Z(:,:,1)=[];    
         end
@@ -42,20 +41,17 @@ for kk=1:length(data)
         if size(data(kk).Z,3)>1
             data(kk).Z(:,:,1)=[];   
         end
-    end     
-    
+    end         
 %% Subtract Digital Bias
     if opts.doSubtractBias  
         fprintf(' biasing ...');
         data(kk).Z = data(kk).Z - 200;
-    end
-        
+    end        
 %% Image Mask
-
     if opts.doMask
         fprintf('masking ...');
         for ii=1:size(data(kk).Z,3)  
-          data(kk).Z(:,:,ii) = data(kk).Z(:,:,ii).*opts.Mask;        
+            data(kk).Z(:,:,ii) = data(kk).Z(:,:,ii).*opts.Mask;        
         end
     end
 %% Gaussian Fitler
@@ -63,20 +59,18 @@ for kk=1:length(data)
         fprintf('smooth position ...');
 
         for ii=1:size(data(kk).Z,3)  
-          data(kk).Z(:,:,ii) = imgaussfilt(data(kk).Z(:,:,ii),opts.GaussFilterRadius);
+            data(kk).Z(:,:,ii) = imgaussfilt(data(kk).Z(:,:,ii),opts.GaussFilterRadius);
         end
     end    
     
 %% Deconvolve PSF
     if opts.doPSF       
         fprintf('PSF ...');
-
-        s = opts.PSF(1);
-        N = opts.PSF(2);
-        Niter = opts.PSF(3);
-
-        psf = fspecial('gaussian',N,s);        
-        for ii=1:size(data(kk).Z,3)  
+        s       = opts.PSF(1);
+        N       = opts.PSF(2);
+        Niter   = opts.PSF(3);
+        psf     = fspecial('gaussian',N,s);        
+        for ii = 1:size(data(kk).Z,3)  
             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter);
         end       
     end
@@ -85,7 +79,6 @@ for kk=1:length(data)
 
     if opts.doFFT
         fprintf('FFT ...');
-
         % Compute FFT
         Nfft = 2^10;
         
@@ -100,43 +93,33 @@ for kk=1:length(data)
             data(kk).Zf(:,:,ii) = zf;
             data(kk).ZfNorm(:,:,ii) = abs(zf);
             data(kk).ZfPhase(:,:,ii) = angle(zf);
-        end
-   
+        end   
     end
         
 %% Mask IR
-
     if opts.doMaskIR && opts.doFFT
-        fprintf('mask FFT ...');
-
-        
-       kR = opts.IRMaskRadius;
-       [fxx,fyy]=meshgrid(data(kk).f,data(kk).f);
-       fmag = sqrt(fxx.^2+fyy.^2);
-       iMask = fmag>kR;
-
-       for ii=1:size(data(kk).Zf,3)
+        fprintf('mask FFT ...');        
+        kR = opts.IRMaskRadius;
+        [fxx,fyy]=meshgrid(data(kk).f,data(kk).f);
+        fmag = sqrt(fxx.^2+fyy.^2);
+        iMask = fmag>kR;
+        for ii=1:size(data(kk).Zf,3)
             data(kk).Zf(:,:,ii) = data(kk).Zf(:,:,ii).*iMask;
             data(kk).ZfNorm(:,:,ii) = data(kk).ZfNorm(:,:,ii).*iMask;
             data(kk).ZfPhase(:,:,ii) = data(kk).ZfPhase(:,:,ii).*iMask;
-       end
+        end
     end
-
 %% Filter FFT
     if opts.doFFT && opts.doFFTFilter
         fprintf('smooth FFT ...');
-
         for ii=1:size(data(kk).Zf,3)  
             data(kk).ZfNorm(:,:,ii) = imgaussfilt(data(kk).ZfNorm(:,:,ii),opts.FFTFilterRadius);
             data(kk).ZfPhase(:,:,ii) = imgaussfilt(data(kk).ZfPhase(:,:,ii),opts.FFTFilterRadius);
         end
-        t=toc;
     end
 %% Finish it
-
     t2 = now;
     disp(['done (' num2str(round((t2-t1)*24*60*60,2)) ' s)']);     
 end
-
 
 end
