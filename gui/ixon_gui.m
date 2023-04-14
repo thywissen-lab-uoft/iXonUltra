@@ -1792,12 +1792,12 @@ hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
         switch b.NewValue.Title
             case 'position'    
                 axes(axImg);
-                mouse_figure(hF);               
+%                 mouse_figure(hF);               
                 setChildren(hpDisp_X,'on');
                 setChildren(hpDisp_K,'off');      
             case 'momentum'  
                 axes(axImg_K);
-                mouse_figure(hF); 
+%                 mouse_figure(hF); 
                 setChildren(hpDisp_X,'off');
                 setChildren(hpDisp_K,'on');
         end        
@@ -1956,7 +1956,7 @@ tCoMAnalysis_K=text(.99,0.01,'FILENAME','units','normalized','fontsize',12,'font
 
 
 % Box for ROI (this will become an array later)
-pROI_K=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2,'parent',axImg_K);
+pROI_K=rectangle('position',[-.5 -.5 1 1],'edgecolor',co(1,:),'linewidth',2,'parent',axImg_K);
 
 % Color bar
 cBar_K=colorbar('fontsize',8,'units','pixels','location','northoutside');
@@ -2548,8 +2548,8 @@ set(hF,'WindowState','maximized');
 
 axes(axImg);
 set(axImg,'XLim',[1 512],'YLim',[ 1 512]); 
-enableDefaultInteractivity(axImg)
-
+enableDefaultInteractivity(axImg);
+enableDefaultInteractivity(axImg_K);
 end
  
 
