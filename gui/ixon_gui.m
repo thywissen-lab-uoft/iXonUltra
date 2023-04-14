@@ -1999,26 +1999,20 @@ set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 % Initial function call to update basic analysis graphics on new data input
 
 
-    function updateGraphics        
-        tic;
-        fprintf('Updating image graphics ...');
-        
-        set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,menuPosImg.Value));
-        
-        if isfield(data,'ZfNorm')
-            set(hImg_K,'XData',data.f,'YData',data.f,'CData',data.ZfNorm(:,:,menuKImg.Value));
-        end
-        
-        if cAutoColor_X.Value
-            setClim('X');
-        end
-        
-        if cAutoColor_K.Value
-            setClim('K');
-        end   
-        t2 = toc;
-        disp([' done (' num2str(t2) ' seconds)']);
-    end
+function updateGraphics        
+    tic;
+    fprintf('Updating image graphics ...');        
+    set(hImg,'XData',data.X,'YData',data.Y,'CData'...
+        ,data.Z(:,:,menuPosImg.Value));        
+    if isfield(data,'ZfNorm')
+        set(hImg_K,'XData',data.f,'YData',data.f,'CData',...
+            data.ZfNorm(:,:,menuKImg.Value));
+    end        
+    if cAutoColor_X.Value;setClim('X');end        
+    if cAutoColor_K.Value;setClim('K');end   
+    t2 = toc;
+    disp([' done (' num2str(t2) ' seconds)']);
+end
 
 function updateImages
     % Grab the ROI
