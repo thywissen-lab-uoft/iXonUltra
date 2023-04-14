@@ -64,15 +64,12 @@ addpath(mpath);addpath(genpath(mpath))
 % Find any instances of the GUI and bring it to focus, this is tof avoid
 % restarting the GUI which may leave the shutter open.
 h = findall(0,'tag','GUI');
-for kk=1:length(h)
-    
+for kk=1:length(h)    
     if isequal(h(kk).Name,guiname)        
         warning(['iXon GUI instance detected.  Bringing into focus. ' ...
             ' If you want to start a new instance, close the original iXon GUI.']); 
        figure(h(kk));
        return;
-%               close(figure(h(kk)));
-%        return;
     end    
 end
 
@@ -95,10 +92,6 @@ cam_status.isAcquiring=0;       % is the camera acquiring frames?
 
 acq=defaultNormalAcqSettings;   % load default settings
 desc=acqDescription(acq);       % Get description of settings
-
-%% Default Display Options
-
-
 %% Initialize Figure
 
 % Initialize the primary figure
@@ -110,8 +103,7 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
 % Callback for when the GUI is requested to be closed.
     function closeGUI(fig,~)
         answer = questdlg('Close the iXon GUI?','Close iXon?',...
-            'Yes','No','No') ;
-        
+            'Yes','No','No') ;        
         switch answer
             case 'Yes'
                 disp('Closing the iXon GUI ...')
@@ -121,14 +113,11 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
                 doClose = 0;
             otherwise
                 doClose = 0;
-        end
-        
+        end        
         if doClose
             disp('Closing iXon GUI...');      
             stop(statusTimer);
-            if cam_status.isConnected
-                disconnectCam;
-            end
+            if cam_status.isConnected;disconnectCam;end
             delete(statusTimer);
             delete(fig);      % Delete the figure          
         end
@@ -146,10 +135,7 @@ function SizeChangedFcn(~,~)
         x0=hpFit.Position(1)+hpFit.Position(3);
         W=hF.Position(3);H=hF.Position(4);                          % Figure size
         Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);  % Top Bar
-        if (W>360 && H>55); hp.Position=[x0 1 W-x0 H-Ht]; end     % image panel      
-        
-
-        
+        if (W>360 && H>55); hp.Position=[x0 1 W-x0 H-Ht]; end     % image panel             
         resizePlots;                                                % Resize plots                          
         
         % Resize Panels
@@ -168,10 +154,7 @@ function SizeChangedFcn(~,~)
                 
         % Move status string
         strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;        
-        drawnow;
-        
-%         bgImg.Position(1:2)=[2 hp.Position(4)-bgImg.Position(4)];
-
+        drawnow;       
 end
 
 %% Camera Panel
@@ -343,12 +326,10 @@ hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
     'ToolTipString',ttstr);
 
     function coolCB(~,~,state)  
-        out=coolCamera(state);
-        
+        out=coolCamera(state);        
         if ~out && ~doDebug
            return; 
-        end
-        
+        end        
         % Enable/Disable buttons
         if state
             hbCool.Enable='off';
@@ -1261,20 +1242,22 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
 hpDisp_X.Position=[160 500 160 200];
 
+    function updateImageLists
+        menuPosImg.String = {};
+        menuKImg.String = {};
+        for nn = 1 :size(data.Z,3)
+            menuPosImg.String{nn} = ['image ' num2str(nn) ' of ' num2str(size(data.Z,3))];
+            menuKImg.String{nn} = ['image ' num2str(nn) ' of ' num2str(size(data.Z,3))];
+        end        
+        menuPosImg.Value = min([menuPosImg.Value length(menuPosImg.String)]);
+        menuKImg.Value = min([menuKImg.Value length(menuKImg.String)]);
+    end
 
-% Button group for acquisition mode
-bgPosImg = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w',...
-    'BorderType','None','SelectionChangeFcn',{@(a,b) updateGraphics;});  
-bgPosImg.Position(3:4)=[160 20];
-bgPosImg.Position(1:2)=[0 hpDisp_X.Position(4)-bgPosImg.Position(4)-15];    
-
-% Radio buttons for cuts vs sum
-rbX1=uicontrol(bgPosImg,'Style','radiobutton','String','image 1',...
-    'Position',[1 0 65 20],'units','pixels','backgroundcolor','w','Value',1,...
-    'UserData',1);
-rbX2=uicontrol(bgPosImg,'Style','radiobutton','String','image 2',...
-    'Position',[65 0 65 20],'units','pixels','backgroundcolor','w','Enable','off',...
-    'UserData',2);
+menuPosImg=uicontrol('style','popupmenu','string',...
+    {'image 1 of 1','image 1 of 2'},'units','pixels','parent',hpDisp_X,...
+    'Callback',{@(a,b) updateGraphics});
+menuPosImg.Position(3:4)=[120 18];
+menuPosImg.Position(1:2)=[0 hpDisp_X.Position(4)-menuPosImg.Position(4)-15];   
 
 % Table for changing display limits
 tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
@@ -1282,7 +1265,7 @@ tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
     'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
 tbl_dROI_X.Position(3:4)=tbl_dROI_X.Extent(3:4);
-tbl_dROI_X.Position(1:2)=[2 bgPosImg.Position(2)-tbl_dROI_X.Position(4)];
+tbl_dROI_X.Position(1:2)=[2 menuPosImg.Position(2)-tbl_dROI_X.Position(4)-10];
 
 % Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
@@ -1350,21 +1333,11 @@ cCross_X.Position=[2 cCoMStr_X.Position(2)-20 120 20];
 hpDisp_K = uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum display');
 hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 240];
 
-% Button group for acquisition mode
-bgKImg = uibuttongroup(hpDisp_K,'units','pixels','backgroundcolor','w',...
-    'BorderType','None','SelectionChangeFcn',{@(a,b) updateGraphics;});  
-bgKImg.Position(3:4)=[160 20];
-bgKImg.Position(1:2)=[0 hpDisp_K.Position(4)-bgKImg.Position(4)-15];    
-
-% Radio buttons for cuts vs sum
-rbK1=uicontrol(bgKImg,'Style','radiobutton','String','image 1',...
-    'Position',[1 0 65 20],'units','pixels','backgroundcolor','w','Value',1,...
-    'UserData',1);
-rbK2=uicontrol(bgKImg,'Style','radiobutton','String','image 2',...
-    'Position',[65 0 65 20],'units','pixels','backgroundcolor','w','Enable','off',...
-    'UserData',2);
-
-
+menuKImg=uicontrol('style','popupmenu','string',...
+    {'image 1 of 1','image 1 of 2'},'units','pixels','parent',hpDisp_K,...
+    'Callback',{@(a,b) updateGraphics});
+menuKImg.Position(3:4)=[120 18];
+menuKImg.Position(1:2)=[0 hpDisp_K.Position(4)-menuKImg.Position(4)-15];   
 
 % Table for changing display limits
 tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
@@ -1372,7 +1345,7 @@ tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
     'ColumnWidth',{30 30 30 30},'FontSize',6,'Data',[-.5 .5 -.5 .5]);
 tbl_dROI_K.Position(3:4)=tbl_dROI_K.Extent(3:4);
-tbl_dROI_K.Position(1:2)=[2 bgKImg.Position(2)-tbl_dROI_K.Position(4)];
+tbl_dROI_K.Position(1:2)=[2 menuKImg.Position(2)-tbl_dROI_K.Position(4)-15];
 
 % Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
@@ -1598,7 +1571,6 @@ cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
                 tbl = climtbl_K;
 
         end              
-%         N0 = round(prctile(z(:),99));   
         N0 = round(max(max(z))*.95);
         if nargin == 1
             CLIM = [0 N0];
@@ -1813,8 +1785,7 @@ hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
                     setChildren(obj.Children(n),state); 
                end
            end
-       end
-        
+       end        
     end
 
     function foobar(a,b)
@@ -1823,26 +1794,13 @@ hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
                 axes(axImg);
                 mouse_figure(hF);               
                 setChildren(hpDisp_X,'on');
-                setChildren(hpDisp_K,'off');    
-                
-                if size(data.Z,3)>1
-                    rbX2.Enable = 'on';
-                else
-                    rbX2.Enable = 'off';
-                end
+                setChildren(hpDisp_K,'off');      
             case 'momentum'  
                 axes(axImg_K);
                 mouse_figure(hF); 
                 setChildren(hpDisp_X,'off');
                 setChildren(hpDisp_K,'on');
-                if size(data.Z,3)>1
-                    rbK2.Enable = 'on';
-                else
-                    rbK2.Enable = 'off';
-                end
-        end
-        
- 
+        end        
     end
 
 % Tab Groups for each display
@@ -2000,10 +1958,6 @@ tCoMAnalysis_K=text(.99,0.01,'FILENAME','units','normalized','fontsize',12,'font
 % Box for ROI (this will become an array later)
 pROI_K=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2,'parent',axImg_K);
 
-% Reticle for gaussian fit (this will become an array later)
-% pGaussRet_K=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:),'parent',axImg_K);
-
-
 % Color bar
 cBar_K=colorbar('fontsize',8,'units','pixels','location','northoutside');
 
@@ -2045,27 +1999,14 @@ set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 % Initial function call to update basic analysis graphics on new data input
 
 
-    function updateGraphics
-        
+    function updateGraphics        
         tic;
         fprintf('Updating image graphics ...');
         
-        imgNumX = bgPosImg.SelectedObject.UserData;
-        imgNumK = bgKImg.SelectedObject.UserData;
-        
-        if size(data.Z,3)<imgNumX
-            
-            imgNumX = 1;
-            imgNumK = 1;
-            bgPosImg.SelectedObject = rbX1;
-            bgKImg.SelectedObject = rbK1;
-            
-        end
-
-        set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,imgNumX));
+        set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,menuPosImg.Value));
         
         if isfield(data,'ZfNorm')
-            set(hImg_K,'XData',data.f,'YData',data.f,'CData',data.ZfNorm(:,:,imgNumK));
+            set(hImg_K,'XData',data.f,'YData',data.f,'CData',data.ZfNorm(:,:,menuKImg.Value));
         end
         
         if cAutoColor_X.Value
@@ -2100,24 +2041,14 @@ function updateImages
     opt.doMaskIR           = hcIRMask.Value;
     opt.IRMaskRadius       = tblIRMask.Data;
     opt.doFFTFilter        = cKGaussFilter.Value;
-    opt.FFTFilterRadius    = tblKGaussFilter.Data;    
+    opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
-    data = processRawData(data,opt);
-    if size(data.Z,3)>1
-        rbX2.Enable = 'on';
-        rbK2.Enable = 'on';
-
-    else
-        bgPosImg.SelectedObject = rbX1;
-        bgKImg.SelectedObject = rbK1;
-        rbX2.Enable = 'off';
-        rbK2.Enable = 'off';
-    end
-    
+    data = processRawData(data,opt);       
+    updateImageLists;        
     updateGraphics;
 
     % Create sub image to do center of mass analysis
-    Zsub=data.Z(y,x,bgPosImg.SelectedObject.UserData);
+    Zsub=data.Z(y,x,1);
     
     % Perform Box Count ALWAYS DONE
     data=ixon_boxCount(data);
@@ -2145,7 +2076,7 @@ function updateImages
     set(tCoMAnalysis,'String',str);    
     
     % Update X, Y, and Z objects
-    set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,bgPosImg.SelectedObject.UserData));
+    set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,1));
     
     if cAutoColor_X.Value
 %        autoClim; 
@@ -2230,10 +2161,6 @@ function updateImages
     % Now do the fits
     data=updateAnalysis(data);
 end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% updateGraphics
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % updateDataPlots
@@ -2509,15 +2436,7 @@ end
                 iD = imgs(:,:,1);
                 imgs(:,:,1)=[];   
             end
-        end
-        
-        % Smush all images together
-        imgs = reshape(imgs,size(imgs,1),[],1);        
-        mydata.Z = imgs;        
-
-        % Add X and Y vectors
-        mydata.X=1:size(mydata.Z,2);
-        mydata.Y=1:size(mydata.Z,1);     
+        end       
 
         % Append acquisition information
         mydata.CameraInformation=cam_info;
@@ -2571,9 +2490,6 @@ end
         tNavName.String=fullfile(currDir,data.Name);
         
     end
-%% Analysis Funciton
-
-
 
 %% FINISH
 updateImages;
@@ -2622,12 +2538,6 @@ set(hF,'WindowState','maximized');
           % Update plots if sum
         if rbSum_X.Value
             
-%             
-%             Zsub = sum(hImg.CData(axImg.YLim(1):axImg.YLim(2),axImg.XLim(1):axImg.XLim(2)));
-%             Zy=sum(Zsub,2);
-%             Zx=sum(Zsub,1);          
-%             set(pX,'XData',linspace(axImg.XLim(1),axImg.XLim(2),length(Zx)),'YData',Zx);
-%             set(pY,'XData',Zy,'YData',linspace(axImg.YLim(1),axImg.YLim(2),length(Zy)));
         end
 
         % Update plots if cut
@@ -2639,12 +2549,13 @@ set(hF,'WindowState','maximized');
 
     end
 
+
+
+
 axes(axImg);
- mouse_figure(hF)
- 
- 
- 
- set(axImg,'XLim',[1 512],'YLim',[ 1 512]);
+set(axImg,'XLim',[1 512],'YLim',[ 1 512]); 
+enableDefaultInteractivity(axImg)
+
 end
  
 
