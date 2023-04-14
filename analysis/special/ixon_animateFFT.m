@@ -15,9 +15,7 @@ else
 end
 ixondata=ixondata(inds);
 
-if isequal(xVar,'ExecutionDate')
-    xvals=xvals-min(xvals);
-end
+
 %% Average with unique x variable
 
 % Find and sor the unique values
@@ -157,7 +155,7 @@ drawnow;
 % tt.Position(4)=30;
 
 % Text label for variable name
-t=text(5,5,'hi','units','pixels','fontsize',14,'color','r',...
+t=text(5,5,'hi','units','pixels','fontsize',10,'color','r',...
     'interpreter','none','verticalalignment','bottom',...
     'fontweight','bold');
 
@@ -190,13 +188,18 @@ xlabel('frequency (1/px)');
 ylabel('frequency (1/px)');
 
 %% Animate
+disp('ANIMATING');
 
 for kk=1:length(uxvals)   % Iterate over all unique xvalues
     
     %%%% Update the graphics
-    t.String=[xVar ' = ' num2str(uxvals(kk))];          % Variable string
 
-
+    if isequal(xVar,'ExecutionDate')
+            t.String=[xVar ': ' datestr(uxvals(kk),'YYYY-mm-DD_HH-MM-SS')];          % Variable string
+    else
+            t.String=[xVar ': ' num2str(uxvals(kk))];          % Variable string
+    end
+    
     set(hImg,'XData',X,'YData',Y,'CData',Zall(:,:,kk));  % Image data
     set(gca,'XDir','normal','YDir','normal');
     
@@ -220,6 +223,7 @@ for kk=1:length(uxvals)   % Iterate over all unique xvalues
 
 end
 close;
-    
+    disp('done');
+
 end
 

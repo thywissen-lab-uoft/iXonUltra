@@ -69,9 +69,9 @@ for kk=1:length(h)
     if isequal(h(kk).Name,guiname)        
         warning(['iXon GUI instance detected.  Bringing into focus. ' ...
             ' If you want to start a new instance, close the original iXon GUI.']); 
-%        figure(h(kk));
-%        return;
-              close(figure(h(kk)));
+       figure(h(kk));
+       return;
+%               close(figure(h(kk)));
 %        return;
     end    
 end
@@ -650,14 +650,15 @@ hbNavRight.Position=[221 2 12 20];
         olddata=data;
         try
             newdata=load(filename);
+            
             data=newdata.data;
-            data=updateImages(data);      
-        catch ME
+            updateImages;      
+        catch ME       
             
             warning('Unable to load image, reverting to old data');
             disp(['FileName : ' filename]);
             data=olddata;
-            data=updateImages(data);      
+            updateImages;      
         end
     end
 
@@ -704,6 +705,8 @@ hbNavRight.Position=[221 2 12 20];
         tNavInd.String=sprintf('%03d',i1);
         [a,b,~]=fileparts(newfilename);
         tNavName.String=fullfile(a,b);    
+        
+        
         
         drawnow;   
         loadImage(newfilename);
@@ -878,7 +881,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 if ~cAutoUpdate.Value
                     currDir=defaultDir;
                     data=mydata;   
-                    data=updateImages(data);                     
+                    updateImages;                     
                 else                    
                     % Just update index
                     updateHistoryInd(data);   
@@ -999,7 +1002,7 @@ hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
 hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
     function processCB(~,~)
-        data=updateImages(data);
+        updateImages;
     end
 
 %% Analysis Panel
@@ -1173,7 +1176,7 @@ hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
 % Callback function for redoing fits button
     function cbrefit(~,~)
         disp('Redoing fits...');
-        data=updateImages(data);
+        updateImages;
     end
 
 
@@ -1256,7 +1259,22 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 %% Display Options Panel
 
 hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
-hpDisp_X.Position=[160 500 160 180];
+hpDisp_X.Position=[160 500 160 200];
+
+
+% Button group for acquisition mode
+bgPosImg = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w',...
+    'BorderType','None','SelectionChangeFcn',{@(a,b) updateGraphics;});  
+bgPosImg.Position(3:4)=[160 20];
+bgPosImg.Position(1:2)=[0 hpDisp_X.Position(4)-bgPosImg.Position(4)-15];    
+
+% Radio buttons for cuts vs sum
+rbX1=uicontrol(bgPosImg,'Style','radiobutton','String','image 1',...
+    'Position',[1 0 65 20],'units','pixels','backgroundcolor','w','Value',1,...
+    'UserData',1);
+rbX2=uicontrol(bgPosImg,'Style','radiobutton','String','image 2',...
+    'Position',[65 0 65 20],'units','pixels','backgroundcolor','w','Enable','off',...
+    'UserData',2);
 
 % Table for changing display limits
 tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
@@ -1264,7 +1282,7 @@ tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
     'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
 tbl_dROI_X.Position(3:4)=tbl_dROI_X.Extent(3:4);
-tbl_dROI_X.Position(1:2)=[2 hpDisp_X.Position(4)-tbl_dROI_X.Position(4)-25];
+tbl_dROI_X.Position(1:2)=[2 bgPosImg.Position(2)-tbl_dROI_X.Position(4)];
 
 % Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
@@ -1330,7 +1348,23 @@ cCross_X.Position=[2 cCoMStr_X.Position(2)-20 120 20];
 %% Display Options Panel
 
 hpDisp_K = uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum display');
-hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 220];
+hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 240];
+
+% Button group for acquisition mode
+bgKImg = uibuttongroup(hpDisp_K,'units','pixels','backgroundcolor','w',...
+    'BorderType','None','SelectionChangeFcn',{@(a,b) updateGraphics;});  
+bgKImg.Position(3:4)=[160 20];
+bgKImg.Position(1:2)=[0 hpDisp_K.Position(4)-bgKImg.Position(4)-15];    
+
+% Radio buttons for cuts vs sum
+rbK1=uicontrol(bgKImg,'Style','radiobutton','String','image 1',...
+    'Position',[1 0 65 20],'units','pixels','backgroundcolor','w','Value',1,...
+    'UserData',1);
+rbK2=uicontrol(bgKImg,'Style','radiobutton','String','image 2',...
+    'Position',[65 0 65 20],'units','pixels','backgroundcolor','w','Enable','off',...
+    'UserData',2);
+
+
 
 % Table for changing display limits
 tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
@@ -1338,7 +1372,7 @@ tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
     'ColumnWidth',{30 30 30 30},'FontSize',6,'Data',[-.5 .5 -.5 .5]);
 tbl_dROI_K.Position(3:4)=tbl_dROI_K.Extent(3:4);
-tbl_dROI_K.Position(1:2)=[2 hpDisp_K.Position(4)-tbl_dROI_K.Position(4)-25];
+tbl_dROI_K.Position(1:2)=[2 bgKImg.Position(2)-tbl_dROI_K.Position(4)];
 
 % Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
@@ -1726,6 +1760,7 @@ tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
         if isValidAcq(temp_acq)
             acq=temp_acq;
             desc=acqDescription(acq);
+
             loadAcquisitionSettings;
         else
             src.Data{evt.Indices(1),evt.Indices(2)}=evt.PreviousData;     
@@ -1789,12 +1824,25 @@ hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
                 mouse_figure(hF);               
                 setChildren(hpDisp_X,'on');
                 setChildren(hpDisp_K,'off');    
+                
+                if size(data.Z,3)>1
+                    rbX2.Enable = 'on';
+                else
+                    rbX2.Enable = 'off';
+                end
             case 'momentum'  
                 axes(axImg_K);
                 mouse_figure(hF); 
                 setChildren(hpDisp_X,'off');
                 setChildren(hpDisp_K,'on');
+                if size(data.Z,3)>1
+                    rbK2.Enable = 'on';
+                else
+                    rbK2.Enable = 'off';
+                end
         end
+        
+ 
     end
 
 % Tab Groups for each display
@@ -1996,123 +2044,28 @@ set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initial function call to update basic analysis graphics on new data input
 
-    function data = processImages(data)
-        disp(' ');
-        disp('Processing image');
-        t1=now;
+
+    function updateGraphics
         
-        % Grab the Raw Data
-        imgs=data.RawImages;           
-
-        % Remove the first image if there is a buffer
-        if isfield(data,'Flags') && isfield(data.Flags,'qgm_doClearBufferExposure') 
-            if data.Flags.qgm_doClearBufferEposure && size(imgs,3)>1
-                imgs(:,:,1)=[];    
-            end
-        else
-            if size(imgs,3)>1
-                imgs(:,:,1)=[];   
-            end
-        end     
-
-        % Subtract the digital bias from the data
-        if hcSubBias.Value
-            imgs = imgs - 200;
-        end
-
-        % Apply an image mask
-        if hcMask.Value
-            for ii=1:size(imgs,3)  
-              imgs(:,:,ii) = imgs(:,:,ii).*ixon_mask;        
-            end
-        end
-
-        % Apply gaussian filter
-        if cGaussFilter.Value  
-            for ii=1:size(imgs,3)  
-              imgs(:,:,ii) = imgaussfilt(imgs(:,:,ii),tblGaussFilter.Data);
-            end
-        end    
-
-        % Devoncolve data
-        if hcPSF.Value        
-            tic
-            fprintf('Deconvoling PSF ...')
-            s = tblPSF.Data(1);
-            N = tblPSF.Data(2);
-            Niter = tblPSF.Data(3);
-            psf = fspecial('gaussian',N,s);        
-            for ii=1:size(imgs,3)  
-                imgs(:,:,ii) = deconvlucy(imgs(:,:,ii),psf,Niter);
-            end
-            t=toc;
-            disp(['done (' num2str(t) ' seconds)']);
-        end
-
-        data.Z = imgs;
-        data.X = 1:size(data.Z,2);
-        data.Y = 1:size(data.Z,1); 
-
-        if hcFFT.Value
-            tic
-            fprintf('Computing FFT ...')
-            % Compute FFT
-            Nfft = 2^10;
-            data.Zf = zeros(Nfft,Nfft,size(data.Z,3));
-            data.ZfNorm = zeros(Nfft,Nfft,size(data.Z,3));
-            data.ZfPhase = zeros(Nfft,Nfft,size(data.Z,3));
-
-            for ii=1:size(data.Z,3)
-                zf = fft2(data.Z(:,:,ii),Nfft,Nfft);
-                zf = fftshift(zf);        
-                f = 1/2*linspace(-1,1,size(zf,1));       
-                data.Zf(:,:,ii) = zf;
-                data.ZfNorm(:,:,ii) = abs(zf);
-                data.ZfPhase(:,:,ii) = angle(zf);
-            end
-            t=toc;
-            disp(['done (' num2str(t) ' seconds)']);
-            data.f  = f;     
-        end
-        
-        if hcIRMask.Value
-           kR = tblIRMask.Data;
-           [fxx,fyy]=meshgrid(data.f,data.f);
-           fmag = sqrt(fxx.^2+fyy.^2);
-           iMask = fmag>kR;
-           
-           for ii=1:size(data.Zf,3)
-                data.Zf(:,:,ii) = data.Zf(:,:,ii).*iMask;
-                data.ZfNorm(:,:,ii) = data.ZfNorm(:,:,ii).*iMask;
-                data.ZfPhase(:,:,ii) = data.ZfPhase(:,:,ii).*iMask;
-           end
-        end
-
-
-        if cKGaussFilter.Value
-            tic
-            fprintf('Filtering FFT ...')
-            for ii=1:size(data.Zf,3)  
-                data.ZfNorm(:,:,ii) = imgaussfilt(data.ZfNorm(:,:,ii),tblKGaussFilter.Data);
-                data.ZfPhase(:,:,ii) = imgaussfilt(data.ZfPhase(:,:,ii),tblKGaussFilter.Data);
-            end
-            t=toc;
-            disp(['done (' num2str(t) ' seconds)']);
-        end
-        
-        t2 = now;
-
-        disp(['Imaging processing time ' num2str((t2-t1)*24*60*60) ' seconds']);
-    end
-
-    function updateGraphics(data)
         tic;
         fprintf('Updating image graphics ...');
         
-        set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z);
+        imgNumX = bgPosImg.SelectedObject.UserData;
+        imgNumK = bgKImg.SelectedObject.UserData;
+        
+        if size(data.Z,3)<imgNumX
+            
+            imgNumX = 1;
+            imgNumK = 1;
+            bgPosImg.SelectedObject = rbX1;
+            bgKImg.SelectedObject = rbK1;
+            
+        end
+
+        set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,imgNumX));
         
         if isfield(data,'ZfNorm')
-            set(hImg_K,'XData',data.f,'YData',data.f,'CData',data.ZfNorm);
+            set(hImg_K,'XData',data.f,'YData',data.f,'CData',data.ZfNorm(:,:,imgNumK));
         end
         
         if cAutoColor_X.Value
@@ -2126,19 +2079,45 @@ set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
         disp([' done (' num2str(t2) ' seconds)']);
     end
 
-function data=updateImages(data)
+function updateImages
     % Grab the ROI
     ROI=tblROI.Data;
     data.ROI=ROI;       
     x=ROI(1):ROI(2);
-    y=ROI(3):ROI(4); 
+    y=ROI(3):ROI(4);     
     
-    data = processImages(data);
+    opt = struct;
+    opt.doSubtractBias     = hcSubBias.Value;
+    opt.doGaussFilter      = cGaussFilter.Value;
+    opt.GaussFilterRadius  = tblGaussFilter.Data;
+    opt.doMask             = hcMask.Value;
+    opt.Mask               = ixon_mask;
+    opt.doPSF              = hcPSF.Value ;    
+    opt.PSF                = tblPSF.Data;    
+        
+    % Momentum Space
+    opt.doFFT              = hcFFT.Value;
+    opt.doMaskIR           = hcIRMask.Value;
+    opt.IRMaskRadius       = tblIRMask.Data;
+    opt.doFFTFilter        = cKGaussFilter.Value;
+    opt.FFTFilterRadius    = tblKGaussFilter.Data;    
     
-    updateGraphics(data);
+    data = processRawData(data,opt);
+    if size(data.Z,3)>1
+        rbX2.Enable = 'on';
+        rbK2.Enable = 'on';
+
+    else
+        bgPosImg.SelectedObject = rbX1;
+        bgKImg.SelectedObject = rbK1;
+        rbX2.Enable = 'off';
+        rbK2.Enable = 'off';
+    end
     
+    updateGraphics;
+
     % Create sub image to do center of mass analysis
-    Zsub=data.Z(y,x);
+    Zsub=data.Z(y,x,bgPosImg.SelectedObject.UserData);
     
     % Perform Box Count ALWAYS DONE
     data=ixon_boxCount(data);
@@ -2166,7 +2145,7 @@ function data=updateImages(data)
     set(tCoMAnalysis,'String',str);    
     
     % Update X, Y, and Z objects
-    set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z);
+    set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,bgPosImg.SelectedObject.UserData));
     
     if cAutoColor_X.Value
 %        autoClim; 
@@ -2597,7 +2576,7 @@ end
 
 
 %% FINISH
-data=updateImages(data);
+updateImages;
 
 % Go to most recent image
 chData([],[],0);   
@@ -2614,12 +2593,6 @@ addlistener(axImg,'YLim','PostSet',@foo);
 addlistener(axImg_K,'XLim','PostSet',@foo3); 
 addlistener(axImg_K,'YLim','PostSet',@foo3); 
 
-% addlistener(axImg_K,'CLim','PostSet',@go); 
-% addlistener(axImg_K,'ZLim','PostSet',@go); 
-
-%     function go(a,b)
-%        keyboard 
-%     end
 
 set(hF,'WindowState','maximized');
 

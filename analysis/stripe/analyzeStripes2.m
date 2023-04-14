@@ -20,17 +20,8 @@ end
 
 params=[ixondata.Params];
 xvals=[params.(xVar)];
-times=[params.ExecutionDate];
-
 [xvals,inds]=sort(xvals,'ascend');
-
-
 ixondata=ixondata(inds);
-
-if isequal(xVar,'ExecutionDate')
-%     xvals=datetime(datevec(xvals));
-%     xvals = xvals;
-end
 
 %% Fitting Function
 % Define the fitting function. It is a 2D gaussian who is modulated by a
@@ -107,7 +98,7 @@ for kk=1:length(ixondata)
     y2=1:size(Z2,1);y2=y2';    
 
     % Resize
-    sc=0.3;
+    sc=0.1;
     Z2=imresize(Z2,sc);
     x2=imresize(x2,sc);
     y2=imresize(y2,sc);
@@ -198,7 +189,7 @@ for kk=1:length(ixondata)
     yL2=[-1 1]*200.*sind(theta+90);
     xL2=[-1 1]*200.*cosd(theta+90);
     tt=linspace(0,2*pi,100);    
-    
+    %% Debug Plot for guess
     if doDebug
         % If in debug mode, plot the guess and some plots to show how it is
         % obtained.
@@ -374,12 +365,11 @@ for kk=1:length(ixondata)
     if kk>1 && isequal(xVar,'ExecutionDate')
         pG(end-2) = fout.theta;
         pG(end-1) = fout.L;
-        pG(end) = fout.phi;
-        
-
+        pG(end) = fout.phi;    
     end
-        opt.Lower = [0 0 0 0 0 pG(end-2)-2 pG(end-1)-3 pG(end)-1];
-        opt.Upper = [AG(kk)*1.5 xCG(kk)+50 yCG(kk)+50 sG(kk)+50 BG(kk)+2000 pG(end-2)+2 pG(end-1)+3 pG(end)+1];
+    
+    opt.Lower = [0 0 0 0 0 pG(end-2)-2 pG(end-1)-3 pG(end)-1.5];
+    opt.Upper = [AG(kk)*1.5 xCG(kk)+50 yCG(kk)+50 sG(kk)+60 BG(kk)+2000 pG(end-2)+2 pG(end-1)+3 pG(end)+1.5];
 
 
     
@@ -545,6 +535,7 @@ if isequal(xVar,'ExecutionDate')
     datetick('x');
     xlabel('time','fontsize',10);
 end
+xlim([min(xvals) max(xvals)]);
 
 % Angle
 axb2=subplot(132);
@@ -558,6 +549,8 @@ if isequal(xVar,'ExecutionDate')
     datetick('x');
     xlabel('time','fontsize',10);
 end
+xlim([min(xvals) max(xvals)]);
+
 % Phase
 subplot(133);
 errorbar(xvals,phis(:,1)/pi,phis(:,2)/pi,'marker','o',...
@@ -570,6 +563,8 @@ if isequal(xVar,'ExecutionDate')
     datetick('x');
     xlabel('time','fontsize',10);
 end
+xlim([min(xvals) max(xvals)]);
+
 % Error
 % subplot(144);
 % plot(xvals,sse,'marker','o',...
