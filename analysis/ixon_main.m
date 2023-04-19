@@ -335,13 +335,14 @@ end
 
 %% ANALYSIS : FFT BOX COUNT
 
+
+if ixon_fft_doBoxCount && ixon_doFFT
+    
 fft_boxOpts=struct;
 fft_boxOpts.maskIR=fft_opts.maskIR;
 fft_boxOpts.LMax=fft_opts.LMax;
 fft_boxOpts.maskUV=fft_opts.maskUV;
 fft_boxOpts.LMin=fft_opts.LMin;
-
-if ixon_fft_doBoxCount && ixon_doFFT
     ixondata=ixon_fft_boxCount(ixondata,fft_boxOpts);
 end
 
@@ -497,7 +498,7 @@ if ixon_doAnimate == 1 && ixon_doSave
 %          ixon_animateOpts.CLim=[0 1500];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-       ixon_animateOpts.CLim=[0 1000];   % Color limits
+%        ixon_animateOpts.CLim=[0 1000];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
