@@ -2768,7 +2768,7 @@ end
 function s3=getDayDir
     t=now;
     
-    d=['Y:\Data'];
+    d=['X:\Data'];
 
     if ~exist(d,'dir')
         s3=pwd;

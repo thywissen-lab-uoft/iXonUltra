@@ -1,6 +1,6 @@
-function [dirDay] = getImageDir(mydatevec)
+function [dirDay] = ixon_getImageDir(mydatevec)
 
-dirYear  = ['Y:\Data' filesep num2str(mydatevec(1))];
+dirYear  = ['X:\Data' filesep num2str(mydatevec(1))];
 dirMonth = [dirYear filesep num2str(mydatevec(1)) '.' sprintf('%2.2d',mydatevec(2))];
 dirDay   = [dirMonth filesep sprintf('%2.2d',mydatevec(2)) '.' sprintf('%2.2d',mydatevec(3))];
 

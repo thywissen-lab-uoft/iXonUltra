@@ -498,7 +498,7 @@ if ixon_doAnimate == 1 && ixon_doSave
 %          ixon_animateOpts.CLim=[0 1500];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-%        ixon_animateOpts.CLim=[0 1000];   % Color limits
+%        ixon_animateOpts.CLim=[0 500];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
