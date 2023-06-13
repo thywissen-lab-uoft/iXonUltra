@@ -13,6 +13,8 @@ if nargin == 1
     opts.Mask               = ones(512,512);
     opts.doPSF              = 0;    
     opts.PSF                = [1.3 50 5];    
+    opts.doRotate           = 0;
+    opts.Theta              = 0;
         
     % Momentum Space
     opts.doFFT              = 1;
@@ -21,6 +23,9 @@ if nargin == 1
     opts.doFFTFilter        = 1;
     opts.FFTFilterRadius    = 1;    
 end
+
+if ~isfield(opts,'doRotate'); opts.doRotate = 1;end
+    
 
 for kk=1:length(data)
 
@@ -46,6 +51,13 @@ for kk=1:length(data)
     if opts.doSubtractBias  
         fprintf(' biasing ...');
         data(kk).Z = data(kk).Z - 200;
+    end        
+    
+    %% Subtract Digital Bias
+    if opts.doRotate  
+        theta = opts.Theta;
+        fprintf([' rotating (' num2str(theta) ' deg)...']);
+        data(kk).Z = imrotate(data(kk).Z,theta,'bicubic');
     end        
 %% Image Mask
     if opts.doMask
@@ -120,6 +132,9 @@ for kk=1:length(data)
 %% Finish it
     t2 = now;
     disp(['done (' num2str(round((t2-t1)*24*60*60,2)) ' s)']);     
+    
+        data(kk).X = 1:size(data(kk).Z,2);
+    data(kk).Y = 1:size(data(kk).Z,1); 
 end
 
 end
