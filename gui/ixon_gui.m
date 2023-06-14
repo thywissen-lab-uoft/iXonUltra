@@ -1316,6 +1316,8 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
 
     function analyze_dig(src,evt)
         for kk=1:size(data.Z,3)
+            opts = struct;
+
             switch bgBasis.SelectedObject.UserData
                 case 'fft'
                     if isfield(data,'LatticeK')
@@ -1325,6 +1327,8 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
                         Q = [0 -1;1 0];
                         a1 = Q*k2/(k1'*Q*k2);
                         a2 = -Q*k1/(-k2'*Q*k1);
+                        opts.k1 = k1;
+                        opts.k2 = k2;
                         
                     else
                         warning('no fft fit has been done');
@@ -1334,10 +1338,10 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
                     a1 = tblBasis.Data(:,1);
                     a2 = tblBasis.Data(:,2);
             end
-            opts = struct;
             opts.a1 = a1;
             opts.a2 = a2;
             opts.ScaleFactor = 5;
+            
                 
             
             ROI=tblROI.Data;
@@ -1349,8 +1353,9 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             
             
 
-            data.LatticeDig(kk) = assignLattice(x,y,z,opts);
-            
+%             data.LatticeDig(kk) = assignLattice(x,y,z,opts);
+            data.LatticeDig(kk) = assignLattice2(x,y,z,opts);
+
             
             
         end
@@ -1609,8 +1614,8 @@ hpDisp_H.Position=[160 hpDisp_B.Position(2)-150 160 150];
 
 % Table to adjust color limits on image
 histtbl=uitable('parent',hpDisp_H,'units','pixels','RowName',{},'ColumnName',{'threshold','number bins'},...
-    'Data',[0 12000],'ColumnWidth',{40,65},'ColumnEditable',[true true],...
-    'CellEditCallback',@histCB);
+    'Data',[3000 100],'ColumnWidth',{70,80},'ColumnEditable',[true true],...
+    'CellEditCallback',@histCB,'fontsize',7);
 histtbl.Position(3:4)=histtbl.Extent(3:4);
 histtbl.Position(1:2)=[2 20];
 
@@ -2106,13 +2111,13 @@ l=80;   % Left gap for fitting and data analysis summary
         else
             f=0.5;
         end
-            
-       ax_hist_holder.Visible='off';       
-       ax_h1.Position = ax_hist_holder.Position;
-       ax_h1.Position(3) = ax_hist_holder.Position(3)*f;       
-       ax_h2.Position = ax_hist_holder.Position;
-       ax_h2.Position(1) = ax_h1.Position(1)+ax_h1.Position(3);
-       ax_h2.Position(3) = ax_hist_holder.Position(3) - ax_h2.Position(1);
+%             
+%        ax_hist_holder.Visible='off';       
+%        ax_h1.Position = ax_hist_holder.Position;
+%        ax_h1.Position(3) = ax_hist_holder.Position(3)*f;       
+%        ax_h2.Position = ax_hist_holder.Position;
+%        ax_h2.Position(1) = ax_h1.Position(1)+ax_h1.Position(3);
+%        ax_h2.Position(3) = ax_hist_holder.Position(3) - ax_h2.Position(1);
     end
 
 %% Position Images
@@ -2272,33 +2277,32 @@ ylabel('lattice site (a_2)','fontsize',8);
 caxis([0 1]);
 
 %% Histgoram
-
-
-
 ax_hist_holder = axes('parent',tHist);cla
 
-ax_h1=axes('parent',tHist);cla
-ax_h2=axes('parent',tHist);cla
+% ax_h1=axes('parent',tHist);cla
+% ax_h2=axes('parent',tHist);cla
 
+ax_h1=subplot(2,1,1);
+pHist1 = bar(1:100,1:100,'parent',ax_h1,'linestyle','none');
+ylabel('occurences');
+xlabel('counts');
+hold on
 
-
-pHist1 = bar(1:100,1:100,'parent',ax_h1);
-pHist2 = bar(1:100,1:100,'parent',ax_h2);
-
-
-set(ax_h1,'box','off','linewidth',.1,'fontsize',8,'units','normalized',...
+set(ax_h1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1',...
     'YAxisLocation','left');
+
+
+ax_h2=subplot(2,1,2);
+pHist2 = bar(1:100,1:100,'parent',ax_h2,'linestyle','none');
 ylabel('occurences');
 xlabel('counts');
-
-set(ax_h2,'box','off','linewidth',.1,'fontsize',8,'units','normalized',...
-    'XAxisLocation','bottom','YDir','normal','UserData','H2',...
-    'YAxisLocation','right');
-ylabel('occurences');
-xlabel('counts');
-
 hold on
+
+set(ax_h2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H2',...
+    'YAxisLocation','left');
+
 
 
 %%
@@ -2426,12 +2430,12 @@ end
         
         
         set(pHist1,'XData',centers,'YData',N);
-        set(ax_h1,'XLim',[0 Nthresh]);
+%         set(ax_h1,'XLim',[0 Nthresh]);
         set(pHist2,'XData',centers,'YData',N);
         set(ax_h2,'XLim',[Nthresh max(edges)]);
         
         
-        resizeHist(data);150
+        resizeHist(data);
     end
 
 function updateImages

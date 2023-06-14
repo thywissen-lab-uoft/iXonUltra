@@ -1,4 +1,4 @@
-function out=assignLattice(x,y,z,opts)
+function out=assignLattice2(x,y,z,opts)
 % Author : C. Fujiwara
 %
 % Given a fluoresence image input (z) with corresponding pixel position
@@ -89,114 +89,14 @@ jvec = j1:j2;
 % Matrix of all lattice positions
 [imat,jmat] = meshgrid(ivec,jvec);
 
-%% Course Binning
 
-fprintf('coarse phase ...');
-
-% Lattice Phase Guesses
-p1 = linspace(0,1,Ncoarse);
-p2 = linspace(0,1,Ncoarse);
-p1(end)=[];
-p2(end)=[];
-
-clear s
-for mm = 1:length(p1)
-    for nn = 1:length(p2)        
-        p = [p1(mm); p2(nn)];               % Phase        
-        P = repmat(p,[1 length(Z)]);        % Phase vector        
-        M = round(N0-P);                    % round pixel to lattice site    
-
-        
-        ibad = logical((M(1,:)<i1) + (M(1,:)>i2) + (M(2,:)>j2) + (M(2,:)<j1));
-        M(:,ibad) = [];
-
-        
-        Zbin = zeros(j2-j1+1,i2-i1+1);
-        for ii=1:size(M,2)
-            m1 = M(1,ii)-i1+1;
-            m2 = M(2,ii)-j1+1;
-            
-            
-            
-            Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);
-        end       
-        Zall = Zbin;
-        Zall = Zall(:);        
-        s(mm,nn) = std(Zall);
-    end
-end
-
-maximum = max(max(s));
-[mm,nn]=find(s==maximum);
-
-p10 = p1(mm);
-p20 = p2(nn);
-
-%% Fine Phase 1 Search
-fprintf('phase 1 ...');
-
-
-p1 = linspace(0,1,20);
-% p1 = linspace(-.5,.5,20);
-
-clear s1
-for mm = 1:length(p1)      
-    p = [p1(mm); p20];               % Phase        
-    P = repmat(p,[1 length(Z)]);        % Phase vector        
-    M = round(N0-P);                    % round pixel to lattice site
-    Zbin = zeros(j2-j1+1,i2-i1+1);
-    
-    ibad = logical((M(1,:)<i1) + (M(1,:)>i2) + (M(2,:)>j2) + (M(2,:)<j1));
-
-    
-    M(:,ibad) = [];
-    
-    for ii=1:size(M,2)
-        m1 = M(1,ii)-i1+1;
-        m2 = M(2,ii)-j1+1;       
-        Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);
-    end
-    Zall = Zbin;
-    Zall = Zall(:);
-    s1(mm) = std(Zall);
-end
-[~,mm] = max(s1);
-p1 = p1(mm);
-%% Fine Phase 2 Search
-fprintf('phase 2 ...');
-
-p2 = linspace(0,1,20);
-% p2 = linspace(-.5,.5,20);
-
-clear s2
-for mm = 1:length(p2)      
-    p = [p10; p2(mm)];                  % Phase        
-    P = repmat(p,[1 length(Z)]);        % Phase vector        
-    M = round(N0-P);                    % round pixel to lattice site
-    ibad = logical((M(1,:)<i1) + (M(1,:)>i2) + (M(2,:)>j2) + (M(2,:)<j1));
-    M(:,ibad) = [];
-    
-    Zbin = zeros(j2-j1+1,i2-i1+1);
-    for ii=1:size(M,2)
-        m1 = M(1,ii)-i1+1;
-        m2 = M(2,ii)-j1+1;
-        Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);
-    end
-    Zall = Zbin;
-    Zall = Zall(:);
-    s2(mm) = std(Zall);
-end
-
-[~,nn] = max(s2);
-p2 = p2(nn);
-
+%% Calculate the Phase
 % CF isn't sure why this works, BUT WHATEVETA FOURIER TRANSFORMS
-t1=mod(1-(angle(sum(exp(-1i*2*pi*(opts.k1(1).*X+opts.k1(2).*Y)).*z2,'all')))/(2*pi),1);
-t2=mod(1-(angle(sum(exp(-1i*2*pi*(opts.k2(1).*X+opts.k2(2).*Y)).*z2,'all')))/(2*pi),1);
+p1=mod(1-(angle(sum(exp(-1i*2*pi*(opts.k1(1).*X+opts.k1(2).*Y)).*z2,'all')))/(2*pi),1);
+p2=mod(1-(angle(sum(exp(-1i*2*pi*(opts.k2(1).*X+opts.k2(2).*Y)).*z2,'all')))/(2*pi),1);
 
 
 disp(' ');
-disp([t1 t2]);
 disp([p1 p2]);
 
 
