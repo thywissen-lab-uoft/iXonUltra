@@ -57,7 +57,7 @@ for kk=1:length(data)
     if opts.doRotate  
         theta = opts.Theta;
         fprintf([' rotating (' num2str(theta) ' deg)...']);
-        data(kk).Z = imrotate(data(kk).Z,theta,'bicubic');
+        data(kk).Z = imrotate(data(kk).Z,theta,'bicubic','crop');
     end        
 %% Image Mask
     if opts.doMask
@@ -81,11 +81,15 @@ for kk=1:length(data)
         s       = opts.PSF(1);
         N       = opts.PSF(2);
         Niter   = opts.PSF(3);
-        psf     = fspecial('gaussian',N,s);        
+        psf     = fspecial('gaussian',N,s);    
+        
         for ii = 1:size(data(kk).Z,3)  
             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter);
-        end       
+        end
+        
     end
+    
+    
 
 %% Compute FFT
 

@@ -8,8 +8,6 @@ if nargin<4
     smin = 1.3163;
 end
 
-
-
 % Lattice wavevector
 kL = 1/a;
 
@@ -24,8 +22,7 @@ fmat(fmat<(kL*0.9)) = 0;
 ss = (fmat~=0).*abs(Zf);
 
 % Find maximum peak in quadrant 1
-
-    tt=atan2(fyy,fxx);
+tt=atan2(fyy,fxx);
 ii = (tt<(0.25*pi)).*(tt>(-0.25*pi));
 
 A=(fxx>0).*(fyy>0).*ss;
@@ -98,6 +95,8 @@ k2 = [fout2.xc; fout2.yc];
 s2 = fout2.s;
 t2=toc;
 
+%% Output
+
 out = struct;
 out.k1 = k1;
 out.k2 = k2;
@@ -106,8 +105,5 @@ out.s2 = s2;
 out.Fit1 = fout1;
 out.Fit2 = fout2;
  
-% disp(['k1 ' num2str(k1(1)) ',' num2str(k1(2))]);
-% disp(['k2 ' num2str(k2(1)) ',' num2str(k2(2))]);
-
 end
 

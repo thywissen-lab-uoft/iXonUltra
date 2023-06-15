@@ -5,13 +5,6 @@ function out=assignLattice2(x,y,z,opts)
 % cooridinates (x,y), this function assigns fluoresnce to each lattice
 % site.
 %
-% It is assumed that the lattice spacing is already known, which may be
-% obtained by performing an independent FFT on the data
-%
-% The phase of the lattice is numerically optimized by performing a
-% "coarse" search on a M x M grid, then performing two "fine" searches on
-% a K x 1 and 1 x K grid for each individual lattice phase.
-%
 % The phase is found my optizing the total contrast of the image which is
 % gotten from the 
 
@@ -47,8 +40,6 @@ z2 = imresize(z,opts.ScaleFactor)/(opts.ScaleFactor^2); % scale amplitude to pre
 x2 = linspace(x(1),x(end),size(z2,2));
 y2 = linspace(y(1),y(end),size(z2,1));
 
-
-
 % Create 2xN vectors of all pixels positions
 [X,Y]=meshgrid(x2,y2);                  % matrix of X and Y
 R=[X(:)' ; Y(:)'];                      % All points
@@ -58,10 +49,6 @@ Z = z2(:);                              % counts per re-scaled pixel
 
 % Solve for all position in terms of the lattice basis
 N0 = inv(A)*R;
-%%
-
-k1 = opts.k1;
-k2 = opts.k2;
 
 %% Find bounds on lattice indeces
 % Given the lattice basis and the image bounds, determine some reasonable
@@ -91,14 +78,10 @@ jvec = j1:j2;
 
 
 %% Calculate the Phase
+
 % CF isn't sure why this works, BUT WHATEVETA FOURIER TRANSFORMS
 p1=mod(1-(angle(sum(exp(-1i*2*pi*(opts.k1(1).*X+opts.k1(2).*Y)).*z2,'all')))/(2*pi),1);
 p2=mod(1-(angle(sum(exp(-1i*2*pi*(opts.k2(1).*X+opts.k2(2).*Y)).*z2,'all')))/(2*pi),1);
-
-
-disp(' ');
-disp([p1 p2]);
-
 
 %% Final Binning
 fprintf('binning ...');
@@ -111,16 +94,15 @@ ibad = logical((M(1,:)<i1) + (M(1,:)>i2) + (M(2,:)>j2) + (M(2,:)<j1));
 M(:,ibad) = [];
 
 Zbin = zeros(j2-j1+1,i2-i1+1);
-for ii=1:size(M,2)
-    
+for ii=1:size(M,2)    
     m1 = M(1,ii)-i1+1;
     m2 = M(2,ii)-j1+1;
     Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);
 end
 
-
 Zall = Zbin;
 Zall = Zall(:);
+disp([p1 p2]);
 %%
 [nn1,nn2]=meshgrid(ivec,jvec);
 
