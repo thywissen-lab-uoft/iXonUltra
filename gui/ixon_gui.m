@@ -29,16 +29,11 @@ addpath(analysis_path);addpath(genpath(analysis_path))
 
 %% Other Settings
 
-
 % Choose the default colormap
 cmap=purplemap;
-
 cstart = [1 1 1];
 cend = [0.6 0 .5];
 
-
-% cstart = [0 0 0];
-% cend = [0.9 0 .8];
 cmap = [linspace(cstart(1),cend(1),1000)' linspace(cstart(2),cend(2),1000)' linspace(cstart(3),cend(3),1000)'];
 
 
@@ -657,10 +652,14 @@ hbNavRight.Position=[221 2 12 20];
             
             data=newdata.data;
             updateImages;      
-        catch ME       
+        catch ME                   
+            warning(getReport(ME,'extended'));
+            errordlg('Unable to load image, reverting to old data');
+
+            beep
             
-            warning('Unable to load image, reverting to old data');
             disp(['FileName : ' filename]);
+            
             data=olddata;
             updateImages;      
         end
@@ -1806,7 +1805,11 @@ histBtbl.Position(1:2)=[2 20];
         end
     end
 
-    function cCoMCB(src,~)        
+    function cCoMCB(src,~)       
+        if ~isfield(data,'BoxCount')
+            tCoMAnalysis.Visible='off';
+            return;
+        end
         set(tCoMAnalysis,'Visible',src.Value);    
     end
 
@@ -2128,12 +2131,17 @@ tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold'
     'horizontalalignment','left','verticalalignment','bottom','margin',1,...
     'interpreter','none','backgroundcolor',[1 1 1 .5]);
 
-% box count analysis sytring
-tCoMAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',12,'fontweight','bold',...
+% Box Count Analysis String
+tCoMAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
     'horizontalalignment','right','verticalalignment','bottom','margin',1,...
     'interpreter','latex',...
-    'color',co(2,:)*.9,'backgroundcolor',[.9 .9 .9 .2]);
+    'color','k','backgroundcolor',[1 1 1 .5]);
 
+% Box Count Analysis String
+tTopLeft=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
+    'horizontalalignment','left','verticalalignment','top','margin',1,...
+    'interpreter','latex',...
+    'color','k','backgroundcolor',[1 1 1 .3],'Visible','off');
 
 % Box for ROI (this will become an array later)
 pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2);
@@ -2324,7 +2332,15 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         
         a1 = data.LatticeDig(imgnum).a1;
         a2 = data.LatticeDig(imgnum).a2;
+        
+        theta=acos(sum(a1.*a2)/(norm(a1)*norm(a2)))*180/pi;
+        
         p = data.LatticeDig(imgnum).p;
+        tTopLeft.String = ['$\vec{a}_1 = (' num2str(round(a1(1),4)) ',' num2str(round(a1(2),4)) ')$' newline ...
+            '$\vec{a}_2 = (' num2str(round(a2(1),4)) ',' num2str(round(a2(2),4)) ')$' newline ...
+            '$\vec{a}_1\cdot\vec{a}_2 = a_1a_2\cos(' num2str(theta,4) '^\circ )$' newline ...
+            '$\phi = 2\pi\times (' num2str(round(p(1),3)) ',' num2str(round(p(2),3)) ')$']; 
+        
         dr1 = a2*(n2i-1);
         dr2 = a2*(n2f+1);
         dr3 = a1*(n1i-1);
@@ -2355,6 +2371,14 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     function latticeGridCB(src,~)        
         
         if ~isfield(data,'LatticeDig')
+            % Turn off all grid lines
+            for ii=1:length(pGrid1)          
+                pGrid1(ii).Visible='off';        
+            end
+
+            for ii=1:length(pGrid2)             
+                pGrid2(ii).Visible='off'; 
+            end
             return;
         end
         
@@ -2394,8 +2418,12 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         end        
     end
 
-   function latticeTextCB(src,evt)        
-%         drawLatticeGrid(src.Value);
+   function latticeTextCB(src,evt)          
+        if src.Value && isfield(data,'LatticeDig')
+            tTopLeft.Visible='on';
+        else
+            tTopLeft.Visible='off';
+        end
    end
 
     function updatePositionGraphics
@@ -2405,9 +2433,34 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         cCrossCB(cCross_X);
         updateLatticeGrid;
         latticeGridCB(cDrawLattice);
-%         set(tCoMAnalysis,'Visible',src.Value);    
+        latticeTextCB(cTextLattice);
+        updateHistogram;
+        
+        updateCoM;
+        cCoMCB(cCoMStr_X);
+    end
 
-        updateHistogram
+
+
+    function updateCoM
+        if ~isfield(data,'BoxCount')
+           tCoMAnalysis.Visible='off';
+           return
+        end
+        imgnum = menuSelectImg.Value;
+        bc = data.BoxCount(imgnum);
+
+        
+        % Update box count string
+        str=[ num2str(bc.Npeak,'%.2e') ' max counts ' newline ...
+            num2str(bc.Nraw,'%.2e') ' counts' newline ...
+            '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(bc.Xc,1)) ',' ...
+            num2str(round(bc.Yc,1)) ')$' newline ...
+            '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs,1)) ',' ...
+            num2str(round(bc.Ys,1)) ')$']; 
+
+        %Update box count string object
+        set(tCoMAnalysis,'String',str);          
     end
 
     function updateMomentumGraphics
@@ -2418,30 +2471,26 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         end    
     end
 
-function updateGraphics        
-    updatePositionGraphics;
-    updateMomentumGraphics;  
-end
+    function updateGraphics        
+        updatePositionGraphics;
+        updateMomentumGraphics;  
+    end
 
     function updateGraphics_Binned(data,imgnum)
         if ~isfield(data,'LatticeDig')
             return;
-        end
-        
+        end        
         if nargin < 2
            imgnum = 1;            
-        end
-        
+        end        
         set(hImg_B,'XData',data.LatticeDig(imgnum).n1,...
             'YData',data.LatticeDig(imgnum).n2,...
             'CData',data.LatticeDig(imgnum).Zbin);
         drawnow;       
-
         updateLatticeGrid;
         latticeGridCB(cDrawLattice);
-
-        updateBinnedHistogram(data,imgnum);
-        
+        latticeTextCB(cTextLattice);
+        updateBinnedHistogram(data,imgnum);        
     end
 
     function updateHistogram
@@ -2488,7 +2537,6 @@ end
         set(pHistB1,'XData',centers,'YData',N);
         set(pHistB2,'XData',centers,'YData',N);
         set(ax_hB2,'XLim',[Nthresh max(edges)]);       
-        resizeHist(data);
     end
 
 function updateImages
@@ -2516,37 +2564,30 @@ function updateImages
     opt.doFFTFilter        = cKGaussFilter.Value;
     opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
-    data = processRawData(data,opt);       
+    data = processRawData(data,opt);   
+    
+    % Perform Box Count ALWAYS DONE
+    data=ixon_boxCount(data);
+    bc=data.BoxCount;    
+    
     updateImageLists;        
     updateGraphics; 
 
     % Create sub image to do center of mass analysis
     Zsub=data.Z(y,x,1);
     
-    % Perform Box Count ALWAYS DONE
-    data=ixon_boxCount(data);
-    bc=data.BoxCount;
-    
+    imgnum = menuSelectImg.Value;
+
     % Box counts analysis table string    
-     stranl={'box sum (counts)',bc.Nraw;
-        'box peak (counts)',max(max(Zsub));
-        'box Yc (px)',bc.Yc;
-        'box Xc (px)',bc.Xc;
-        ['box Y' char(963) ' (px)'],bc.Ys;
-        ['box X' char(963) ' (px)'],bc.Xs};   
+     stranl={'box sum (counts)',bc(imgnum).Nraw;
+        'box peak (counts)',bc(imgnum).Npeak;
+        'box Yc (px)',bc(imgnum).Yc;
+        'box Xc (px)',bc(imgnum).Xc;
+        ['box Y' char(963) ' (px)'],bc(imgnum).Ys;
+        ['box X' char(963) ' (px)'],bc(imgnum).Xs};   
     
     tbl_pos_analysis.Data=stranl;
     
-    % Update box count string
-    str=[ num2str(max(max(Zsub)),'%.2e') ' max counts ' newline ...
-        num2str(bc.Nraw,'%.2e') ' counts' newline ...
-        '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(bc.Xc,1)) ',' ...
-        num2str(round(bc.Yc,1)) ')$' newline ...
-        '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs,1)) ',' ...
-        num2str(round(bc.Ys,1)) ')$']; 
-    
-    % Update box count string object
-    set(tCoMAnalysis,'String',str);    
     
     % Update X, Y, and Z objects
     set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,1));
@@ -2556,8 +2597,8 @@ function updateImages
     end
     
     % Move cross hair to center of mass
-    pCrossX.YData=[1 1]*round(data.BoxCount.Yc);
-    pCrossY.XData=[1 1]*round(data.BoxCount.Xc);
+    pCrossX.YData=[1 1]*round(bc(imgnum).Yc);
+    pCrossY.XData=[1 1]*round(bc(imgnum).Xc);
 
     % Update table that trackes cross hair
     tblcross.Data(1,2)=pCrossX.YData(1);

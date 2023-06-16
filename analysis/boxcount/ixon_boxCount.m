@@ -13,11 +13,11 @@ function ixondata=ixon_boxCount(ixondata,bgROI)
     for kk=1:length(ixondata)
 
         BoxCount=struct;    
-        for k=1:size(ixondata(kk).ROI,1)
-            ROI=ixondata(kk).ROI(k,:);
+        for k=1:size(ixondata(kk).Z,3)
+            ROI=ixondata(kk).ROI;
             x=ixondata(kk).X(ROI(1):ROI(2));                 % X vector
             y=ixondata(kk).Y(ROI(3):ROI(4));                 % Y vector
-            z=double(ixondata(kk).Z(ROI(3):ROI(4),ROI(1):ROI(2)));
+            z=double(ixondata(kk).Z(ROI(3):ROI(4),ROI(1):ROI(2),k));
             nbg=0;
             
             if nargin==2
@@ -25,6 +25,8 @@ function ixondata=ixon_boxCount(ixondata,bgROI)
                 Nsum=sum(sum(zbg));
                 nbg=Nsum/(size(zbg,1)*size(zbg,2)); % count density
             end    
+            
+            Npeak = max(z,[],'all');
             
             Nraw=sum(sum(z));
             Nbg=nbg*size(z,1)*size(z,2);  
@@ -49,6 +51,7 @@ function ixondata=ixon_boxCount(ixondata,bgROI)
             Ys=sqrt(Y2); % standard deviation Y               
 
             BoxCount(k).Ncounts=Ncounts;    % Number of counts (w/ bkgd removed)
+            BoxCount(k).Npeak=Npeak;        % Peak Counts (no bkgd removed)
             BoxCount(k).Nraw=Nraw;          % Raw of number of counts
             BoxCount(k).Nbkgd=Nbg;          % Bakcground number of counts
             BoxCount(k).nbkgd=nbg;          % Background counts/px
@@ -57,8 +60,7 @@ function ixondata=ixon_boxCount(ixondata,bgROI)
             BoxCount(k).Yc=Yc;              % Y center of mass
             BoxCount(k).Xs=Xs;              % X standard deviation
             BoxCount(k).Ys=Ys;              % Y standard deviation
-        end 
-        
+        end         
         ixondata(kk).BoxCount=BoxCount;
     end
 end
