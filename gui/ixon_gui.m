@@ -1252,7 +1252,7 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
                 t=toc;
                 disp([' done (' num2str(t,2) ' sec.)']);                
             end                        
-            updateLatticeGrid;
+            updateGridGraphics;
             latticeGridCB(cDrawLattice);
         end         
     end
@@ -1341,7 +1341,10 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
         end
-        updateGraphics_Binned(data);        
+        
+        updateBinnedHistogram;
+        updateBinnedGraphics;     
+        updateBinnedHistogramGraphics; 
     end
 
 %% Image Number Selector
@@ -2312,14 +2315,18 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'YAxisLocation','left');
 
 
+%% Graphical Callbacks
+    function updateGraphics        
+        updatePositionGraphics;
+        updateHistogramGraphics;
+        updateMomentumGraphics;          
+        updateBinnedGraphics;
+        updateBinnedHistogramGraphics;
+    end
 
-%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% updateImages
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Initial function call to update basic analysis graphics on new data input
+%% Lattice Grid Callbacks
 
-    function updateLatticeGrid       
+    function updateGridGraphics       
         imgnum = menuSelectImg.Value;
 
         if ~isfield(data,'LatticeDig')
@@ -2370,8 +2377,7 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     end       
         
 
-    function latticeGridCB(src,~)        
-        
+    function latticeGridCB(src,~)      
         if ~isfield(data,'LatticeDig')
             % Turn off all grid lines
             for ii=1:length(pGrid1)          
@@ -2428,21 +2434,20 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         end
    end
 
+%% Position Callbacks
+
     function updatePositionGraphics
         set(hImg,'XData',data.X,'YData',data.Y,'CData'...
             ,data.Z(:,:,menuSelectImg.Value));            
         if cAutoColor_X.Value;setClim('X');end                
         cCrossCB(cCross_X);
-        updateLatticeGrid;
+        updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
-        updateHistogram;
-        
+        updateHistogram;        
         updateCoM;
         cCoMCB(cCoMStr_X);
     end
-
-
 
     function updateCoM
         if ~isfield(data,'BoxCount')
@@ -2450,9 +2455,7 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
            return
         end
         imgnum = menuSelectImg.Value;
-        bc = data.BoxCount(imgnum);
-
-        
+        bc = data.BoxCount(imgnum);        
         % Update box count string
         str=[ num2str(bc.Npeak,'%.2e') ' max counts ' newline ...
             num2str(bc.Nraw,'%.2e') ' counts' newline ...
@@ -2464,55 +2467,34 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         %Update box count string object
         set(tCoMAnalysis,'String',str);          
     end
-
-    function updateMomentumGraphics
-        if isfield(data,'ZfNorm')
-            set(hImg_K,'XData',data.f,'YData',data.f,'CData',...
-                data.ZfNorm(:,:,menuSelectImg.Value));
-            if cAutoColor_K.Value;setClim('K');end  
-        end    
-    end
-
-    function updateGraphics        
-        updatePositionGraphics;
-        updateMomentumGraphics;  
-    end
-
-    function updateGraphics_Binned(data,imgnum)
-        if ~isfield(data,'LatticeDig')
-            return;
-        end        
-        if nargin < 2
-           imgnum = 1;            
-        end        
-        set(hImg_B,'XData',data.LatticeDig(imgnum).n1,...
-            'YData',data.LatticeDig(imgnum).n2,...
-            'CData',data.LatticeDig(imgnum).Zbin);
-        drawnow;       
-        updateLatticeGrid;
-        latticeGridCB(cDrawLattice);
-        latticeTextCB(cTextLattice);
-        updateBinnedHistogram(data,imgnum);        
-    end
+%% Histgoram Callbacks
 
     function updateHistogram
-        for kk=1:size(data.Z,3)
-            ROI = tblROI.Data;
-            x = ROI(1):ROI(2);
-            y = ROI(3):ROI(4);
-            
-            [N,edges] = histcounts(data.Z(y,x,kk),1000);
+        ROI = tblROI.Data;
+        x = ROI(1):ROI(2);
+        y = ROI(3):ROI(4);
+        
+        [N,edges] = histcounts(data.Z(y,x,1),1000);
+        centers = (edges(1:end-1) + edges(2:end))/2;
+        Histogram = struct;
+        Histogram.Edges = edges;
+        Histogram.Centers = centers;
+        Histogram.N = N;  
+        data.Histogram(1) = Histogram;      
+        
+        for kk=2:size(data.Z,3)            
+            [N,edges] = histcounts(data.Z(y,x,kk),data.Histogram(1).Edges);
             centers = (edges(1:end-1) + edges(2:end))/2;
             Histogram = struct;
             Histogram.Edges = edges;
             Histogram.Centers = centers;
             Histogram.N = N;  
-            data.Histogram(kk) = Histogram;
+            data.Histogram(kk) = Histogram;            
         end         
-        updateHistgoramGraphics
+        updateHistogramGraphics
     end
 
-    function updateHistgoramGraphics        
+    function updateHistogramGraphics        
         if ~isfield(data,'Histogram')
             return;
         end
@@ -2523,30 +2505,75 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
             'YData',data.Histogram(imgnum).N);     
     end
 
-    function updateBinnedHistogram(data,imgnum)
+
+%% Momentum Callbacks
+    function updateMomentumGraphics
+        if isfield(data,'ZfNorm')
+            set(hImg_K,'XData',data.f,'YData',data.f,'CData',...
+                data.ZfNorm(:,:,menuSelectImg.Value));
+            if cAutoColor_K.Value;setClim('K');end  
+        end    
+    end
+
+%% Binned Callbacks
+    function updateBinnedGraphics
+        if ~isfield(data,'LatticeDig')
+            return;
+        end         
+        imgnum = menuSelectImg.Value;        
+        set(hImg_B,'XData',data.LatticeDig(imgnum).n1,...
+            'YData',data.LatticeDig(imgnum).n2,...
+            'CData',data.LatticeDig(imgnum).Zbin);
+        
+        updateGridGraphics;
+        latticeGridCB(cDrawLattice);
+        latticeTextCB(cTextLattice);
+    end
+
+
+
+%% Binned Histgoram Callbacks
+
+    function updateBinnedHistogramGraphics
+        if ~isfield(data,'LatticeHistogram')
+            return;
+        end 
+        imgnum = menuSelectImg.Value;
+        
+        x = data.LatticeHistogram(imgnum).Centers;
+        xe = data.LatticeHistogram(imgnum).Edges;
+        y = data.LatticeHistogram(imgnum).N;
+        
+        Nthresh = histBtbl.Data(1,1);       
+        set(pHistB1,'XData',x,'YData',y);
+        set(pHistB2,'XData',x,'YData',y);
+        set(ax_hB2,'XLim',[Nthresh max(xe)]);     
+    end
+
+    function updateBinnedHistogram
        if ~isfield(data,'LatticeDig')
            return;
-       end
-       
-       if nargin <2
-           imgnum = 1;
-       end       
-        Nbins = histBtbl.Data(1,2);
-        Nthresh = histBtbl.Data(1,1);
-        for kk=1:length(data.LatticeDig)
-            [N,edges] = histcounts(data.LatticeDig(imgnum).Zbin,Nbins);
+       end      
+        Nbins = histBtbl.Data(1,2);        
+        [N,edges] = histcounts(data.LatticeDig(1).Zbin,Nbins);
+        centers = (edges(1:end-1) + edges(2:end))/2;
+        LatticeHistogram = struct;
+        LatticeHistogram.Edges = edges;
+        LatticeHistogram.Centers = centers;
+        LatticeHistogram.N = N;  
+        data.LatticeHistogram(1) = LatticeHistogram;      
+        for kk=2:length(data.LatticeDig)
+            [N,edges] = histcounts(data.LatticeDig(kk).Zbin,data.LatticeHistogram(1).Edges);
             centers = (edges(1:end-1) + edges(2:end))/2;
             LatticeHistogram = struct;
             LatticeHistogram.Edges = edges;
             LatticeHistogram.Centers = centers;
             LatticeHistogram.N = N;  
             data.LatticeHistogram(kk) = LatticeHistogram;
-        end                
-        set(pHistB1,'XData',centers,'YData',N);
-        set(pHistB2,'XData',centers,'YData',N);
-        set(ax_hB2,'XLim',[Nthresh max(edges)]);       
+        end                  
     end
 
+%% New Image
 function updateImages
     % Grab the ROI
     ROI=tblROI.Data;
