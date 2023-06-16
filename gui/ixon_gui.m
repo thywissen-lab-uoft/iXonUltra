@@ -2184,28 +2184,30 @@ linkaxes([axImg hAxX],'x');
 
 %% Histgoram
 
-ax_h1=axes('parent',tHist);
+
+ax_h1 = subplot(2,1,1,'parent',tHist);
 pHist1 = bar(1:100,1:100,'parent',ax_h1,'linestyle','none');
 ylabel('occurences');
-xlabel('counts');
+xlabel('counts/pixel');
 hold on
 
 set(ax_h1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1',...
     'YAxisLocation','left');
-% 
-% 
-% ax_h2=subplot(2,1,2,'parent',tHist);
-% pHist2 = bar(1:100,1:100,'parent',ax_h2,'linestyle','none');
-% ylabel('occurences');
-% xlabel('counts');
-% hold on
+ylim(ax_h1,'auto');
+title('count histogram');
 
-% set(ax_h2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
-%     'XAxisLocation','bottom','YDir','normal','UserData','H2',...
-%     'YAxisLocation','left');
+ax_h2 = subplot(2,1,2,'parent',tHist);
+pHist2 = bar(1:100,1:100,'parent',ax_h2,'linestyle','none');
+ylabel('occurences');
+xlabel('counts/pixel');
+hold on
 
-
+set(ax_h2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H2',...
+    'YAxisLocation','left','yScale','log');
+ylim(ax_h2,'auto');
+title('log count histogram');
 
 %% Momentum Images
 
@@ -2291,7 +2293,7 @@ caxis([0 1]);
 ax_hB1=subplot(2,1,1,'parent',tHistB);
 pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none');
 ylabel('occurences');
-xlabel('counts');
+xlabel('counts/site');
 hold on
 
 set(ax_hB1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
@@ -2302,7 +2304,7 @@ set(ax_hB1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
 ax_hB2=subplot(2,1,2,'parent',tHistB);
 pHistB2 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none');
 ylabel('occurences');
-xlabel('counts');
+xlabel('counts/site');
 hold on
 
 set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
@@ -2495,7 +2497,11 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
 
     function updateHistogram
         for kk=1:size(data.Z,3)
-            [N,edges] = histcounts(data.Z(:,:,kk),1000);
+            ROI = tblROI.Data;
+            x = ROI(1):ROI(2);
+            y = ROI(3):ROI(4);
+            
+            [N,edges] = histcounts(data.Z(y,x,kk),1000);
             centers = (edges(1:end-1) + edges(2:end))/2;
             Histogram = struct;
             Histogram.Edges = edges;
@@ -2512,6 +2518,8 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         end
        imgnum = menuSelectImg.Value;          
         set(pHist1,'XData',data.Histogram(imgnum).Centers,...
+            'YData',data.Histogram(imgnum).N);     
+        set(pHist2,'XData',data.Histogram(imgnum).Centers,...
             'YData',data.Histogram(imgnum).N);     
     end
 
