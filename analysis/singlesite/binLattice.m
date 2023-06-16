@@ -1,0 +1,92 @@
+function out=binLattice(x,y,z,opts)
+% Author : C. Fujiwara
+%
+% Given a fluoresence image input (z) with corresponding pixel position
+% cooridinates (x,y), this function assigns fluoresnce to each lattice
+% site.
+%
+% The phase is found my optizing the total contrast of the image which is
+% gotten from the 
+
+
+% Matrix which defines lattice basis
+A = [opts.a1 opts.a2];                  % lattice vectors
+
+%% Image preparation
+
+% Rescale the image to avoid rounding errors when moving pixels
+z2 = imresize(z,opts.ScaleFactor)/(opts.ScaleFactor^2); % scale amplitude to preserve norm
+x2 = linspace(x(1),x(end),size(z2,2));
+y2 = linspace(y(1),y(end),size(z2,1));
+
+% Create 2xN vectors of all pixels positions
+[X,Y]=meshgrid(x2,y2);                  % matrix of X and Y
+R=[X(:)' ; Y(:)'];                      % All points
+
+% 1xN vector all counts per pixel
+Z = z2(:);                              % counts per re-scaled pixel
+
+% Solve for all position in terms of the lattice basis
+N0 = inv(A)*R;
+
+%% Find bounds on lattice indeces
+% Given the lattice basis and the image bounds, determine some reasonable
+% bounds on the extremal lattice indeces.
+
+% Solve for position of each corner in terms of the lattice basis
+na = inv(A)*[x(1); y(1)];
+nb = inv(A)*[x(1); y(end)];
+nc = inv(A)*[x(end); y(1)];
+nd = inv(A)*[x(end); y(end)];
+
+% Collect the four corners
+Nc = [na nb nc nd];
+
+% Bounds and vector for lattice basis vector 1
+n1i = floor(min(Nc(1,:)));
+n1f = ceil(max(Nc(1,:)));
+n1 = n1i:n1f;
+
+% Bounds and vector for lattice basis vector 2
+n2i = floor(min(Nc(2,:)));
+n2f = ceil(max(Nc(2,:)));
+n2 = n2i:n2f;
+
+%% Final Binning
+
+p = [opts.p1; opts.p2];                       % Phase        
+P = repmat(p,[1 length(Z)]);        % Phase vector        
+M = round(N0-P);                    % round pixel to lattice site
+ibad = logical((M(1,:)<n1i) + (M(1,:)>n1f) + (M(2,:)>n2f) + (M(2,:)<n2i));
+
+M(:,ibad) = [];
+
+Zbin = zeros(n2f-n2i+1,n1f-n1i+1);
+for ii=1:size(M,2)    
+    m1 = M(1,ii)-n1i+1;
+    m2 = M(2,ii)-n2i+1;
+    Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);
+end
+
+Zall = Zbin;
+Zall = Zall(:);
+%%
+[nn1,nn2]=meshgrid(n1,n2);
+
+N=[nn1(:)' ; nn2(:)'];                      % All points
+P = repmat(p,[1 length(N)]);        % Phase vector        
+
+
+Rn=A*(N+P);                                 % Positino of every lattice site
+
+out = struct;
+out.p = [opts.p1 opts.p2];
+out.a1 = opts.a1;
+out.a2 = opts.a2;
+out.n1 = n1;
+out.n2 = n2;
+out.Zbin = Zbin;
+out.R = Rn;
+
+
+end

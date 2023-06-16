@@ -51,14 +51,16 @@ for kk=1:length(data)
     if opts.doSubtractBias  
         fprintf(' biasing ...');
         data(kk).Z = data(kk).Z - 200;
-    end        
+    end           
     
-    %% Subtract Digital Bias
+    %% Rotate Image
     if opts.doRotate  
         theta = opts.Theta;
         fprintf([' rotating (' num2str(theta) ' deg)...']);
         data(kk).Z = imrotate(data(kk).Z,theta,'bicubic','crop');
     end        
+    
+ 
 %% Image Mask
     if opts.doMask
         fprintf('masking ...');
