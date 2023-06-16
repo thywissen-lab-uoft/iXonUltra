@@ -86,7 +86,9 @@ for kk=1:length(data)
         psf     = fspecial('gaussian',N,s);    
         
         for ii = 1:size(data(kk).Z,3)  
-            data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter);
+%             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter);            
+            data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter,...
+                0,[],400,1);
         end
         
     end

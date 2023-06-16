@@ -1313,7 +1313,8 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
                         p1 = data.LatticePhase(kk).p1;
                         p2 = data.LatticePhase(kk).p2;    
                     else
-                        warning('no fft fit has been done');
+                        errordlg('no fft fit has been done');
+                        beep
                         return;                        
                     end
                 case 'manual'
@@ -1430,6 +1431,8 @@ rbCut_X=uicontrol(bgPlot_X,'Style','radiobutton','String','plot cut',...
 rbSum_X=uicontrol(bgPlot_X,'Style','radiobutton','String','plot sum',...
     'Position',[60 0 60 15],'units','pixels','backgroundcolor','w','Value',0,...
     'fontsize',7);
+
+
 
 % Checkbox for enabling display of the CoM analysis
 cCoMStr_X=uicontrol(hpDisp_X,'style','checkbox','string','center of mass text',...
@@ -1604,33 +1607,18 @@ hpDisp_HB.Position=[160 hpDisp_B.Position(2)-150 160 150];
 % Table to adjust color limits on image
 histBtbl=uitable('parent',hpDisp_HB,'units','pixels','RowName',{},'ColumnName',{'threshold','number bins'},...
     'Data',[3000 100],'ColumnWidth',{70,80},'ColumnEditable',[true true],...
-    'CellEditCallback',@histCB,'fontsize',7);
+    'CellEditCallback',@binnedHistCB,'fontsize',7);
 histBtbl.Position(3:4)=histBtbl.Extent(3:4);
 histBtbl.Position(1:2)=[2 20];
 
-%% Display Callbacks
+%% Display Callbacks  
 
-    function histCB(src,evt)
-        ind = evt.Indices(2);
-        switch ind
-            case 1
-                
-            case 2
-                
-                
+    function binnedHistCB(src,evt)
+        ind = evt.Indices(2);    
+        if ind == 2
+            updateBinnedHistogram;    
         end
-        
-        updateBinnedHistogram(data);
-        
-%         N0 = round(max(max(z))*.95);
-%         if nargin == 1
-%             CLIM = [0 N0];
-%         end
-        
-%         try
-%             set(ax,'CLim',CLIM);       
-%             tbl.Data = CLIM;            
-%         end
+        updateBinnedHistogramGraphics;       
     end
 
 % Callback for changing display table ROI
@@ -2374,8 +2362,7 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
             pGrid2(jj).Color = [.5, .5, .5 .2];
             jj = jj+1;
         end   
-    end       
-        
+    end               
 
     function latticeGridCB(src,~)      
         if ~isfield(data,'LatticeDig')
@@ -2444,9 +2431,11 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
-        updateHistogram;        
         updateCoM;
         cCoMCB(cCoMStr_X);
+        
+        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
+        
     end
 
     function updateCoM
@@ -2491,7 +2480,7 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
             Histogram.N = N;  
             data.Histogram(kk) = Histogram;            
         end         
-        updateHistogramGraphics
+        updateHistogramGraphics;
     end
 
     function updateHistogramGraphics        
@@ -2507,12 +2496,14 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
 
 
 %% Momentum Callbacks
+
     function updateMomentumGraphics
         if isfield(data,'ZfNorm')
             set(hImg_K,'XData',data.f,'YData',data.f,'CData',...
                 data.ZfNorm(:,:,menuSelectImg.Value));
             if cAutoColor_K.Value;setClim('K');end  
         end    
+        set(tImageFile_K,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
     end
 
 %% Binned Callbacks
@@ -2529,8 +2520,6 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
     end
-
-
 
 %% Binned Histgoram Callbacks
 
@@ -2601,11 +2590,16 @@ function updateImages
     
     data = processRawData(data,opt);   
     
+    updateImageLists;        
+
+    
     % Perform Box Count ALWAYS DONE
     data=ixon_boxCount(data);
     bc=data.BoxCount;    
     
-    updateImageLists;        
+    % Histogram of data (always done)
+    updateHistogram;        
+    
     updateGraphics; 
 
     % Create sub image to do center of mass analysis
@@ -3019,7 +3013,7 @@ end
 
     function updateHistoryInd(data)          
         % Update image string
-        set(tImageFile,'String',data.Name);
+
 
         % Upate history list
         filenames=dir([currDir  filesep '*.mat']);
@@ -3036,8 +3030,7 @@ end
 
         % Update string
         tNavInd.String=sprintf('%03d',ind); 
-        tNavName.String=fullfile(currDir,data.Name);
-        
+        tNavName.String=fullfile(currDir,data.Name);        
     end
 
 %% FINISH
@@ -3078,24 +3071,19 @@ set(hF,'WindowState','maximized');
     function foo(~,~)        
         % Update crosshair
         set(pCrossX,'XData',axImg.XLim,'YData',[1 1]*mean(axImg.YLim));
-        set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*mean(axImg.XLim));       
+        set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*mean(axImg.XLim));      
 
         % Update ROI
-        tbl_dROI_X.Data = round([axImg.XLim axImg.YLim]);
-        
-        
-          % Update plots if sum
+        tbl_dROI_X.Data = round([axImg.XLim axImg.YLim]);      
+        % Update plots if sum
         if rbSum_X.Value
             
         end
-
         % Update plots if cut
         if rbCut_X.Value
             set(pX,'XData',data.X,'YData',hImg.CData(round(pCrossX.YData(1)),:));
             set(pY,'YData',data.Y,'XData',hImg.CData(:,round(pCrossY.XData(1))));
-        end     
-        
-
+        end      
     end
 
 
@@ -3103,6 +3091,7 @@ set(hF,'WindowState','maximized');
 
 axes(axImg);
 set(axImg,'XLim',[1 512],'YLim',[ 1 512]); 
+
 enableDefaultInteractivity(axImg);
 enableDefaultInteractivity(axImg_K);
 enableDefaultInteractivity(axImg_B);
