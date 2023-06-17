@@ -2549,7 +2549,12 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
            return;
        end      
         Nbins = histBtbl.Data(1,2);        
-        [N,edges] = histcounts(data.LatticeDig(1).Zbin,Nbins);
+        
+        Zall = data.LatticeDig(1).Zbin;
+        Zall = Zall(:);
+        Zall(Zall==0)=[];
+        
+        [N,edges] = histcounts(Zall,Nbins);
         centers = (edges(1:end-1) + edges(2:end))/2;
         LatticeHistogram = struct;
         LatticeHistogram.Edges = edges;
@@ -2557,7 +2562,11 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         LatticeHistogram.N = N;  
         data.LatticeHistogram(1) = LatticeHistogram;      
         for kk=2:length(data.LatticeDig)
-            [N,edges] = histcounts(data.LatticeDig(kk).Zbin,data.LatticeHistogram(1).Edges);
+            Zall = data.LatticeDig(kk).Zbin;
+            Zall = Zall(:);
+            Zall(Zall==0)=[];            
+            
+            [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
             centers = (edges(1:end-1) + edges(2:end))/2;
             LatticeHistogram = struct;
             LatticeHistogram.Edges = edges;
