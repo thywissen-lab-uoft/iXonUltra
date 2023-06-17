@@ -88,7 +88,7 @@ for kk=1:length(data)
         for ii = 1:size(data(kk).Z,3)  
 %             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter);            
             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter,...
-                0,[],400,1);
+                0,[],200,1);
         end
         
     end

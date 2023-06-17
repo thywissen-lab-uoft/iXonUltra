@@ -28,14 +28,11 @@ addpath(analysis_path);addpath(genpath(analysis_path))
 
 
 %% Other Settings
-
 % Choose the default colormap
 cmap=purplemap;
 cstart = [1 1 1];
 cend = [0.6 0 .5];
-
 cmap = [linspace(cstart(1),cend(1),1000)' linspace(cstart(2),cend(2),1000)' linspace(cstart(3),cend(3),1000)'];
-
 
 % Figure Name
 guiname='iXon GUI';
@@ -66,11 +63,9 @@ defaultBasis  = [0.1923 0.3244 .3;
 % Add the Andor MATLAB drivers to the MATLAB path. You need to have
 % installed the MATLAB drivers in order for this to work.
 addpath(genpath(fullfile(matlabroot,'toolbox','Andor')));
-
 % Add all subdirectories for this m file
 mpath = fileparts(mfilename('fullpath'));
 addpath(mpath);addpath(genpath(mpath))
-
 % Find any instances of the GUI and bring it to focus, this is tof avoid
 % restarting the GUI which may leave the shutter open.
 h = findall(0,'tag','GUI');
@@ -82,9 +77,7 @@ for kk=1:length(h)
        return;
     end    
 end
-
 disp('Initializing iXon GUI...');
-
 %% Camera Settings
 % Initialization camera status structure
 
@@ -156,21 +149,13 @@ function SizeChangedFcn(~,~)
         hpADV.Position(2)=hpAcq.Position(2)-hpADV.Position(4);
         hpAnl.Position(2)=hpADV.Position(2)-hpAnl.Position(4);        
         hpKspace.Position(2) = hpAnl.Position(2)-hpKspace.Position(4);
-        hpDig.Position(2) = hpKspace.Position(2) - hpDig.Position(4);
-        
-        
-        hpDisp_Select.Position(2)=hpNav.Position(2) - hpDisp_Select.Position(4);        
-
+        hpDig.Position(2) = hpKspace.Position(2) - hpDig.Position(4);   
+        hpDisp_Select.Position(2)=hpNav.Position(2) - hpDisp_Select.Position(4);
         hpDisp_X.Position(2)=hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
         hpDisp_K.Position(2)=hpDisp_X.Position(2) - hpDisp_K.Position(4);     
-        hpDisp_B.Position(2)=hpDisp_K.Position(2) - hpDisp_B.Position(4);     
-
-        hpDisp_HB.Position(2)=hpDisp_B.Position(2) - hpDisp_HB.Position(4);     
-
-
-        hpFit.Position(4)=H-Ht;        
-                
-        % Move status string
+        hpDisp_B.Position(2)=hpDisp_K.Position(2) - hpDisp_B.Position(4);    
+        hpDisp_HB.Position(2)=hpDisp_B.Position(2) - hpDisp_HB.Position(4); 
+        hpFit.Position(4)=H-Ht;                        
         strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;       
 end
@@ -189,35 +174,21 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
     function connectCB(~,~)
         strstatus.String='CONNECTING';
         drawnow;
-
-        % Connect to the camera
-        out=connectCam; 
-       
-       % Give warning if connection fails
-       if ~out && ~doDebug
+        out=connectCam;                 % Connect to the camera       
+        if ~out && ~doDebug             % Give warning if connection fails
            warning('Unable to connect to camera');
            return;
-       end     
-       strstatus.String='CONNECTED';
-        drawnow;
-       
-       cam_status.isConnected=1;
-       
-       % Close the shutter
-       setCameraShutter(0);
-       
-       % Load default acquisition settings
-       loadAcquisitionSettings;     
-       
-       % Close the shutter (again to be safe)
-        setCameraShutter(0);        
-        hbOpenShutter.Enable='on'; % allow shutter to be opened
-
-        % Get the camera information
-        cam_info=getCamInfo;
+        end     
+        strstatus.String='CONNECTED';
+        drawnow;       
+        cam_status.isConnected=1;       
+        setCameraShutter(0);            % Close the shutter
+        loadAcquisitionSettings;        % Load default acquisition settings      
+        setCameraShutter(0);            % Close the shutter (again to be safe)
+        hbOpenShutter.Enable='on';      % allow shutter to be opened
+        cam_info=getCamInfo;            % Get the camera information
         disp(' ');
-        disp(cam_info);
-        
+        disp(cam_info);        
         
         % Set the temperature set point
         setTemperature(tblTemp.Data);
@@ -611,8 +582,6 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,...
        loadImage; 
     end
 
-
-
 ttstr='Jump to most recent image acquired.';
 hbNavNow=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',[char(10094) char(10094)],'fontsize',10,...
@@ -949,7 +918,7 @@ hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','f
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
     'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 50 12],'columneditable',[true],...
-    'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic);
+    'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
 tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];  
 
@@ -1253,6 +1222,9 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
             
             updateReciprocalReticleGraphics;
             reciprocalLatticeReticleCB(cLat_KReticle);
+            
+            updateReciprocalTextGraphics;
+            reciprocalLatticeTextCB(cLat_K_text);
         end         
     end
 
@@ -1542,10 +1514,9 @@ cLat_KReticle.Position=[2 17 120 15];
 
 % Checkbox for reciprocal lattice text
 cLat_K_text=uicontrol(hpDisp_K,'style','checkbox','string','reciprocal lattice text',...
-    'units','pixels','fontsize',7,'backgroundcolor','w','callback',{@(src,evt) drawLatK(src.Value)} ,...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@reciprocalLatticeTextCB ,...
     'enable','on','value',1);
 cLat_K_text.Position=[2 2 120 15];
-
 
 %% Bin and Digital Plot Display Options
 
@@ -2153,10 +2124,10 @@ tImageFile_K=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bol
     'interpreter','none','backgroundcolor',[1 1 1 .5],'parent',axImg_K);
 
 % box count analysis sytring
-tCoMAnalysis_K=text(.99,0.01,'FILENAME','units','normalized','fontsize',12,'fontweight','bold',...
-    'horizontalalignment','right','verticalalignment','bottom','margin',1,...
+tTopLeftK=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
+    'horizontalalignment','left','verticalalignment','top','margin',1,...
     'interpreter','latex',...
-    'color',co(2,:),'backgroundcolor',[1 1 1 .1],'parent',axImg_K);
+    'color','k','backgroundcolor',[1 1 1 .3],'Visible','off');
 
 
 % Box for ROI (this will become an array later)
@@ -2176,7 +2147,6 @@ hAxX_K.Position=[axImg_K.Position(1) axImg_K.Position(2)-l axImg_K.Position(3) l
 hold on
 % Add X data data and fit plots
 pX_K=plot(data.X,ones(length(data.X),1),'k.-');
-pXF_K=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'linewidth',2);
 
 
 % Y Cut/Sum Axis
@@ -2186,7 +2156,6 @@ hAxY_K.Position=[axImg_K.Position(1)+axImg_K.Position(3) axImg_K.Position(2) l a
 hold on
 % Add Y data data and fit plots
 pY_K=plot(ones(length(data.Y),1),data.Y,'k.-'); 
-pYF_K=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'linewidth',2);
 
 set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 drawnow
@@ -2440,6 +2409,9 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         updateReciprocalReticleGraphics;
         reciprocalLatticeReticleCB(cLat_KReticle);
         
+        updateReciprocalTextGraphics;
+        reciprocalLatticeTextCB(cLat_K_text);
+        
         updatePSFKGraphic;
         PSFKCB(cPSF_K);
     end
@@ -2460,6 +2432,33 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
                 pKReticles(ii).Visible='off';        
             end
         end        
+    end
+
+    function updateReciprocalTextGraphics
+        imgnum = menuSelectImg.Value;
+        if ~isfield(data,'LatticeK')
+            tTopLeftK.Visible = 'off';
+            return;
+        end     
+        k1 = data.LatticeK(imgnum).k1;
+        k2 = data.LatticeK(imgnum).k2;        
+        theta=acos(sum(k1.*k2)/(norm(k1)*norm(k2)))*180/pi;        
+        tTopLeftK.String = ['$\vec{k}_1 = (' num2str(round(k1(1),4)) ',' num2str(round(k1(2),4)) ')$' newline ...
+            '$\vec{k}_2 = (' num2str(round(k2(1),4)) ',' num2str(round(k2(2),4)) ')$' newline ...
+            '$\vec{k}_1\cdot\vec{k}_2 = k_1k_2\cos(' num2str(theta,4) '^\circ )$'];        
+    end
+
+    function reciprocalLatticeTextCB(src,evt)
+        if ~isfield(data,'LatticeK')
+            tTopLeftK.Visible = 'off';
+            return;
+        end 
+        if src.Value
+           tTopLeftK.Visible='on';
+        else
+           tTopLeftK.Visible='off';
+
+        end
     end
 
     function updateReciprocalReticleGraphics
@@ -2509,34 +2508,6 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         end 
     end
 
-
-    function drawPSFK(state)
-        d = axImg_K.Children;
-        p = [];
-        for nn=1:length(d)
-           if isprop(d(nn),'UserData') && isequal(d(nn).UserData,'PSF')
-              p=d(nn);
-              break;
-           end
-        end        
-        
-        if state
-            tt=linspace(0,2*pi,100);
-            s=tblPSF.Data(1);
-            kR = sqrt(1/(4*pi*s^2));
-            
-            if isempty(p)
-               p=plot(kR*cos(tt),kR*sin(tt),'-','linewidth',1,...
-                    'color',[0 0.4470 0.7410],'parent',axImg_K,'UserData','PSF');
-            else
-                set(p,'Xdata',kR*cos(tt),'Ydata',kR*sin(tt));
-            end     
-        else
-            if ~isempty(p)
-               delete(p); 
-            end            
-        end        
-    end
 
 
 
