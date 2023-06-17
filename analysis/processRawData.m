@@ -58,8 +58,10 @@ for kk=1:length(data)
         theta = opts.Theta;
         fprintf([' rotating (' num2str(theta) ' deg)...']);
         data(kk).Z = imrotate(data(kk).Z,theta,'bicubic','crop');
-    end        
+    end       
     
+    %% No Filter
+    data(kk).ZNoFilter = data(kk).Z;
  
 %% Image Mask
     if opts.doMask

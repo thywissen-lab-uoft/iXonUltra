@@ -1230,7 +1230,7 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 %% Digitization Panel
 hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
-hpDig.Position=[0 hpKspace.Position(2)-160 160 160];
+hpDig.Position=[0 hpKspace.Position(2)-160 160 185];
 
 % Button group for lattice basis
 bgBasis = uibuttongroup(hpDig,'units','pixels','backgroundcolor','w',...
@@ -1254,14 +1254,25 @@ tblBasis.Position(3:4)=tblBasis.Extent(3:4)+0*[18 0];
 tblBasis.Position(1:2)=[5 3];
 
 % Digitization Threshold Text
-hcDigThreshold=uicontrol(hpDig,'style','text','string','digitization threshohold','fontsize',7,...
-    'backgroundcolor','w','Position',[2 18 100 15]);
+hcDigThreshold=uicontrol(hpDig,'style','text','string','digitization threshold','fontsize',7,...
+    'backgroundcolor','w','Position',[5 40 100 15],'horizontalalignment','left');
 
 % Digitization Threshold
 tblDig=uitable('parent',hpDig,'units','pixels',...
     'rowname',{},'columnname',{},'Data',3000,'columneditable',[true],...
     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
 tblDig.Position=[hpDig.Position(3)-55 hcDigThreshold.Position(2)+1 50 20];
+
+% Digitization Threshold Text
+hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
+    'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
+
+% Digitization Threshold
+tblDigPixel=uitable('parent',hpDig,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',400,'columneditable',[true],...
+    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
+
 
 % Refit button
 hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
@@ -1299,6 +1310,8 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             opts.a2 = a2;
             opts.p1 = p1;
             opts.p2 = p2;
+            opts.PixelThreshold = tblDigPixel.Data;
+            opts.UsePixelThreshold = 1;
             
             ROI=tblROI.Data;
             data.ROI=ROI;                   
@@ -1523,7 +1536,6 @@ cLat_K_text.Position=[2 2 120 15];
 hpDisp_B = uipanel(hF,'units','pixels','backgroundcolor','w','title','binned display');
 hpDisp_B.Position=[160 hpDisp_K.Position(2)-120 160 120];
 
-
 % Table for changing display limits
 tbl_dROI_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},...
     'columnname',{'n1i','n1f','n2i','n2f'},'UserData','B',...
@@ -1544,7 +1556,7 @@ hbFullLim_B.Position = [tbl_dROI_B.Position(1)+tbl_dROI_B.Position(3) ...
 ttstr='Snap display ROI to data ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','snapLim.png')),[15 15]);
 hbSnapLim_B=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-    'Backgroundcolor','w','Position',hbFullLim_X.Position,...
+    'Backgroundcolor','w','Position',hbFullLim_B.Position,...
     'Callback',{@(~,~) chDispROI('min','B');},'ToolTipString',ttstr);
 hbSnapLim_B.Position(2) = [hbSnapLim_B.Position(2)+18];
 
@@ -2066,8 +2078,7 @@ linkaxes([axImg hAxX],'x');
 
 %% Histgoram
 
-
-ax_h1 = subplot(2,1,1,'parent',tHist);
+ax_h1 = subplot(2,2,1,'parent',tHist);
 pHist1 = bar(1:100,1:100,'parent',ax_h1,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
@@ -2077,19 +2088,44 @@ set(ax_h1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1',...
     'YAxisLocation','left');
 ylim(ax_h1,'auto');
-title('count histogram');
+text(.99,.99,'processed, linear scale','units','normalized','fontsize',10,...
+    'verticalalignment','top','horizontalalignment','right');
 
-ax_h2 = subplot(2,1,2,'parent',tHist);
+ax_h2 = subplot(2,2,2,'parent',tHist);
 pHist2 = bar(1:100,1:100,'parent',ax_h2,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
 hold on
-
 set(ax_h2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H2',...
     'YAxisLocation','left','yScale','log');
 ylim(ax_h2,'auto');
-title('log count histogram');
+text(.99,.99,'processed, log scale','units','normalized','fontsize',10,...
+    'verticalalignment','top','horizontalalignment','right');
+
+ax_h3 = subplot(2,2,3,'parent',tHist);
+pHist3 = bar(1:100,1:100,'parent',ax_h3,'linestyle','none');
+ylabel('occurences');
+xlabel('counts/pixel');
+hold on
+set(ax_h3,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H1',...
+    'YAxisLocation','left');
+ylim(ax_h3,'auto');
+text(.99,.99,'no filtering, linear scale','units','normalized','fontsize',10,...
+    'verticalalignment','top','horizontalalignment','right');
+
+ax_h4 = subplot(2,2,4,'parent',tHist);
+pHist4 = bar(1:100,1:100,'parent',ax_h4,'linestyle','none');
+ylabel('occurences');
+xlabel('counts/pixel');
+hold on
+set(ax_h4,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H2',...
+    'YAxisLocation','left','yScale','log');
+ylim(ax_h4,'auto');
+text(.99,.99,'no filtering, log scale','units','normalized','fontsize',10,...
+    'verticalalignment','top','horizontalalignment','right');
 
 %% Momentum Images
 
@@ -2372,14 +2408,26 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         Histogram.N = N;  
         data.Histogram(1) = Histogram;      
         
+        xe = data.Histogram(1).Edges;
+        
         for kk=2:size(data.Z,3)            
-            [N,edges] = histcounts(data.Z(y,x,kk),data.Histogram(1).Edges);
+            [N,edges] = histcounts(data.Z(y,x,kk),xe);
             centers = (edges(1:end-1) + edges(2:end))/2;
             Histogram = struct;
             Histogram.Edges = edges;
             Histogram.Centers = centers;
             Histogram.N = N;  
             data.Histogram(kk) = Histogram;            
+        end     
+                  
+        for kk=1:size(data.ZNoFilter,3)            
+            [N,edges] = histcounts(data.ZNoFilter(y,x,kk),xe);
+            centers = (edges(1:end-1) + edges(2:end))/2;
+            Histogram = struct;
+            Histogram.Edges = edges;
+            Histogram.Centers = centers;
+            Histogram.N = N;  
+            data.HistogramNoFilter(kk) = Histogram;            
         end         
         updateHistogramGraphics;
     end
@@ -2392,7 +2440,11 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         set(pHist1,'XData',data.Histogram(imgnum).Centers,...
             'YData',data.Histogram(imgnum).N);     
         set(pHist2,'XData',data.Histogram(imgnum).Centers,...
-            'YData',data.Histogram(imgnum).N);     
+            'YData',data.Histogram(imgnum).N);    
+        set(pHist3,'XData',data.HistogramNoFilter(imgnum).Centers,...
+            'YData',data.HistogramNoFilter(imgnum).N);     
+        set(pHist4,'XData',data.HistogramNoFilter(imgnum).Centers,...
+            'YData',data.HistogramNoFilter(imgnum).N);            
     end
 
 
@@ -2520,7 +2572,8 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         set(hImg_B,'XData',data.LatticeDig(imgnum).n1,...
             'YData',data.LatticeDig(imgnum).n2,...
             'CData',data.LatticeDig(imgnum).Zbin);
-        
+        if cAutoColor_B.Value;setClim('B');end                
+
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);

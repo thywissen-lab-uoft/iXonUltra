@@ -23,8 +23,14 @@ y2 = linspace(y(1),y(end),size(z2,1));
 [X,Y]=meshgrid(x2,y2);                  % matrix of X and Y
 R=[X(:)' ; Y(:)'];                      % All points
 
+if isfield(opts,'PixelThreshold') && isfield(opts,'UsePixelThreshold')
+    z2(z2<(opts.PixelThreshold/opts.ScaleFactor^2))=0;    
+end
+
 % 1xN vector all counts per pixel
 Z = z2(:);                              % counts per re-scaled pixel
+
+
 
 % Solve for all position in terms of the lattice basis
 N0 = inv(A)*R;
