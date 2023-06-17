@@ -954,7 +954,7 @@ tblPSF.Position(3:4) = tblPSF.Extent(3:4);
 tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];
 
     function boop(src,evt)
-        drawPSFK(cPSF_K.Value);
+        updatePSFKGraphic;
     end
 
 % Checkbox for new processings
@@ -1531,7 +1531,7 @@ cCross_K=uicontrol(hpDisp_K,'style','checkbox','string','cross hair',...
     'enable','on','value',1,'UserData','K');
 cCross_K.Position=[2 47 120 15];
 
-
+PSFKCB
 % Checkbox for showing/hiding PSF in fourier domain
 cPSF_K=uicontrol(hpDisp_K,'style','checkbox','string','1/e^2 point spread function',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',{@(src,evt) drawPSFK(src.Value)} ,...
@@ -2145,7 +2145,7 @@ pKReticles(6) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Vis
 pKReticles(7) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
 pKReticles(8) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
 
-pKPSF = plot(0,0,'-','color',[1 1 1],'parent',axImg_K,'Visible','off');
+pKPSF = plot(0,0,'--','color',[1 1 1],'parent',axImg_K,'Visible','off');
 
 % Cross Hair Plots
 pCrossX_K=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K);
@@ -2443,6 +2443,9 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         
         updateReciprocalReticleGraphics;
         reciprocalLatticeReticleCB(cLat_KReticle);
+        
+        updatePSFKGraphic;
+        PSFKCB(cPSF_K);
     end
 
     function reciprocalLatticeReticleCB(src,evt)
@@ -2467,16 +2470,15 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         imgnum = menuSelectImg.Value;        
         if ~isfield(data,'LatticeK')
             return;
-        end
-        
-        
-        
+        end              
         tt=linspace(0,2*pi,100);
         k1 = data.LatticeK(imgnum).k1;
         k2 = data.LatticeK(imgnum).k2;
         s1 = data.LatticeK(imgnum).s1;
-        s2 = data.LatticeK(imgnum).s2;    
-        
+        s2 = data.LatticeK(imgnum).s2;           
+        k12p = k1+k2;
+        k12n = k1-k2;
+        s12 = sqrt(s1*s2);             
         set(pKReticles(1),'XData',k1(1)+4*s1*cos(tt),...
             'YData',k1(2)+4*s1*sin(tt),'color','r');
         set(pKReticles(2),'XData',-k1(1)+4*s1*cos(tt),...
@@ -2484,12 +2486,7 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         set(pKReticles(3),'XData',k2(1)+4*s1*cos(tt),...
             'YData',k2(2)+4*s2*sin(tt),'color','b');
         set(pKReticles(4),'XData',-k2(1)+4*s1*cos(tt),...
-            'YData',-k2(2)+4*s2*sin(tt),'color','b');       
-        
-        k12p = k1+k2;
-        k12n = k1-k2;
-        s12 = sqrt(s1*s2);
-        
+            'YData',-k2(2)+4*s2*sin(tt),'color','b');   
         set(pKReticles(5),'XData',k12p(1)+4*s12*cos(tt),...
             'YData',k12p(2)+4*s12*sin(tt),'color','g');
         set(pKReticles(6),'XData',-k12p(1)+4*s12*cos(tt),...
@@ -2497,8 +2494,23 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         set(pKReticles(7),'XData',k12n(1)+4*s12*cos(tt),...
             'YData',k12n(2)+4*s12*sin(tt),'color',[255, 215, 0]/255);
         set(pKReticles(8),'XData',-k12n(1)+4*s12*cos(tt),...
-            'YData',-k12n(2)+4*s12*sin(tt),'color',[255, 215, 0]/255);   
-                
+            'YData',-k12n(2)+4*s12*sin(tt),'color',[255, 215, 0]/255);                   
+    end
+
+    function updatePSFKGraphic
+        s=tblPSF.Data(1);
+        kR = sqrt(1/(4*pi*s^2));
+        tt=linspace(0,2*pi,100);        
+        set(pKPSF,'XData',kR*cos(tt),...
+            'YData',kR*sin(tt),'color',[00.4470 0.7410]);   
+    end
+
+    function PSFKCB(src,evt)
+        if src.Value
+            pKPSF.Visible='on';
+        else
+            pKPSF.Visible='off';
+        end 
     end
 
 
@@ -2531,47 +2543,6 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     end
 
 
-
- function drawLatK(state,imgnum)
-        if nargin < 2
-            imgnum = 1;
-        end       
-        d = axImg_K.Children;
-        ps = {};
-        for nn=1:length(d)
-           if isprop(d(nn),'UserData') && isequal(d(nn).UserData,'lattice_wavector')
-              ps{end+1}=d(nn);
-           end
-        end                
-        if state && isfield(data,'LatticeK')
-            tt=linspace(0,2*pi,100);
-            k1 = data.LatticeK(imgnum).k1;
-            k2 = data.LatticeK(imgnum).k2;
-            s1 = data.LatticeK(imgnum).s1;
-            s2 = data.LatticeK(imgnum).s2;                 
-            if isempty(ps)
-               plot(k1(1)+4*s1*cos(tt),k1(2)+4*s1*sin(tt),'-','linewidth',1,...
-                    'color','r','parent',axImg_K,'UserData','lattice_wavector');
-               plot(-k1(1)+4*s1*cos(tt),-k1(2)+4*s1*sin(tt),'-','linewidth',1,...
-                    'color','r','parent',axImg_K,'UserData','lattice_wavector');                
-               plot(k2(1)+4*s2*cos(tt),k2(2)+4*s2*sin(tt),'-','linewidth',1,...
-                    'color','r','parent',axImg_K,'UserData','lattice_wavector');
-               plot(-k2(1)+4*s2*cos(tt),-k2(2)+4*s2*sin(tt),'-','linewidth',1,...
-                    'color','r','parent',axImg_K,'UserData','lattice_wavector');
-            else
-                set(ps{1},'Xdata',k1(1)+2*s1*cos(tt),'Ydata',k1(2)+2*s1*sin(tt));
-                set(ps{2},'Xdata',-k1(1)+2*s1*cos(tt),'Ydata',-k1(2)+2*s1*sin(tt));
-                set(ps{3},'Xdata',k2(1)+2*s2*cos(tt),'Ydata',k2(2)+2*s2*sin(tt));
-                set(ps{4},'Xdata',-k2(1)+2*s2*cos(tt),'Ydata',-k2(2)+2*s2*sin(tt));
-            end     
-        else
-            if ~isempty(ps)
-                for jj=1:length(ps)
-                    delete(ps{jj}); 
-                end
-            end            
-        end        
-    end
 
 %% Binned Callbacks
     function updateBinnedGraphics
