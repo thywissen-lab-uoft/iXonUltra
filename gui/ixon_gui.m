@@ -949,13 +949,9 @@ hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','f
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
     'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 50 12],'columneditable',[true],...
-    'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',@boop);
+    'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic);
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
-tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];
-
-    function boop(src,evt)
-        updatePSFKGraphic;
-    end
+tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];  
 
 % Checkbox for new processings
 ttstr='Apply mask to image to eliminate aperture clipping';
@@ -1531,10 +1527,10 @@ cCross_K=uicontrol(hpDisp_K,'style','checkbox','string','cross hair',...
     'enable','on','value',1,'UserData','K');
 cCross_K.Position=[2 47 120 15];
 
-PSFKCB
+
 % Checkbox for showing/hiding PSF in fourier domain
 cPSF_K=uicontrol(hpDisp_K,'style','checkbox','string','1/e^2 point spread function',...
-    'units','pixels','fontsize',7,'backgroundcolor','w','callback',{@(src,evt) drawPSFK(src.Value)} ,...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@PSFKCB ,...
     'enable','on','value',1);
 cPSF_K.Position=[2 32 160 15];
 
@@ -2502,7 +2498,7 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         kR = sqrt(1/(4*pi*s^2));
         tt=linspace(0,2*pi,100);        
         set(pKPSF,'XData',kR*cos(tt),...
-            'YData',kR*sin(tt),'color',[00.4470 0.7410]);   
+            'YData',kR*sin(tt),'color',[0 0.4470 0.7410]);   
     end
 
     function PSFKCB(src,evt)
