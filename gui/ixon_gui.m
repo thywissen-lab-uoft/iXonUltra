@@ -1312,6 +1312,7 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             opts.p2 = p2;
             opts.PixelThreshold = tblDigPixel.Data;
             opts.UsePixelThreshold = 1;
+            opts.DigitizationThreshold = tblDig.Data;
             
             ROI=tblROI.Data;
             data.ROI=ROI;                   
@@ -1330,6 +1331,8 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         updateBinnedHistogram;
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics; 
+        
+        
     end
 
 %% Image Number Selector
@@ -2256,6 +2259,19 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'YAxisLocation','left');
 
 
+%% Digital Image
+
+axImg_D=axes('parent',tD);
+hImg_D=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_D);
+set(axImg_D,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
+    'YAxisLocation','left');
+hold on
+axis equal tight
+xlabel('lattice site (a_1)','fontsize',8);
+ylabel('lattice site (a_2)','fontsize',8);
+caxis([0 1]);
+
 %% Graphical Callbacks
     function updateGraphics        
         updatePositionGraphics;
@@ -2588,6 +2604,11 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
         set(hImg_B,'XData',data.LatticeDig(imgnum).n1,...
             'YData',data.LatticeDig(imgnum).n2,...
             'CData',data.LatticeDig(imgnum).Zbin);
+        
+        set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
+            'YData',data.LatticeDig(imgnum).n2,...
+            'CData',data.LatticeDig(imgnum).Zdig);
+        
         if cAutoColor_B.Value;setClim('B');end                
 
         updateGridGraphics;

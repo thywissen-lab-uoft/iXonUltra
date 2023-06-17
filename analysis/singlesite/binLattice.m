@@ -101,5 +101,8 @@ out.n2 = n2;
 out.Zbin = Zbin;
 out.R = Rn;
 
+if isfield(opts, 'DigitizationThreshold')
+   out.Zdig = Zbin>=opts.DigitizationThreshold; 
+end
 
 end

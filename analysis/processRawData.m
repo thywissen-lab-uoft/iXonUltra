@@ -7,6 +7,8 @@ if nargin == 1
     
     % Position Space
     opts.doSubtractBias     = 1;
+    opts.doScale            = 0;
+    opts.ScaleFactor        = 3;
     opts.doGaussFilter      = 0;
     opts.GaussFilterRadius  = 1;
     opts.doMask             = 0;
@@ -53,6 +55,13 @@ for kk=1:length(data)
         data(kk).Z = data(kk).Z - 200;
     end           
     
+    %% Scale Image
+%     opts.doScale=1
+%     opts.ScaleFactor = 3;
+%     if isfield(opts,'doScale') && opts.doScale 
+%        data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor);
+%     end
+    
     %% Rotate Image
     if opts.doRotate  
         theta = opts.Theta;
@@ -91,6 +100,9 @@ for kk=1:length(data)
 %             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter);            
             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter,...
                 5,[],400,1);
+
+%             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter,1,[],400);            
+
         end
         
     end
