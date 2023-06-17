@@ -35,6 +35,16 @@ Z = z2(:);                              % counts per re-scaled pixel
 % Solve for all position in terms of the lattice basis
 N0 = inv(A)*R;
 
+p = [opts.p1; opts.p2];                       % Phase        
+P = repmat(p,[1 length(Z)]);        % Phase vector        
+M = round(N0+P);                    % round pixel to lattice site
+
+% aa = reshape(M(1,:),[size(X,1) size(X,2)]);
+% bb = reshape(M(2,:),[size(X,1) size(X,2)]);
+% cc = mod(bb+aa,2);
+% 
+% dd = z2.*cc;
+% keyboard
 %% Find bounds on lattice indeces
 % Given the lattice basis and the image bounds, determine some reasonable
 % bounds on the extremal lattice indeces.
@@ -60,9 +70,6 @@ n2 = n2i:n2f;
 
 %% Final Binning
 
-p = [opts.p1; opts.p2];                       % Phase        
-P = repmat(p,[1 length(Z)]);        % Phase vector        
-M = round(N0-P);                    % round pixel to lattice site
 ibad = logical((M(1,:)<n1i) + (M(1,:)>n1f) + (M(2,:)>n2f) + (M(2,:)<n2i));
 
 M(:,ibad) = [];

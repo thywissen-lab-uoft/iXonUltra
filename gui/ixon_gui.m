@@ -1544,29 +1544,30 @@ tbl_dROI_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},...
 tbl_dROI_B.Position(3:4)=tbl_dROI_B.Extent(3:4);
 tbl_dROI_B.Position(1:2)=[2 hpDisp_B.Position(4)-tbl_dROI_X.Position(4)-20];
 
-% Button for maximizing the display limits
-ttstr='Maximize display ROI to full image size.';
-cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
-hbFullLim_B=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-    'Backgroundcolor','w','Callback',{@(~,~) chDispROI('max','X');},'ToolTipString',ttstr);
-hbFullLim_B.Position = [tbl_dROI_B.Position(1)+tbl_dROI_B.Position(3) ...
-    tbl_dROI_B.Position(2) 18 18];
+% % Button for maximizing the display limits
+% ttstr='Maximize display ROI to full image size.';
+% cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
+% hbFullLim_B=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+%     'Backgroundcolor','w','Callback',{@(~,~) chDispROI('max','B');},'ToolTipString',ttstr);
+% hbFullLim_B.Position = [tbl_dROI_B.Position(1)+tbl_dROI_B.Position(3) ...
+%     tbl_dROI_B.Position(2) 18 18];
 
 % Button to snap display ROI to the data ROI
 ttstr='Snap display ROI to data ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','snapLim.png')),[15 15]);
 hbSnapLim_B=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-    'Backgroundcolor','w','Position',hbFullLim_B.Position,...
+    'Backgroundcolor','w',...
     'Callback',{@(~,~) chDispROI('min','B');},'ToolTipString',ttstr);
-hbSnapLim_B.Position(2) = [hbSnapLim_B.Position(2)+18];
+hbSnapLim_B.Position = [tbl_dROI_B.Position(1)+tbl_dROI_B.Position(3) ...
+    tbl_dROI_B.Position(2) 18 18];
 
 % Button to enable GUI selection of display limits
 ttstr='Select the display ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
-hbSlctLim_X=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-    'Backgroundcolor','w','Position',hbFullLim_B.Position,...
+hbSlctLim_B=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+    'Backgroundcolor','w','Position',hbSnapLim_B.Position,...
     'Callback',{@(src,evt) slctDispCB(tbl_dROI_B,'B')},'ToolTipString',ttstr);
-hbSlctLim_X.Position(2) = [hbSnapLim_B.Position(2)+18];
+hbSlctLim_B.Position(2) = [hbSnapLim_B.Position(2)+18];
 
 % Table to adjust color limits on image
 climtbl_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},'ColumnName',{'c1','c2'},...
@@ -1592,9 +1593,7 @@ histBtbl=uitable('parent',hpDisp_HB,'units','pixels','RowName',{},'ColumnName',{
     'CellEditCallback',@binnedHistCB,'fontsize',7);
 histBtbl.Position(3:4)=histBtbl.Extent(3:4);
 histBtbl.Position(1:2)=[2 20];
-
-%% Display Callbacks  
-
+    
     function binnedHistCB(src,evt)
         ind = evt.Indices(2);    
         if ind == 2
@@ -1602,6 +1601,8 @@ histBtbl.Position(1:2)=[2 20];
         end
         updateBinnedHistogramGraphics;       
     end
+%% Display Callbacks  
+
 
 % Callback for changing display table ROI
     function tbl_dispROICB(src,evt)             
@@ -1627,6 +1628,8 @@ histBtbl.Position(1:2)=[2 20];
                 ROI_LIM = [min(data.X) max(data.X) min(data.Y) max(data.Y)];
             case 'hop'
                 ROI_LIM = [min(data.X) max(data.X) min(data.Y) max(data.Y)];
+            case 'B'
+                ROI_LIM = [-500 500 -500 500];
             otherwise
                 warning('OH GOD NO');            
         end
@@ -1636,11 +1639,21 @@ histBtbl.Position(1:2)=[2 20];
             if isequal(ROI,'max')
                ROI = ROI_LIM;
             else               
-                if isequal(img_type,'X')
-                    aROI = tblROI.Data;
-                else
-                    aROI = tblROIK.Data;
-                end               
+                switch img_type
+                    case 'X'
+                        aROI = tblROI.Data;
+                    case 'K'
+                        aROI = tblROIK.Data;
+                    case 'B'
+                        if isfield(data,'LatticeDig')
+                           aROI = [min(data.LatticeDig(1).n1) max(data.LatticeDig(1).n1) ...
+                               min(data.LatticeDig(1).n2) max(data.LatticeDig(1).n2)];
+                        else
+                            aROI=[0 100 0 100];
+                        end
+                end
+
+                      
                 ROI=[min(aROI(:,1)) max(aROI(:,2)) min(aROI(:,3)) max(aROI(:,4))];
            end
         end
@@ -1676,6 +1689,9 @@ histBtbl.Position(1:2)=[2 20];
                     set(axImg_K,'XLim',ROI(1:2),'YLim',ROI(3:4));
                     set(hAxX_K,'XLim',ROI(1:2));
                     set(hAxY_K,'YLim',ROI(3:4));  
+                case 'B'
+                    set(axImg_B,'XLim',ROI(1:2),'YLim',ROI(3:4));
+
             end
             drawnow;
             resizePlots;
@@ -1696,12 +1712,12 @@ histBtbl.Position(1:2)=[2 20];
         
         % Get click 1
         [x1,y1]=ginputMe(1);                                    % Get a mouse click
-        if isequal(img_type,'X');x1=round(x1);y1=round(y1);end  % Round Pos.      
+        if isequal(img_type,'X') || isequal(img_type,'B');x1=round(x1);y1=round(y1);end  % Round Pos.      
         p1=plot(x1,y1,'+','color','k','linewidth',1);           % Marker 1
         
         % Get click 2
         [x2,y2]=ginputMe(1);                                    % Get a mouse click
-        if isequal(img_type,'X');x2=round(x2);y2=round(y2);end  % Round Pos.      
+        if isequal(img_type,'X') || isequal(img_type,'B');x2=round(x2);y2=round(y2);end  % Round Pos.      
         p2=plot(x2,y2,'+','color','k','linewidth',1);           % Marker 2
 
         delete(p1);delete(p2);                                  % Delete markers        
@@ -2029,13 +2045,13 @@ tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold'
 tCoMAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
     'horizontalalignment','right','verticalalignment','bottom','margin',1,...
     'interpreter','latex',...
-    'color','k','backgroundcolor',[1 1 1 .5]);
+    'color','k','backgroundcolor',[1 1 1 .7]);
 
 % Box Count Analysis String
 tTopLeft=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
     'horizontalalignment','left','verticalalignment','top','margin',1,...
     'interpreter','latex',...
-    'color','k','backgroundcolor',[1 1 1 .3],'Visible','off');
+    'color','k','backgroundcolor',[1 1 1 .7],'Visible','off');
 
 % Box for ROI (this will become an array later)
 pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2);
@@ -3118,8 +3134,14 @@ addlistener(axImg,'YLim','PostSet',@foo);
 addlistener(axImg_K,'XLim','PostSet',@foo3); 
 addlistener(axImg_K,'YLim','PostSet',@foo3); 
 
+addlistener(axImg_B,'XLim','PostSet',@foo4); 
+addlistener(axImg_B,'YLim','PostSet',@foo4); 
 
 set(hF,'WindowState','maximized');
+
+    function foo4(~,~)
+        tbl_dROI_B.Data = round([axImg_B.XLim axImg_B.YLim]);
+    end
 
     function foo3(~,~)
         set(pCrossX_K,'XData',axImg_K.XLim,'YData',[1 1]*mean(axImg_K.YLim));
