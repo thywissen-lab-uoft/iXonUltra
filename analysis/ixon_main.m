@@ -495,7 +495,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     % Color limit for image
 %     ixon_animateOpts.CLim=[50 200];   % Color limits
-%          ixon_animateOpts.CLim=[0 1500];   % Color limits
+         ixon_animateOpts.CLim=[0 1500];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
        ixon_animateOpts.CLim=[0 1000];   % Color limits
