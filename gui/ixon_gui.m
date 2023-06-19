@@ -1,13 +1,13 @@
-function ixon_gui
+function ixon_gui(doDebug)
 % ixon_gui.m
 %
 % Author      : C. Fujiwara
 %
 % This code operates the iXon Ultra camera that the lattice experiment
 % uses to take fluorescence images of the quantum gas microscope.
-
-% Enable debug mode?
-doDebug=0;
+if nargin == 0
+   doDebug = 0; 
+end
 if doDebug
    warning(['You are operating in DEBUG MODE. This removes ' ...
        'certain safety precautions. If not intended set the doDebug ' ...
@@ -26,10 +26,13 @@ ixon_mask=ixon_mask.BW;
 % Add analysis paths
 addpath(analysis_path);addpath(genpath(analysis_path))
 
-%% Other Settings
 
+%% Other Settings
 % Choose the default colormap
 cmap=purplemap;
+cstart = [1 1 1];
+cend = [0.6 0 .5];
+cmap = [linspace(cstart(1),cend(1),1000)' linspace(cstart(2),cend(2),1000)' linspace(cstart(3),cend(3),1000)'];
 
 % Figure Name
 guiname='iXon GUI';
@@ -51,16 +54,18 @@ data=data.data;
 data.Z=data.RawImages(:,:,2)-data.RawImages(:,:,1);
 Z=data.Z;
 
+% default basis information
+defaultBasis  = [0.1923 0.3244 .3;
+    .3208 -0.1862 0.3];
+
 %% Initialize Drivers and GUI
 
 % Add the Andor MATLAB drivers to the MATLAB path. You need to have
 % installed the MATLAB drivers in order for this to work.
 addpath(genpath(fullfile(matlabroot,'toolbox','Andor')));
-
 % Add all subdirectories for this m file
 mpath = fileparts(mfilename('fullpath'));
 addpath(mpath);addpath(genpath(mpath))
-
 % Find any instances of the GUI and bring it to focus, this is tof avoid
 % restarting the GUI which may leave the shutter open.
 h = findall(0,'tag','GUI');
@@ -72,9 +77,7 @@ for kk=1:length(h)
        return;
     end    
 end
-
 disp('Initializing iXon GUI...');
-
 %% Camera Settings
 % Initialization camera status structure
 
@@ -146,13 +149,13 @@ function SizeChangedFcn(~,~)
         hpADV.Position(2)=hpAcq.Position(2)-hpADV.Position(4);
         hpAnl.Position(2)=hpADV.Position(2)-hpAnl.Position(4);        
         hpKspace.Position(2) = hpAnl.Position(2)-hpKspace.Position(4);
-        
-        hpDisp_X.Position(2)=hpNav.Position(2) - hpDisp_X.Position(4);        
+        hpDig.Position(2) = hpKspace.Position(2) - hpDig.Position(4);   
+        hpDisp_Select.Position(2)=hpNav.Position(2) - hpDisp_Select.Position(4);
+        hpDisp_X.Position(2)=hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
         hpDisp_K.Position(2)=hpDisp_X.Position(2) - hpDisp_K.Position(4);     
-
-        hpFit.Position(4)=H-Ht;        
-                
-        % Move status string
+        hpDisp_B.Position(2)=hpDisp_K.Position(2) - hpDisp_B.Position(4);    
+        hpDisp_HB.Position(2)=hpDisp_B.Position(2) - hpDisp_HB.Position(4); 
+        hpFit.Position(4)=H-Ht;                        
         strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;       
 end
@@ -171,35 +174,21 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
     function connectCB(~,~)
         strstatus.String='CONNECTING';
         drawnow;
-
-        % Connect to the camera
-        out=connectCam; 
-       
-       % Give warning if connection fails
-       if ~out && ~doDebug
+        out=connectCam;                 % Connect to the camera       
+        if ~out && ~doDebug             % Give warning if connection fails
            warning('Unable to connect to camera');
            return;
-       end     
-       strstatus.String='CONNECTED';
-        drawnow;
-       
-       cam_status.isConnected=1;
-       
-       % Close the shutter
-       setCameraShutter(0);
-       
-       % Load default acquisition settings
-       loadAcquisitionSettings;     
-       
-       % Close the shutter (again to be safe)
-        setCameraShutter(0);        
-        hbOpenShutter.Enable='on'; % allow shutter to be opened
-
-        % Get the camera information
-        cam_info=getCamInfo;
+        end     
+        strstatus.String='CONNECTED';
+        drawnow;       
+        cam_status.isConnected=1;       
+        setCameraShutter(0);            % Close the shutter
+        loadAcquisitionSettings;        % Load default acquisition settings      
+        setCameraShutter(0);            % Close the shutter (again to be safe)
+        hbOpenShutter.Enable='on';      % allow shutter to be opened
+        cam_info=getCamInfo;            % Get the camera information
         disp(' ');
-        disp(cam_info);
-        
+        disp(cam_info);        
         
         % Set the temperature set point
         setTemperature(tblTemp.Data);
@@ -593,8 +582,6 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,...
        loadImage; 
     end
 
-
-
 ttstr='Jump to most recent image acquired.';
 hbNavNow=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',[char(10094) char(10094)],'fontsize',10,...
@@ -634,10 +621,14 @@ hbNavRight.Position=[221 2 12 20];
             
             data=newdata.data;
             updateImages;      
-        catch ME       
+        catch ME                   
+            warning(getReport(ME,'extended'));
+            errordlg('Unable to load image, reverting to old data');
+
+            beep
             
-            warning('Unable to load image, reverting to old data');
             disp(['FileName : ' filename]);
+            
             data=olddata;
             updateImages;      
         end
@@ -703,7 +694,7 @@ tNavName.String=data.Name;
 % Panel for image acquisition controls and settings.
 
 hpAcq=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hF.Position(4)-55-100 160 100],'title','acquisition');
+    'Position',[0 hF.Position(4)-55-100 160 70],'title','acquisition');
 
 % Start acquisition button
 ttstr='Start acquisition.';
@@ -765,23 +756,23 @@ hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,
 
 % Continuous Acquisition checkbox
 ttstr='Reinitialize camera acquisition after image acquisition.';
-hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',8,...
-    'backgroundcolor','w','Position',[5 hpAcq.Position(4)-55 120 20],...
+hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',7,...
+    'backgroundcolor','w','Position',[5 hpAcq.Position(4)-52 120 15],...
     'ToolTipString',ttstr,'enable','on','value',1);
 
 % Button group for acquisition mode
 bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chAcqCB);  
-bgAcq.Position(3:4)=[175 40];
-bgAcq.Position(1:2)=[5 hpAcq.Position(4)-95];    
+bgAcq.Position(3:4)=[175 15];
+bgAcq.Position(1:2)=[5 2];    
 
 % Radio buttons for cuts vs sum
 rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','triggered',...
-    'Position',[1 0 200 20],'units','pixels','backgroundcolor','w','Value',1,...
-    'UserData','Normal','Enable','off');
+    'Position',[1 0 600 15],'units','pixels','backgroundcolor','w','Value',1,...
+    'UserData','Normal','Enable','off','fontsize',7);
 rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
-    'Position',[1 20 200 20],'units','pixels','backgroundcolor','w',...
-    'UserData','Live','Enable','off');
+    'Position',[60 0 60 15],'units','pixels','backgroundcolor','w',...
+    'UserData','Live','Enable','off','fontsize',7);
 
 % Change acqusition mode callback
     function chAcqCB(~,evt)        
@@ -887,94 +878,86 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
 %% Image Process Panel
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-160 160 220],'title','processing');
+    'Position',[0 hpAcq.Position(2)-160 160 185],'title','processing');
 
 ttstr='Apply gaussian filter to smooth image';
-cKGaussFilter=uicontrol('style','checkbox','string','FFT filter',...
+cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',0,'ToolTipString',ttstr);
-cKGaussFilter.Position=[5 18 80 20];
+    'value',1,'ToolTipString',ttstr,'fontsize',7);
+cKGaussFilter.Position=[5 1 80 15];
 
 % Fitlering the FFT
 tblKGaussFilter=uitable('parent',hpADV,'units','pixels',...
     'rowname',{},'columnname',{},'Data',1,'columneditable',[true],...
-    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
-tblKGaussFilter.Position=[80 cKGaussFilter.Position(2)-1 45 20];
-
-% Pixels label
-uicontrol('parent',hpADV,'units','pixels',...
-    'style','text','string','pixels','position',[125 cKGaussFilter.Position(2)+1 30 15],...
-    'fontsize',8,'backgroundcolor','w');
-
+    'columnwidth',{25},'fontsize',7,'ColumnFormat',{'numeric'});
+tblKGaussFilter.Position=[80 cKGaussFilter.Position(2)-3 30 20];
 
 % Mask IR Checkbox
-hcIRMask=uicontrol(hpADV,'style','checkbox','string','mask IR','fontsize',8,...
-    'backgroundcolor','w','Position',[5 40 100 20],...
-    'ToolTipString',ttstr,'enable','on');
+hcIRMask=uicontrol(hpADV,'style','checkbox','string','mask IR (1/px)','fontsize',7,...
+    'backgroundcolor','w','Position',[5 18 100 15],...
+    'ToolTipString',ttstr,'enable','on','value',1);
 
 % IR Mask Value
 tblIRMask=uitable('parent',hpADV,'units','pixels',...
     'rowname',{},'columnname',{},'Data',.01,'columneditable',[true],...
-    'columnwidth',{60},'fontsize',8,'ColumnFormat',{'numeric'});
-tblIRMask.Position=[65 hcIRMask.Position(2)-1 65 20];
-
-% Pixels label
-uicontrol('parent',hpADV,'units','pixels',...
-    'style','text','string','/px','position',[130 hcIRMask.Position(2)+1 30 15],...
-    'fontsize',8,'backgroundcolor','w');
+    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+tblIRMask.Position=[hpADV.Position(3)-55 hcIRMask.Position(2)+1 50 20];
 
 
 % Checkbox for computing FFT
-ttstr='Compute FFT';
-hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',8,...
-    'backgroundcolor','w','Position',[5 60 100 20],...
+ttstr='compute fft';
+hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',7,...
+    'backgroundcolor','w','Position',[5 33 80 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
 % Checkbox for applying point spread function 
 ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
-hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',8,...
-    'backgroundcolor','w','Position',[5 120 155 20],...
+hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',7,...
+    'backgroundcolor','w','Position',[5 hcFFT.Position(2)+60 155 20],...
     'ToolTipString',ttstr,'enable','on');
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
-    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 50 5],'columneditable',[true],...
-    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'},'CellEditCallback',@boop);
+    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 50 12],'columneditable',[true],...
+    'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
-tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];
-
-    function boop(src,evt)
-        drawPSFK(cPSF_K.Value);
-    end
+tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];  
 
 % Checkbox for new processings
 ttstr='Apply mask to image to eliminate aperture clipping';
-hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',8,...
-    'backgroundcolor','w','Position',[5 140 120 20],...
+hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',7,...
+    'backgroundcolor','w','Position',[5 hcPSF.Position(2)+18 120 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
 % Checkbox for enabling 2D gauss fitting
 ttstr='Apply gaussian filter to smooth image';
-cGaussFilter=uicontrol('style','checkbox','string','gauss filter',...
+cGaussFilter=uicontrol('style','checkbox','string','gauss filter (px)',...
     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',0,'ToolTipString',ttstr);
-cGaussFilter.Position=[5 160 80 20];
-
-% Subtract bias
-ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
-hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',8,...
-    'backgroundcolor','w','Position',[5 180 100 20],...
-    'ToolTipString',ttstr,'enable','on','Value',1);
-
+    'value',0,'ToolTipString',ttstr,'fontsize',7);
+cGaussFilter.Position=[5 hcMask.Position(2)+16 100 15];
 
 tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
     'rowname',{},'columnname',{},'Data',.25,'columneditable',[true],...
     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
-tblGaussFilter.Position=[80 cGaussFilter.Position(2)-1 45 20];
+tblGaussFilter.Position=[hpADV.Position(3)-50 cGaussFilter.Position(2)-2 45 20];
 
-% Pixels label
-uicontrol('parent',hpADV,'units','pixels',...
-    'style','text','string','pixels','position',[125 cGaussFilter.Position(2)+1 30 15],...
-    'fontsize',8,'backgroundcolor','w');
+% Rotate data (makes it easier for lattice grid stuff)
+ttstr='Rotate data';
+cRotate=uicontrol('style','checkbox','string','rotate (deg.)',...
+    'units','pixels','parent',hpADV,'backgroundcolor','w',...
+    'value',0,'ToolTipString',ttstr,'fontsize',7);
+cRotate.Position=[5 cGaussFilter.Position(2)+14 80 15];
+
+tblTheta=uitable('parent',hpADV,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',60.2077,'columneditable',[true],...
+    'columnwidth',{60},'fontsize',8,'ColumnFormat',{'numeric'});
+tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
+
+
+% Subtract bias
+ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
+hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',7,...
+    'backgroundcolor','w','Position',[5 cRotate.Position(2)+14 80 15],...
+    'ToolTipString',ttstr,'enable','on','Value',1);
 
 
 % process button
@@ -988,7 +971,7 @@ hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
 %% Analysis Panel
 hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
-hpAnl.Position=[0 hpADV.Position(2)-150 160 150];
+hpAnl.Position=[0 hpADV.Position(2)-130 160 130];
 
 % Table of ROIs
 tblROI=uitable(hpAnl,'units','pixels','ColumnWidth',{30 30 30 30},...
@@ -1019,8 +1002,8 @@ tblROI.Position(1:2)=[5 hpAnl.Position(4)-tblROI.Position(4)-20];
         % Check that ROI is within image bounds
         if ROI(1)<1; ROI(1)=1; end       
         if ROI(3)<1; ROI(3)=1; end   
-        if ROI(4)>512; ROI(4)=512; end       
-        if ROI(2)>512; ROI(2)=512; end         
+%         if ROI(4)>512; ROI(4)=512; end       
+%         if ROI(2)>512; ROI(2)=512; end         
         % Reassign the ROI
         src.Data(m,:)=ROI;      
         % Try to update ROI graphics
@@ -1060,8 +1043,8 @@ hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         % Constrain ROI to image
         if ROI(1)<1; ROI(1)=1; end       
         if ROI(3)<1; ROI(3)=1; end   
-        if ROI(4)>512; ROI(4)=512; end       
-        if ROI(2)>512; ROI(2)=512; end   
+%         if ROI(4)>512; ROI(4)=512; end       
+%         if ROI(2)>512; ROI(2)=512; end   
         
         % Try to update ROI graphics
         tblROI.Data=ROI;   
@@ -1079,8 +1062,8 @@ hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
 
 % Checkbox for principal component analysis
 ttstr='Principal component analysis to determine cloud axes..';
-hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsize',8,...
-    'backgroundcolor','w','Position',[5 60 120 20],...
+hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsize',7,...
+    'backgroundcolor','w','Position',[5 47 120 15],...
     'ToolTipString',ttstr,'enable','on','callback',@hcpcaCB);
 
     function hcpcaCB(src,~)
@@ -1099,8 +1082,8 @@ hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsiz
     end
 
 
-hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',8,...
-    'backgroundcolor','w','Position',[5 40 100 20],...
+hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',7,...
+    'backgroundcolor','w','Position',[5 32 100 15],...
     'ToolTipString',ttstr,'enable','on','callback',@hcgaussCB);
 
     function hcgaussCB(src,~)
@@ -1121,8 +1104,8 @@ hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',8,...
 
     end
 
-hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize',8,...
-    'backgroundcolor','w','Position',[5 20 100 20],'callback',@(~,~) disp('hi'),...
+hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize',7,...
+    'backgroundcolor','w','Position',[5 17 100 15],'callback',@(~,~) disp('hi'),...
     'ToolTipString',ttstr,'enable','off','callback',@hcgaussRotCB);
 
     function hcgaussRotCB(src,~)
@@ -1144,18 +1127,17 @@ hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize'
     end
 
 ttstr='Analyze stripe pattern in image to measure field stability';
-hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize',8,...
-    'backgroundcolor','w','Position',[5 0 100 20],...
+hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize',7,...
+    'backgroundcolor','w','Position',[5 2 100 15],...
     'ToolTipString',ttstr);
-
 
 % Refit button
 hbfit=uicontrol(hpAnl,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@cbrefit,'parent',hpAnl,'backgroundcolor','w');
+    'units','pixels','callback',@analyze_x,'parent',hpAnl,'backgroundcolor','w');
 hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
 
 % Callback function for redoing fits button
-    function cbrefit(~,~)
+    function analyze_x(~,~)
         disp('Redoing fits...');
         updateImages;
     end
@@ -1163,8 +1145,7 @@ hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
 
 %% Momentum Panel
 hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
-hpKspace.Position=[0 hpAnl.Position(2)-150 160 150];
-
+hpKspace.Position=[0 hpAnl.Position(2)-90 160 90];
 % Table of ROIs
 tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{30 30 30 30},...
     'ColumnEditable',true(ones(1,4)),'ColumnName',{'kx1','kx2','ky1','ky2'},...
@@ -1210,11 +1191,10 @@ tblROIK.Position(1:2)=[5 hpKspace.Position(4)-tblROIK.Position(4)-20];
 
 
 % Mask IR Checkbox
-hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','find lattice','fontsize',8,...
-    'backgroundcolor','w','Position',[5 0 80 20],...
+hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','lattice basis and phase','fontsize',7,...
+    'backgroundcolor','w','Position',[5 5 120 15],...
     'ToolTipString',ttstr,'enable','on');
-hcFindLattice.Position(2) = hcIRMask.Position(2) - hcFindLattice.Position(4)-2;
-
+hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 
 % Refit button
 hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','analyze',...
@@ -1223,41 +1203,162 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 % Callback function for redoing fits button
     function analyze_k(~,~)
-
         if hcFindLattice.Value && isfield(data,'Zf')
+            for kk=1:size(data.Zf,3)
+                tic;
+                fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ') Fitting reciprocal lattice ...']);
+                data.LatticeK(kk) = findLatticeK(data.f,data.f,data.Zf(:,:,kk));                
+                k1 = data.LatticeK(kk).k1;
+                k2 = data.LatticeK(kk).k2;          
+                t2 = toc;
+                fprintf([' done (' num2str(t2,2) ' sec.)' ' phase ...']);
+                t1= tic;
+                data.LatticePhase(kk) = findLatticePhase(data.X,data.Y,data.Z,k1,k2);              
+                t=toc;
+                disp([' done (' num2str(t,2) ' sec.)']);                
+            end                        
+            updateGridGraphics;
+            latticeGridCB(cDrawLattice);
+            
+            updateReciprocalReticleGraphics;
+            reciprocalLatticeReticleCB(cLat_KReticle);
+            
+            updateReciprocalTextGraphics;
+            reciprocalLatticeTextCB(cLat_K_text);
+        end         
+    end
+
+%% Digitization Panel
+hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
+hpDig.Position=[0 hpKspace.Position(2)-160 160 185];
+
+% Button group for lattice basis
+bgBasis = uibuttongroup(hpDig,'units','pixels','backgroundcolor','w',...
+    'title','lattice basis (px)','fontsize',7);  
+bgBasis.Position(3:4)=[155 100];
+bgBasis.Position(1:2)=[1 hpDig.Position(4)-bgBasis.Position(4)-20];    
+
+% Lattice Basis from FFT or manual specification
+uicontrol(bgBasis,'Style','radiobutton','String','from fft',...
+    'Position',[5 65 65 20],'units','pixels','backgroundcolor','w','Value',1,'fontsize',7,...
+    'UserData','fft');
+uicontrol(bgBasis,'Style','radiobutton','String','manual',...
+    'Position',[65 65 65 20],'units','pixels','backgroundcolor','w','fontsize',7,...
+    'UserData','manual');
+
+tblBasis=uitable(bgBasis,'units','pixels','ColumnWidth',{30 30 50},...
+    'ColumnEditable',true(ones(1,4)),'ColumnName',{'x','y','phase'},...
+    'Data',defaultBasis,'FontSize',6,...
+    'CellEditCallback',@chBasis,'RowName',{'a1','a2'});
+tblBasis.Position(3:4)=tblBasis.Extent(3:4)+0*[18 0];
+tblBasis.Position(1:2)=[5 3];
+
+% Digitization Threshold Text
+hcDigThreshold=uicontrol(hpDig,'style','text','string','digitization threshold','fontsize',7,...
+    'backgroundcolor','w','Position',[5 40 100 15],'horizontalalignment','left');
+
+% Digitization Threshold
+tblDig=uitable('parent',hpDig,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',3000,'columneditable',[true],...
+    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+tblDig.Position=[hpDig.Position(3)-55 hcDigThreshold.Position(2)+1 50 20];
+
+% Digitization Threshold Text
+hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
+    'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
+
+% Digitization Threshold
+tblDigPixel=uitable('parent',hpDig,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',400,'columneditable',[true],...
+    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
+
+
+% Refit button
+hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
+    'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor','w');
+hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
+
+    function chBasis(src,evt)
+       defaultBasis = src.Data;
+    end
+
+    function analyze_dig(src,evt)
+        for kk=1:size(data.Z,3)
+            opts = struct;
+
+            switch bgBasis.SelectedObject.UserData
+                case 'fft'
+                    if isfield(data,'LatticePhase')
+                        a1 = data.LatticePhase(kk).a1;
+                        a2 = data.LatticePhase(kk).a2;                        
+                        p1 = data.LatticePhase(kk).p1;
+                        p2 = data.LatticePhase(kk).p2;    
+                    else
+                        errordlg('no fft fit has been done');
+                        beep
+                        return;                        
+                    end
+                case 'manual'
+                    a1 = tblBasis.Data(1,(1:2))';
+                    a2 = tblBasis.Data(2,(1:2))';
+                    p1 = tblBasis.Data(1,3);
+                    p2 = tblBasis.data(2,3);
+            end
+            opts.ScaleFactor = 5;    
+            opts.a1 = a1;
+            opts.a2 = a2;
+            opts.p1 = p1;
+            opts.p2 = p2;
+            opts.PixelThreshold = tblDigPixel.Data;
+            opts.UsePixelThreshold = 1;
+            opts.DigitizationThreshold = tblDig.Data;
+            
+            ROI=tblROI.Data;
+            data.ROI=ROI;                   
+            x = ROI(1):ROI(2);
+            y = ROI(3):ROI(4);      
+            z = data.Z(y,x,kk);       
+            
             tic;
-            fprintf('finding lattice wavevectors...');
-            data.LatticeK = findLatticeK(data.f,data.f,data.Zf);
-            t=toc;
-            disp([' done (' num2str(t) ' seconds']);
+            fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
+                ') binning into lattice ...']);    
+            data.LatticeDig(kk) = binLattice(x,y,z,opts);      
+            t2=toc;
+            disp(['done (' num2str(t2,3) ' sec.)']);
         end
+        
+        updateBinnedHistogram;
+        updateBinnedGraphics;     
+        updateBinnedHistogramGraphics; 
         
         
     end
 
-%% Momentum Space Analysis
+%% Image Number Selector
+hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
+hpDisp_Select.Position=[160 500 160 50];
+
+menuSelectImg=uicontrol('style','popupmenu','string',...
+    {'image 1 of 1','image 1 of 2'},'units','pixels','parent',hpDisp_Select,...
+    'Callback',{@(a,b) updateGraphics},'fontsize',12);
+menuSelectImg.Position(3:4)=[150 18];
+menuSelectImg.Position(1:2)=[2 15];   
+
+
+    function updateImageLists
+        menuSelectImg.String = {};
+        for nn = 1 :size(data.Z,3)
+            menuSelectImg.String{nn} = ['image ' num2str(nn) ' of ' num2str(size(data.Z,3))];
+        end        
+        menuSelectImg.Value = min([menuSelectImg.Value length(menuSelectImg.String)]);
+    end
 
 %% Display Options Panel
 
 hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
-hpDisp_X.Position=[160 500 160 200];
+hpDisp_X.Position=[160 500 160 160];
 
-    function updateImageLists
-        menuPosImg.String = {};
-        menuKImg.String = {};
-        for nn = 1 :size(data.Z,3)
-            menuPosImg.String{nn} = ['image ' num2str(nn) ' of ' num2str(size(data.Z,3))];
-            menuKImg.String{nn} = ['image ' num2str(nn) ' of ' num2str(size(data.Z,3))];
-        end        
-        menuPosImg.Value = min([menuPosImg.Value length(menuPosImg.String)]);
-        menuKImg.Value = min([menuKImg.Value length(menuKImg.String)]);
-    end
-
-menuPosImg=uicontrol('style','popupmenu','string',...
-    {'image 1 of 1','image 1 of 2'},'units','pixels','parent',hpDisp_X,...
-    'Callback',{@(a,b) updateGraphics});
-menuPosImg.Position(3:4)=[120 18];
-menuPosImg.Position(1:2)=[0 hpDisp_X.Position(4)-menuPosImg.Position(4)-15];   
 
 % Table for changing display limits
 tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
@@ -1265,7 +1366,7 @@ tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
     'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
 tbl_dROI_X.Position(3:4)=tbl_dROI_X.Extent(3:4);
-tbl_dROI_X.Position(1:2)=[2 menuPosImg.Position(2)-tbl_dROI_X.Position(4)-10];
+tbl_dROI_X.Position(1:2)=[2 hpDisp_X.Position(4)-tbl_dROI_X.Position(4)-15];
 
 % Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
@@ -1273,7 +1374,7 @@ cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
 hbFullLim_X=uicontrol(hpDisp_X,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
     'Backgroundcolor','w','Callback',{@(~,~) chDispROI('max','X');},'ToolTipString',ttstr);
 hbFullLim_X.Position = [tbl_dROI_X.Position(1)+tbl_dROI_X.Position(3) ...
-    tbl_dROI_X.Position(2) 18 18];
+    tbl_dROI_X.Position(2)-12 18 18];
 
 % Button to snap display ROI to the data ROI
 ttstr='Snap display ROI to data ROI.';
@@ -1307,37 +1408,47 @@ cAutoColor_X.Position=[climtbl_X.Position(1)+climtbl_X.Position(3)+1 climtbl_X.P
 % Button group for deciding what the X/Y plots show
 bgPlot_X = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chPlotCB);  
-bgPlot_X.Position(3:4)=[125 20];
-bgPlot_X.Position(1:2)=[2 climtbl_X.Position(2)-bgPlot_X.Position(4)-2];
+bgPlot_X.Position(3:4)=[125 15];
+bgPlot_X.Position(1:2)=[2 47];
     
 % Radio buttons for cuts vs sum
 rbCut_X=uicontrol(bgPlot_X,'Style','radiobutton','String','plot cut',...
-    'Position',[0 0 60 20],'units','pixels','backgroundcolor','w','Value',1);
+    'Position',[0 0 60 15],'units','pixels','backgroundcolor','w','Value',1,...
+    'fontsize',7);
 rbSum_X=uicontrol(bgPlot_X,'Style','radiobutton','String','plot sum',...
-    'Position',[60 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
+    'Position',[60 0 60 15],'units','pixels','backgroundcolor','w','Value',0,...
+    'fontsize',7);
+
+
 
 % Checkbox for enabling display of the CoM analysis
-cCoMStr_X=uicontrol(hpDisp_X,'style','checkbox','string','center-of-mass',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCoMCB,...
+cCoMStr_X=uicontrol(hpDisp_X,'style','checkbox','string','center of mass text',...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@cCoMCB,...
     'enable','on','value',1);
-cCoMStr_X.Position=[2 bgPlot_X.Position(2)-20 125 20];
+cCoMStr_X.Position=[2 32 125 15];
 
 % Checkbox for showing/hiding crosshair
 cCross_X=uicontrol(hpDisp_X,'style','checkbox','string','cross hair',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCrossCB,...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@cCrossCB,...
+    'enable','on','value',1,'UserData','X');
+cCross_X.Position=[2 17 120 15];
+
+% Checkbox for showing/hiding lattice
+cDrawLattice=uicontrol(hpDisp_X,'style','checkbox','string','lattice grid',...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@latticeGridCB,...
     'enable','on','value',1);
-cCross_X.Position=[2 cCoMStr_X.Position(2)-20 120 20];
+cDrawLattice.Position=[2 2 80 15];
+
+% Checkbox for showing/hiding lattice
+cTextLattice=uicontrol(hpDisp_X,'style','checkbox','string','lattice text',...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@latticeTextCB,...
+    'enable','on','value',1);
+cTextLattice.Position=[cDrawLattice.Position(3)+cDrawLattice.Position(1)+5 2 120 15];
 
 %% Display Options Panel
 
 hpDisp_K = uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum display');
-hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 240];
-
-menuKImg=uicontrol('style','popupmenu','string',...
-    {'image 1 of 1','image 1 of 2'},'units','pixels','parent',hpDisp_K,...
-    'Callback',{@(a,b) updateGraphics});
-menuKImg.Position(3:4)=[120 18];
-menuKImg.Position(1:2)=[0 hpDisp_K.Position(4)-menuKImg.Position(4)-15];   
+hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 180];
 
 % Table for changing display limits
 tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
@@ -1345,7 +1456,7 @@ tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
     'ColumnWidth',{30 30 30 30},'FontSize',6,'Data',[-.5 .5 -.5 .5]);
 tbl_dROI_K.Position(3:4)=tbl_dROI_K.Extent(3:4);
-tbl_dROI_K.Position(1:2)=[2 menuKImg.Position(2)-tbl_dROI_K.Position(4)-15];
+tbl_dROI_K.Position(1:2)=[2 hpDisp_K.Position(4)-tbl_dROI_K.Position(4)-15];
 
 % Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
@@ -1353,7 +1464,7 @@ cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
 hbFullLim_K=uicontrol(hpDisp_K,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
     'Backgroundcolor','w','Callback',{@(~,~) chDispROI('max','K');},'ToolTipString',ttstr);
 hbFullLim_K.Position = [tbl_dROI_K.Position(1)+tbl_dROI_K.Position(3) ...
-    tbl_dROI_K.Position(2) 18 18];
+    tbl_dROI_K.Position(2)-15 18 18];
 
 % Button to snap display ROI to the data ROI
 ttstr='Snap display ROI to data ROI.';
@@ -1379,7 +1490,7 @@ climtbl_K.Position(3:4)=climtbl_K.Extent(3:4);
 climtbl_K.Position(1:2)=[2 tbl_dROI_K.Position(2)-climtbl_K.Position(4)-2];
 
 cAutoColor_K=uicontrol(hpDisp_K,'style','checkbox','string','auto?',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',{@(src,evt) cAutoCLIMCB(src,evt,'K')},...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',{@(src,evt) cAutoCLIMCB(src,evt,'K')},...
     'enable','on','value',1);
 cAutoColor_K.Position=[climtbl_K.Position(1)+climtbl_K.Position(3)+1 climtbl_K.Position(2) 50 20];
 
@@ -1387,41 +1498,114 @@ cAutoColor_K.Position=[climtbl_K.Position(1)+climtbl_K.Position(3)+1 climtbl_K.P
 % Button group for deciding what the X/Y plots show
 bgPlot_K = uibuttongroup(hpDisp_K,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chPlotCB);  
-bgPlot_K.Position(3:4)=[125 20];
+bgPlot_K.Position(3:4)=[125 15];
 bgPlot_K.Position(1:2)=[2 climtbl_K.Position(2)-bgPlot_K.Position(4)-2];
     
 % Radio buttons for cuts vs sum
 rbCut_K=uicontrol(bgPlot_K,'Style','radiobutton','String','plot cut',...
-    'Position',[0 0 60 20],'units','pixels','backgroundcolor','w','Value',1);
+    'Position',[0 0 60 20],'units','pixels','backgroundcolor','w','Value',1,...
+    'fontsize',7);
 rbSum_K=uicontrol(bgPlot_K,'Style','radiobutton','String','plot sum',...
-    'Position',[60 0 60 20],'units','pixels','backgroundcolor','w','Value',0);
-
-% Checkbox for enabling display of the CoM analysis
-cCoMStr_K=uicontrol(hpDisp_K,'style','checkbox','string','center-of-mass',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCoMCB,...
-    'enable','on','value',1);
-cCoMStr_K.Position=[2 bgPlot_K.Position(2)-20 125 20];
+    'Position',[60 0 60 20],'units','pixels','backgroundcolor','w','Value',0,...
+    'fontsize',7);
 
 % Checkbox for showing/hiding crosshair
 cCross_K=uicontrol(hpDisp_K,'style','checkbox','string','cross hair',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',@cCrossCB,...
-    'enable','on','value',1);
-cCross_K.Position=[2 cCoMStr_K.Position(2)-20 120 20];
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@cCrossCB,...
+    'enable','on','value',1,'UserData','K');
+cCross_K.Position=[2 47 120 15];
 
 
 % Checkbox for showing/hiding PSF in fourier domain
-cPSF_K=uicontrol(hpDisp_K,'style','checkbox','string','PSF',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',{@(src,evt) drawPSFK(src.Value)} ,...
-    'enable','on','value',0);
-cPSF_K.Position=[2 cCross_K.Position(2)-20 120 20];
+cPSF_K=uicontrol(hpDisp_K,'style','checkbox','string','1/e^2 point spread function',...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@PSFKCB ,...
+    'enable','on','value',1);
+cPSF_K.Position=[2 32 160 15];
 
 % Checkbox for showing/hiding lattice in fourier domain
-cLat_K=uicontrol(hpDisp_K,'style','checkbox','string','lattice wavevectors',...
-    'units','pixels','fontsize',8,'backgroundcolor','w','callback',{@(src,evt) drawLatK(src.Value)} ,...
-    'enable','on','value',0);
-cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
+cLat_KReticle=uicontrol(hpDisp_K,'style','checkbox','string','reciprocal lattice reticle',...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@reciprocalLatticeReticleCB,...
+    'enable','on','value',1);
+cLat_KReticle.Position=[2 17 120 15];
 
-%% Display Callbacks
+% Checkbox for reciprocal lattice text
+cLat_K_text=uicontrol(hpDisp_K,'style','checkbox','string','reciprocal lattice text',...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@reciprocalLatticeTextCB ,...
+    'enable','on','value',1);
+cLat_K_text.Position=[2 2 120 15];
+
+%% Bin and Digital Plot Display Options
+
+hpDisp_B = uipanel(hF,'units','pixels','backgroundcolor','w','title','binned display');
+hpDisp_B.Position=[160 hpDisp_K.Position(2)-120 160 120];
+
+% Table for changing display limits
+tbl_dROI_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},...
+    'columnname',{'n1i','n1f','n2i','n2f'},'UserData','B',...
+    'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
+    'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
+tbl_dROI_B.Position(3:4)=tbl_dROI_B.Extent(3:4);
+tbl_dROI_B.Position(1:2)=[2 hpDisp_B.Position(4)-tbl_dROI_X.Position(4)-20];
+
+% % Button for maximizing the display limits
+% ttstr='Maximize display ROI to full image size.';
+% cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
+% hbFullLim_B=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+%     'Backgroundcolor','w','Callback',{@(~,~) chDispROI('max','B');},'ToolTipString',ttstr);
+% hbFullLim_B.Position = [tbl_dROI_B.Position(1)+tbl_dROI_B.Position(3) ...
+%     tbl_dROI_B.Position(2) 18 18];
+
+% Button to snap display ROI to the data ROI
+ttstr='Snap display ROI to data ROI.';
+cdata=imresize(imread(fullfile(mpath,'icons','snapLim.png')),[15 15]);
+hbSnapLim_B=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+    'Backgroundcolor','w',...
+    'Callback',{@(~,~) chDispROI('min','B');},'ToolTipString',ttstr);
+hbSnapLim_B.Position = [tbl_dROI_B.Position(1)+tbl_dROI_B.Position(3) ...
+    tbl_dROI_B.Position(2) 18 18];
+
+% Button to enable GUI selection of display limits
+ttstr='Select the display ROI.';
+cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
+hbSlctLim_B=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+    'Backgroundcolor','w','Position',hbSnapLim_B.Position,...
+    'Callback',{@(src,evt) slctDispCB(tbl_dROI_B,'B')},'ToolTipString',ttstr);
+hbSlctLim_B.Position(2) = [hbSnapLim_B.Position(2)+18];
+
+% Table to adjust color limits on image
+climtbl_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},'ColumnName',{'c1','c2'},...
+    'Data',[0 12000],'ColumnWidth',{40,65},'ColumnEditable',[true true],...
+    'CellEditCallback',{@climCB 'B'});
+climtbl_B.Position(3:4)=climtbl_B.Extent(3:4);
+climtbl_B.Position(1:2)=[2 tbl_dROI_B.Position(2)-climtbl_B.Position(4)-2];
+
+cAutoColor_B=uicontrol(hpDisp_B,'style','checkbox','string','auto?',...
+    'units','pixels','fontsize',8,'backgroundcolor','w','callback',{@(src,evt) cAutoCLIMCB(src,evt,'B')},...
+    'enable','on','value',1);
+cAutoColor_B.Position=[climtbl_B.Position(1)+climtbl_B.Position(3)+1 climtbl_B.Position(2) 50 20];
+
+
+%% Count Histogram
+
+hpDisp_HB = uipanel(hF,'units','pixels','backgroundcolor','w','title','binned histogram');
+hpDisp_HB.Position=[160 hpDisp_B.Position(2)-150 160 150];
+
+% Table to adjust color limits on image
+histBtbl=uitable('parent',hpDisp_HB,'units','pixels','RowName',{},'ColumnName',{'threshold','number bins'},...
+    'Data',[3000 100],'ColumnWidth',{70,80},'ColumnEditable',[true true],...
+    'CellEditCallback',@binnedHistCB,'fontsize',7);
+histBtbl.Position(3:4)=histBtbl.Extent(3:4);
+histBtbl.Position(1:2)=[2 20];
+    
+    function binnedHistCB(src,evt)
+        ind = evt.Indices(2);    
+        if ind == 2
+            updateBinnedHistogram;    
+        end
+        updateBinnedHistogramGraphics;       
+    end
+%% Display Callbacks  
+
 
 % Callback for changing display table ROI
     function tbl_dispROICB(src,evt)             
@@ -1447,6 +1631,8 @@ cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
                 ROI_LIM = [min(data.X) max(data.X) min(data.Y) max(data.Y)];
             case 'hop'
                 ROI_LIM = [min(data.X) max(data.X) min(data.Y) max(data.Y)];
+            case 'B'
+                ROI_LIM = [-500 500 -500 500];
             otherwise
                 warning('OH GOD NO');            
         end
@@ -1456,11 +1642,21 @@ cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
             if isequal(ROI,'max')
                ROI = ROI_LIM;
             else               
-                if isequal(img_type,'X')
-                    aROI = tblROI.Data;
-                else
-                    aROI = tblROIK.Data;
-                end               
+                switch img_type
+                    case 'X'
+                        aROI = tblROI.Data;
+                    case 'K'
+                        aROI = tblROIK.Data;
+                    case 'B'
+                        if isfield(data,'LatticeDig')
+                           aROI = [min(data.LatticeDig(1).n1) max(data.LatticeDig(1).n1) ...
+                               min(data.LatticeDig(1).n2) max(data.LatticeDig(1).n2)];
+                        else
+                            aROI=[0 100 0 100];
+                        end
+                end
+
+                      
                 ROI=[min(aROI(:,1)) max(aROI(:,2)) min(aROI(:,3)) max(aROI(:,4))];
            end
         end
@@ -1496,6 +1692,9 @@ cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
                     set(axImg_K,'XLim',ROI(1:2),'YLim',ROI(3:4));
                     set(hAxX_K,'XLim',ROI(1:2));
                     set(hAxY_K,'YLim',ROI(3:4));  
+                case 'B'
+                    set(axImg_B,'XLim',ROI(1:2),'YLim',ROI(3:4));
+
             end
             drawnow;
             resizePlots;
@@ -1516,12 +1715,12 @@ cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
         
         % Get click 1
         [x1,y1]=ginputMe(1);                                    % Get a mouse click
-        if isequal(img_type,'X');x1=round(x1);y1=round(y1);end  % Round Pos.      
+        if isequal(img_type,'X') || isequal(img_type,'B');x1=round(x1);y1=round(y1);end  % Round Pos.      
         p1=plot(x1,y1,'+','color','k','linewidth',1);           % Marker 1
         
         % Get click 2
         [x2,y2]=ginputMe(1);                                    % Get a mouse click
-        if isequal(img_type,'X');x2=round(x2);y2=round(y2);end  % Round Pos.      
+        if isequal(img_type,'X') || isequal(img_type,'B');x2=round(x2);y2=round(y2);end  % Round Pos.      
         p2=plot(x2,y2,'+','color','k','linewidth',1);           % Marker 2
 
         delete(p1);delete(p2);                                  % Delete markers        
@@ -1544,6 +1743,8 @@ cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
                     ax = axImg;
                 case 'K'
                     ax = axImg_K;
+                case 'B'
+                    ax = axImg_B;
             end                    
             ax.CLim=src.Data;
         catch ME
@@ -1569,6 +1770,11 @@ cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
                 ax = axImg_K;
                 z = hImg_K.CData;
                 tbl = climtbl_K;
+                
+              case 'B'
+                ax = axImg_B;
+                z = hImg_B.CData;
+                tbl = climtbl_B;
 
         end              
         N0 = round(max(max(z))*.95);
@@ -1591,87 +1797,27 @@ cLat_K.Position=[2 cPSF_K.Position(2)-20 120 20];
         end
     end
 
-    function cCoMCB(src,~)        
+    function cCoMCB(src,~)       
+        if ~isfield(data,'BoxCount')
+            tCoMAnalysis.Visible='off';
+            return;
+        end
         set(tCoMAnalysis,'Visible',src.Value);    
     end
 
-    function cCrossCB(src,~)        
-        set(pCrossX,'Visible',src.Value);
-        set(pCrossY,'Visible',src.Value);
-    end
-
-%% Specific Callbacks
-
-    function drawPSFK(state)
-        d = axImg_K.Children;
-        p = [];
-        for nn=1:length(d)
-           if isprop(d(nn),'UserData') && isequal(d(nn).UserData,'PSF')
-              p=d(nn);
-              break;
-           end
-        end        
+    function cCrossCB(src,evt)        
         
-        if state
-            tt=linspace(0,2*pi,100);
-            s=tblPSF.Data(1);
-            kR = sqrt(1/(4*pi*s^2));
-            
-            if isempty(p)
-               p=plot(kR*cos(tt),kR*sin(tt),'-','linewidth',1,...
-                    'color',[0 0.4470 0.7410],'parent',axImg_K,'UserData','PSF');
-            else
-                set(p,'Xdata',kR*cos(tt),'Ydata',kR*sin(tt));
-            end     
-        else
-            if ~isempty(p)
-               delete(p); 
-            end            
-        end        
+        switch src.UserData
+            case 'X'
+                set(pCrossX,'Visible',src.Value);
+                set(pCrossY,'Visible',src.Value);
+            case 'K'
+                set(pCrossX_K,'Visible',src.Value);
+                set(pCrossY_K,'Visible',src.Value);
+        end
     end
 
- function drawLatK(state)
-        d = axImg_K.Children;
-        ps = {};
-        for nn=1:length(d)
-           if isprop(d(nn),'UserData') && isequal(d(nn).UserData,'lattice_wavector')
-              ps{end+1}=d(nn);
-           end
-        end        
-        
-        if state && isfield(data,'LatticeK')
-            tt=linspace(0,2*pi,100);
 
-            k1 = data.LatticeK.k1;
-            k2 = data.LatticeK.k2;
-            
-            s1 = data.LatticeK.s1;
-            s2 = data.LatticeK.s2;
-            
-            if isempty(ps)
-               plot(k1(1)+4*s1*cos(tt),k1(2)+4*s1*sin(tt),'-','linewidth',1,...
-                    'color','g','parent',axImg_K,'UserData','lattice_wavector');
-               plot(-k1(1)+4*s1*cos(tt),-k1(2)+4*s1*sin(tt),'-','linewidth',1,...
-                    'color','g','parent',axImg_K,'UserData','lattice_wavector');                
-               plot(k2(1)+4*s2*cos(tt),k2(2)+4*s2*sin(tt),'-','linewidth',1,...
-                    'color','g','parent',axImg_K,'UserData','lattice_wavector');
-               plot(-k2(1)+4*s2*cos(tt),-k2(2)+4*s2*sin(tt),'-','linewidth',1,...
-                    'color','g','parent',axImg_K,'UserData','lattice_wavector');
-            else
-                set(ps{1},'Xdata',k1(1)+2*s1*cos(tt),'Ydata',k1(2)+2*s1*sin(tt));
-                set(ps{2},'Xdata',-k1(1)+2*s1*cos(tt),'Ydata',-k1(2)+2*s1*sin(tt));
-                set(ps{3},'Xdata',k2(1)+2*s2*cos(tt),'Ydata',k2(2)+2*s2*sin(tt));
-                set(ps{4},'Xdata',-k2(1)+2*s2*cos(tt),'Ydata',-k2(2)+2*s2*sin(tt));
-
-            end     
-        else
-            if ~isempty(ps)
-                for jj=1:length(ps)
-                    delete(ps{jj}); 
-                end
-            end            
-        end        
-    end
 %% Tabular Data Results Panel
 % Panel for parameters and analysis results.
 
@@ -1789,28 +1935,35 @@ hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
     end
 
     function foobar(a,b)
-        switch b.NewValue.Title
-            case 'position'    
-                axes(axImg);
-%                 mouse_figure(hF);               
-                setChildren(hpDisp_X,'on');
-                setChildren(hpDisp_K,'off');      
-            case 'momentum'  
-                axes(axImg_K);
-%                 mouse_figure(hF); 
-                setChildren(hpDisp_X,'off');
-                setChildren(hpDisp_K,'on');
-        end        
+%         switch b.NewValue.Title
+%             case 'position'    
+%                 axes(axImg);
+% %                 mouse_figure(hF);               
+%                 setChildren(hpDisp_X,'on');
+%                 setChildren(hpDisp_K,'off');      
+%             case 'momentum'  
+%                 axes(axImg_K);
+% %                 mouse_figure(hF); 
+%                 setChildren(hpDisp_X,'off');
+%                 setChildren(hpDisp_K,'on');
+%         end        
     end
 
 % Tab Groups for each display
 tX=uitab(hp,'Title','position','units','pixels','backgroundcolor','w');
+tHist=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
+
 tK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
+tB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
+tHistB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
+
 tD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
+tC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
+
 tH=uitab(hp,'Title','hopping','units','pixels','backgroundcolor','w');
 
-setChildren(hpDisp_K,'off');    
-
+% setChildren(hpDisp_K,'off');    
+% 
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary
 
@@ -1856,8 +2009,7 @@ l=80;   % Left gap for fitting and data analysis summary
 
     function resizePlots       
         resizePlot(axImg,cBar,hAxX,hAxY);
-        resizePlot(axImg_K,cBar_K,hAxX_K,hAxY_K);
-
+        resizePlot(axImg_K,cBar_K,hAxX_K,hAxY_K);        
     end
 
 %% Position Images
@@ -1874,20 +2026,35 @@ axImg.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
 axis equal tight
 
 % Cross Hair Plots
-pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 1 1 .2],'linewidth',1);
-pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 1 1 .2],'linewidth',1);
+pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1);
+pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1);
+
+% Initialize Grid Objects
+clear pGrid1
+clear pGrid2
+for i = 1:200
+    pGrid1(i) = plot([1 512],[1 512],'-','color',[1 0 0 .2],...
+        'linewidth',1,'Visible','off','parent',axImg);
+    pGrid2(i) = plot([1 512],[1 512],'-','color',[1 0 0 .2],...
+        'linewidth',1,'Visible','off','parent',axImg);
+end
 
 % file name string
 tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
     'horizontalalignment','left','verticalalignment','bottom','margin',1,...
     'interpreter','none','backgroundcolor',[1 1 1 .5]);
 
-% box count analysis sytring
-tCoMAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',12,'fontweight','bold',...
+% Box Count Analysis String
+tCoMAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
     'horizontalalignment','right','verticalalignment','bottom','margin',1,...
     'interpreter','latex',...
-    'color',co(2,:),'backgroundcolor',[1 1 1 .1]);
+    'color','k','backgroundcolor',[1 1 1 .7]);
 
+% Box Count Analysis String
+tTopLeft=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
+    'horizontalalignment','left','verticalalignment','top','margin',1,...
+    'interpreter','latex',...
+    'color','k','backgroundcolor',[1 1 1 .7],'Visible','off');
 
 % Box for ROI (this will become an array later)
 pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2);
@@ -1928,6 +2095,57 @@ drawnow
 linkaxes([axImg hAxY],'y');
 linkaxes([axImg hAxX],'x');
 
+%% Histgoram
+
+ax_h1 = subplot(2,2,1,'parent',tHist);
+pHist1 = bar(1:100,1:100,'parent',ax_h1,'linestyle','none');
+ylabel('occurences');
+xlabel('counts/pixel');
+hold on
+
+set(ax_h1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H1',...
+    'YAxisLocation','left');
+ylim(ax_h1,'auto');
+text(.99,.99,'processed, linear scale','units','normalized','fontsize',10,...
+    'verticalalignment','top','horizontalalignment','right');
+
+ax_h2 = subplot(2,2,2,'parent',tHist);
+pHist2 = bar(1:100,1:100,'parent',ax_h2,'linestyle','none');
+ylabel('occurences');
+xlabel('counts/pixel');
+hold on
+set(ax_h2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H2',...
+    'YAxisLocation','left','yScale','log');
+ylim(ax_h2,'auto');
+text(.99,.99,'processed, log scale','units','normalized','fontsize',10,...
+    'verticalalignment','top','horizontalalignment','right');
+
+ax_h3 = subplot(2,2,3,'parent',tHist);
+pHist3 = bar(1:100,1:100,'parent',ax_h3,'linestyle','none');
+ylabel('occurences');
+xlabel('counts/pixel');
+hold on
+set(ax_h3,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H1',...
+    'YAxisLocation','left');
+ylim(ax_h3,'auto');
+text(.99,.99,'no filtering, linear scale','units','normalized','fontsize',10,...
+    'verticalalignment','top','horizontalalignment','right');
+
+ax_h4 = subplot(2,2,4,'parent',tHist);
+pHist4 = bar(1:100,1:100,'parent',ax_h4,'linestyle','none');
+ylabel('occurences');
+xlabel('counts/pixel');
+hold on
+set(ax_h4,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H2',...
+    'YAxisLocation','left','yScale','log');
+ylim(ax_h4,'auto');
+text(.99,.99,'no filtering, log scale','units','normalized','fontsize',10,...
+    'verticalalignment','top','horizontalalignment','right');
+
 %% Momentum Images
 
 % Initialize image axis
@@ -1939,9 +2157,21 @@ hold on
 axImg_K.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
 axis equal tight
 
+clear pKReticles
+pKReticles(1) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+pKReticles(2) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+pKReticles(3) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+pKReticles(4) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+pKReticles(5) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+pKReticles(6) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+pKReticles(7) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+pKReticles(8) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+
+pKPSF = plot(0,0,'--','color',[1 1 1],'parent',axImg_K,'Visible','off');
+
 % Cross Hair Plots
-pCrossX_K=plot([1 512],[512/2 512/2],'-','color',[1 1 1 .2],'linewidth',1,'parent',axImg_K);
-pCrossY_K=plot([512/2 512/2],[1 512],'-','color',[1 1 1 .2],'linewidth',1,'parent',axImg_K);
+pCrossX_K=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K);
+pCrossY_K=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K);
 
 % file name string
 tImageFile_K=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
@@ -1949,10 +2179,10 @@ tImageFile_K=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bol
     'interpreter','none','backgroundcolor',[1 1 1 .5],'parent',axImg_K);
 
 % box count analysis sytring
-tCoMAnalysis_K=text(.99,0.01,'FILENAME','units','normalized','fontsize',12,'fontweight','bold',...
-    'horizontalalignment','right','verticalalignment','bottom','margin',1,...
+tTopLeftK=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
+    'horizontalalignment','left','verticalalignment','top','margin',1,...
     'interpreter','latex',...
-    'color',co(2,:),'backgroundcolor',[1 1 1 .1],'parent',axImg_K);
+    'color','k','backgroundcolor',[1 1 1 .3],'Visible','off');
 
 
 % Box for ROI (this will become an array later)
@@ -1972,7 +2202,6 @@ hAxX_K.Position=[axImg_K.Position(1) axImg_K.Position(2)-l axImg_K.Position(3) l
 hold on
 % Add X data data and fit plots
 pX_K=plot(data.X,ones(length(data.X),1),'k.-');
-pXF_K=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'linewidth',2);
 
 
 % Y Cut/Sum Axis
@@ -1982,7 +2211,6 @@ hAxY_K.Position=[axImg_K.Position(1)+axImg_K.Position(3) axImg_K.Position(2) l a
 hold on
 % Add Y data data and fit plots
 pY_K=plot(ones(length(data.Y),1),data.Y,'k.-'); 
-pYF_K=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'linewidth',2);
 
 set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 drawnow
@@ -1992,28 +2220,453 @@ linkaxes([axImg_K hAxX_K],'x');
 
 set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 
-%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% updateImages
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Initial function call to update basic analysis graphics on new data input
+%% Binned Image
+
+% Initialize image axis
+axImg_B=axes('parent',tB);cla
+hImg_B=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_B);
+set(axImg_B,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
+    'YAxisLocation','left');
+hold on
+cb_B = colorbar;
+axis equal tight
+xlabel('lattice site (a_1)','fontsize',8);
+ylabel('lattice site (a_2)','fontsize',8);
+caxis([0 1]);
+
+%% Binned Histgoram
+
+ax_hB1=subplot(2,1,1,'parent',tHistB);
+pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none');
+ylabel('occurences');
+xlabel('counts/site');
+hold on
+
+set(ax_hB1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H1',...
+    'YAxisLocation','left');
 
 
-function updateGraphics        
-    tic;
-    fprintf('Updating image graphics ...');        
-    set(hImg,'XData',data.X,'YData',data.Y,'CData'...
-        ,data.Z(:,:,menuPosImg.Value));        
-    if isfield(data,'ZfNorm')
-        set(hImg_K,'XData',data.f,'YData',data.f,'CData',...
-            data.ZfNorm(:,:,menuKImg.Value));
-    end        
-    if cAutoColor_X.Value;setClim('X');end        
-    if cAutoColor_K.Value;setClim('K');end   
-    t2 = toc;
-    disp([' done (' num2str(t2) ' seconds)']);
-end
+ax_hB2=subplot(2,1,2,'parent',tHistB);
+pHistB2 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none');
+ylabel('occurences');
+xlabel('counts/site');
+hold on
 
+set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','YDir','normal','UserData','H2',...
+    'YAxisLocation','left');
+
+
+%% Digital Image
+
+axImg_D=axes('parent',tD);
+hImg_D=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_D);
+set(axImg_D,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+    'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
+    'YAxisLocation','left');
+hold on
+axis equal tight
+xlabel('lattice site (a_1)','fontsize',8);
+ylabel('lattice site (a_2)','fontsize',8);
+caxis([0 1]);
+
+%% Graphical Callbacks
+    function updateGraphics        
+        updatePositionGraphics;
+        updateHistogramGraphics;
+        updateMomentumGraphics;          
+        updateBinnedGraphics;
+        updateBinnedHistogramGraphics;
+    end
+
+%% Lattice Grid Callbacks
+
+    function updateGridGraphics       
+        imgnum = menuSelectImg.Value;
+
+        if ~isfield(data,'LatticeDig')
+           return 
+        end              
+        
+        n1i = min(data.LatticeDig(imgnum).n1);
+        n1f = max(data.LatticeDig(imgnum).n1);
+        
+        n2i = min(data.LatticeDig(imgnum).n2);
+        n2f = max(data.LatticeDig(imgnum).n2);     
+        
+        a1 = data.LatticeDig(imgnum).a1;
+        a2 = data.LatticeDig(imgnum).a2;
+        
+        theta=acos(sum(a1.*a2)/(norm(a1)*norm(a2)))*180/pi;
+        
+        p = data.LatticeDig(imgnum).p;
+        tTopLeft.String = ['$\vec{a}_1 = (' num2str(round(a1(1),4)) ',' num2str(round(a1(2),4)) ')$' newline ...
+            '$\vec{a}_2 = (' num2str(round(a2(1),4)) ',' num2str(round(a2(2),4)) ')$' newline ...
+            '$\vec{a}_1\cdot\vec{a}_2 = a_1a_2\cos(' num2str(theta,4) '^\circ )$' newline ...
+            '$\phi = 2\pi\times (' num2str(round(p(1),3)) ',' num2str(round(p(2),3)) ')$']; 
+        
+        dr1 = a2*(n2i-1);
+        dr2 = a2*(n2f+1);
+        dr3 = a1*(n1i-1);
+        dr4 = a1*(n1f+1);
+        
+        % Plot n1 grid
+        jj=1;
+        for ii=n1i:1:n1f
+            r0 = a1*(ii+p(1)+0.5);                
+            set(pGrid1(jj),'XData',r0(1)+[dr1(1) dr2(1)],'Ydata',...
+                r0(2)+[dr1(2) dr2(2)]);
+            jj = jj+1;
+            pGrid1(jj).Color = [.5, .5, .5 .2];
+        end 
+        
+        % Plot n1 grid
+        jj=1;
+        for ii=n2i:1:n2f
+            r0 = a2*(ii+p(2)+0.5);                
+            set(pGrid2(jj),'XData',r0(1)+[dr3(1) dr4(1)],'Ydata',...
+                r0(2)+[dr3(2) dr4(2)]);
+            pGrid2(jj).Color = [.5, .5, .5 .2];
+            jj = jj+1;
+        end   
+    end               
+
+    function latticeGridCB(src,~)      
+        if ~isfield(data,'LatticeDig')
+            % Turn off all grid lines
+            for ii=1:length(pGrid1)          
+                pGrid1(ii).Visible='off';        
+            end
+
+            for ii=1:length(pGrid2)             
+                pGrid2(ii).Visible='off'; 
+            end
+            return;
+        end
+        
+        imgnum = menuSelectImg.Value;             
+        n1i = min(data.LatticeDig(imgnum).n1);
+        n1f = max(data.LatticeDig(imgnum).n1);        
+        n2i = min(data.LatticeDig(imgnum).n2);
+        n2f = max(data.LatticeDig(imgnum).n2);        
+        ii_max_n1 = (n1f-n1i)+1;
+        ii_max_n2 = (n2f-n2i)+1;
+        
+        if src.Value        
+            % Turn off all grid lines
+            for ii=1:length(pGrid1)
+                if ii<=ii_max_n1
+                    pGrid1(ii).Visible='on'; 
+                else
+                    pGrid1(ii).Visible='off'; 
+                end
+            end
+            for ii=1:length(pGrid2)
+                if ii<=ii_max_n2
+                    pGrid2(ii).Visible='on'; 
+                else
+                    pGrid2(ii).Visible='off'; 
+                end
+            end
+        else
+            % Turn off all grid lines
+            for ii=1:length(pGrid1)          
+                pGrid1(ii).Visible='off';        
+            end
+
+            for ii=1:length(pGrid2)             
+                pGrid2(ii).Visible='off'; 
+            end
+        end        
+    end
+
+   function latticeTextCB(src,evt)          
+        if src.Value && isfield(data,'LatticeDig')
+            tTopLeft.Visible='on';
+        else
+            tTopLeft.Visible='off';
+        end
+   end
+
+%% Position Callbacks
+
+    function updatePositionGraphics
+        set(hImg,'XData',data.X,'YData',data.Y,'CData'...
+            ,data.Z(:,:,menuSelectImg.Value));            
+        if cAutoColor_X.Value;setClim('X');end                
+        cCrossCB(cCross_X);
+        updateGridGraphics;
+        latticeGridCB(cDrawLattice);
+        latticeTextCB(cTextLattice);
+        updateCoM;
+        cCoMCB(cCoMStr_X);
+        
+        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
+        
+    end
+
+    function updateCoM
+        if ~isfield(data,'BoxCount')
+           tCoMAnalysis.Visible='off';
+           return
+        end
+        imgnum = menuSelectImg.Value;
+        bc = data.BoxCount(imgnum);        
+        % Update box count string
+        str=[ num2str(bc.Npeak,'%.2e') ' max counts ' newline ...
+            num2str(bc.Nraw,'%.2e') ' counts' newline ...
+            '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(bc.Xc,1)) ',' ...
+            num2str(round(bc.Yc,1)) ')$' newline ...
+            '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs,1)) ',' ...
+            num2str(round(bc.Ys,1)) ')$']; 
+
+        %Update box count string object
+        set(tCoMAnalysis,'String',str);          
+    end
+%% Histgoram Callbacks
+
+    function updateHistogram
+        ROI = tblROI.Data;
+        x = ROI(1):ROI(2);
+        y = ROI(3):ROI(4);
+        
+        [N,edges] = histcounts(data.Z(y,x,1),1000);
+        centers = (edges(1:end-1) + edges(2:end))/2;
+        Histogram = struct;
+        Histogram.Edges = edges;
+        Histogram.Centers = centers;
+        Histogram.N = N;  
+        data.Histogram(1) = Histogram;      
+        
+        xe = data.Histogram(1).Edges;
+        
+        for kk=2:size(data.Z,3)            
+            [N,edges] = histcounts(data.Z(y,x,kk),xe);
+            centers = (edges(1:end-1) + edges(2:end))/2;
+            Histogram = struct;
+            Histogram.Edges = edges;
+            Histogram.Centers = centers;
+            Histogram.N = N;  
+            data.Histogram(kk) = Histogram;            
+        end     
+                  
+        for kk=1:size(data.ZNoFilter,3)            
+            [N,edges] = histcounts(data.ZNoFilter(y,x,kk),xe);
+            centers = (edges(1:end-1) + edges(2:end))/2;
+            Histogram = struct;
+            Histogram.Edges = edges;
+            Histogram.Centers = centers;
+            Histogram.N = N;  
+            data.HistogramNoFilter(kk) = Histogram;            
+        end         
+        updateHistogramGraphics;
+    end
+
+    function updateHistogramGraphics        
+        if ~isfield(data,'Histogram')
+            return;
+        end
+       imgnum = menuSelectImg.Value;          
+        set(pHist1,'XData',data.Histogram(imgnum).Centers,...
+            'YData',data.Histogram(imgnum).N);     
+        set(pHist2,'XData',data.Histogram(imgnum).Centers,...
+            'YData',data.Histogram(imgnum).N);    
+        set(pHist3,'XData',data.HistogramNoFilter(imgnum).Centers,...
+            'YData',data.HistogramNoFilter(imgnum).N);     
+        set(pHist4,'XData',data.HistogramNoFilter(imgnum).Centers,...
+            'YData',data.HistogramNoFilter(imgnum).N);            
+    end
+
+
+%% Momentum Callbacks
+
+    function updateMomentumGraphics
+        if isfield(data,'ZfNorm')
+            set(hImg_K,'XData',data.f,'YData',data.f,'CData',...
+                data.ZfNorm(:,:,menuSelectImg.Value));
+            if cAutoColor_K.Value;setClim('K');end  
+        end    
+        set(tImageFile_K,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
+        
+        updateReciprocalReticleGraphics;
+        reciprocalLatticeReticleCB(cLat_KReticle);
+        
+        updateReciprocalTextGraphics;
+        reciprocalLatticeTextCB(cLat_K_text);
+        
+        updatePSFKGraphic;
+        PSFKCB(cPSF_K);
+    end
+
+    function reciprocalLatticeReticleCB(src,evt)
+        if ~isfield(data,'LatticeK')
+            for ii=1:length(pKReticles)          
+                pKReticles(ii).Visible='off';        
+            end
+            return;
+        end
+        if src.Value        
+            for ii=1:length(pKReticles)          
+                pKReticles(ii).Visible='on';        
+            end            
+        else
+            for ii=1:length(pKReticles)          
+                pKReticles(ii).Visible='off';        
+            end
+        end        
+    end
+
+    function updateReciprocalTextGraphics
+        imgnum = menuSelectImg.Value;
+        if ~isfield(data,'LatticeK')
+            tTopLeftK.Visible = 'off';
+            return;
+        end     
+        k1 = data.LatticeK(imgnum).k1;
+        k2 = data.LatticeK(imgnum).k2;        
+        theta=acos(sum(k1.*k2)/(norm(k1)*norm(k2)))*180/pi;        
+        tTopLeftK.String = ['$\vec{k}_1 = (' num2str(round(k1(1),4)) ',' num2str(round(k1(2),4)) ')$' newline ...
+            '$\vec{k}_2 = (' num2str(round(k2(1),4)) ',' num2str(round(k2(2),4)) ')$' newline ...
+            '$\vec{k}_1\cdot\vec{k}_2 = k_1k_2\cos(' num2str(theta,4) '^\circ )$'];        
+    end
+
+    function reciprocalLatticeTextCB(src,evt)
+        if ~isfield(data,'LatticeK')
+            tTopLeftK.Visible = 'off';
+            return;
+        end 
+        if src.Value
+           tTopLeftK.Visible='on';
+        else
+           tTopLeftK.Visible='off';
+
+        end
+    end
+
+    function updateReciprocalReticleGraphics
+        imgnum = menuSelectImg.Value;        
+        if ~isfield(data,'LatticeK')
+            return;
+        end              
+        tt=linspace(0,2*pi,100);
+        k1 = data.LatticeK(imgnum).k1;
+        k2 = data.LatticeK(imgnum).k2;
+        s1 = data.LatticeK(imgnum).s1;
+        s2 = data.LatticeK(imgnum).s2;           
+        k12p = k1+k2;
+        k12n = k1-k2;
+        s12 = sqrt(s1*s2);             
+        set(pKReticles(1),'XData',k1(1)+4*s1*cos(tt),...
+            'YData',k1(2)+4*s1*sin(tt),'color','r');
+        set(pKReticles(2),'XData',-k1(1)+4*s1*cos(tt),...
+            'YData',-k1(2)+4*s1*sin(tt),'color','r');
+        set(pKReticles(3),'XData',k2(1)+4*s1*cos(tt),...
+            'YData',k2(2)+4*s2*sin(tt),'color','b');
+        set(pKReticles(4),'XData',-k2(1)+4*s1*cos(tt),...
+            'YData',-k2(2)+4*s2*sin(tt),'color','b');   
+        set(pKReticles(5),'XData',k12p(1)+4*s12*cos(tt),...
+            'YData',k12p(2)+4*s12*sin(tt),'color','g');
+        set(pKReticles(6),'XData',-k12p(1)+4*s12*cos(tt),...
+            'YData',-k12p(2)+4*s12*sin(tt),'color','g');   
+        set(pKReticles(7),'XData',k12n(1)+4*s12*cos(tt),...
+            'YData',k12n(2)+4*s12*sin(tt),'color',[255, 215, 0]/255);
+        set(pKReticles(8),'XData',-k12n(1)+4*s12*cos(tt),...
+            'YData',-k12n(2)+4*s12*sin(tt),'color',[255, 215, 0]/255);                   
+    end
+
+    function updatePSFKGraphic
+        s=tblPSF.Data(1);
+        kR = sqrt(1/(4*pi*s^2));
+        tt=linspace(0,2*pi,100);        
+        set(pKPSF,'XData',kR*cos(tt),...
+            'YData',kR*sin(tt),'color',[0 0.4470 0.7410]);   
+    end
+
+    function PSFKCB(src,evt)
+        if src.Value
+            pKPSF.Visible='on';
+        else
+            pKPSF.Visible='off';
+        end 
+    end
+
+
+
+
+%% Binned Callbacks
+    function updateBinnedGraphics
+        if ~isfield(data,'LatticeDig')
+            return;
+        end         
+        imgnum = menuSelectImg.Value;        
+        set(hImg_B,'XData',data.LatticeDig(imgnum).n1,...
+            'YData',data.LatticeDig(imgnum).n2,...
+            'CData',data.LatticeDig(imgnum).Zbin);
+        
+        set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
+            'YData',data.LatticeDig(imgnum).n2,...
+            'CData',data.LatticeDig(imgnum).Zdig);
+        
+        if cAutoColor_B.Value;setClim('B');end                
+
+        updateGridGraphics;
+        latticeGridCB(cDrawLattice);
+        latticeTextCB(cTextLattice);
+    end
+
+%% Binned Histgoram Callbacks
+
+    function updateBinnedHistogramGraphics
+        if ~isfield(data,'LatticeHistogram')
+            return;
+        end 
+        imgnum = menuSelectImg.Value;
+        
+        x = data.LatticeHistogram(imgnum).Centers;
+        xe = data.LatticeHistogram(imgnum).Edges;
+        y = data.LatticeHistogram(imgnum).N;
+        
+        Nthresh = histBtbl.Data(1,1);       
+        set(pHistB1,'XData',x,'YData',y);
+        set(pHistB2,'XData',x,'YData',y);
+        set(ax_hB2,'XLim',[Nthresh max(xe)]);     
+    end
+
+    function updateBinnedHistogram
+       if ~isfield(data,'LatticeDig')
+           return;
+       end      
+        Nbins = histBtbl.Data(1,2);        
+        
+        Zall = data.LatticeDig(1).Zbin;
+        Zall = Zall(:);
+        Zall(Zall==0)=[];
+        
+        [N,edges] = histcounts(Zall,Nbins);
+        centers = (edges(1:end-1) + edges(2:end))/2;
+        LatticeHistogram = struct;
+        LatticeHistogram.Edges = edges;
+        LatticeHistogram.Centers = centers;
+        LatticeHistogram.N = N;  
+        data.LatticeHistogram(1) = LatticeHistogram;      
+        for kk=2:length(data.LatticeDig)
+            Zall = data.LatticeDig(kk).Zbin;
+            Zall = Zall(:);
+            Zall(Zall==0)=[];            
+            
+            [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
+            centers = (edges(1:end-1) + edges(2:end))/2;
+            LatticeHistogram = struct;
+            LatticeHistogram.Edges = edges;
+            LatticeHistogram.Centers = centers;
+            LatticeHistogram.N = N;  
+            data.LatticeHistogram(kk) = LatticeHistogram;
+        end                  
+    end
+
+%% New Image
 function updateImages
     % Grab the ROI
     ROI=tblROI.Data;
@@ -2029,6 +2682,8 @@ function updateImages
     opt.Mask               = ixon_mask;
     opt.doPSF              = hcPSF.Value ;    
     opt.PSF                = tblPSF.Data;    
+    opt.doRotate           = cRotate.Value;
+    opt.Theta              = tblTheta.Data;
         
     % Momentum Space
     opt.doFFT              = hcFFT.Value;
@@ -2037,37 +2692,35 @@ function updateImages
     opt.doFFTFilter        = cKGaussFilter.Value;
     opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
-    data = processRawData(data,opt);       
+    data = processRawData(data,opt);   
+    
     updateImageLists;        
-    updateGraphics;
+
+    
+    % Perform Box Count ALWAYS DONE
+    data=ixon_boxCount(data);
+    bc=data.BoxCount;    
+    
+    % Histogram of data (always done)
+    updateHistogram;        
+    
+    updateGraphics; 
 
     % Create sub image to do center of mass analysis
     Zsub=data.Z(y,x,1);
     
-    % Perform Box Count ALWAYS DONE
-    data=ixon_boxCount(data);
-    bc=data.BoxCount;
-    
+    imgnum = menuSelectImg.Value;
+
     % Box counts analysis table string    
-     stranl={'box sum (counts)',bc.Nraw;
-        'box peak (counts)',max(max(Zsub));
-        'box Yc (px)',bc.Yc;
-        'box Xc (px)',bc.Xc;
-        ['box Y' char(963) ' (px)'],bc.Ys;
-        ['box X' char(963) ' (px)'],bc.Xs};   
+     stranl={'box sum (counts)',bc(imgnum).Nraw;
+        'box peak (counts)',bc(imgnum).Npeak;
+        'box Yc (px)',bc(imgnum).Yc;
+        'box Xc (px)',bc(imgnum).Xc;
+        ['box Y' char(963) ' (px)'],bc(imgnum).Ys;
+        ['box X' char(963) ' (px)'],bc(imgnum).Xs};   
     
     tbl_pos_analysis.Data=stranl;
     
-    % Update box count string
-    str=[ num2str(max(max(Zsub)),'%.2e') ' max counts ' newline ...
-        num2str(bc.Nraw,'%.2e') ' counts' newline ...
-        '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(bc.Xc,1)) ',' ...
-        num2str(round(bc.Yc,1)) ')$' newline ...
-        '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs,1)) ',' ...
-        num2str(round(bc.Ys,1)) ')$']; 
-    
-    % Update box count string object
-    set(tCoMAnalysis,'String',str);    
     
     % Update X, Y, and Z objects
     set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,1));
@@ -2077,8 +2730,8 @@ function updateImages
     end
     
     % Move cross hair to center of mass
-    pCrossX.YData=[1 1]*round(data.BoxCount.Yc);
-    pCrossY.XData=[1 1]*round(data.BoxCount.Xc);
+    pCrossX.YData=[1 1]*round(bc(imgnum).Yc);
+    pCrossY.XData=[1 1]*round(bc(imgnum).Xc);
 
     % Update table that trackes cross hair
     tblcross.Data(1,2)=pCrossX.YData(1);
@@ -2464,7 +3117,7 @@ end
 
     function updateHistoryInd(data)          
         % Update image string
-        set(tImageFile,'String',data.Name);
+
 
         % Upate history list
         filenames=dir([currDir  filesep '*.mat']);
@@ -2481,8 +3134,7 @@ end
 
         % Update string
         tNavInd.String=sprintf('%03d',ind); 
-        tNavName.String=fullfile(currDir,data.Name);
-        
+        tNavName.String=fullfile(currDir,data.Name);        
     end
 
 %% FINISH
@@ -2503,8 +3155,14 @@ addlistener(axImg,'YLim','PostSet',@foo);
 addlistener(axImg_K,'XLim','PostSet',@foo3); 
 addlistener(axImg_K,'YLim','PostSet',@foo3); 
 
+addlistener(axImg_B,'XLim','PostSet',@foo4); 
+addlistener(axImg_B,'YLim','PostSet',@foo4); 
 
 set(hF,'WindowState','maximized');
+
+    function foo4(~,~)
+        tbl_dROI_B.Data = round([axImg_B.XLim axImg_B.YLim]);
+    end
 
     function foo3(~,~)
         set(pCrossX_K,'XData',axImg_K.XLim,'YData',[1 1]*mean(axImg_K.YLim));
@@ -2523,24 +3181,19 @@ set(hF,'WindowState','maximized');
     function foo(~,~)        
         % Update crosshair
         set(pCrossX,'XData',axImg.XLim,'YData',[1 1]*mean(axImg.YLim));
-        set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*mean(axImg.XLim));       
+        set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*mean(axImg.XLim));      
 
         % Update ROI
-        tbl_dROI_X.Data = round([axImg.XLim axImg.YLim]);
-        
-        
-          % Update plots if sum
+        tbl_dROI_X.Data = round([axImg.XLim axImg.YLim]);      
+        % Update plots if sum
         if rbSum_X.Value
             
         end
-
         % Update plots if cut
         if rbCut_X.Value
             set(pX,'XData',data.X,'YData',hImg.CData(round(pCrossX.YData(1)),:));
             set(pY,'YData',data.Y,'XData',hImg.CData(:,round(pCrossY.XData(1))));
-        end     
-        
-
+        end      
     end
 
 
@@ -2548,8 +3201,11 @@ set(hF,'WindowState','maximized');
 
 axes(axImg);
 set(axImg,'XLim',[1 512],'YLim',[ 1 512]); 
+
 enableDefaultInteractivity(axImg);
 enableDefaultInteractivity(axImg_K);
+enableDefaultInteractivity(axImg_B);
+
 end
  
 

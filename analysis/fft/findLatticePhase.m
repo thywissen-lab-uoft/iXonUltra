@@ -1,20 +1,28 @@
-function  [x,fval,exitflag,output]=findLatticePhase(X,Y,Z,k1,k2)
+function  out=findLatticePhase(x,y,z,k1,k2)
 
+sc = 3;
 
-[xx,yy]=meshgrid(X,Y);
+% Rescale the image to avoid rounding errors when moving pixels
+z2 = imresize(z,sc)/(sc^2); % scale amplitude to preserve norm
+x2 = linspace(x(1),x(end),size(z2,2));
+y2 = linspace(y(1),y(end),size(z2,1));
 
-zzz = Z(:);
-xxx = xx(:);
-yyy = yy(:);
+[X,Y] = meshgrid(x2,y2);
 
-myfunc = @(p) ...
-    -sum(sin(2*pi*(k1(1)*xxx+k1(2)*k1(2)*yyy)+p(1)).*...
-    sin(2*pi*(k2(1)*xxx+k2(2)*k2(2)*yyy)+p(2)).*zzz,'all');
-tic
-[x,fval,exitflag,output] = fminsearch(myfunc,[0 1]);
-toc
+p1=mod(1-(angle(sum(exp(-1i*2*pi*(k1(1).*X+k1(2).*Y)).*z2,'all')))/(2*pi),1);
+p2=mod(1-(angle(sum(exp(-1i*2*pi*(k2(1).*X+k2(2).*Y)).*z2,'all')))/(2*pi),1);
 
+Q = [0 -1;1 0];
+a1 = Q*k2/(k1'*Q*k2);
+a2 = -Q*k1/(-k2'*Q*k1);
 
+out = struct;
+out.k1 = k1;
+out.k2 = k2;
+out.p1 = p1;
+out.p2 = p2;
+out.a1 = a1;
+out.a2 = a2;
     
 end
 

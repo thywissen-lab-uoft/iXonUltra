@@ -120,7 +120,10 @@ t=text(2,2,'hi','units','pixels','fontsize',12,'color','r',...
     'interpreter','none','verticalalignment','bottom',...
     'fontweight','bold');
 
-colormap(purplemap)
+%colormap(purplemap)
+cend = [0.6 0 .5];
+colormap([linspace(1,cend(1),1000)' linspace(1,cend(2),1000)' linspace(1,cend(3),1000)'])
+
 hold on
 hImg=imagesc(X,Y,Z);
 axis equal tight

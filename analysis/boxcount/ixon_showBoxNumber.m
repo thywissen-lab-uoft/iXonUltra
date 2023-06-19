@@ -58,7 +58,7 @@ if doExpFit
     
     % Get some initial guesses
     tau0=max(xvals)/4;   
-    tau0=0.02;
+    tau0=1;
     
     fout_exp={};
     for nn=1:size(N,2)  
