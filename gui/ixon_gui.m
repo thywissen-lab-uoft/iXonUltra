@@ -967,7 +967,7 @@ hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
     function processCB(~,~)
         updateImages;
-    end
+  end
 
 %% Analysis Panel
 hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');

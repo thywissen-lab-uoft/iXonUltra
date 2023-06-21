@@ -373,7 +373,9 @@ ixon_boxPopts.xUnit=ixon_unit;
 % ixon_boxPopts.NumberScale='Log';
 ixon_boxPopts.NumberScale='Linear';
 
-ixon_boxPopts.NumberExpFit = 1;
+ixon_boxPopts.NumberExpFit = 0;
+ixon_boxPopts.NumberExp2SumFit = 0;
+
 ixon_boxPopts.NumberLorentzianFit=0;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
@@ -386,7 +388,7 @@ if ixon_doBoxCount
     yl=get(gca,'YLim');
     set(gca,'YLim',[0 yl(2)]);
 %     set(gca,'YLim',[2.0e8 2.5e8]);
-    
+%     set(gca,'XScale','log');
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
     
     % Plot the second moments

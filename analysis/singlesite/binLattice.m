@@ -37,7 +37,7 @@ N0 = inv(A)*R;
 
 p = [opts.p1; opts.p2];                       % Phase        
 P = repmat(p,[1 length(Z)]);        % Phase vector        
-M = round(N0+P);                    % round pixel to lattice site
+M = round(N0-P);                    % round pixel to lattice site
 
 % aa = reshape(M(1,:),[size(X,1) size(X,2)]);
 % bb = reshape(M(2,:),[size(X,1) size(X,2)]);
@@ -70,9 +70,10 @@ n2 = n2i:n2f;
 
 %% Final Binning
 
+% Remove points outside of the desired ROI.
 ibad = logical((M(1,:)<n1i) + (M(1,:)>n1f) + (M(2,:)>n2f) + (M(2,:)<n2i));
-
 M(:,ibad) = [];
+Z(ibad) = [];
 
 Zbin = zeros(n2f-n2i+1,n1f-n1i+1);
 for ii=1:size(M,2)    

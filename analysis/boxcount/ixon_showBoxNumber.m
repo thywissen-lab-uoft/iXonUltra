@@ -58,16 +58,37 @@ if doExpFit
     
     % Get some initial guesses
     tau0=max(xvals)/4;   
-    tau0=1;
+    tau0=.25;
     
     fout_exp={};
     for nn=1:size(N,2)  
         A0=max(N(:,nn));
         
         % Assign start point
-        opt.StartPoint=[A0 tau0 0];
+        opt.StartPoint=[A0 tau0 min(N)];
         fout_exp{nn}=fit(xvals',N,myfit,opt);
     end
+end
+
+%% Sum E
+
+if opts.NumberExp2SumFit
+    B = 3.19e6;
+        myfit=fittype(@(A1,tau1,A2,tau2,t) A1*exp(-t/tau1)+A2*exp(-t/tau2)+B,'coefficients',{'A1','tau1','A2','tau2'},...
+    'independent','t');
+    opt=fitoptions(myfit);
+    
+    % Get some initial guesses
+    tau1=0.29;
+    A1 = range(N);
+    A2 = 5e6;
+    tau2 = 100;
+    
+    fout_exp={};
+      
+    opt.StartPoint=[A1 tau1 A2 tau2];
+    fout_exp{1}=fit(xvals',N,myfit,opt);
+    
 end
 
 %% Lorentzian Fit
@@ -173,7 +194,7 @@ end
 
 if doExpFit
     fstrs={};
-    xx=linspace(0,max(xvals),100);
+    xx=linspace(0,max(xvals),10000);
     
     for nn=1:size(N,2)
         pExp(nn)=plot(xx,feval(fout_exp{nn},xx),'r-','linewidth',1);    
@@ -185,6 +206,19 @@ if doExpFit
     
     legend(pExp,fstrs,'interpreter','latex','location','best');
     hax.YLim(1)=0;
+end
+
+if opts.NumberExp2SumFit
+        fstrs={};
+    xx=linspace(0,max(xvals),100);
+    
+    for nn=1:size(N,2)
+        pExp(nn)=plot(xx,feval(fout_exp{nn},xx),'r-','linewidth',1);    
+%         str1=['$N_0 = ' num2str(fout_exp{nn}.A1,'%.2e') '$' newline ...
+%             '$\tau = ' num2str(round(fout_exp{nn}.tau,2)) '$' newline...
+%             'bg $= ' num2str(fout_exp{nn}.B,'%.2e') '$'];
+        fstrs{nn}='h';
+    end   
 end
 
 if doLorentzFit
