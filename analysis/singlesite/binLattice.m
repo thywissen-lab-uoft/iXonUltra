@@ -75,12 +75,17 @@ ibad = logical((M(1,:)<n1i) + (M(1,:)>n1f) + (M(2,:)>n2f) + (M(2,:)<n2i));
 M(:,ibad) = [];
 Z(ibad) = [];
 
+M0 = N0-P;
+M0(:,ibad)=[];
 Zbin = zeros(n2f-n2i+1,n1f-n1i+1);
 for ii=1:size(M,2)    
     m1 = M(1,ii)-n1i+1;
     m2 = M(2,ii)-n2i+1;
-    Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);
+    
+    Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);  
 end
+
+
 
 Zall = Zbin;
 Zall = Zall(:);
@@ -93,6 +98,9 @@ P = repmat(p,[1 length(N)]);        % Phase vector
 
 Rn=A*(N+P);                                 % Positino of every lattice site
 
+Xn = reshape(Rn(1,:),size(Zbin));
+Yn = reshape(Rn(2,:),size(Zbin));
+
 out = struct;
 out.p = [opts.p1 opts.p2];
 out.a1 = opts.a1;
@@ -100,7 +108,8 @@ out.a2 = opts.a2;
 out.n1 = n1;
 out.n2 = n2;
 out.Zbin = Zbin;
-out.R = Rn;
+out.Xn = Xn;
+out.Yn = Yn;
 
 if isfield(opts, 'DigitizationThreshold')
    out.Zdig = Zbin>=opts.DigitizationThreshold; 

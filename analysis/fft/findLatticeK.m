@@ -1,12 +1,16 @@
 function out = findLatticeK(fx,fy,Zf,opts)
 
-if nargin<4
     pixelsize = 16/81; % um/px
     a = .527;          % Lattice spacing in um
     a = a/pixelsize;   % Lattice spacing in px
     
-    smin = 1.3163;
-end
+    if nargin ==4
+       if isfield(opts,'doScale') && isfield(opts,'ScaleFactor') && opts.ScaleFactor > 1 && opts.doScale
+          a = a*opts.ScaleFactor; 
+       end
+    end
+    
+
 
 % Lattice wavevector
 kL = 1/a;

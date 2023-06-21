@@ -32,6 +32,11 @@ addpath(analysis_path);addpath(genpath(analysis_path))
 cmap=purplemap;
 cstart = [1 1 1];
 cend = [0.6 0 .5];
+
+cstart = [0 0 0];
+cend = [0.9 0 .8];
+
+
 cmap = [linspace(cstart(1),cend(1),1000)' linspace(cstart(2),cend(2),1000)' linspace(cstart(3),cend(3),1000)'];
 
 % Figure Name
@@ -1204,10 +1209,12 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 % Callback function for redoing fits button
     function analyze_k(~,~)
         if hcFindLattice.Value && isfield(data,'Zf')
+            opts = struct;
+            opts = data.ProcessOptions;            
             for kk=1:size(data.Zf,3)
                 tic;
                 fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ') Fitting reciprocal lattice ...']);
-                data.LatticeK(kk) = findLatticeK(data.f,data.f,data.Zf(:,:,kk));                
+                data.LatticeK(kk) = findLatticeK(data.f,data.f,data.Zf(:,:,kk),opts);                
                 k1 = data.LatticeK(kk).k1;
                 k2 = data.LatticeK(kk).k2;          
                 t2 = toc;

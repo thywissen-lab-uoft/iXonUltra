@@ -39,9 +39,9 @@ for kk=1:length(data)
     data(kk).Y = 1:size(data(kk).Z,1); 
     
 %% Remove extra exposure data
-    if isfield(data(kk),'Flags') && isfield(data(kk).Flags,'qgm_doClearBufferExposure') 
+    if isfield(data(kk),'Flags') && isfield(data(kk).Flags,'lattice_ClearCCD_IxonTrigger') 
         fprintf('removing extra exposure ...');
-        if data(kk).Flags.qgm_doClearBufferEposure && size(data(kk).Z,3)>1
+        if data(kk).Flags.lattice_ClearCCD_IxonTrigger && size(data(kk).Z,3)>1
             data(kk).Z(:,:,1)=[];    
         end
     else
@@ -56,11 +56,11 @@ for kk=1:length(data)
     end           
     
     %% Scale Image
-%     opts.doScale=1
-%     opts.ScaleFactor = 3;
-%     if isfield(opts,'doScale') && opts.doScale 
-%        data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor);
-%     end
+    opts.doScale=1;
+    opts.ScaleFactor = 2;
+    if isfield(opts,'doScale') && opts.doScale 
+       data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor)/(opts.ScaleFactor)^2;
+    end
     
     %% Rotate Image
     if opts.doRotate  
@@ -92,9 +92,18 @@ for kk=1:length(data)
     if opts.doPSF       
         fprintf('PSF ...');
         s       = opts.PSF(1);
+        if opts.doScale
+           s = s*opts.ScaleFactor; 
+        end
         N       = opts.PSF(2);
         Niter   = opts.PSF(3);
-        psf     = fspecial('gaussian',N,s);    
+        psf     = fspecial('gaussian',N,s);  
+        
+        psf2     = fspecial('gaussian',N,s*3);  
+
+        
+%         psf = psf*.7+psf2*.3;
+        
         
         for ii = 1:size(data(kk).Z,3)  
             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter);            
@@ -156,6 +165,7 @@ for kk=1:length(data)
     
         data(kk).X = 1:size(data(kk).Z,2);
     data(kk).Y = 1:size(data(kk).Z,1); 
+    data(kk).ProcessOptions = opts;
 end
 
 end
