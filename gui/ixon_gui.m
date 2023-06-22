@@ -1038,11 +1038,12 @@ hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         disp(['Selecting display ROI .' ...
             ' Click two points that form the rectangle ROI.']);
         axes(axImg)                 % Select the OD image axis
-        [x1,y1]=ginput(1);          % Get a mouse click
+        [x1,y1]=ginputMe(1);          % Get a mouse click
         x1=round(x1);y1=round(y1);  % Round to interger        
+        tic
         p1=plot(x1,y1,'+','color','k','linewidth',1); % Plot it
-        
-        [x2,y2]=ginput(1);          % Get a mouse click
+        toc
+        [x2,y2]=ginputMe(1);          % Get a mouse click
         x2=round(x2);y2=round(y2);  % Round it        
         p2=plot(x2,y2,'+','color','k','linewidth',1);  % Plot it
 
@@ -2037,8 +2038,8 @@ axImg.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
 axis equal tight
 
 % Cross Hair Plots
-pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1);
-pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1);
+pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
+pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
 
 % Initialize Grid Objects
 % clear pGrid1
@@ -2050,7 +2051,8 @@ pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1);
 %         'linewidth',1,'Visible','off','parent',axImg);
 % end
 pGrid = line([1 512],[1 512],'linestyle','-',...
-    'color',[1 0 0 .2],'linewidth',1,'Visible','off','parent',axImg);
+    'color',[1 0 0 .2],'linewidth',1,'Visible','off','parent',axImg,...
+    'hittest','off');
 
 % file name string
 tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
@@ -2073,7 +2075,7 @@ tTopLeft=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight',
 pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2);
 
 % Reticle for gaussian fit (this will become an array later)
-pGaussRet=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:));
+pGaussRet=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:),'hittest','off');
 % Color bar
 cBar=colorbar('fontsize',8,'units','pixels','location','northoutside');
 
@@ -2171,20 +2173,20 @@ axImg_K.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
 axis equal tight
 
 clear pKReticles
-pKReticles(1) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(2) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(3) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(4) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(5) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(6) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(7) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(8) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+pKReticles(1) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(2) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(3) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(4) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(5) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(6) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(7) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(8) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
 
-pKPSF = plot(0,0,'--','color',[1 1 1],'parent',axImg_K,'Visible','off');
+pKPSF = plot(0,0,'--','color',[1 1 1],'parent',axImg_K,'Visible','off','hittest','off');
 
 % Cross Hair Plots
-pCrossX_K=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K);
-pCrossY_K=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K);
+pCrossX_K=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K,'hittest','off');
+pCrossY_K=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K,'hittest','off');
 
 % file name string
 tImageFile_K=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
