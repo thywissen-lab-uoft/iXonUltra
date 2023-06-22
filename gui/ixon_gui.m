@@ -1982,52 +1982,20 @@ tbl_hop_analysis=uitable(tabs(6),'units','normalized','RowName',{},'ColumnName',
 
 %% Initialize the image panel
 
-hp=uitabgroup(hF,'units','pixels','Position',[400 0 hF.Position(3)-200 hF.Position(4)-130],...
-    'SelectionChangedFcn',@foobar);
+hp=uitabgroup(hF,'units','pixels','Position',...
+    [400 0 hF.Position(3)-200 hF.Position(4)-130]);
 hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
 
-    function setChildren(obj,state)
-       if isprop(obj,'Enable')
-          obj.Enable = state;
-       else
-           if isprop(obj,'Children')
-               for n=1:length(obj.Children)
-                    setChildren(obj.Children(n),state); 
-               end
-           end
-       end        
-    end
-
-    function foobar(a,b)
-%         switch b.NewValue.Title
-%             case 'position'    
-%                 axes(axImg);
-% %                 mouse_figure(hF);               
-%                 setChildren(hpDisp_X,'on');
-%                 setChildren(hpDisp_K,'off');      
-%             case 'momentum'  
-%                 axes(axImg_K);
-% %                 mouse_figure(hF); 
-%                 setChildren(hpDisp_X,'off');
-%                 setChildren(hpDisp_K,'on');
-%         end        
-    end
-
 % Tab Groups for each display
-tX=uitab(hp,'Title','position','units','pixels','backgroundcolor','w');
-tHist=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
+tabX=uitab(hp,'Title','position','units','pixels','backgroundcolor','w');
+tabH=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
+tabK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
+tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
+tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
+tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
+tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
+tabHop=uitab(hp,'Title','hopping','units','pixels','backgroundcolor','w');
 
-tK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
-tB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
-tHistB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
-
-tD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
-tC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
-
-tH=uitab(hp,'Title','hopping','units','pixels','backgroundcolor','w');
-
-% setChildren(hpDisp_K,'off');    
-% 
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary
 
@@ -2079,14 +2047,14 @@ l=80;   % Left gap for fitting and data analysis summary
 %% Position Images
 
 % Initialize image axis
-axImg=axes('parent',tX);cla
+axImg=axes('parent',tabX);cla
 co=get(gca,'colororder');
 hImg=imagesc(data.X,data.Y,data.Z);
 set(axImg,'box','on','linewidth',.1,'fontsize',10,'units','pixels',...
     'XAxisLocation','top','colormap',colormap(cmap),...
     'xcolor',co(4,:),'ycolor',co(4,:),'YDir','normal','UserData','X');
 hold on
-axImg.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
+axImg.Position=[50 150 tabX.Position(3)-200 tabX.Position(4)-200];
 axis equal tight
 
 pxinfo = impixelinfo(hF,hImg);
@@ -2133,7 +2101,7 @@ drawnow;
 
 % X Cut/Sum Axis
 hAxX=axes('box','on','linewidth',1,'fontsize',10,...
-    'XAxisLocation','Bottom','units','pixels','parent',tX);
+    'XAxisLocation','Bottom','units','pixels','parent',tabX);
 hAxX.Position=[axImg.Position(1) axImg.Position(2)-l axImg.Position(3) l];
 hold on
 % Add X data data and fit plots
@@ -2143,7 +2111,7 @@ pXF=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'line
 
 % Y Cut/Sum Axis
 hAxY=axes('box','on','linewidth',1,'fontsize',10,'units','pixels',...
-    'YAxisLocation','Right','YDir','normal','parent',tX);
+    'YAxisLocation','Right','YDir','normal','parent',tabX);
 hAxY.Position=[axImg.Position(1)+axImg.Position(3) axImg.Position(2) l axImg.Position(4)];
 hold on
 % Add Y data data and fit plots
@@ -2158,7 +2126,7 @@ linkaxes([axImg hAxX],'x');
 
 %% Histgoram
 
-ax_h1 = subplot(2,2,1,'parent',tHist);
+ax_h1 = subplot(2,2,1,'parent',tabH);
 pHist1 = bar(1:100,1:100,'parent',ax_h1,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
@@ -2170,7 +2138,7 @@ ylim(ax_h1,'auto');
 text(.99,.99,'processed, linear scale','units','normalized','fontsize',10,...
     'verticalalignment','top','horizontalalignment','right');
 
-ax_h2 = subplot(2,2,2,'parent',tHist);
+ax_h2 = subplot(2,2,2,'parent',tabH);
 pHist2 = bar(1:100,1:100,'parent',ax_h2,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
@@ -2182,7 +2150,7 @@ ylim(ax_h2,'auto');
 text(.99,.99,'processed, log scale','units','normalized','fontsize',10,...
     'verticalalignment','top','horizontalalignment','right');
 
-ax_h3 = subplot(2,2,3,'parent',tHist);
+ax_h3 = subplot(2,2,3,'parent',tabH);
 pHist3 = bar(1:100,1:100,'parent',ax_h3,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
@@ -2194,7 +2162,7 @@ ylim(ax_h3,'auto');
 text(.99,.99,'no filtering, linear scale','units','normalized','fontsize',10,...
     'verticalalignment','top','horizontalalignment','right');
 
-ax_h4 = subplot(2,2,4,'parent',tHist);
+ax_h4 = subplot(2,2,4,'parent',tabH);
 pHist4 = bar(1:100,1:100,'parent',ax_h4,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
@@ -2209,12 +2177,12 @@ text(.99,.99,'no filtering, log scale','units','normalized','fontsize',10,...
 %% Momentum Images
 
 % Initialize image axis
-axImg_K=axes('parent',tK);cla
+axImg_K=axes('parent',tabK);cla
 hImg_K=imagesc(data.X,data.Y,data.Z,'parent',axImg_K);
 set(axImg_K,'box','on','linewidth',.1,'fontsize',10,'units','pixels',...
     'XAxisLocation','top','colormap',colormap(cmap),'YDir','normal','UserData','K');
 hold on
-axImg_K.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
+axImg_K.Position=[50 150 tabX.Position(3)-200 tabX.Position(4)-200];
 axis equal tight
 
 clear pKReticles
@@ -2251,7 +2219,7 @@ drawnow;
 
 % X Cut/Sum Axis
 hAxX_K=axes('box','on','linewidth',1,'fontsize',10,...
-    'XAxisLocation','Bottom','units','pixels','parent',tK);
+    'XAxisLocation','Bottom','units','pixels','parent',tabK);
 hAxX_K.Position=[axImg_K.Position(1) axImg_K.Position(2)-l axImg_K.Position(3) l];
 hold on
 % Add X data data and fit plots
@@ -2260,7 +2228,7 @@ pX_K=plot(data.X,ones(length(data.X),1),'k.-');
 
 % Y Cut/Sum Axis
 hAxY_K=axes('box','on','linewidth',1,'fontsize',10,'units','pixels',...
-    'YAxisLocation','Right','YDir','normal','parent',tK);
+    'YAxisLocation','Right','YDir','normal','parent',tabK);
 hAxY_K.Position=[axImg_K.Position(1)+axImg_K.Position(3) axImg_K.Position(2) l axImg_K.Position(4)];
 hold on
 % Add Y data data and fit plots
@@ -2275,7 +2243,7 @@ set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 
 %% Binned Image
 
-axImg_B=axes('parent',tB);cla
+axImg_B=axes('parent',tabB);cla
 hImg_B=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_B);
 set(axImg_B,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
@@ -2290,7 +2258,7 @@ caxis([0 1]);
 %% Binned Histgoram
 
 % Binned Histogram 1
-ax_hB1=subplot(2,1,1,'parent',tHistB);
+ax_hB1=subplot(2,1,1,'parent',tabHB);
 pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/site');
@@ -2300,7 +2268,7 @@ set(ax_hB1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1');
 
 % Binned Histogram 2
-ax_hB2=subplot(2,1,2,'parent',tHistB);
+ax_hB2=subplot(2,1,2,'parent',tabHB);
 pHistB2 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/site');
@@ -2311,7 +2279,7 @@ set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
 
 %% Digital Image
 
-axImg_D=axes('parent',tD);
+axImg_D=axes('parent',tabD);
 hImg_D=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_D);
 set(axImg_D,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
