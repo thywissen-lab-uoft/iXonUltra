@@ -520,7 +520,7 @@ tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,
 
 % Browse button callback
     function browseCB(~,~)
-        str=getDayDir;
+        str=ixon_getDayDir;
         str=uigetdir(str);
         
         if str
@@ -570,7 +570,7 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@chDirCB,...
 
 % Get directory from user and load first image in the folder
     function chDirCB(~,~)
-        str=getDayDir;
+        str=ixon_getDayDir;
         str=uigetdir(str);        
         if ~isequal(str,0) && ~isequal(str,currDir)       
             disp(['Changing directory to ' str]);
@@ -3485,23 +3485,6 @@ end
 
 
 %% HELPER
-function s3=getDayDir(src)    
-
-    % Default root directory
-    if nargin ~= 1;src=['X:\Data'];end
-
-    if ~exist(src,'dir')
-        s3=pwd;
-        return;
-    end
-    
-    s1=datestr(t,'yyyy');s2=datestr(t,'yyyy.mm');s3=datestr(t,'mm.dd');
-    s1=[src filesep s1];s2=[s1 filesep s2];s3=[s2 filesep s3];
-
-    if ~exist(s1,'dir'); mkdir(s1); end
-    if ~exist(s2,'dir'); mkdir(s2); end
-    if ~exist(s3,'dir'); mkdir(s3); end
-end
 
 
 
