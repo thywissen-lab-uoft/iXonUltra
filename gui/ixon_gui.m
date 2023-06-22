@@ -5,9 +5,9 @@ function ixon_gui(doDebug)
 %
 % This code operates the iXon Ultra camera that the lattice experiment
 % uses to take fluorescence images of the quantum gas microscope.
-if nargin == 0
-   doDebug = 0; 
-end
+
+if nargin == 0;doDebug = 0;end
+
 if doDebug
    warning(['You are operating in DEBUG MODE. This removes ' ...
        'certain safety precautions. If not intended set the doDebug ' ...
@@ -20,6 +20,7 @@ mag=[82.6 83.2];
 % Load the mask file
 analysis_path = fullfile(fileparts(fileparts(mfilename('fullpath'))),'analysis');
 maskname=fullfile(analysis_path,'ixon_mask.mat');
+
 ixon_mask=load(maskname);
 ixon_mask=ixon_mask.BW;
 
@@ -28,19 +29,9 @@ addpath(analysis_path);addpath(genpath(analysis_path))
 
 
 %% Other Settings
-c1 = purplemap;
-
-
 
 % Choose the default colormap
 cmap=purplemap;
-
-
-cstart = [0 0 0];
-cend = [0.9 0 .8];
-
-
-cmap = [linspace(cstart(1),cend(1),1000)' linspace(cstart(2),cend(2),1000)' linspace(cstart(3),cend(3),1000)'];
 
 % Figure Name
 guiname='iXon GUI';
@@ -1361,7 +1352,6 @@ menuSelectImg=uicontrol('style','popupmenu','string',...
     'Callback',{@(a,b) updateGraphics},'fontsize',12);
 menuSelectImg.Position(3:4)=[150 18];
 menuSelectImg.Position(1:2)=[2 15];   
-updateCMAP(menuSelectCMAP);
 
     function updateCMAP(src,evt)
         switch src.Value
@@ -3111,16 +3101,13 @@ end
         numpix=512^2;
         % Grab the data (number just sets buffer size)
         [ret,D] = GetAcquiredData(last*512^2);    
-
         imgs={};
         imgmats=zeros(512,512,last);
-
         for j = 1:last % break up into individual images
             ii=double(D((1+(j-1)*numpix):(j*numpix)));
             imgs{j} = reshape(ii,512,512);
             imgmats(:,:,j)=imgs{j};
         end 
-
         imgs=imgmats;  
     end
 
@@ -3218,6 +3205,7 @@ drawnow;
 SizeChangedFcn
 axes(axImg);
 
+updateCMAP(menuSelectCMAP);
 
 addlistener(axImg,'XLim','PostSet',@foo); 
 addlistener(axImg,'YLim','PostSet',@foo); 
@@ -3482,11 +3470,3 @@ function out=softwareTrigger
         out=0;
     end
 end
-
-
-%% HELPER
-
-
-
-
-
