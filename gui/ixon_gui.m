@@ -3138,7 +3138,7 @@ end
         mydata.Magnification=mag;        
         
         % Grab the sequence parameters and flags   
-        [mydata.Params,mydata.Units,mydata.Flags]=grabSequenceParams2;      
+        [mydata.Params,mydata.Units,mydata.Flags]=ixon_grabSequenceParams;      
         
         imgs = mydata.RawImages;  
         
@@ -3502,16 +3502,7 @@ function s3=getDayDir
     if ~exist(s3,'dir'); mkdir(s3); end
 end
 
-function [vals,units,flags]=grabSequenceParams2(src)
-    if nargin~=1
-        src='Y:\_communication\control2.mat';
-    end    
-    data=load(src);    
-    disp(['Opening information from from ' src]);
-    vals=data.vals;
-    units=data.units;   
-    flags=data.flags;
-end
+
 
 
 
