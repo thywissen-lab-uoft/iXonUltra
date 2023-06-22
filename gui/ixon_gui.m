@@ -27,24 +27,13 @@ ixon_mask=ixon_mask.BW;
 % Add analysis paths
 addpath(analysis_path);addpath(genpath(analysis_path))
 
-
 %% Other Settings
 
-% Choose the default colormap
-cmap=purplemap;
-
-% Figure Name
-guiname='iXon GUI';
-
-% Directory where images are automatically saved.
-defaultDir=['C:' filesep 'IxonImageHistory'];
-
-% Current directory of navigator is the default one
-currDir=defaultDir;
-
-if ~exist(defaultDir,'dir')
-    mkdir(defaultDir);
-end
+cmap=purplemap;                                 % default colormap
+guiname='iXon GUI';                             % Figure Name
+defaultDir=['C:' filesep 'IxonImageHistory'];   % Temporary save directory
+currDir=defaultDir;                             % Current directory of navigator is the default one
+if ~exist(defaultDir,'dir'); mkdir(defaultDir);end % Make temp directory if necessary
 
 % Dummy file to load on startup
 fname='example_data_EIT_RAMAN.mat';
@@ -272,7 +261,6 @@ hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,
         disp(cam_info.NumHSSpeeds)
         disp(cam_info.AvailableHSSpeeds{1});
         disp(cam_info.AvailableHSSpeeds{2});
-
     end
 
 % Capabilities button
@@ -344,28 +332,23 @@ tblTemp.Position(1:2)=[300 4];
     function chTempCB(src,evt)
         disp('Changing temperature set point');
         Told=evt.PreviousData;
-        Tnew=evt.NewData;
-        
+        Tnew=evt.NewData;        
         % Check that the data is numeric
         if ~isnumeric(Tnew) || isinf(Tnew) || isnan(Tnew)
             warning('Incorrect data type provided for temperature.');
             src.Data=Told;
             return;
-        end    
-        
-        Tnew=round(Tnew);
-        
+        end            
+        Tnew=round(Tnew);        
         if Tnew<-120 || Tnew>20
             warning('Temperature set point out of bounds. Resetting.');
             src.Data=Told; 
            return; 
         end
-        out=ixon_setTemperature(Tnew);
-        
+        out=ixon_setTemperature(Tnew);        
         if ~out  && ~doDebug
            src.Data=Told; 
-        end
-            
+        end            
         src.Data=Tnew;        
     end
 
@@ -447,20 +430,16 @@ frslct.Position(3)=120;
 frslct.Position(1:2)=[600 5];
 
 
-    function shutterCB(~,~,state)
-        
+    function shutterCB(~,~,state)        
         if state && cam_status.Temperature>-60
             warning('Denying your request to open the shutter above -60C.');
             return;
-        end
-        
-        out=ixon_setCameraShutter(state);
-        
+        end        
+        out=ixon_setCameraShutter(state);        
         % Exit if bad return
         if ~out && ~doDebug
            return; 
-        end
-        
+        end        
         % Enable/Disable buttons
         if state
             hbOpenShutter.Enable='off';
@@ -473,10 +452,8 @@ frslct.Position(1:2)=[600 5];
 
 
 %% Save Panel
-
 hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
     'Position',[0 hpCam.Position(2)-30 hF.Position(3)-150 25]);
-
 
 % Auto Save check box
 ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
@@ -523,8 +500,6 @@ tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,
             disp('no directory chosen!');
         end
     end
-
-
 
 %% Navigator Panel 
 
@@ -623,11 +598,8 @@ hbNavRight.Position=[221 2 12 20];
         catch ME                   
             warning(getReport(ME,'extended'));
             errordlg('Unable to load image, reverting to old data');
-
-            beep
-            
-            disp(['FileName : ' filename]);
-            
+            beep            
+            disp(['FileName : ' filename]);            
             data=olddata;
             updateImages;      
         end
@@ -675,10 +647,7 @@ hbNavRight.Position=[221 2 12 20];
         newfilename=fullfile(currDir,filenames{i1});
         tNavInd.String=sprintf('%03d',i1);
         [a,b,~]=fileparts(newfilename);
-        tNavName.String=fullfile(a,b);    
-        
-        
-        
+        tNavName.String=fullfile(a,b);  
         drawnow;   
         loadImage(newfilename);
     end
@@ -703,12 +672,10 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
     'Callback',@startCamCB,'ToolTipString',ttstr,'enable','off');
 
     function startCamCB(src,evt)
-        disp('Starting acquisition');
-        
+        disp('Starting acquisition');        
         % Send acquistion start command
         out=ixon_startCamera;
-        start(acqTimer);
-        
+        start(acqTimer);        
         % Enable/Disable Button/Tables
         rbSingle.Enable='off';
         rbLive.Enable='off';
@@ -728,11 +695,8 @@ hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
 
     function stopCamCB(src,evt)
         disp('Stopping acquisition');     
-        
-        %
         stop(acqTimer);
-        ixon_stopCamera;
-        
+        ixon_stopCamera;        
         % Enable/Disable Button/Tables
         hbstart.Enable='on';
         hbstop.Enable='off';        
@@ -867,12 +831,9 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
         end        
         catch ME
             warning('Acqtimer failed.');
-            disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);
-        
+            disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);        
         end
     end
-
-
 
 %% Image Process Panel
 
@@ -1204,7 +1165,6 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 % Callback function for redoing fits button
     function analyze_k(~,~)
         if hcFindLattice.Value && isfield(data,'Zf')
-            opts = struct;
             opts = data.ProcessOptions;            
             for kk=1:size(data.Zf,3)
                 tic;
@@ -1214,7 +1174,7 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
                 k2 = data.LatticeK(kk).k2;          
                 t2 = toc;
                 fprintf([' done (' num2str(t2,2) ' sec.)' ' phase ...']);
-                t1= tic;
+                tic;
                 data.LatticePhase(kk) = findLatticePhase(data.X,data.Y,data.Z,k1,k2);              
                 t=toc;
                 disp([' done (' num2str(t,2) ' sec.)']);                
@@ -1314,27 +1274,22 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             opts.p2 = p2;
             opts.PixelThreshold = tblDigPixel.Data;
             opts.UsePixelThreshold = 1;
-            opts.DigitizationThreshold = tblDig.Data;
-            
+            opts.DigitizationThreshold = tblDig.Data;            
             ROI=tblROI.Data;
             data.ROI=ROI;                   
             x = ROI(1):ROI(2);
             y = ROI(3):ROI(4);      
-            z = data.Z(y,x,kk);       
-            
+            z = data.Z(y,x,kk);                   
             tic;
             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
                 ') binning into lattice ...']);    
             data.LatticeDig(kk) = binLattice(x,y,z,opts);      
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
-        end
-        
+        end        
         updateBinnedHistogram;
         updateBinnedGraphics;     
-        updateBinnedHistogramGraphics; 
-        
-        
+        updateBinnedHistogramGraphics;                 
     end
 
 %% Image Number Selector
@@ -1356,13 +1311,8 @@ menuSelectImg.Position(1:2)=[2 15];
     function updateCMAP(src,evt)
         switch src.Value
             case 1
-                ca = [0 0 0];
-                cb = [0.9 0 .8];
-                
-%                 62.7% red, 12.5% green and 94.1%
+                ca = [0 0 0];       
                 cb = [0.7 .1 .6];
-
-%                 cb =[0.627 .125 .941];
                 cc = [linspace(ca(1),cb(1),1000)' ...
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
@@ -1370,10 +1320,8 @@ menuSelectImg.Position(1:2)=[2 15];
             case 2
                 colormap(hF,purplemap);
                 pGrid.Color = [.5 .5 .5 .5];
-
             case 3
                 pGrid.Color = [.3 .3 .3 .3];
-
                 colormap(hF,purplemap);
                 ca = [1 1 1];
                 cb = [0.6 0 .5];
@@ -1381,18 +1329,7 @@ menuSelectImg.Position(1:2)=[2 15];
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
         end
-        c1 = purplemap;
-
-
-
-% Choose the default colormap
-% cmap=purplemap;
-% 
-% 
-
-
     end
-
 
     function updateImageLists
         menuSelectImg.String = {};
@@ -2554,10 +2491,6 @@ caxis([0 1]);
             pKPSF.Visible='off';
         end 
     end
-
-
-
-
 %% Binned Callbacks
     function updateBinnedGraphics
         if ~isfield(data,'LatticeDig')
@@ -2637,8 +2570,7 @@ caxis([0 1]);
         for kk=2:length(data.LatticeDig)
             Zall = data.LatticeDig(kk).Zbin;
             Zall = Zall(:);
-%                     Zall(Zall==0)=[];
-
+%           Zall(Zall==0)=[];
             
             [f,xi,bw]=ksdensity(Zall(:));
             [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);     
@@ -3213,11 +3145,3 @@ function out=ixon_connectCam
         out=0;
     end
 end
-
-
-
-
-
-
-
-
