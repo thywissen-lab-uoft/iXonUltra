@@ -2666,16 +2666,12 @@ caxis([0 1]);
         
         x = data.LatticeHistogram(imgnum).Centers;
         xe = data.LatticeHistogram(imgnum).Edges;
-        y = data.LatticeHistogram(imgnum).N;
-        
-        Nthresh = histBtbl.Data(1,1);       
-        
-        
+        y = data.LatticeHistogram(imgnum).N;        
+        Nthresh = histBtbl.Data(1,1);              
         
         set(pHistB1,'XData',x,'YData',y);
         set(pHistB2,'XData',x,'YData',y);
-        set(ax_hB2,'XLim',[Nthresh max(xe)]);  
-        
+        set(ax_hB2,'XLim',[Nthresh max(xe)]);          
         
         zall = data.LatticeDig(imgnum).Zbin(:);
         zall(isnan(zall))=[];
@@ -2684,9 +2680,7 @@ caxis([0 1]);
         y2 = data.LatticeHistogramKernel(imgnum).f;        
         y2 = y2/sum(sum(y2));
         y2 = y2*n*length(x2)/length(x);    
-        set(pKernelB1,'XData',x2,'YData',y2);     
-        
-
+        set(pKernelB1,'XData',x2,'YData',y2);           
     end
 
     function updateBinnedHistogram
@@ -3330,9 +3324,9 @@ function out=disconnectCam
     disp(error_code(ret));
     
     % Shut down cooler
-      fprintf('Turning off cooler ... ');
-      [ret]=SetCoolerMode(1);     
-      disp(error_code(ret));
+    fprintf('Turning off cooler ... ');
+    [ret]=SetCoolerMode(1);     
+    disp(error_code(ret));
 
     % Shut down the camera
     fprintf('Shutting down camera ... ');
@@ -3372,8 +3366,7 @@ end
 function [out,outstr]=getCameraStatus
     out=0;
     [ret,outstr]=AndorGetStatus;
-    outstr=error_code(outstr);
-    
+    outstr=error_code(outstr);    
     if isequal(error_code(ret),'DRV_SUCCESS')
         out=1;
     else
@@ -3403,8 +3396,7 @@ function out=coolCamera(state)
         fprintf('Disengaging TEC to cool sensor ... ');
         ret=CoolerOFF;
     end    
-    disp(error_code(ret));
-    
+    disp(error_code(ret));    
     if isequal(error_code(ret),'DRV_SUCCESS')
         out=1;
     else
@@ -3426,8 +3418,7 @@ end
 
 % Set the camera shutter
 function out=setCameraShutter(state)
-    typ=1; % HIGH TO OPEN
-    
+    typ=1; % HIGH TO OPEN    
     % shutter_mode : 0: Auto, 1:Open ,2:Close    
     if state
         fprintf('Opening shutter ... ');
@@ -3435,12 +3426,9 @@ function out=setCameraShutter(state)
     else
         fprintf('Closing shutter ... ');
         shutter_mode=2;
-    end    
-    
-    ret=SetShutter(typ,shutter_mode,0,0);
-    
-    disp(error_code(ret));
-    
+    end        
+    ret=SetShutter(typ,shutter_mode,0,0);    
+    disp(error_code(ret));    
     if isequal(error_code(ret),'DRV_SUCCESS')
         out=1;
     else
