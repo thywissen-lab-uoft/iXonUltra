@@ -314,7 +314,7 @@ hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
     'ToolTipString',ttstr);
 
     function coolCB(~,~,state)  
-        out=ixon_coolCamera(state);        
+        out=ixon_setTEC(state);        
         if ~out && ~doDebug
            return; 
         end        
@@ -3181,25 +3181,6 @@ enableDefaultInteractivity(axImg_B);
 
 end
  
-
-
-%% Camera Functions
-    function imgs=ixon_grabRawImages
-        % How many images to grab
-        [ret,first,last] = GetNumberNewImages;    
-        numpix=512^2;
-        % Grab the data (number just sets buffer size)
-        [ret,D] = GetAcquiredData(last*512^2);    
-        imgs={};
-        imgmats=zeros(512,512,last);
-        for j = 1:last % break up into individual images
-            ii=double(D((1+(j-1)*numpix):(j*numpix)));
-            imgs{j} = reshape(ii,512,512);
-            imgmats(:,:,j)=imgs{j};
-        end 
-        imgs=imgmats;  
-    end
-
     
 % Connect to the Andor iXon Ultra
 function out=ixon_connectCam
@@ -3233,158 +3214,10 @@ function out=ixon_connectCam
     end
 end
 
-% Disconnect from the Andor iXon Ultra
-function out=ixon_disconnectCam
-    disp('Disconnecting from the iXon camera.');
-    
-    % Close the shutter
-    fprintf('Closing the shutter ... ');
-    [ret]=SetShutter(1,2,0,0);  
-    disp(error_code(ret));
-    
-    % Shut down cooler
-    fprintf('Turning off cooler ... ');
-    [ret]=SetCoolerMode(1);     
-    disp(error_code(ret));
 
-    % Shut down the camera
-    fprintf('Shutting down camera ... ');
-    [ret]=AndorShutDown;        
-    disp(error_code(ret))
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to shut down the iXon camera.');
-        out=0;
-    end
-end
 
-% Set the temperature setpoint
-function out=ixon_setTemperature(temp)
-    fprintf(['Changing temperature set point to ' num2str(temp) ' C ...']);
-    ret=SetTemperature(temp);
-    disp(error_code(ret))
-    
-    if isequal(error_code(ret),'DRV_SUCCESS') 
-        out=1;
-    else
-        warning('Unable to change iXon temperature set point.');
-        out=0;
-    end
-end
 
-% Get the temperature
-function [out,temp,outstr]=ixon_getTemperature
-    [ret,temp]=GetTemperature;
-    out=1;
-    outstr=error_code(ret);
-end
 
-% Get the camera status
-function [out,outstr]=ixon_getCameraStatus
-    out=0;
-    [ret,outstr]=AndorGetStatus;
-    outstr=error_code(outstr);    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to read iXon status.');
-        out=0;
-    end
-end
 
-% Get Detector
-function [out,xpx,ypx]=ixon_GetDetectorInfo    
-    [ret,xpx,ypx]=GetDetector;
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to get detector informaton.');
-        out=0;
-    end
-end
 
-% Engage/Disengage TEC
-function out=ixon_coolCamera(state)
-    if state
-        fprintf('Engaging TEC to cool sensor ... ');
-        ret=CoolerON;
-    else
-        fprintf('Disengaging TEC to cool sensor ... ');
-        ret=CoolerOFF;
-    end    
-    disp(error_code(ret));    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to read iXon temperature.');
-        out=0;
-    end
-end
-
-% Get Timing
-function out=ixon_getAcquisitionTimings    
-    [ret,texp,taccum,tkin] = GetAcquisitionTimings;
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out = [texp taccum tkin];
-    else
-        warning('Unable to read iXon timing.');
-    end
-end
-
-% Set the camera shutter
-function out=ixon_setCameraShutter(state)
-    typ=1; % HIGH TO OPEN    
-    % shutter_mode : 0: Auto, 1:Open ,2:Close    
-    if state
-        fprintf('Opening shutter ... ');
-        shutter_mode=1;
-    else
-        fprintf('Closing shutter ... ');
-        shutter_mode=2;
-    end        
-    ret=SetShutter(typ,shutter_mode,0,0);    
-    disp(error_code(ret));    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to set iXon shutter.');
-        out=0;
-    end
-end
-
-% Start Acquisition
-function out=ixon_startCamera
-    fprintf('Starting acquisition ... ');
-    [ret]=StartAcquisition;
-    disp(error_code(ret));
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to start acquisition.');
-        out=0;
-    end
-end
-
-% Stop Acquisition
-function out=ixon_stopCamera
-    fprintf('Stopping acquisition ... ');
-    [ret]=AbortAcquisition;
-    disp(error_code(ret));
-    
-    switch error_code(ret)
-        case 'DRV_SUCCESS'
-            out=1;
-        case 'DRV_IDLE'
-            out=1;
-            disp('Camera acquisition not running.');
-        otherwise
-            warning('Error stopping acquisition.');
-            out=0;
-    end   
-end
 
