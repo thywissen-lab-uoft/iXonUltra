@@ -119,7 +119,7 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
         if doClose
             disp('Closing iXon GUI...');      
             stop(statusTimer);
-            if cam_status.isConnected;disconnectCam;end
+            if cam_status.isConnected;ixon_disconnectCam;end
             delete(statusTimer);
             delete(fig);      % Delete the figure          
         end
@@ -173,7 +173,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
     function connectCB(~,~)
         strstatus.String='CONNECTING';
         drawnow;
-        out=connectCam;                 % Connect to the camera       
+        out=ixon_connectCam;                 % Connect to the camera       
         if ~out && ~doDebug             % Give warning if connection fails
            warning('Unable to connect to camera');
            return;
@@ -181,16 +181,16 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         strstatus.String='CONNECTED';
         drawnow;       
         cam_status.isConnected=1;       
-        setCameraShutter(0);            % Close the shutter
+        ixon_setCameraShutter(0);            % Close the shutter
         loadAcquisitionSettings;        % Load default acquisition settings      
-        setCameraShutter(0);            % Close the shutter (again to be safe)
+        ixon_setCameraShutter(0);            % Close the shutter (again to be safe)
         hbOpenShutter.Enable='on';      % allow shutter to be opened
         cam_info=getCamInfo;            % Get the camera information
         disp(' ');
         disp(cam_info);        
         
         % Set the temperature set point
-        setTemperature(tblTemp.Data);
+        ixon_setTemperature(tblTemp.Data);
         hbCamInfo.Enable='on';       
         hbCamAbilities.Enable='on';
         
@@ -225,7 +225,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         strstatus.String='DISCONNECTING';
         drawnow;
         % Disconnect from camera
-        out=disconnectCam; 
+        out=ixon_disconnectCam; 
        
         if ~out && ~doDebug
            return;
@@ -314,7 +314,7 @@ hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
     'ToolTipString',ttstr);
 
     function coolCB(~,~,state)  
-        out=coolCamera(state);        
+        out=ixon_coolCamera(state);        
         if ~out && ~doDebug
            return; 
         end        
@@ -360,7 +360,7 @@ tblTemp.Position(1:2)=[300 4];
             src.Data=Told; 
            return; 
         end
-        out=setTemperature(Tnew);
+        out=ixon_setTemperature(Tnew);
         
         if ~out  && ~doDebug
            src.Data=Told; 
@@ -394,7 +394,7 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
     function statusTimerFcn(~,~)
         try
         % Get the temperature
-        [out,temp,outstr]=getTemperature;
+        [out,temp,outstr]=ixon_getTemperature;
         strtemp.String=[num2str(temp) ' C'];        
         cam_status.Temperature=temp;   
         
@@ -416,7 +416,7 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
         end     
         
         % Camera Status
-        [out,outstr]=getCameraStatus;
+        [out,outstr]=ixon_getCameraStatus;
         strstatus.String=outstr;
         drawnow;
         catch ME
@@ -454,7 +454,7 @@ frslct.Position(1:2)=[600 5];
             return;
         end
         
-        out=setCameraShutter(state);
+        out=ixon_setCameraShutter(state);
         
         % Exit if bad return
         if ~out && ~doDebug
@@ -706,7 +706,7 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
         disp('Starting acquisition');
         
         % Send acquistion start command
-        out=startCamera;
+        out=ixon_startCamera;
         start(acqTimer);
         
         % Enable/Disable Button/Tables
@@ -731,7 +731,7 @@ hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
         
         %
         stop(acqTimer);
-        stopCamera;
+        ixon_stopCamera;
         
         % Enable/Disable Button/Tables
         hbstart.Enable='on';
@@ -787,7 +787,7 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
         
         % Close the shutter
         disp('Closing shutter in case you forgot.');                
-        setCameraShutter(0);        
+        ixon_setCameraShutter(0);        
         hbCloseShutter.Enable='off';
         hbOpenShutter.Enable='on';
         
@@ -815,19 +815,19 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
     function acqTimerFcn(src,evt)      
         try
         % Camera Status
-        [out,outstr]=getCameraStatus;  
+        [out,outstr]=ixon_getCameraStatus;  
 %         disp(now)
         switch outstr
             case 'DRV_IDLE'
                 % Grab the images from the camera
-                imgs=grabRawImages;          
+                imgs=ixon_grabRawImages;          
                 
                 % Assign images metadata
                 mydata=makeImgDataStruct(imgs);
 
                 % Restart Acquisition if desired (auto-stopts)
                 if hcAcqRpt.Value
-                    startCamera;  
+                    ixon_startCamera;  
                 else
                     stop(src);
                     % Enable/Disable Button/Tables
@@ -1670,7 +1670,6 @@ histBtbl.Position(1:2)=[2 20];
     end
 %% Display Callbacks  
 
-
 % Callback for changing display table ROI
     function tbl_dispROICB(src,evt)             
         ROI=src.Data;                               % Grab the new ROI             
@@ -1683,8 +1682,7 @@ histBtbl.Position(1:2)=[2 20];
     end
 
     function [ROI,err] = chDispROI(ROI,img_type)  
-        err = 0;
-        
+        err = 0;        
         % Determine the ROI limits depending on image type
         switch img_type
             case 'X'
@@ -1869,8 +1867,7 @@ histBtbl.Position(1:2)=[2 20];
         set(tCoMAnalysis,'Visible',src.Value);    
     end
 
-    function cCrossCB(src,evt)        
-        
+    function cCrossCB(src,evt)                
         switch src.UserData
             case 'X'
                 set(pCrossX,'Visible',src.Value);
@@ -3187,7 +3184,7 @@ end
 
 
 %% Camera Functions
-    function imgs=grabRawImages
+    function imgs=ixon_grabRawImages
         % How many images to grab
         [ret,first,last] = GetNumberNewImages;    
         numpix=512^2;
@@ -3205,7 +3202,7 @@ end
 
     
 % Connect to the Andor iXon Ultra
-function out=connectCam
+function out=ixon_connectCam
     out =0;
     disp('Connecting camera');
     
@@ -3237,7 +3234,7 @@ function out=connectCam
 end
 
 % Disconnect from the Andor iXon Ultra
-function out=disconnectCam
+function out=ixon_disconnectCam
     disp('Disconnecting from the iXon camera.');
     
     % Close the shutter
@@ -3264,7 +3261,7 @@ function out=disconnectCam
 end
 
 % Set the temperature setpoint
-function out=setTemperature(temp)
+function out=ixon_setTemperature(temp)
     fprintf(['Changing temperature set point to ' num2str(temp) ' C ...']);
     ret=SetTemperature(temp);
     disp(error_code(ret))
@@ -3278,14 +3275,14 @@ function out=setTemperature(temp)
 end
 
 % Get the temperature
-function [out,temp,outstr]=getTemperature
+function [out,temp,outstr]=ixon_getTemperature
     [ret,temp]=GetTemperature;
     out=1;
     outstr=error_code(ret);
 end
 
 % Get the camera status
-function [out,outstr]=getCameraStatus
+function [out,outstr]=ixon_getCameraStatus
     out=0;
     [ret,outstr]=AndorGetStatus;
     outstr=error_code(outstr);    
@@ -3298,7 +3295,7 @@ function [out,outstr]=getCameraStatus
 end
 
 % Get Detector
-function [out,xpx,ypx]=GetDetectorInfo    
+function [out,xpx,ypx]=ixon_GetDetectorInfo    
     [ret,xpx,ypx]=GetDetector;
     
     if isequal(error_code(ret),'DRV_SUCCESS')
@@ -3310,7 +3307,7 @@ function [out,xpx,ypx]=GetDetectorInfo
 end
 
 % Engage/Disengage TEC
-function out=coolCamera(state)
+function out=ixon_coolCamera(state)
     if state
         fprintf('Engaging TEC to cool sensor ... ');
         ret=CoolerON;
@@ -3328,7 +3325,7 @@ function out=coolCamera(state)
 end
 
 % Get Timing
-function out=getAcquisitionTimings    
+function out=ixon_getAcquisitionTimings    
     [ret,texp,taccum,tkin] = GetAcquisitionTimings;
     
     if isequal(error_code(ret),'DRV_SUCCESS')
@@ -3339,7 +3336,7 @@ function out=getAcquisitionTimings
 end
 
 % Set the camera shutter
-function out=setCameraShutter(state)
+function out=ixon_setCameraShutter(state)
     typ=1; % HIGH TO OPEN    
     % shutter_mode : 0: Auto, 1:Open ,2:Close    
     if state
@@ -3360,7 +3357,7 @@ function out=setCameraShutter(state)
 end
 
 % Start Acquisition
-function out=startCamera
+function out=ixon_startCamera
     fprintf('Starting acquisition ... ');
     [ret]=StartAcquisition;
     disp(error_code(ret));
@@ -3374,7 +3371,7 @@ function out=startCamera
 end
 
 % Stop Acquisition
-function out=stopCamera
+function out=ixon_stopCamera
     fprintf('Stopping acquisition ... ');
     [ret]=AbortAcquisition;
     disp(error_code(ret));
@@ -3389,18 +3386,5 @@ function out=stopCamera
             warning('Error stopping acquisition.');
             out=0;
     end   
-
 end
 
-% Software Trigger
-function out=softwareTrigger
-    fprintf('Sending software trigger ... ');
-    [ret]=SendSoftwareTrigger;
-    disp(error_code(ret));
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to send software trigger.');
-        out=0;
-    end
-end
