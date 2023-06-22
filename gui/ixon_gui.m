@@ -1368,6 +1368,11 @@ updateCMAP(menuSelectCMAP);
             case 1
                 ca = [0 0 0];
                 cb = [0.9 0 .8];
+                
+%                 62.7% red, 12.5% green and 94.1%
+                cb = [0.7 .1 .6];
+
+%                 cb =[0.627 .125 .941];
                 cc = [linspace(ca(1),cb(1),1000)' ...
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
