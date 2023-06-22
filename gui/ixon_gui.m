@@ -3157,10 +3157,7 @@ end
         disp(' done'); 
     end
 
-    function updateHistoryInd(data)          
-        % Update image string
-
-
+    function updateHistoryInd(data)       
         % Upate history list
         filenames=dir([currDir  filesep '*.mat']);
         filenames={filenames.name};       
