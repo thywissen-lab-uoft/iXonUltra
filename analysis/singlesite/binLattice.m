@@ -78,10 +78,12 @@ Z(ibad) = [];
 M0 = N0-P;
 M0(:,ibad)=[];
 Zbin = zeros(n2f-n2i+1,n1f-n1i+1);
+Znum = zeros(n2f-n2i+1,n1f-n1i+1);
 for ii=1:size(M,2)    
     m1 = M(1,ii)-n1i+1;
     m2 = M(2,ii)-n2i+1;
     
+    Znum(m2,m1) = Znum(m2,m1)+1;
     Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);  
 end
 
@@ -89,6 +91,14 @@ end
 
 Zall = Zbin;
 Zall = Zall(:);
+
+%
+% 
+Zbin2 = Zbin;
+Zbin2(Znum<max(Znum,[],'all')*.9)=NaN;
+
+Zbin = Zbin2;
+% keyboard
 %%
 [nn1,nn2]=meshgrid(n1,n2);
 

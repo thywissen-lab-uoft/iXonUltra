@@ -1280,7 +1280,7 @@ hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold',
 
 % Digitization Threshold
 tblDigPixel=uitable('parent',hpDig,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',400,'columneditable',[true],...
+    'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
 tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
 
@@ -1352,7 +1352,7 @@ hpDisp_Select.Position=[160 500 160 80];
 
 menuSelectCMAP=uicontrol('style','popupmenu','string',...
     {'black-purple','black-purple-white','white-purple'},'units','pixels','parent',hpDisp_Select,...
-    'Callback',@updateCMAP,'fontsize',12);
+    'Callback',@updateCMAP,'fontsize',12,'Value',1);
 menuSelectCMAP.Position(3:4)=[150 18];
 menuSelectCMAP.Position(1:2)=[2 45];   
 
@@ -1371,7 +1371,7 @@ updateCMAP(menuSelectCMAP);
                 cc = [linspace(ca(1),cb(1),1000)' ...
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
-                pGrid.Color = [1 1 1 .2];
+                pGrid.Color = [.5 .5 .5 .5];
             case 2
                 colormap(hF,purplemap);
                 pGrid.Color = [.5 .5 .5 .5];
@@ -1411,6 +1411,8 @@ updateCMAP(menuSelectCMAP);
 
 hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
 hpDisp_X.Position=[160 500 160 160];
+
+
 
 
 % Table for changing display limits
@@ -1497,6 +1499,20 @@ cTextLattice=uicontrol(hpDisp_X,'style','checkbox','string','lattice text',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@latticeTextCB,...
     'enable','on','value',1);
 cTextLattice.Position=[cDrawLattice.Position(3)+cDrawLattice.Position(1)+5 2 120 15];
+
+% Button group for deciding what the X/Y plots show
+% bgDeconv = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w','BorderType','None',...
+%     'SelectionChangeFcn',@chPlotCB);  
+% bgDeconv.Position(3:4)=[125 15];
+% bgDeconv.Position(1:2)=[2 47];
+%     
+% % Radio buttons for cuts vs sum
+% rbPosRaw=uicontrol(bgDeconv,'Style','radiobutton','String','show raw imagee',...
+%     'Position',[0 0 60 15],'units','pixels','backgroundcolor','w','Value',1,...
+%     'fontsize',7);
+% rbPosDeconv=uicontrol(bgDeconv,'Style','radiobutton','String','show deconvolved image',...
+%     'Position',[60 0 60 15],'units','pixels','backgroundcolor','w','Value',0,...
+%     'fontsize',7);
 
 %% Display Options Panel
 
@@ -2086,7 +2102,7 @@ pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'hittest
 
 % Initialize Grid Objects
 pGrid = line([1 512],[1 512],'linestyle','-',...
-    'color',[1 1 1 .5],'linewidth',1,'Visible','off','parent',axImg,...
+    'color',[.5 .5 .5 .5],'linewidth',1,'Visible','off','parent',axImg,...
     'hittest','off');
 
 % file name string
@@ -2289,13 +2305,19 @@ caxis([0 1]);
 
 ax_hB1=subplot(2,1,1,'parent',tHistB);
 pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none');
+
+
+
 ylabel('occurences');
 xlabel('counts/site');
 hold on
 
+
+pKernelB1 = plot(1,1,'k-','parent',ax_hB1);
+
+
 set(ax_hB1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
-    'XAxisLocation','bottom','YDir','normal','UserData','H1',...
-    'YAxisLocation','left');
+    'XAxisLocation','bottom','YDir','normal','UserData','H1');
 
 
 ax_hB2=subplot(2,1,2,'parent',tHistB);
@@ -2305,8 +2327,7 @@ xlabel('counts/site');
 hold on
 
 set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
-    'XAxisLocation','bottom','YDir','normal','UserData','H2',...
-    'YAxisLocation','left');
+    'XAxisLocation','bottom','YDir','normal','UserData','H2');
 
 
 %% Digital Image
@@ -2488,7 +2509,9 @@ caxis([0 1]);
         set(pHist3,'XData',data.HistogramNoFilter(imgnum).Centers,...
             'YData',data.HistogramNoFilter(imgnum).N);     
         set(pHist4,'XData',data.HistogramNoFilter(imgnum).Centers,...
-            'YData',data.HistogramNoFilter(imgnum).N);            
+            'YData',data.HistogramNoFilter(imgnum).N);      
+        
+        
     end
 
 
@@ -2641,9 +2664,24 @@ caxis([0 1]);
         y = data.LatticeHistogram(imgnum).N;
         
         Nthresh = histBtbl.Data(1,1);       
+        
+        
+        
         set(pHistB1,'XData',x,'YData',y);
         set(pHistB2,'XData',x,'YData',y);
-        set(ax_hB2,'XLim',[Nthresh max(xe)]);     
+        set(ax_hB2,'XLim',[Nthresh max(xe)]);  
+        
+        
+        zall = data.LatticeDig(imgnum).Zbin(:);
+        zall(isnan(zall))=[];
+        n = numel(zall);      
+        x2 = data.LatticeHistogramKernel(imgnum).Xi;
+        y2 = data.LatticeHistogramKernel(imgnum).f;        
+        y2 = y2/sum(sum(y2));
+        y2 = y2*n*length(x2)/length(x);    
+        set(pKernelB1,'XData',x2,'YData',y2);     
+        
+
     end
 
     function updateBinnedHistogram
@@ -2654,20 +2692,35 @@ caxis([0 1]);
         
         Zall = data.LatticeDig(1).Zbin;
         Zall = Zall(:);
-        Zall(Zall==0)=[];
+%         Zall(Zall==0)=[];
         
         [N,edges] = histcounts(Zall,Nbins);
+        
         centers = (edges(1:end-1) + edges(2:end))/2;
         LatticeHistogram = struct;
         LatticeHistogram.Edges = edges;
         LatticeHistogram.Centers = centers;
         LatticeHistogram.N = N;  
         data.LatticeHistogram(1) = LatticeHistogram;      
+
+        [f,xi,bw]=ksdensity(Zall(:));
+        [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*.25);        
+        
+        LatticeHistogramKernel = struct;
+        LatticeHistogramKernel.Xi = xi;
+        LatticeHistogramKernel.f = f;
+        LatticeHistogramKernel.BandWidth = bw;
+        data.LatticeHistogramKernel(1) = LatticeHistogramKernel;
+
         for kk=2:length(data.LatticeDig)
             Zall = data.LatticeDig(kk).Zbin;
             Zall = Zall(:);
-            Zall(Zall==0)=[];            
+%                     Zall(Zall==0)=[];
+
             
+            [f,xi,bw]=ksdensity(Zall(:));
+            [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);     
+        
             [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
             centers = (edges(1:end-1) + edges(2:end))/2;
             LatticeHistogram = struct;
@@ -2675,6 +2728,12 @@ caxis([0 1]);
             LatticeHistogram.Centers = centers;
             LatticeHistogram.N = N;  
             data.LatticeHistogram(kk) = LatticeHistogram;
+
+            LatticeHistogramKernel = struct;
+            LatticeHistogramKernel.Xi = xi;
+            LatticeHistogramKernel.f = f;
+            LatticeHistogramKernel.BandWidth = bw;
+            data.LatticeHistogramKernel(kk) = LatticeHistogramKernel;
         end                  
     end
 
