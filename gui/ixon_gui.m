@@ -2163,7 +2163,6 @@ pHist1 = bar(1:100,1:100,'parent',ax_h1,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
 hold on
-
 set(ax_h1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1',...
     'YAxisLocation','left');
@@ -2245,14 +2244,8 @@ tTopLeftK=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight'
     'interpreter','latex',...
     'color','k','backgroundcolor',[1 1 1 .3],'Visible','off');
 
-
-% Box for ROI (this will become an array later)
 pROI_K=rectangle('position',[-.5 -.5 1 1],'edgecolor',co(1,:),'linewidth',2,'parent',axImg_K);
-
-% Color bar
 cBar_K=colorbar('fontsize',8,'units','pixels','location','northoutside');
-
-
 axImg_K.CLim=climtbl_K.Data;
 drawnow;
 
@@ -2272,25 +2265,23 @@ hAxY_K.Position=[axImg_K.Position(1)+axImg_K.Position(3) axImg_K.Position(2) l a
 hold on
 % Add Y data data and fit plots
 pY_K=plot(ones(length(data.Y),1),data.Y,'k.-'); 
-
 set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 drawnow
 
+% Link Axes
 linkaxes([axImg_K hAxY_K],'y');
 linkaxes([axImg_K hAxX_K],'x');
-
 set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 
 %% Binned Image
 
-% Initialize image axis
 axImg_B=axes('parent',tB);cla
 hImg_B=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_B);
 set(axImg_B,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
     'YAxisLocation','left');
 hold on
-cb_B = colorbar;
+colorbar;
 axis equal tight
 xlabel('lattice site (a_1)','fontsize',8);
 ylabel('lattice site (a_2)','fontsize',8);
@@ -2298,29 +2289,22 @@ caxis([0 1]);
 
 %% Binned Histgoram
 
+% Binned Histogram 1
 ax_hB1=subplot(2,1,1,'parent',tHistB);
 pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none');
-
-
-
 ylabel('occurences');
 xlabel('counts/site');
 hold on
-
-
 pKernelB1 = plot(1,1,'k-','parent',ax_hB1);
-
-
 set(ax_hB1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1');
 
-
+% Binned Histogram 2
 ax_hB2=subplot(2,1,2,'parent',tHistB);
 pHistB2 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/site');
 hold on
-
 set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H2');
 
@@ -2350,14 +2334,10 @@ caxis([0 1]);
 %% Lattice Grid Callbacks
   function updateGridGraphics       
         imgnum = menuSelectImg.Value;
-
-        if ~isfield(data,'LatticeDig')
-           return 
-        end              
+        if ~isfield(data,'LatticeDig');return;end              
         
         n1i = min(data.LatticeDig(imgnum).n1);
-        n1f = max(data.LatticeDig(imgnum).n1);
-        
+        n1f = max(data.LatticeDig(imgnum).n1);        
         n2i = min(data.LatticeDig(imgnum).n2);
         n2f = max(data.LatticeDig(imgnum).n2);     
         
@@ -2370,26 +2350,20 @@ caxis([0 1]);
         tTopLeft.String = ['$\vec{a}_1 = (' num2str(round(a1(1),4)) ',' num2str(round(a1(2),4)) ')$' newline ...
             '$\vec{a}_2 = (' num2str(round(a2(1),4)) ',' num2str(round(a2(2),4)) ')$' newline ...
             '$\vec{a}_1\cdot\vec{a}_2 = a_1a_2\cos(' num2str(theta,4) '^\circ )$' newline ...
-            '$\phi = 2\pi\times (' num2str(round(p(1),3)) ',' num2str(round(p(2),3)) ')$']; 
-        
-        dr1 = a2*(n2i-1);
-        dr2 = a2*(n2f+1);
-        dr3 = a1*(n1i-1);
-        dr4 = a1*(n1f+1);
-             
+            '$\phi = 2\pi\times (' num2str(round(p(1),3)) ',' num2str(round(p(2),3)) ')$'];            
         
         % n1 Grid
         rVec = a1*([n1i:n1f]+p(1)+0.5); % All lattice sites 1        
-        R1 = rVec + dr1;
-        R2 = rVec + dr2;
+        R1 = rVec + a2*(n2i-1);
+        R2 = rVec + a2*(n2f+1);
         Q = nan(1,size(rVec,2));        
         X1 = [R1(1,:); R2(1,:); Q];X1=X1(:);
         Y1 = [R1(2,:); R2(2,:); Q];Y1=Y1(:);
 
         % n2 Grid
         rVec = a2*([n2i:n2f]+p(2)+0.5); % All lattice sites 1        
-        R1 = rVec + dr3;
-        R2 = rVec + dr4;
+        R1 = rVec + a1*(n1i-1);
+        R2 = rVec + a1*(n1f+1);
         Q = nan(1,size(rVec,2));        
         X2 = [R1(1,:); R2(1,:); Q];X2=X2(:);
         Y2 = [R1(2,:); R2(2,:); Q];Y2=Y2(:);
@@ -2429,10 +2403,8 @@ caxis([0 1]);
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
         updateCoM;
-        cCoMCB(cCoMStr_X);
-        
-        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
-        
+        cCoMCB(cCoMStr_X);        
+        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);        
     end
 
     function updateCoM
@@ -2449,7 +2421,6 @@ caxis([0 1]);
             num2str(round(bc.Yc,1)) ')$' newline ...
             '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs,1)) ',' ...
             num2str(round(bc.Ys,1)) ')$']; 
-
         %Update box count string object
         set(tCoMAnalysis,'String',str);          
     end
@@ -2466,8 +2437,7 @@ caxis([0 1]);
         Histogram.Edges = edges;
         Histogram.Centers = centers;
         Histogram.N = N;  
-        data.Histogram(1) = Histogram;      
-        
+        data.Histogram(1) = Histogram;              
         xe = data.Histogram(1).Edges;
         
         for kk=2:size(data.Z,3)            
@@ -2504,9 +2474,7 @@ caxis([0 1]);
         set(pHist3,'XData',data.HistogramNoFilter(imgnum).Centers,...
             'YData',data.HistogramNoFilter(imgnum).N);     
         set(pHist4,'XData',data.HistogramNoFilter(imgnum).Centers,...
-            'YData',data.HistogramNoFilter(imgnum).N);      
-        
-        
+            'YData',data.HistogramNoFilter(imgnum).N);   
     end
 
 
