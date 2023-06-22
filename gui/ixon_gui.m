@@ -28,10 +28,14 @@ addpath(analysis_path);addpath(genpath(analysis_path))
 
 
 %% Other Settings
+c1 = purplemap;
+
+
+
 % Choose the default colormap
 cmap=purplemap;
-cstart = [1 1 1];
-cend = [0.6 0 .5];
+
+
 
 cstart = [0 0 0];
 cend = [0.9 0 .8];
@@ -2037,14 +2041,16 @@ pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1);
 pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1);
 
 % Initialize Grid Objects
-clear pGrid1
-clear pGrid2
-for i = 1:200
-    pGrid1(i) = plot([1 512],[1 512],'-','color',[1 0 0 .2],...
-        'linewidth',1,'Visible','off','parent',axImg);
-    pGrid2(i) = plot([1 512],[1 512],'-','color',[1 0 0 .2],...
-        'linewidth',1,'Visible','off','parent',axImg);
-end
+% clear pGrid1
+% clear pGrid2
+% for i = 1:200
+%     pGrid1(i) = line([1 512],[1 512],'linestyle','-','color',[1 0 0 .2],...
+%         'linewidth',1,'Visible','off','parent',axImg);
+%     pGrid2(i) = line([1 512],[1 512],'linestyle','-','color',[1 0 0 .2],...
+%         'linewidth',1,'Visible','off','parent',axImg);
+% end
+pGrid = line([1 512],[1 512],'linestyle','-',...
+    'color',[1 0 0 .2],'linewidth',1,'Visible','off','parent',axImg);
 
 % file name string
 tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
@@ -2289,8 +2295,7 @@ caxis([0 1]);
     end
 
 %% Lattice Grid Callbacks
-
-    function updateGridGraphics       
+  function updateGridGraphics       
         imgnum = menuSelectImg.Value;
 
         if ~isfield(data,'LatticeDig')
@@ -2318,74 +2323,37 @@ caxis([0 1]);
         dr2 = a2*(n2f+1);
         dr3 = a1*(n1i-1);
         dr4 = a1*(n1f+1);
+             
         
-        % Plot n1 grid
-        jj=1;
-        for ii=n1i:1:n1f
-            r0 = a1*(ii+p(1)+0.5);                
-            set(pGrid1(jj),'XData',r0(1)+[dr1(1) dr2(1)],'Ydata',...
-                r0(2)+[dr1(2) dr2(2)]);
-            jj = jj+1;
-            pGrid1(jj).Color = [.5, .5, .5 .2];
-        end 
+        % n1 Grid
+        rVec = a1*([n1i:n1f]+p(1)+0.5); % All lattice sites 1        
+        R1 = rVec + dr1;
+        R2 = rVec + dr2;
+        Q = nan(1,size(rVec,2));        
+        X1 = [R1(1,:); R2(1,:); Q];X1=X1(:);
+        Y1 = [R1(2,:); R2(2,:); Q];Y1=Y1(:);
+
+        % n2 Grid
+        rVec = a2*([n2i:n2f]+p(2)+0.5); % All lattice sites 1        
+        R1 = rVec + dr3;
+        R2 = rVec + dr4;
+        Q = nan(1,size(rVec,2));        
+        X2 = [R1(1,:); R2(1,:); Q];X2=X2(:);
+        Y2 = [R1(2,:); R2(2,:); Q];Y2=Y2(:);
         
-        % Plot n1 grid
-        jj=1;
-        for ii=n2i:1:n2f
-            r0 = a2*(ii+p(2)+0.5);                
-            set(pGrid2(jj),'XData',r0(1)+[dr3(1) dr4(1)],'Ydata',...
-                r0(2)+[dr3(2) dr4(2)]);
-            pGrid2(jj).Color = [.5, .5, .5 .2];
-            jj = jj+1;
-        end   
-    end               
+        set(pGrid,'XData',[X1; X2],'YData',[Y1; Y2]);
+  end              
 
     function latticeGridCB(src,~)      
         if ~isfield(data,'LatticeDig')
-            % Turn off all grid lines
-            for ii=1:length(pGrid1)          
-                pGrid1(ii).Visible='off';        
-            end
-
-            for ii=1:length(pGrid2)             
-                pGrid2(ii).Visible='off'; 
-            end
+            pGrid.Visible='off';
             return;
         end
         
-        imgnum = menuSelectImg.Value;             
-        n1i = min(data.LatticeDig(imgnum).n1);
-        n1f = max(data.LatticeDig(imgnum).n1);        
-        n2i = min(data.LatticeDig(imgnum).n2);
-        n2f = max(data.LatticeDig(imgnum).n2);        
-        ii_max_n1 = (n1f-n1i)+1;
-        ii_max_n2 = (n2f-n2i)+1;
-        
         if src.Value        
-            % Turn off all grid lines
-            for ii=1:length(pGrid1)
-                if ii<=ii_max_n1
-                    pGrid1(ii).Visible='on'; 
-                else
-                    pGrid1(ii).Visible='off'; 
-                end
-            end
-            for ii=1:length(pGrid2)
-                if ii<=ii_max_n2
-                    pGrid2(ii).Visible='on'; 
-                else
-                    pGrid2(ii).Visible='off'; 
-                end
-            end
+            pGrid.Visible='on';
         else
-            % Turn off all grid lines
-            for ii=1:length(pGrid1)          
-                pGrid1(ii).Visible='off';        
-            end
-
-            for ii=1:length(pGrid2)             
-                pGrid2(ii).Visible='off'; 
-            end
+            pGrid.Visible='off';
         end        
     end
 

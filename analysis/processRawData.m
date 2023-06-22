@@ -56,7 +56,7 @@ for kk=1:length(data)
     end           
     
     %% Scale Image
-    opts.doScale=1;
+    opts.doScale=0;
     opts.ScaleFactor = 2;
     if isfield(opts,'doScale') && opts.doScale 
        data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor)/(opts.ScaleFactor)^2;
