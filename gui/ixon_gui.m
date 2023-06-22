@@ -28,10 +28,13 @@ addpath(analysis_path);addpath(genpath(analysis_path))
 
 
 %% Other Settings
+c1 = purplemap;
+
+
+
 % Choose the default colormap
 cmap=purplemap;
-cstart = [1 1 1];
-cend = [0.6 0 .5];
+
 
 cstart = [0 0 0];
 cend = [0.9 0 .8];
@@ -922,7 +925,7 @@ hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','f
     'ToolTipString',ttstr,'enable','on');
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
-    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 50 12],'columneditable',[true],...
+    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 51 12],'columneditable',[true],...
     'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
 tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];  
@@ -1034,11 +1037,12 @@ hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         disp(['Selecting display ROI .' ...
             ' Click two points that form the rectangle ROI.']);
         axes(axImg)                 % Select the OD image axis
-        [x1,y1]=ginput(1);          % Get a mouse click
+        [x1,y1]=ginputMe(1);          % Get a mouse click
         x1=round(x1);y1=round(y1);  % Round to interger        
+        tic
         p1=plot(x1,y1,'+','color','k','linewidth',1); % Plot it
-        
-        [x2,y2]=ginput(1);          % Get a mouse click
+        toc
+        [x2,y2]=ginputMe(1);          % Get a mouse click
         x2=round(x2);y2=round(y2);  % Round it        
         p2=plot(x2,y2,'+','color','k','linewidth',1);  % Plot it
 
@@ -1276,7 +1280,7 @@ hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold',
 
 % Digitization Threshold
 tblDigPixel=uitable('parent',hpDig,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',400,'columneditable',[true],...
+    'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
 tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
 
@@ -1344,13 +1348,60 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
 
 %% Image Number Selector
 hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
-hpDisp_Select.Position=[160 500 160 50];
+hpDisp_Select.Position=[160 500 160 80];
+
+menuSelectCMAP=uicontrol('style','popupmenu','string',...
+    {'black-purple','black-purple-white','white-purple'},'units','pixels','parent',hpDisp_Select,...
+    'Callback',@updateCMAP,'fontsize',12,'Value',1);
+menuSelectCMAP.Position(3:4)=[150 18];
+menuSelectCMAP.Position(1:2)=[2 45];   
 
 menuSelectImg=uicontrol('style','popupmenu','string',...
     {'image 1 of 1','image 1 of 2'},'units','pixels','parent',hpDisp_Select,...
     'Callback',{@(a,b) updateGraphics},'fontsize',12);
 menuSelectImg.Position(3:4)=[150 18];
 menuSelectImg.Position(1:2)=[2 15];   
+updateCMAP(menuSelectCMAP);
+
+    function updateCMAP(src,evt)
+        switch src.Value
+            case 1
+                ca = [0 0 0];
+                cb = [0.9 0 .8];
+                
+%                 62.7% red, 12.5% green and 94.1%
+                cb = [0.7 .1 .6];
+
+%                 cb =[0.627 .125 .941];
+                cc = [linspace(ca(1),cb(1),1000)' ...
+                    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+                colormap(hF,cc);
+                pGrid.Color = [.5 .5 .5 .5];
+            case 2
+                colormap(hF,purplemap);
+                pGrid.Color = [.5 .5 .5 .5];
+
+            case 3
+                pGrid.Color = [.3 .3 .3 .3];
+
+                colormap(hF,purplemap);
+                ca = [1 1 1];
+                cb = [0.6 0 .5];
+                cc = [linspace(ca(1),cb(1),1000)' ...
+                    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+                colormap(hF,cc);
+        end
+        c1 = purplemap;
+
+
+
+% Choose the default colormap
+% cmap=purplemap;
+% 
+% 
+
+
+    end
 
 
     function updateImageLists
@@ -1365,6 +1416,8 @@ menuSelectImg.Position(1:2)=[2 15];
 
 hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
 hpDisp_X.Position=[160 500 160 160];
+
+
 
 
 % Table for changing display limits
@@ -1451,6 +1504,20 @@ cTextLattice=uicontrol(hpDisp_X,'style','checkbox','string','lattice text',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@latticeTextCB,...
     'enable','on','value',1);
 cTextLattice.Position=[cDrawLattice.Position(3)+cDrawLattice.Position(1)+5 2 120 15];
+
+% Button group for deciding what the X/Y plots show
+% bgDeconv = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w','BorderType','None',...
+%     'SelectionChangeFcn',@chPlotCB);  
+% bgDeconv.Position(3:4)=[125 15];
+% bgDeconv.Position(1:2)=[2 47];
+%     
+% % Radio buttons for cuts vs sum
+% rbPosRaw=uicontrol(bgDeconv,'Style','radiobutton','String','show raw imagee',...
+%     'Position',[0 0 60 15],'units','pixels','backgroundcolor','w','Value',1,...
+%     'fontsize',7);
+% rbPosDeconv=uicontrol(bgDeconv,'Style','radiobutton','String','show deconvolved image',...
+%     'Position',[60 0 60 15],'units','pixels','backgroundcolor','w','Value',0,...
+%     'fontsize',7);
 
 %% Display Options Panel
 
@@ -2032,19 +2099,16 @@ hold on
 axImg.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
 axis equal tight
 
+pxinfo = impixelinfo(hF,hImg);
+
 % Cross Hair Plots
-pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1);
-pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1);
+pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
+pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
 
 % Initialize Grid Objects
-clear pGrid1
-clear pGrid2
-for i = 1:200
-    pGrid1(i) = plot([1 512],[1 512],'-','color',[1 0 0 .2],...
-        'linewidth',1,'Visible','off','parent',axImg);
-    pGrid2(i) = plot([1 512],[1 512],'-','color',[1 0 0 .2],...
-        'linewidth',1,'Visible','off','parent',axImg);
-end
+pGrid = line([1 512],[1 512],'linestyle','-',...
+    'color',[.5 .5 .5 .5],'linewidth',1,'Visible','off','parent',axImg,...
+    'hittest','off');
 
 % file name string
 tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
@@ -2067,7 +2131,7 @@ tTopLeft=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight',
 pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2);
 
 % Reticle for gaussian fit (this will become an array later)
-pGaussRet=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:));
+pGaussRet=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:),'hittest','off');
 % Color bar
 cBar=colorbar('fontsize',8,'units','pixels','location','northoutside');
 
@@ -2165,20 +2229,20 @@ axImg_K.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
 axis equal tight
 
 clear pKReticles
-pKReticles(1) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(2) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(3) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(4) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(5) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(6) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(7) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
-pKReticles(8) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off');
+pKReticles(1) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(2) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(3) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(4) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(5) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(6) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(7) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+pKReticles(8) = plot(0,0,'-','color',[1 1 1],'linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
 
-pKPSF = plot(0,0,'--','color',[1 1 1],'parent',axImg_K,'Visible','off');
+pKPSF = plot(0,0,'--','color',[1 1 1],'parent',axImg_K,'Visible','off','hittest','off');
 
 % Cross Hair Plots
-pCrossX_K=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K);
-pCrossY_K=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K);
+pCrossX_K=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K,'hittest','off');
+pCrossY_K=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'parent',axImg_K,'hittest','off');
 
 % file name string
 tImageFile_K=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
@@ -2246,13 +2310,19 @@ caxis([0 1]);
 
 ax_hB1=subplot(2,1,1,'parent',tHistB);
 pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none');
+
+
+
 ylabel('occurences');
 xlabel('counts/site');
 hold on
 
+
+pKernelB1 = plot(1,1,'k-','parent',ax_hB1);
+
+
 set(ax_hB1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
-    'XAxisLocation','bottom','YDir','normal','UserData','H1',...
-    'YAxisLocation','left');
+    'XAxisLocation','bottom','YDir','normal','UserData','H1');
 
 
 ax_hB2=subplot(2,1,2,'parent',tHistB);
@@ -2262,8 +2332,7 @@ xlabel('counts/site');
 hold on
 
 set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
-    'XAxisLocation','bottom','YDir','normal','UserData','H2',...
-    'YAxisLocation','left');
+    'XAxisLocation','bottom','YDir','normal','UserData','H2');
 
 
 %% Digital Image
@@ -2289,8 +2358,7 @@ caxis([0 1]);
     end
 
 %% Lattice Grid Callbacks
-
-    function updateGridGraphics       
+  function updateGridGraphics       
         imgnum = menuSelectImg.Value;
 
         if ~isfield(data,'LatticeDig')
@@ -2318,74 +2386,37 @@ caxis([0 1]);
         dr2 = a2*(n2f+1);
         dr3 = a1*(n1i-1);
         dr4 = a1*(n1f+1);
+             
         
-        % Plot n1 grid
-        jj=1;
-        for ii=n1i:1:n1f
-            r0 = a1*(ii+p(1)+0.5);                
-            set(pGrid1(jj),'XData',r0(1)+[dr1(1) dr2(1)],'Ydata',...
-                r0(2)+[dr1(2) dr2(2)]);
-            jj = jj+1;
-            pGrid1(jj).Color = [.5, .5, .5 .2];
-        end 
+        % n1 Grid
+        rVec = a1*([n1i:n1f]+p(1)+0.5); % All lattice sites 1        
+        R1 = rVec + dr1;
+        R2 = rVec + dr2;
+        Q = nan(1,size(rVec,2));        
+        X1 = [R1(1,:); R2(1,:); Q];X1=X1(:);
+        Y1 = [R1(2,:); R2(2,:); Q];Y1=Y1(:);
+
+        % n2 Grid
+        rVec = a2*([n2i:n2f]+p(2)+0.5); % All lattice sites 1        
+        R1 = rVec + dr3;
+        R2 = rVec + dr4;
+        Q = nan(1,size(rVec,2));        
+        X2 = [R1(1,:); R2(1,:); Q];X2=X2(:);
+        Y2 = [R1(2,:); R2(2,:); Q];Y2=Y2(:);
         
-        % Plot n1 grid
-        jj=1;
-        for ii=n2i:1:n2f
-            r0 = a2*(ii+p(2)+0.5);                
-            set(pGrid2(jj),'XData',r0(1)+[dr3(1) dr4(1)],'Ydata',...
-                r0(2)+[dr3(2) dr4(2)]);
-            pGrid2(jj).Color = [.5, .5, .5 .2];
-            jj = jj+1;
-        end   
-    end               
+        set(pGrid,'XData',[X1; X2],'YData',[Y1; Y2]);
+  end              
 
     function latticeGridCB(src,~)      
         if ~isfield(data,'LatticeDig')
-            % Turn off all grid lines
-            for ii=1:length(pGrid1)          
-                pGrid1(ii).Visible='off';        
-            end
-
-            for ii=1:length(pGrid2)             
-                pGrid2(ii).Visible='off'; 
-            end
+            pGrid.Visible='off';
             return;
         end
         
-        imgnum = menuSelectImg.Value;             
-        n1i = min(data.LatticeDig(imgnum).n1);
-        n1f = max(data.LatticeDig(imgnum).n1);        
-        n2i = min(data.LatticeDig(imgnum).n2);
-        n2f = max(data.LatticeDig(imgnum).n2);        
-        ii_max_n1 = (n1f-n1i)+1;
-        ii_max_n2 = (n2f-n2i)+1;
-        
         if src.Value        
-            % Turn off all grid lines
-            for ii=1:length(pGrid1)
-                if ii<=ii_max_n1
-                    pGrid1(ii).Visible='on'; 
-                else
-                    pGrid1(ii).Visible='off'; 
-                end
-            end
-            for ii=1:length(pGrid2)
-                if ii<=ii_max_n2
-                    pGrid2(ii).Visible='on'; 
-                else
-                    pGrid2(ii).Visible='off'; 
-                end
-            end
+            pGrid.Visible='on';
         else
-            % Turn off all grid lines
-            for ii=1:length(pGrid1)          
-                pGrid1(ii).Visible='off';        
-            end
-
-            for ii=1:length(pGrid2)             
-                pGrid2(ii).Visible='off'; 
-            end
+            pGrid.Visible='off';
         end        
     end
 
@@ -2483,7 +2514,9 @@ caxis([0 1]);
         set(pHist3,'XData',data.HistogramNoFilter(imgnum).Centers,...
             'YData',data.HistogramNoFilter(imgnum).N);     
         set(pHist4,'XData',data.HistogramNoFilter(imgnum).Centers,...
-            'YData',data.HistogramNoFilter(imgnum).N);            
+            'YData',data.HistogramNoFilter(imgnum).N);      
+        
+        
     end
 
 
@@ -2636,9 +2669,24 @@ caxis([0 1]);
         y = data.LatticeHistogram(imgnum).N;
         
         Nthresh = histBtbl.Data(1,1);       
+        
+        
+        
         set(pHistB1,'XData',x,'YData',y);
         set(pHistB2,'XData',x,'YData',y);
-        set(ax_hB2,'XLim',[Nthresh max(xe)]);     
+        set(ax_hB2,'XLim',[Nthresh max(xe)]);  
+        
+        
+        zall = data.LatticeDig(imgnum).Zbin(:);
+        zall(isnan(zall))=[];
+        n = numel(zall);      
+        x2 = data.LatticeHistogramKernel(imgnum).Xi;
+        y2 = data.LatticeHistogramKernel(imgnum).f;        
+        y2 = y2/sum(sum(y2));
+        y2 = y2*n*length(x2)/length(x);    
+        set(pKernelB1,'XData',x2,'YData',y2);     
+        
+
     end
 
     function updateBinnedHistogram
@@ -2649,20 +2697,35 @@ caxis([0 1]);
         
         Zall = data.LatticeDig(1).Zbin;
         Zall = Zall(:);
-        Zall(Zall==0)=[];
+%         Zall(Zall==0)=[];
         
         [N,edges] = histcounts(Zall,Nbins);
+        
         centers = (edges(1:end-1) + edges(2:end))/2;
         LatticeHistogram = struct;
         LatticeHistogram.Edges = edges;
         LatticeHistogram.Centers = centers;
         LatticeHistogram.N = N;  
         data.LatticeHistogram(1) = LatticeHistogram;      
+
+        [f,xi,bw]=ksdensity(Zall(:));
+        [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*.25);        
+        
+        LatticeHistogramKernel = struct;
+        LatticeHistogramKernel.Xi = xi;
+        LatticeHistogramKernel.f = f;
+        LatticeHistogramKernel.BandWidth = bw;
+        data.LatticeHistogramKernel(1) = LatticeHistogramKernel;
+
         for kk=2:length(data.LatticeDig)
             Zall = data.LatticeDig(kk).Zbin;
             Zall = Zall(:);
-            Zall(Zall==0)=[];            
+%                     Zall(Zall==0)=[];
+
             
+            [f,xi,bw]=ksdensity(Zall(:));
+            [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);     
+        
             [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
             centers = (edges(1:end-1) + edges(2:end))/2;
             LatticeHistogram = struct;
@@ -2670,6 +2733,12 @@ caxis([0 1]);
             LatticeHistogram.Centers = centers;
             LatticeHistogram.N = N;  
             data.LatticeHistogram(kk) = LatticeHistogram;
+
+            LatticeHistogramKernel = struct;
+            LatticeHistogramKernel.Xi = xi;
+            LatticeHistogramKernel.f = f;
+            LatticeHistogramKernel.BandWidth = bw;
+            data.LatticeHistogramKernel(kk) = LatticeHistogramKernel;
         end                  
     end
 
