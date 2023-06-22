@@ -36,7 +36,6 @@ c1 = purplemap;
 cmap=purplemap;
 
 
-
 cstart = [0 0 0];
 cend = [0.9 0 .8];
 
@@ -926,7 +925,7 @@ hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','f
     'ToolTipString',ttstr,'enable','on');
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
-    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 50 12],'columneditable',[true],...
+    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 51 12],'columneditable',[true],...
     'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
 tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];  
@@ -1349,13 +1348,55 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
 
 %% Image Number Selector
 hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
-hpDisp_Select.Position=[160 500 160 50];
+hpDisp_Select.Position=[160 500 160 80];
+
+menuSelectCMAP=uicontrol('style','popupmenu','string',...
+    {'black-purple','black-purple-white','white-purple'},'units','pixels','parent',hpDisp_Select,...
+    'Callback',@updateCMAP,'fontsize',12);
+menuSelectCMAP.Position(3:4)=[150 18];
+menuSelectCMAP.Position(1:2)=[2 45];   
 
 menuSelectImg=uicontrol('style','popupmenu','string',...
     {'image 1 of 1','image 1 of 2'},'units','pixels','parent',hpDisp_Select,...
     'Callback',{@(a,b) updateGraphics},'fontsize',12);
 menuSelectImg.Position(3:4)=[150 18];
 menuSelectImg.Position(1:2)=[2 15];   
+updateCMAP(menuSelectCMAP);
+
+    function updateCMAP(src,evt)
+        switch src.Value
+            case 1
+                ca = [0 0 0];
+                cb = [0.9 0 .8];
+                cc = [linspace(ca(1),cb(1),1000)' ...
+                    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+                colormap(hF,cc);
+                pGrid.Color = [1 1 1 .2];
+            case 2
+                colormap(hF,purplemap);
+                pGrid.Color = [.5 .5 .5 .5];
+
+            case 3
+                pGrid.Color = [.3 .3 .3 .3];
+
+                colormap(hF,purplemap);
+                ca = [1 1 1];
+                cb = [0.6 0 .5];
+                cc = [linspace(ca(1),cb(1),1000)' ...
+                    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+                colormap(hF,cc);
+        end
+        c1 = purplemap;
+
+
+
+% Choose the default colormap
+% cmap=purplemap;
+% 
+% 
+
+
+    end
 
 
     function updateImageLists
@@ -2037,21 +2078,15 @@ hold on
 axImg.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
 axis equal tight
 
+pxinfo = impixelinfo(hF,hImg);
+
 % Cross Hair Plots
 pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
 pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
 
 % Initialize Grid Objects
-% clear pGrid1
-% clear pGrid2
-% for i = 1:200
-%     pGrid1(i) = line([1 512],[1 512],'linestyle','-','color',[1 0 0 .2],...
-%         'linewidth',1,'Visible','off','parent',axImg);
-%     pGrid2(i) = line([1 512],[1 512],'linestyle','-','color',[1 0 0 .2],...
-%         'linewidth',1,'Visible','off','parent',axImg);
-% end
 pGrid = line([1 512],[1 512],'linestyle','-',...
-    'color',[1 0 0 .2],'linewidth',1,'Visible','off','parent',axImg,...
+    'color',[1 1 1 .5],'linewidth',1,'Visible','off','parent',axImg,...
     'hittest','off');
 
 % file name string
