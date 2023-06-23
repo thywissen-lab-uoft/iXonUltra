@@ -992,11 +992,11 @@ hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         [x1,y1]=ginputMe(1);          % Get a mouse click
         x1=round(x1);y1=round(y1);  % Round to interger        
         tic
-        p1=plot(x1,y1,'+','color','k','linewidth',1); % Plot it
+        p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it
         toc
         [x2,y2]=ginputMe(1);          % Get a mouse click
         x2=round(x2);y2=round(y2);  % Round it        
-        p2=plot(x2,y2,'+','color','k','linewidth',1);  % Plot it
+        p2=plot(x2,y2,'+','color','r','linewidth',1,'markersize',10,'hittest','off');  % Plot it
 
         % Create the ROI
         ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
@@ -1257,7 +1257,7 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
                         p1 = data.LatticePhase(kk).p1;
                         p2 = data.LatticePhase(kk).p2;    
                     else
-                        errordlg('no fft fit has been done');
+                        errordlg('Lattice phase not calculated yet.');
                         beep
                         return;                        
                     end
@@ -1342,10 +1342,23 @@ menuSelectImg.Position(1:2)=[2 15];
 %% Display Options Panel
 
 hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
-hpDisp_X.Position=[160 500 160 160];
+hpDisp_X.Position=[160 500 160 190];
 
+menuSelectImgType=uicontrol('style','popupmenu','string',...
+    {'processed','no filter'},'units','pixels','parent',hpDisp_X,...
+    'Callback',{@ (src,evt) updateDispPosImg},'fontsize',8,'Value',1);
+menuSelectImgType.Position(3:4)=[140 18];
+menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Position(4)-15];   
 
-
+    function updateDispPosImg
+        imgnum = menuSelectImg.Value;
+        switch menuSelectImgType.Value
+            case 1
+                set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,imgnum));
+            case 2
+                set(hImg,'XData',data.X,'YData',data.Y,'CData',data.ZNoFilter(:,:,imgnum));
+        end
+    end
 
 % Table for changing display limits
 tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
@@ -1353,7 +1366,7 @@ tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
     'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
 tbl_dROI_X.Position(3:4)=tbl_dROI_X.Extent(3:4);
-tbl_dROI_X.Position(1:2)=[2 hpDisp_X.Position(4)-tbl_dROI_X.Position(4)-15];
+tbl_dROI_X.Position(1:2)=[2 menuSelectImgType.Position(2)-tbl_dROI_X.Position(4)-7];
 
 % Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
@@ -2020,15 +2033,15 @@ tTopLeft=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight',
     'color','k','backgroundcolor',[1 1 1 .7],'Visible','off');
 
 % Box for ROI (this will become an array later)
-pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2);
+pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2,'hittest','off');
 
 % Reticle for gaussian fit (this will become an array later)
 pGaussRet=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:),'hittest','off');
 % Color bar
 cBar=colorbar('fontsize',8,'units','pixels','location','northoutside');
 
-pPCA(1)=plot(0,0,'-','linewidth',1,'color','r');
-pPCA(2)=plot(0,0,'-','linewidth',1,'color','r');
+pPCA(1)=plot(0,0,'-','linewidth',1,'color','r','hittest','off');
+pPCA(2)=plot(0,0,'-','linewidth',1,'color','r','hittest','off');
 
 axImg.CLim=climtbl_X.Data;
 drawnow;
@@ -2146,7 +2159,7 @@ tTopLeftK=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight'
     'interpreter','latex',...
     'color','k','backgroundcolor',[1 1 1 .3],'Visible','off');
 
-pROI_K=rectangle('position',[-.5 -.5 1 1],'edgecolor',co(1,:),'linewidth',2,'parent',axImg_K);
+pROI_K=rectangle('position',[-.5 -.5 1 1],'edgecolor',co(1,:),'linewidth',2,'parent',axImg_K,'hittest','off');
 cBar_K=colorbar('fontsize',8,'units','pixels','location','northoutside');
 axImg_K.CLim=climtbl_K.Data;
 drawnow;
@@ -2297,8 +2310,10 @@ caxis([0 1]);
 %% Position Callbacks
 
     function updatePositionGraphics
-        set(hImg,'XData',data.X,'YData',data.Y,'CData'...
-            ,data.Z(:,:,menuSelectImg.Value));            
+      
+        
+        updateDispPosImg;
+        
         if cAutoColor_X.Value;setClim('X');end                
         cCrossCB(cCross_X);
         updateGridGraphics;
@@ -2648,7 +2663,8 @@ function updateImages
     
     
     % Update X, Y, and Z objects
-    set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,1));
+%     set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,1));
+    updateDispPosImg;
     
     if cAutoColor_X.Value
 %        autoClim; 
