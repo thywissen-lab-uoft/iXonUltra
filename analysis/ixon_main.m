@@ -255,7 +255,7 @@ outdata.Params=ixondata.Params;
 % perform analysis on.
 
 % Full ROI
-ixonROI = [1 512 1 512]; 
+ixonROI = [1 1024 1 1024]; 
 
 [ixondata.ROI]=deal(ixonROI);
 
@@ -497,10 +497,10 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     % Color limit for image
 %     ixon_animateOpts.CLim=[50 200];   % Color limits
-         ixon_animateOpts.CLim=[0 1500];   % Color limits
+         ixon_animateOpts.CLim=[0 300];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-       ixon_animateOpts.CLim=[0 1000];   % Color limits
+       ixon_animateOpts.CLim=[0 300];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
