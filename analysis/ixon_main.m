@@ -74,7 +74,7 @@ doDarkImageAnalysis = 1;
 
 ixon_doBoxCount=1;
 
-ixon_doGaussFit=0;
+ixon_doGaussFit=1;
 
 % Fast Fourier Transform Analysis
 % Use if you are looking for astigmatism in the image
@@ -379,7 +379,7 @@ ixon_boxPopts.NumberExp2SumFit = 0;
 ixon_boxPopts.NumberLorentzianFit=0;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
 ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
 
 if ixon_doBoxCount  
@@ -425,7 +425,7 @@ ixon_gauss_opts.NumberScale = 'linear';
 % ixon_gauss_opts.NumberScale = 'log'; 
 
 ixon_gauss_opts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_gauss_opts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
+ixon_gauss_opts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
 ixon_gauss_opts.CenterParabolaFit = 0;
 ixon_gauss_opts.CenterLinearFit = 0;     % Linear fit to cloud center
 
@@ -500,7 +500,7 @@ if ixon_doAnimate == 1 && ixon_doSave
          ixon_animateOpts.CLim=[0 300];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-       ixon_animateOpts.CLim=[0 300];   % Color limits
+       ixon_animateOpts.CLim=[0 3000];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end

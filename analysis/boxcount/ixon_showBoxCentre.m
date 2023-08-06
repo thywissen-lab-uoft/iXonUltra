@@ -281,6 +281,8 @@ if opts.CenterLinearFit && length(xvals)>1
     data{3,1}='intercept (px)';
     data{4,1}='intercept (um) ';
 
+    pxsize = 16/(80*2);
+    
     data{1,2}=fit1(1);
     data{2,2}=fit1(1)*pxsize*1e6;
     data{3,2}=fit1(2);
@@ -340,7 +342,7 @@ iHigh=find((Y-gD)/gA>.8,1);
 iLow=find((Y-gD)/gA<-.8,1);
 gB=abs(X(iHigh)-X(iLow))*2.2;
 
-
+gB=25;
 
 minValues=X(Y==min(Y));
 maxValues=X(Y==max(Y));

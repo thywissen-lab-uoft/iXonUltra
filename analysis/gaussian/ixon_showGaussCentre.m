@@ -282,6 +282,8 @@ if opts.CenterLinearFit && length(xvals)>1
     data{2,1}='slope (um/var)';
     data{3,1}='intercept (px)';
     data{4,1}='intercept (um) ';
+    
+    pxsize = 16/(80*2);
 
     data{1,2}=fit1(1);
     data{2,2}=fit1(1)*pxsize*1e6;
