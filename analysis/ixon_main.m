@@ -34,6 +34,33 @@ lambda=770E-9;
 % Load pertinent physical constants
 amu=1.660539E-27; 
 m=40*amu;
+
+%% Select image directory
+% Choose the directory where the images to analyze are stored
+disp([datestr(now,13) ' Choose an image analysis folder...']);
+dialog_title='Choose the root directory of the images';
+
+if ixon_getImageDir(datevec(now))
+    newdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
+    saveOpts = struct;
+    if isequal(newdir,0)
+        disp('Canceling.');    
+        return; 
+    else
+        imgdir = newdir;
+        ixon_imgdir = imgdir;
+        saveDir = [imgdir filesep 'figures'];
+        if ~exist(saveDir,'dir'); mkdir(saveDir);end   
+        saveOpts.saveDir=saveDir;
+        saveOpts.Quality = 'auto';
+        strs=strsplit(imgdir,filesep);
+        FigLabel=[strs{end-1} filesep strs{end}];
+    end
+else
+    disp('Canceling.');
+    return;
+end
+
 %% Analysis Variable
 % This section of code chooses the variable to plot against for aggregate
 % plots.  The chosen variable MUST match a variable provided in the params
@@ -94,46 +121,11 @@ img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
 img_opt.doFFTFilter         = 1;        % Filter FFT?
 img_opt.FFTFilterRadius     = 1;        % FFT Filter radius (1/px)
 
-
-%% Select image directory
-% Choose the directory where the images to analyze are stored
-disp([datestr(now,13) ' Choose an image analysis folder...']);
-dialog_title='Choose the root directory of the images';
-
-
-if ixon_getImageDir(datevec(now))
-    newdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
-    saveOpts = struct;
-
-    if isequal(newdir,0)
-        disp('Canceling.');    
-        return; 
-    else
-                imgdir = newdir;
-
-        ixon_imgdir = imgdir;
-        saveDir = [imgdir filesep 'figures'];
-
-        if ~exist(saveDir,'dir'); mkdir(saveDir);end    
-
-        saveOpts.saveDir=saveDir;
-        saveOpts.Quality = 'auto';
-
-        strs=strsplit(imgdir,filesep);
-        FigLabel=[strs{end-1} filesep strs{end}];
-    end
-else
-    disp('Canceling.');
-    return;
-end
-
-
 %% Load the data
 clear ixondata
 disp(['Loading data from ' ixon_imgdir]);
 files=dir([ixon_imgdir filesep '*.mat']);
 files={files.name};
-
 
 for kk=1:length(files)
     str=fullfile(ixon_imgdir,files{kk});
@@ -141,7 +133,6 @@ for kk=1:length(files)
     disp(['     (' num2str(kk) ')' files{kk}]);    
     data=load(str);     
     data=data.data;  
-
     % Display image properties
     try
         disp(['     Image Name     : ' data.Name]);
@@ -149,22 +140,17 @@ for kk=1:length(files)
         if ~ixon_autoXVar
             disp(['     ' ixon_xVar ' : ' num2str(data.Params.(ixon_xVar))]);
         end
-
         disp(' ');
     end    
-    
     data.Params.ExecutionDate = datenum(data.Params.ExecutionDate);
-data.Params.ExecutionDateStr = datestr(data.Params.ExecutionDate);    
-%     
-%     if isequal(ixon_xVar,'ExecutionDate')
-%         data.Params.(ixon_xVar)=datenum(data.Params.(ixon_xVar))*24*60*60;
-%     end    
+    data.Params.ExecutionDateStr = datestr(data.Params.ExecutionDate); 
     ixondata(kk)=data;    
 end
 disp(' ');
-
+%% Match Parameters and Flags
+% This makes sure that all data as has all the flags and params in each. 
+% This is usually not necessary.
 ixondata = ixon_matchParamsFlags(ixondata);
-
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and
 % data to find which variable(s) are being changed.

@@ -27,7 +27,7 @@ if nargin == 1
 end
 
 if ~isfield(opts,'doRotate'); opts.doRotate = 1;end
-        opts.doScale=1;
+    opts.doScale=1;
     opts.ScaleFactor = 2;
 
 for kk=1:length(data)
