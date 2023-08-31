@@ -6,8 +6,8 @@ if nargin == 1
     opts                    = struct;    
     % Position Space
     opts.doSubtractBias     = 1;
-    opts.doScale            = 0;
-    opts.ScaleFactor        = 3;
+    opts.doScale            = 1;
+    opts.ScaleFactor        = 2;
     opts.doGaussFilter      = 0;
     opts.GaussFilterRadius  = 1;
     opts.doMask             = 0;
@@ -53,7 +53,9 @@ for kk=1:length(data)
 %% Raw Data
     data(kk).Zraw = data(kk).Z;    
 %% Scale Image
-    if isfield(opts,'doScale') && opts.doScale 
+    if isfield(opts,'doScale') && opts.doScale         
+       data(kk).X = linspace(1,length(data(kk).X),length(data(kk).X)*opts.ScaleFactor);
+       data(kk).Y = linspace(1,length(data(kk).Y),length(data(kk).Y)*opts.ScaleFactor);
        data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor)/(opts.ScaleFactor)^2;
     end    
 %% Rotate Image
@@ -133,8 +135,6 @@ for kk=1:length(data)
 %% Finish it
     t2 = now;
     disp(['done (' num2str(round((t2-t1)*24*60*60,2)) ' s)']);         
-    data(kk).X = 1:size(data(kk).Z,2);
-    data(kk).Y = 1:size(data(kk).Z,1); 
     data(kk).ProcessOptions = opts;
 end
 

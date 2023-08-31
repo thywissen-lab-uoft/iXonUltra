@@ -838,7 +838,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
 %% Image Process Panel
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-160 160 185],'title','processing');
+    'Position',[0 hpAcq.Position(2)-160 160 208],'title','processing');
 
 ttstr='Apply gaussian filter to smooth image';
 cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
@@ -905,7 +905,7 @@ ttstr='Rotate data';
 cRotate=uicontrol('style','checkbox','string','rotate (deg.)',...
     'units','pixels','parent',hpADV,'backgroundcolor','w',...
     'value',0,'ToolTipString',ttstr,'fontsize',7);
-cRotate.Position=[5 cGaussFilter.Position(2)+14 80 15];
+cRotate.Position=[5 cGaussFilter.Position(2)+15 80 15];
 
 tblTheta=uitable('parent',hpADV,'units','pixels',...
     'rowname',{},'columnname',{},'Data',60.2077,'columneditable',[true],...
@@ -913,11 +913,26 @@ tblTheta=uitable('parent',hpADV,'units','pixels',...
 tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
 
 
+% Rotate data (makes it easier for lattice grid stuff)
+ttstr='scale up image';
+cScale=uicontrol('style','checkbox','string','scale factor',...
+    'units','pixels','parent',hpADV,'backgroundcolor','w',...
+    'value',1,'ToolTipString',ttstr,'fontsize',7);
+cScale.Position=[5 cRotate.Position(2)+18 80 15];
+
+tblScale=uitable('parent',hpADV,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',2,'columneditable',[true],...
+    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
+tblScale.Position=[hpADV.Position(3)-70 cScale.Position(2) 50 20];
+
+
+
 % Subtract bias
 ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
 hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',7,...
-    'backgroundcolor','w','Position',[5 cRotate.Position(2)+14 80 15],...
+    'backgroundcolor','w','Position',[5 cScale.Position(2)+18 80 15],...
     'ToolTipString',ttstr,'enable','on','Value',1);
+
 
 
 % process button
@@ -2309,11 +2324,8 @@ caxis([0 1]);
 
 %% Position Callbacks
 
-    function updatePositionGraphics
-      
-        
-        updateDispPosImg;
-        
+    function updatePositionGraphics              
+        updateDispPosImg;        
         if cAutoColor_X.Value;setClim('X');end                
         cCrossCB(cCross_X);
         updateGridGraphics;
@@ -2609,13 +2621,12 @@ caxis([0 1]);
 %% New Image
 function updateImages
     % Grab the ROI
-    ROI=tblROI.Data;
-    data.ROI=ROI;       
-    x=ROI(1):ROI(2);
-    y=ROI(3):ROI(4);     
-    
-    opt = struct;
+    ROI=tblROI.Data;data.ROI=ROI;       
+    x=ROI(1):ROI(2);y=ROI(3):ROI(4);         
+    opt = struct;    
     opt.doSubtractBias     = hcSubBias.Value;
+    opt.doScale            = cScale.Value;
+    opt.ScaleFactor        = tblScale.Data;
     opt.doGaussFilter      = cGaussFilter.Value;
     opt.GaussFilterRadius  = tblGaussFilter.Data;
     opt.doMask             = hcMask.Value;
@@ -2632,18 +2643,15 @@ function updateImages
     opt.doFFTFilter        = cKGaussFilter.Value;
     opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
-    data = ixonProcessImages(data,opt);   
-    
+    data = ixonProcessImages(data,opt);  
     updateImageLists;        
-
     
     % Perform Box Count ALWAYS DONE
     data=ixon_boxCount(data);
     bc=data.BoxCount;    
     
     % Histogram of data (always done)
-    updateHistogram;        
-    
+    updateHistogram;            
     updateGraphics; 
 
     % Create sub image to do center of mass analysis
