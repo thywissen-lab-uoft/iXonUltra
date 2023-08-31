@@ -3,8 +3,7 @@ function [data] = ixonProcessImages(data,opts)
 % This function takes the raw images and does processing on them.
 
 if nargin == 1
-    opts                    = struct;
-    
+    opts                    = struct;    
     % Position Space
     opts.doSubtractBias     = 1;
     opts.doScale            = 0;
@@ -29,10 +28,8 @@ end
 if ~isfield(opts,'doRotate'); opts.doRotate = 1;end
 
 for kk=1:length(data)
-
     fprintf([num2str(kk) ' of ' num2str(length(data)) ': '])
     t1=now;
-
     data(kk).Z = data(kk).RawImages;           
     data(kk).X = 1:size(data(kk).Z,2);
     data(kk).Y = 1:size(data(kk).Z,1); 
@@ -52,27 +49,21 @@ for kk=1:length(data)
     if opts.doSubtractBias  
         fprintf(' biasing ...');
         data(kk).Z = data(kk).Z - 200;
-    end           
-    
+    end  
 %% Raw Data
-    data(kk).Zraw = data(kk).Z;
-    
-    %% Scale Image
-
+    data(kk).Zraw = data(kk).Z;    
+%% Scale Image
     if isfield(opts,'doScale') && opts.doScale 
        data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor)/(opts.ScaleFactor)^2;
-    end
-    
-    %% Rotate Image
+    end    
+%% Rotate Image
     if opts.doRotate  
         theta = opts.Theta;
         fprintf([' rotating (' num2str(theta) ' deg)...']);
         data(kk).Z = imrotate(data(kk).Z,theta,'bicubic','crop');
-    end       
-    
-    %% No Filter
-    data(kk).ZNoFilter = data(kk).Z;
- 
+    end           
+%% No Filter
+    data(kk).ZNoFilter = data(kk).Z; 
 %% Image Mask
     if opts.doMask
         fprintf('masking ...');
@@ -83,13 +74,11 @@ for kk=1:length(data)
 %% Gaussian Fitler
     if opts.doGaussFilter  
         fprintf('smooth position ...');
-
         for ii=1:size(data(kk).Z,3)  
             data(kk).Z(:,:,ii) = imgaussfilt(data(kk).Z(:,:,ii),opts.GaussFilterRadius);
         end
-    end    
-    
-%% Deconvolve PSF
+    end        
+%% Deconvolve Point Spread Function
     if opts.doPSF       
         fprintf('PSF ...');
         s       = opts.PSF(1);
@@ -98,37 +87,19 @@ for kk=1:length(data)
         end
         N       = opts.PSF(2);
         Niter   = opts.PSF(3);
-        psf     = fspecial('gaussian',N,s);  
-        
-        psf2     = fspecial('gaussian',N,s*3);  
-
-        
-%         psf = psf*.7+psf2*.3;
-        
-        
+        psf     = fspecial('gaussian',N,s);           
         for ii = 1:size(data(kk).Z,3)  
-            data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter);            
-%             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter,...
-%                 5,[],400,1);
-%             data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter,1,[],400);           
-
-        end
-        
-    end
-    
-    
-
-%% Compute FFT
-
+            data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),psf,Niter); 
+        end        
+    end  
+%% Fast Fourier Transform (FFT)
     if opts.doFFT
         fprintf('FFT ...');
         % Compute FFT
-        Nfft = 2^10;
-        
+        Nfft = 2^10;        
         data(kk).Zf = zeros(Nfft,Nfft,size(data(kk).Z,3));
         data(kk).ZfNorm = zeros(Nfft,Nfft,size(data(kk).Z,3));
         data(kk).ZfPhase = zeros(Nfft,Nfft,size(data(kk).Z,3));
-
         for ii=1:size(data(kk).Z,3)
             zf = fft2(data(kk).Z(:,:,ii),Nfft,Nfft);
             zf = fftshift(zf);        
@@ -137,9 +108,8 @@ for kk=1:length(data)
             data(kk).ZfNorm(:,:,ii) = abs(zf);
             data(kk).ZfPhase(:,:,ii) = angle(zf);
         end   
-    end
-        
-%% Mask IR
+    end        
+%% Mask IR in FFT
     if opts.doMaskIR && opts.doFFT
         fprintf('mask FFT ...');        
         kR = opts.IRMaskRadius;
@@ -162,9 +132,8 @@ for kk=1:length(data)
     end
 %% Finish it
     t2 = now;
-    disp(['done (' num2str(round((t2-t1)*24*60*60,2)) ' s)']);     
-    
-        data(kk).X = 1:size(data(kk).Z,2);
+    disp(['done (' num2str(round((t2-t1)*24*60*60,2)) ' s)']);         
+    data(kk).X = 1:size(data(kk).Z,2);
     data(kk).Y = 1:size(data(kk).Z,1); 
     data(kk).ProcessOptions = opts;
 end
