@@ -7,6 +7,7 @@ function s3=ixon_getDayDir(src)
         s3=pwd;
         return;
     end
+    t=now;
     
     s1=datestr(t,'yyyy');s2=datestr(t,'yyyy.mm');s3=datestr(t,'mm.dd');
     s1=[src filesep s1];s2=[s1 filesep s2];s3=[s2 filesep s3];
