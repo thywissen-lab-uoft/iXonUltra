@@ -57,6 +57,9 @@ for kk=1:length(data)
         data(kk).Z = data(kk).Z - 200;
     end           
     
+%% Raw Data
+    data(kk).Zraw = data(kk).Z;
+    
     %% Scale Image
     opts.doScale=1;
     opts.ScaleFactor = 2;

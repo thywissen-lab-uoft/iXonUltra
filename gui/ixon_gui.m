@@ -5,9 +5,9 @@ function ixon_gui(doDebug)
 %
 % This code operates the iXon Ultra camera that the lattice experiment
 % uses to take fluorescence images of the quantum gas microscope.
-if nargin == 0
-   doDebug = 0; 
-end
+
+if nargin == 0;doDebug = 0;end
+
 if doDebug
    warning(['You are operating in DEBUG MODE. This removes ' ...
        'certain safety precautions. If not intended set the doDebug ' ...
@@ -20,40 +20,20 @@ mag=[82.6 83.2];
 % Load the mask file
 analysis_path = fullfile(fileparts(fileparts(mfilename('fullpath'))),'analysis');
 maskname=fullfile(analysis_path,'ixon_mask.mat');
+
 ixon_mask=load(maskname);
 ixon_mask=ixon_mask.BW;
 
 % Add analysis paths
 addpath(analysis_path);addpath(genpath(analysis_path))
 
-
 %% Other Settings
-c1 = purplemap;
 
-
-
-% Choose the default colormap
-cmap=purplemap;
-
-
-cstart = [0 0 0];
-cend = [0.9 0 .8];
-
-
-cmap = [linspace(cstart(1),cend(1),1000)' linspace(cstart(2),cend(2),1000)' linspace(cstart(3),cend(3),1000)'];
-
-% Figure Name
-guiname='iXon GUI';
-
-% Directory where images are automatically saved.
-defaultDir=['C:' filesep 'IxonImageHistory'];
-
-% Current directory of navigator is the default one
-currDir=defaultDir;
-
-if ~exist(defaultDir,'dir')
-    mkdir(defaultDir);
-end
+cmap=purplemap;                                 % default colormap
+guiname='iXon GUI';                             % Figure Name
+defaultDir=['C:' filesep 'IxonImageHistory'];   % Temporary save directory
+currDir=defaultDir;                             % Current directory of navigator is the default one
+if ~exist(defaultDir,'dir'); mkdir(defaultDir);end % Make temp directory if necessary
 
 % Dummy file to load on startup
 fname='example_data_EIT_RAMAN.mat';
@@ -128,7 +108,7 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
         if doClose
             disp('Closing iXon GUI...');      
             stop(statusTimer);
-            if cam_status.isConnected;disconnectCam;end
+            if cam_status.isConnected;ixon_disconnectCam;end
             delete(statusTimer);
             delete(fig);      % Delete the figure          
         end
@@ -182,7 +162,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
     function connectCB(~,~)
         strstatus.String='CONNECTING';
         drawnow;
-        out=connectCam;                 % Connect to the camera       
+        out=ixon_connectCam;                 % Connect to the camera       
         if ~out && ~doDebug             % Give warning if connection fails
            warning('Unable to connect to camera');
            return;
@@ -190,16 +170,16 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
         strstatus.String='CONNECTED';
         drawnow;       
         cam_status.isConnected=1;       
-        setCameraShutter(0);            % Close the shutter
+        ixon_setCameraShutter(0);            % Close the shutter
         loadAcquisitionSettings;        % Load default acquisition settings      
-        setCameraShutter(0);            % Close the shutter (again to be safe)
+        ixon_setCameraShutter(0);            % Close the shutter (again to be safe)
         hbOpenShutter.Enable='on';      % allow shutter to be opened
         cam_info=getCamInfo;            % Get the camera information
         disp(' ');
         disp(cam_info);        
         
         % Set the temperature set point
-        setTemperature(tblTemp.Data);
+        ixon_setTemperature(tblTemp.Data);
         hbCamInfo.Enable='on';       
         hbCamAbilities.Enable='on';
         
@@ -234,7 +214,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         strstatus.String='DISCONNECTING';
         drawnow;
         % Disconnect from camera
-        out=disconnectCam; 
+        out=ixon_disconnectCam; 
        
         if ~out && ~doDebug
            return;
@@ -281,7 +261,6 @@ hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,
         disp(cam_info.NumHSSpeeds)
         disp(cam_info.AvailableHSSpeeds{1});
         disp(cam_info.AvailableHSSpeeds{2});
-
     end
 
 % Capabilities button
@@ -323,7 +302,7 @@ hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
     'ToolTipString',ttstr);
 
     function coolCB(~,~,state)  
-        out=coolCamera(state);        
+        out=ixon_setTEC(state);        
         if ~out && ~doDebug
            return; 
         end        
@@ -353,28 +332,23 @@ tblTemp.Position(1:2)=[300 4];
     function chTempCB(src,evt)
         disp('Changing temperature set point');
         Told=evt.PreviousData;
-        Tnew=evt.NewData;
-        
+        Tnew=evt.NewData;        
         % Check that the data is numeric
         if ~isnumeric(Tnew) || isinf(Tnew) || isnan(Tnew)
             warning('Incorrect data type provided for temperature.');
             src.Data=Told;
             return;
-        end    
-        
-        Tnew=round(Tnew);
-        
+        end            
+        Tnew=round(Tnew);        
         if Tnew<-120 || Tnew>20
             warning('Temperature set point out of bounds. Resetting.');
             src.Data=Told; 
            return; 
         end
-        out=setTemperature(Tnew);
-        
+        out=ixon_setTemperature(Tnew);        
         if ~out  && ~doDebug
            src.Data=Told; 
-        end
-            
+        end            
         src.Data=Tnew;        
     end
 
@@ -403,7 +377,7 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
     function statusTimerFcn(~,~)
         try
         % Get the temperature
-        [out,temp,outstr]=getTemperature;
+        [out,temp,outstr]=ixon_getTemperature;
         strtemp.String=[num2str(temp) ' C'];        
         cam_status.Temperature=temp;   
         
@@ -425,7 +399,7 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
         end     
         
         % Camera Status
-        [out,outstr]=getCameraStatus;
+        [out,outstr]=ixon_getCameraStatus;
         strstatus.String=outstr;
         drawnow;
         catch ME
@@ -456,20 +430,16 @@ frslct.Position(3)=120;
 frslct.Position(1:2)=[600 5];
 
 
-    function shutterCB(~,~,state)
-        
+    function shutterCB(~,~,state)        
         if state && cam_status.Temperature>-60
             warning('Denying your request to open the shutter above -60C.');
             return;
-        end
-        
-        out=setCameraShutter(state);
-        
+        end        
+        out=ixon_setCameraShutter(state);        
         % Exit if bad return
         if ~out && ~doDebug
            return; 
-        end
-        
+        end        
         % Enable/Disable buttons
         if state
             hbOpenShutter.Enable='off';
@@ -482,10 +452,8 @@ frslct.Position(1:2)=[600 5];
 
 
 %% Save Panel
-
 hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
     'Position',[0 hpCam.Position(2)-30 hF.Position(3)-150 25]);
-
 
 % Auto Save check box
 ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
@@ -520,7 +488,7 @@ tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,
 
 % Browse button callback
     function browseCB(~,~)
-        str=getDayDir;
+        str=ixon_getDayDir;
         str=uigetdir(str);
         
         if str
@@ -532,8 +500,6 @@ tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,
             disp('no directory chosen!');
         end
     end
-
-
 
 %% Navigator Panel 
 
@@ -570,7 +536,7 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@chDirCB,...
 
 % Get directory from user and load first image in the folder
     function chDirCB(~,~)
-        str=getDayDir;
+        str=ixon_getDayDir;
         str=uigetdir(str);        
         if ~isequal(str,0) && ~isequal(str,currDir)       
             disp(['Changing directory to ' str]);
@@ -632,11 +598,8 @@ hbNavRight.Position=[221 2 12 20];
         catch ME                   
             warning(getReport(ME,'extended'));
             errordlg('Unable to load image, reverting to old data');
-
-            beep
-            
-            disp(['FileName : ' filename]);
-            
+            beep            
+            disp(['FileName : ' filename]);            
             data=olddata;
             updateImages;      
         end
@@ -684,10 +647,7 @@ hbNavRight.Position=[221 2 12 20];
         newfilename=fullfile(currDir,filenames{i1});
         tNavInd.String=sprintf('%03d',i1);
         [a,b,~]=fileparts(newfilename);
-        tNavName.String=fullfile(a,b);    
-        
-        
-        
+        tNavName.String=fullfile(a,b);  
         drawnow;   
         loadImage(newfilename);
     end
@@ -712,12 +672,10 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
     'Callback',@startCamCB,'ToolTipString',ttstr,'enable','off');
 
     function startCamCB(src,evt)
-        disp('Starting acquisition');
-        
+        disp('Starting acquisition');        
         % Send acquistion start command
-        out=startCamera;
-        start(acqTimer);
-        
+        out=ixon_startCamera;
+        start(acqTimer);        
         % Enable/Disable Button/Tables
         rbSingle.Enable='off';
         rbLive.Enable='off';
@@ -737,11 +695,8 @@ hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
 
     function stopCamCB(src,evt)
         disp('Stopping acquisition');     
-        
-        %
         stop(acqTimer);
-        stopCamera;
-        
+        ixon_stopCamera;        
         % Enable/Disable Button/Tables
         hbstart.Enable='on';
         hbstop.Enable='off';        
@@ -796,7 +751,7 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
         
         % Close the shutter
         disp('Closing shutter in case you forgot.');                
-        setCameraShutter(0);        
+        ixon_setCameraShutter(0);        
         hbCloseShutter.Enable='off';
         hbOpenShutter.Enable='on';
         
@@ -824,19 +779,19 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
     function acqTimerFcn(src,evt)      
         try
         % Camera Status
-        [out,outstr]=getCameraStatus;  
+        [out,outstr]=ixon_getCameraStatus;  
 %         disp(now)
         switch outstr
             case 'DRV_IDLE'
                 % Grab the images from the camera
-                imgs=grabRawImages;          
+                imgs=ixon_grabRawImages;          
                 
                 % Assign images metadata
                 mydata=makeImgDataStruct(imgs);
 
                 % Restart Acquisition if desired (auto-stopts)
                 if hcAcqRpt.Value
-                    startCamera;  
+                    ixon_startCamera;  
                 else
                     stop(src);
                     % Enable/Disable Button/Tables
@@ -876,12 +831,9 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
         end        
         catch ME
             warning('Acqtimer failed.');
-            disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);
-        
+            disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);        
         end
     end
-
-
 
 %% Image Process Panel
 
@@ -1040,11 +992,11 @@ hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         [x1,y1]=ginputMe(1);          % Get a mouse click
         x1=round(x1);y1=round(y1);  % Round to interger        
         tic
-        p1=plot(x1,y1,'+','color','k','linewidth',1); % Plot it
+        p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it
         toc
         [x2,y2]=ginputMe(1);          % Get a mouse click
         x2=round(x2);y2=round(y2);  % Round it        
-        p2=plot(x2,y2,'+','color','k','linewidth',1);  % Plot it
+        p2=plot(x2,y2,'+','color','r','linewidth',1,'markersize',10,'hittest','off');  % Plot it
 
         % Create the ROI
         ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
@@ -1213,7 +1165,6 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 % Callback function for redoing fits button
     function analyze_k(~,~)
         if hcFindLattice.Value && isfield(data,'Zf')
-            opts = struct;
             opts = data.ProcessOptions;            
             for kk=1:size(data.Zf,3)
                 tic;
@@ -1223,7 +1174,7 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
                 k2 = data.LatticeK(kk).k2;          
                 t2 = toc;
                 fprintf([' done (' num2str(t2,2) ' sec.)' ' phase ...']);
-                t1= tic;
+                tic;
                 data.LatticePhase(kk) = findLatticePhase(data.X,data.Y,data.Z,k1,k2);              
                 t=toc;
                 disp([' done (' num2str(t,2) ' sec.)']);                
@@ -1306,7 +1257,7 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
                         p1 = data.LatticePhase(kk).p1;
                         p2 = data.LatticePhase(kk).p2;    
                     else
-                        errordlg('no fft fit has been done');
+                        errordlg('Lattice phase not calculated yet.');
                         beep
                         return;                        
                     end
@@ -1323,27 +1274,22 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             opts.p2 = p2;
             opts.PixelThreshold = tblDigPixel.Data;
             opts.UsePixelThreshold = 1;
-            opts.DigitizationThreshold = tblDig.Data;
-            
+            opts.DigitizationThreshold = tblDig.Data;            
             ROI=tblROI.Data;
             data.ROI=ROI;                   
             x = ROI(1):ROI(2);
             y = ROI(3):ROI(4);      
-            z = data.Z(y,x,kk);       
-            
+            z = data.Z(y,x,kk);                   
             tic;
             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
                 ') binning into lattice ...']);    
             data.LatticeDig(kk) = binLattice(x,y,z,opts);      
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
-        end
-        
+        end        
         updateBinnedHistogram;
         updateBinnedGraphics;     
-        updateBinnedHistogramGraphics; 
-        
-        
+        updateBinnedHistogramGraphics;                 
     end
 
 %% Image Number Selector
@@ -1361,18 +1307,12 @@ menuSelectImg=uicontrol('style','popupmenu','string',...
     'Callback',{@(a,b) updateGraphics},'fontsize',12);
 menuSelectImg.Position(3:4)=[150 18];
 menuSelectImg.Position(1:2)=[2 15];   
-updateCMAP(menuSelectCMAP);
 
     function updateCMAP(src,evt)
         switch src.Value
             case 1
-                ca = [0 0 0];
-                cb = [0.9 0 .8];
-                
-%                 62.7% red, 12.5% green and 94.1%
+                ca = [0 0 0];       
                 cb = [0.7 .1 .6];
-
-%                 cb =[0.627 .125 .941];
                 cc = [linspace(ca(1),cb(1),1000)' ...
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
@@ -1380,10 +1320,8 @@ updateCMAP(menuSelectCMAP);
             case 2
                 colormap(hF,purplemap);
                 pGrid.Color = [.5 .5 .5 .5];
-
             case 3
                 pGrid.Color = [.3 .3 .3 .3];
-
                 colormap(hF,purplemap);
                 ca = [1 1 1];
                 cb = [0.6 0 .5];
@@ -1391,18 +1329,7 @@ updateCMAP(menuSelectCMAP);
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
         end
-        c1 = purplemap;
-
-
-
-% Choose the default colormap
-% cmap=purplemap;
-% 
-% 
-
-
     end
-
 
     function updateImageLists
         menuSelectImg.String = {};
@@ -1415,10 +1342,23 @@ updateCMAP(menuSelectCMAP);
 %% Display Options Panel
 
 hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
-hpDisp_X.Position=[160 500 160 160];
+hpDisp_X.Position=[160 500 160 190];
 
+menuSelectImgType=uicontrol('style','popupmenu','string',...
+    {'processed','no filter'},'units','pixels','parent',hpDisp_X,...
+    'Callback',{@ (src,evt) updateDispPosImg},'fontsize',8,'Value',1);
+menuSelectImgType.Position(3:4)=[140 18];
+menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Position(4)-15];   
 
-
+    function updateDispPosImg
+        imgnum = menuSelectImg.Value;
+        switch menuSelectImgType.Value
+            case 1
+                set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,imgnum));
+            case 2
+                set(hImg,'XData',data.X,'YData',data.Y,'CData',data.ZNoFilter(:,:,imgnum));
+        end
+    end
 
 % Table for changing display limits
 tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
@@ -1426,7 +1366,7 @@ tbl_dROI_X=uitable('parent',hpDisp_X,'units','pixels','RowName',{},...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
     'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
 tbl_dROI_X.Position(3:4)=tbl_dROI_X.Extent(3:4);
-tbl_dROI_X.Position(1:2)=[2 hpDisp_X.Position(4)-tbl_dROI_X.Position(4)-15];
+tbl_dROI_X.Position(1:2)=[2 menuSelectImgType.Position(2)-tbl_dROI_X.Position(4)-7];
 
 % Button for maximizing the display limits
 ttstr='Maximize display ROI to full image size.';
@@ -1680,7 +1620,6 @@ histBtbl.Position(1:2)=[2 20];
     end
 %% Display Callbacks  
 
-
 % Callback for changing display table ROI
     function tbl_dispROICB(src,evt)             
         ROI=src.Data;                               % Grab the new ROI             
@@ -1693,8 +1632,7 @@ histBtbl.Position(1:2)=[2 20];
     end
 
     function [ROI,err] = chDispROI(ROI,img_type)  
-        err = 0;
-        
+        err = 0;        
         % Determine the ROI limits depending on image type
         switch img_type
             case 'X'
@@ -1879,8 +1817,7 @@ histBtbl.Position(1:2)=[2 20];
         set(tCoMAnalysis,'Visible',src.Value);    
     end
 
-    function cCrossCB(src,evt)        
-        
+    function cCrossCB(src,evt)                
         switch src.UserData
             case 'X'
                 set(pCrossX,'Visible',src.Value);
@@ -1992,52 +1929,20 @@ tbl_hop_analysis=uitable(tabs(6),'units','normalized','RowName',{},'ColumnName',
 
 %% Initialize the image panel
 
-hp=uitabgroup(hF,'units','pixels','Position',[400 0 hF.Position(3)-200 hF.Position(4)-130],...
-    'SelectionChangedFcn',@foobar);
+hp=uitabgroup(hF,'units','pixels','Position',...
+    [400 0 hF.Position(3)-200 hF.Position(4)-130]);
 hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
 
-    function setChildren(obj,state)
-       if isprop(obj,'Enable')
-          obj.Enable = state;
-       else
-           if isprop(obj,'Children')
-               for n=1:length(obj.Children)
-                    setChildren(obj.Children(n),state); 
-               end
-           end
-       end        
-    end
-
-    function foobar(a,b)
-%         switch b.NewValue.Title
-%             case 'position'    
-%                 axes(axImg);
-% %                 mouse_figure(hF);               
-%                 setChildren(hpDisp_X,'on');
-%                 setChildren(hpDisp_K,'off');      
-%             case 'momentum'  
-%                 axes(axImg_K);
-% %                 mouse_figure(hF); 
-%                 setChildren(hpDisp_X,'off');
-%                 setChildren(hpDisp_K,'on');
-%         end        
-    end
-
 % Tab Groups for each display
-tX=uitab(hp,'Title','position','units','pixels','backgroundcolor','w');
-tHist=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
+tabX=uitab(hp,'Title','position','units','pixels','backgroundcolor','w');
+tabH=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
+tabK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
+tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
+tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
+tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
+tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
+tabHop=uitab(hp,'Title','hopping','units','pixels','backgroundcolor','w');
 
-tK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
-tB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
-tHistB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
-
-tD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
-tC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
-
-tH=uitab(hp,'Title','hopping','units','pixels','backgroundcolor','w');
-
-% setChildren(hpDisp_K,'off');    
-% 
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary
 
@@ -2089,14 +1994,14 @@ l=80;   % Left gap for fitting and data analysis summary
 %% Position Images
 
 % Initialize image axis
-axImg=axes('parent',tX);cla
+axImg=axes('parent',tabX);cla
 co=get(gca,'colororder');
 hImg=imagesc(data.X,data.Y,data.Z);
 set(axImg,'box','on','linewidth',.1,'fontsize',10,'units','pixels',...
     'XAxisLocation','top','colormap',colormap(cmap),...
     'xcolor',co(4,:),'ycolor',co(4,:),'YDir','normal','UserData','X');
 hold on
-axImg.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
+axImg.Position=[50 150 tabX.Position(3)-200 tabX.Position(4)-200];
 axis equal tight
 
 pxinfo = impixelinfo(hF,hImg);
@@ -2128,22 +2033,22 @@ tTopLeft=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight',
     'color','k','backgroundcolor',[1 1 1 .7],'Visible','off');
 
 % Box for ROI (this will become an array later)
-pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2);
+pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2,'hittest','off');
 
 % Reticle for gaussian fit (this will become an array later)
 pGaussRet=plot(0,0,'-','linewidth',1,'Visible','off','color',co(1,:),'hittest','off');
 % Color bar
 cBar=colorbar('fontsize',8,'units','pixels','location','northoutside');
 
-pPCA(1)=plot(0,0,'-','linewidth',1,'color','r');
-pPCA(2)=plot(0,0,'-','linewidth',1,'color','r');
+pPCA(1)=plot(0,0,'-','linewidth',1,'color','r','hittest','off');
+pPCA(2)=plot(0,0,'-','linewidth',1,'color','r','hittest','off');
 
 axImg.CLim=climtbl_X.Data;
 drawnow;
 
 % X Cut/Sum Axis
 hAxX=axes('box','on','linewidth',1,'fontsize',10,...
-    'XAxisLocation','Bottom','units','pixels','parent',tX);
+    'XAxisLocation','Bottom','units','pixels','parent',tabX);
 hAxX.Position=[axImg.Position(1) axImg.Position(2)-l axImg.Position(3) l];
 hold on
 % Add X data data and fit plots
@@ -2153,7 +2058,7 @@ pXF=plot(data.X,ones(length(data.X),1),'-','Visible','off','color',co(1,:),'line
 
 % Y Cut/Sum Axis
 hAxY=axes('box','on','linewidth',1,'fontsize',10,'units','pixels',...
-    'YAxisLocation','Right','YDir','normal','parent',tX);
+    'YAxisLocation','Right','YDir','normal','parent',tabX);
 hAxY.Position=[axImg.Position(1)+axImg.Position(3) axImg.Position(2) l axImg.Position(4)];
 hold on
 % Add Y data data and fit plots
@@ -2168,12 +2073,11 @@ linkaxes([axImg hAxX],'x');
 
 %% Histgoram
 
-ax_h1 = subplot(2,2,1,'parent',tHist);
+ax_h1 = subplot(2,2,1,'parent',tabH);
 pHist1 = bar(1:100,1:100,'parent',ax_h1,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
 hold on
-
 set(ax_h1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1',...
     'YAxisLocation','left');
@@ -2181,7 +2085,7 @@ ylim(ax_h1,'auto');
 text(.99,.99,'processed, linear scale','units','normalized','fontsize',10,...
     'verticalalignment','top','horizontalalignment','right');
 
-ax_h2 = subplot(2,2,2,'parent',tHist);
+ax_h2 = subplot(2,2,2,'parent',tabH);
 pHist2 = bar(1:100,1:100,'parent',ax_h2,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
@@ -2193,7 +2097,7 @@ ylim(ax_h2,'auto');
 text(.99,.99,'processed, log scale','units','normalized','fontsize',10,...
     'verticalalignment','top','horizontalalignment','right');
 
-ax_h3 = subplot(2,2,3,'parent',tHist);
+ax_h3 = subplot(2,2,3,'parent',tabH);
 pHist3 = bar(1:100,1:100,'parent',ax_h3,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
@@ -2205,7 +2109,7 @@ ylim(ax_h3,'auto');
 text(.99,.99,'no filtering, linear scale','units','normalized','fontsize',10,...
     'verticalalignment','top','horizontalalignment','right');
 
-ax_h4 = subplot(2,2,4,'parent',tHist);
+ax_h4 = subplot(2,2,4,'parent',tabH);
 pHist4 = bar(1:100,1:100,'parent',ax_h4,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/pixel');
@@ -2220,12 +2124,12 @@ text(.99,.99,'no filtering, log scale','units','normalized','fontsize',10,...
 %% Momentum Images
 
 % Initialize image axis
-axImg_K=axes('parent',tK);cla
+axImg_K=axes('parent',tabK);cla
 hImg_K=imagesc(data.X,data.Y,data.Z,'parent',axImg_K);
 set(axImg_K,'box','on','linewidth',.1,'fontsize',10,'units','pixels',...
     'XAxisLocation','top','colormap',colormap(cmap),'YDir','normal','UserData','K');
 hold on
-axImg_K.Position=[50 150 tX.Position(3)-200 tX.Position(4)-200];
+axImg_K.Position=[50 150 tabX.Position(3)-200 tabX.Position(4)-200];
 axis equal tight
 
 clear pKReticles
@@ -2255,20 +2159,14 @@ tTopLeftK=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight'
     'interpreter','latex',...
     'color','k','backgroundcolor',[1 1 1 .3],'Visible','off');
 
-
-% Box for ROI (this will become an array later)
-pROI_K=rectangle('position',[-.5 -.5 1 1],'edgecolor',co(1,:),'linewidth',2,'parent',axImg_K);
-
-% Color bar
+pROI_K=rectangle('position',[-.5 -.5 1 1],'edgecolor',co(1,:),'linewidth',2,'parent',axImg_K,'hittest','off');
 cBar_K=colorbar('fontsize',8,'units','pixels','location','northoutside');
-
-
 axImg_K.CLim=climtbl_K.Data;
 drawnow;
 
 % X Cut/Sum Axis
 hAxX_K=axes('box','on','linewidth',1,'fontsize',10,...
-    'XAxisLocation','Bottom','units','pixels','parent',tK);
+    'XAxisLocation','Bottom','units','pixels','parent',tabK);
 hAxX_K.Position=[axImg_K.Position(1) axImg_K.Position(2)-l axImg_K.Position(3) l];
 hold on
 % Add X data data and fit plots
@@ -2277,30 +2175,28 @@ pX_K=plot(data.X,ones(length(data.X),1),'k.-');
 
 % Y Cut/Sum Axis
 hAxY_K=axes('box','on','linewidth',1,'fontsize',10,'units','pixels',...
-    'YAxisLocation','Right','YDir','normal','parent',tK);
+    'YAxisLocation','Right','YDir','normal','parent',tabK);
 hAxY_K.Position=[axImg_K.Position(1)+axImg_K.Position(3) axImg_K.Position(2) l axImg_K.Position(4)];
 hold on
 % Add Y data data and fit plots
 pY_K=plot(ones(length(data.Y),1),data.Y,'k.-'); 
-
 set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 drawnow
 
+% Link Axes
 linkaxes([axImg_K hAxY_K],'y');
 linkaxes([axImg_K hAxX_K],'x');
-
 set(axImg_K,'XLim',tbl_dROI_K.Data(1:2),'YLim',tbl_dROI_K.Data(3:4));
 
 %% Binned Image
 
-% Initialize image axis
-axImg_B=axes('parent',tB);cla
+axImg_B=axes('parent',tabB);cla
 hImg_B=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_B);
 set(axImg_B,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
     'YAxisLocation','left');
 hold on
-cb_B = colorbar;
+colorbar;
 axis equal tight
 xlabel('lattice site (a_1)','fontsize',8);
 ylabel('lattice site (a_2)','fontsize',8);
@@ -2308,36 +2204,29 @@ caxis([0 1]);
 
 %% Binned Histgoram
 
-ax_hB1=subplot(2,1,1,'parent',tHistB);
+% Binned Histogram 1
+ax_hB1=subplot(2,1,1,'parent',tabHB);
 pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none');
-
-
-
 ylabel('occurences');
 xlabel('counts/site');
 hold on
-
-
 pKernelB1 = plot(1,1,'k-','parent',ax_hB1);
-
-
 set(ax_hB1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1');
 
-
-ax_hB2=subplot(2,1,2,'parent',tHistB);
+% Binned Histogram 2
+ax_hB2=subplot(2,1,2,'parent',tabHB);
 pHistB2 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none');
 ylabel('occurences');
 xlabel('counts/site');
 hold on
-
 set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H2');
 
 
 %% Digital Image
 
-axImg_D=axes('parent',tD);
+axImg_D=axes('parent',tabD);
 hImg_D=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_D);
 set(axImg_D,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
     'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
@@ -2360,14 +2249,10 @@ caxis([0 1]);
 %% Lattice Grid Callbacks
   function updateGridGraphics       
         imgnum = menuSelectImg.Value;
-
-        if ~isfield(data,'LatticeDig')
-           return 
-        end              
+        if ~isfield(data,'LatticeDig');return;end              
         
         n1i = min(data.LatticeDig(imgnum).n1);
-        n1f = max(data.LatticeDig(imgnum).n1);
-        
+        n1f = max(data.LatticeDig(imgnum).n1);        
         n2i = min(data.LatticeDig(imgnum).n2);
         n2f = max(data.LatticeDig(imgnum).n2);     
         
@@ -2380,26 +2265,20 @@ caxis([0 1]);
         tTopLeft.String = ['$\vec{a}_1 = (' num2str(round(a1(1),4)) ',' num2str(round(a1(2),4)) ')$' newline ...
             '$\vec{a}_2 = (' num2str(round(a2(1),4)) ',' num2str(round(a2(2),4)) ')$' newline ...
             '$\vec{a}_1\cdot\vec{a}_2 = a_1a_2\cos(' num2str(theta,4) '^\circ )$' newline ...
-            '$\phi = 2\pi\times (' num2str(round(p(1),3)) ',' num2str(round(p(2),3)) ')$']; 
-        
-        dr1 = a2*(n2i-1);
-        dr2 = a2*(n2f+1);
-        dr3 = a1*(n1i-1);
-        dr4 = a1*(n1f+1);
-             
+            '$\phi = 2\pi\times (' num2str(round(p(1),3)) ',' num2str(round(p(2),3)) ')$'];            
         
         % n1 Grid
         rVec = a1*([n1i:n1f]+p(1)+0.5); % All lattice sites 1        
-        R1 = rVec + dr1;
-        R2 = rVec + dr2;
+        R1 = rVec + a2*(n2i-1);
+        R2 = rVec + a2*(n2f+1);
         Q = nan(1,size(rVec,2));        
         X1 = [R1(1,:); R2(1,:); Q];X1=X1(:);
         Y1 = [R1(2,:); R2(2,:); Q];Y1=Y1(:);
 
         % n2 Grid
         rVec = a2*([n2i:n2f]+p(2)+0.5); % All lattice sites 1        
-        R1 = rVec + dr3;
-        R2 = rVec + dr4;
+        R1 = rVec + a1*(n1i-1);
+        R2 = rVec + a1*(n1f+1);
         Q = nan(1,size(rVec,2));        
         X2 = [R1(1,:); R2(1,:); Q];X2=X2(:);
         Y2 = [R1(2,:); R2(2,:); Q];Y2=Y2(:);
@@ -2431,18 +2310,18 @@ caxis([0 1]);
 %% Position Callbacks
 
     function updatePositionGraphics
-        set(hImg,'XData',data.X,'YData',data.Y,'CData'...
-            ,data.Z(:,:,menuSelectImg.Value));            
+      
+        
+        updateDispPosImg;
+        
         if cAutoColor_X.Value;setClim('X');end                
         cCrossCB(cCross_X);
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
         updateCoM;
-        cCoMCB(cCoMStr_X);
-        
-        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
-        
+        cCoMCB(cCoMStr_X);        
+        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);        
     end
 
     function updateCoM
@@ -2459,7 +2338,6 @@ caxis([0 1]);
             num2str(round(bc.Yc,1)) ')$' newline ...
             '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs,1)) ',' ...
             num2str(round(bc.Ys,1)) ')$']; 
-
         %Update box count string object
         set(tCoMAnalysis,'String',str);          
     end
@@ -2476,8 +2354,7 @@ caxis([0 1]);
         Histogram.Edges = edges;
         Histogram.Centers = centers;
         Histogram.N = N;  
-        data.Histogram(1) = Histogram;      
-        
+        data.Histogram(1) = Histogram;              
         xe = data.Histogram(1).Edges;
         
         for kk=2:size(data.Z,3)            
@@ -2514,9 +2391,7 @@ caxis([0 1]);
         set(pHist3,'XData',data.HistogramNoFilter(imgnum).Centers,...
             'YData',data.HistogramNoFilter(imgnum).N);     
         set(pHist4,'XData',data.HistogramNoFilter(imgnum).Centers,...
-            'YData',data.HistogramNoFilter(imgnum).N);      
-        
-        
+            'YData',data.HistogramNoFilter(imgnum).N);   
     end
 
 
@@ -2631,10 +2506,6 @@ caxis([0 1]);
             pKPSF.Visible='off';
         end 
     end
-
-
-
-
 %% Binned Callbacks
     function updateBinnedGraphics
         if ~isfield(data,'LatticeDig')
@@ -2666,16 +2537,12 @@ caxis([0 1]);
         
         x = data.LatticeHistogram(imgnum).Centers;
         xe = data.LatticeHistogram(imgnum).Edges;
-        y = data.LatticeHistogram(imgnum).N;
-        
-        Nthresh = histBtbl.Data(1,1);       
-        
-        
+        y = data.LatticeHistogram(imgnum).N;        
+        Nthresh = histBtbl.Data(1,1);              
         
         set(pHistB1,'XData',x,'YData',y);
         set(pHistB2,'XData',x,'YData',y);
-        set(ax_hB2,'XLim',[Nthresh max(xe)]);  
-        
+        set(ax_hB2,'XLim',[Nthresh max(xe)]);          
         
         zall = data.LatticeDig(imgnum).Zbin(:);
         zall(isnan(zall))=[];
@@ -2684,9 +2551,7 @@ caxis([0 1]);
         y2 = data.LatticeHistogramKernel(imgnum).f;        
         y2 = y2/sum(sum(y2));
         y2 = y2*n*length(x2)/length(x);    
-        set(pKernelB1,'XData',x2,'YData',y2);     
-        
-
+        set(pKernelB1,'XData',x2,'YData',y2);           
     end
 
     function updateBinnedHistogram
@@ -2720,8 +2585,7 @@ caxis([0 1]);
         for kk=2:length(data.LatticeDig)
             Zall = data.LatticeDig(kk).Zbin;
             Zall = Zall(:);
-%                     Zall(Zall==0)=[];
-
+%           Zall(Zall==0)=[];
             
             [f,xi,bw]=ksdensity(Zall(:));
             [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);     
@@ -2799,7 +2663,8 @@ function updateImages
     
     
     % Update X, Y, and Z objects
-    set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,1));
+%     set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,1));
+    updateDispPosImg;
     
     if cAutoColor_X.Value
 %        autoClim; 
@@ -3111,24 +2976,6 @@ function data=updateAnalysis(data)
 end
 
 %% OTHER HELPER FUNCTIONS
-    function imgs=grabRawImages
-        % How many images to grab
-        [ret,first,last] = GetNumberNewImages;    
-        numpix=512^2;
-        % Grab the data (number just sets buffer size)
-        [ret,D] = GetAcquiredData(last*512^2);    
-
-        imgs={};
-        imgmats=zeros(512,512,last);
-
-        for j = 1:last % break up into individual images
-            ii=double(D((1+(j-1)*numpix):(j*numpix)));
-            imgs{j} = reshape(ii,512,512);
-            imgmats(:,:,j)=imgs{j};
-        end 
-
-        imgs=imgmats;  
-    end
 
     function mydata=makeImgDataStruct(imgs)
         mydata=struct;
@@ -3144,7 +2991,7 @@ end
         mydata.Magnification=mag;        
         
         % Grab the sequence parameters and flags   
-        [mydata.Params,mydata.Units,mydata.Flags]=grabSequenceParams2;      
+        [mydata.Params,mydata.Units,mydata.Flags]=ixon_grabSequenceParams;      
         
         imgs = mydata.RawImages;  
         
@@ -3191,10 +3038,7 @@ end
         disp(' done'); 
     end
 
-    function updateHistoryInd(data)          
-        % Update image string
-
-
+    function updateHistoryInd(data)       
         % Upate history list
         filenames=dir([currDir  filesep '*.mat']);
         filenames={filenames.name};       
@@ -3224,6 +3068,7 @@ drawnow;
 SizeChangedFcn
 axes(axImg);
 
+updateCMAP(menuSelectCMAP);
 
 addlistener(axImg,'XLim','PostSet',@foo); 
 addlistener(axImg,'YLim','PostSet',@foo); 
@@ -3284,12 +3129,9 @@ enableDefaultInteractivity(axImg_B);
 
 end
  
-
-
-%% Camera Functions
-
+    
 % Connect to the Andor iXon Ultra
-function out=connectCam
+function out=ixon_connectCam
     out =0;
     disp('Connecting camera');
     
@@ -3319,211 +3161,3 @@ function out=connectCam
         out=0;
     end
 end
-
-% Disconnect from the Andor iXon Ultra
-function out=disconnectCam
-    disp('Disconnecting from the iXon camera.');
-    
-    % Close the shutter
-    fprintf('Closing the shutter ... ');
-    [ret]=SetShutter(1,2,0,0);  
-    disp(error_code(ret));
-    
-    % Shut down cooler
-      fprintf('Turning off cooler ... ');
-      [ret]=SetCoolerMode(1);     
-      disp(error_code(ret));
-
-    % Shut down the camera
-    fprintf('Shutting down camera ... ');
-    [ret]=AndorShutDown;        
-    disp(error_code(ret))
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to shut down the iXon camera.');
-        out=0;
-    end
-end
-
-% Set the temperature setpoint
-function out=setTemperature(temp)
-    fprintf(['Changing temperature set point to ' num2str(temp) ' C ...']);
-    ret=SetTemperature(temp);
-    disp(error_code(ret))
-    
-    if isequal(error_code(ret),'DRV_SUCCESS') 
-        out=1;
-    else
-        warning('Unable to change iXon temperature set point.');
-        out=0;
-    end
-end
-
-% Get the temperature
-function [out,temp,outstr]=getTemperature
-    [ret,temp]=GetTemperature;
-    out=1;
-    outstr=error_code(ret);
-end
-
-% Get the camera status
-function [out,outstr]=getCameraStatus
-    out=0;
-    [ret,outstr]=AndorGetStatus;
-    outstr=error_code(outstr);
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to read iXon status.');
-        out=0;
-    end
-end
-
-% Get Detector
-function [out,xpx,ypx]=GetDetectorInfo    
-    [ret,xpx,ypx]=GetDetector;
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to get detector informaton.');
-        out=0;
-    end
-end
-
-% Engage/Disengage TEC
-function out=coolCamera(state)
-    if state
-        fprintf('Engaging TEC to cool sensor ... ');
-        ret=CoolerON;
-    else
-        fprintf('Disengaging TEC to cool sensor ... ');
-        ret=CoolerOFF;
-    end    
-    disp(error_code(ret));
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to read iXon temperature.');
-        out=0;
-    end
-end
-
-% Get Timing
-function out=getAcquisitionTimings    
-    [ret,texp,taccum,tkin] = GetAcquisitionTimings;
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out = [texp taccum tkin];
-    else
-        warning('Unable to read iXon timing.');
-    end
-end
-
-% Set the camera shutter
-function out=setCameraShutter(state)
-    typ=1; % HIGH TO OPEN
-    
-    % shutter_mode : 0: Auto, 1:Open ,2:Close    
-    if state
-        fprintf('Opening shutter ... ');
-        shutter_mode=1;
-    else
-        fprintf('Closing shutter ... ');
-        shutter_mode=2;
-    end    
-    
-    ret=SetShutter(typ,shutter_mode,0,0);
-    
-    disp(error_code(ret));
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to set iXon shutter.');
-        out=0;
-    end
-end
-
-% Start Acquisition
-function out=startCamera
-    fprintf('Starting acquisition ... ');
-    [ret]=StartAcquisition;
-    disp(error_code(ret));
-    
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to start acquisition.');
-        out=0;
-    end
-end
-
-% Stop Acquisition
-function out=stopCamera
-    fprintf('Stopping acquisition ... ');
-    [ret]=AbortAcquisition;
-    disp(error_code(ret));
-    
-    switch error_code(ret)
-        case 'DRV_SUCCESS'
-            out=1;
-        case 'DRV_IDLE'
-            out=1;
-            disp('Camera acquisition not running.');
-        otherwise
-            warning('Error stopping acquisition.');
-            out=0;
-    end   
-
-end
-
-% Software Trigger
-function out=softwareTrigger
-    fprintf('Sending software trigger ... ');
-    [ret]=SendSoftwareTrigger;
-    disp(error_code(ret));
-    if isequal(error_code(ret),'DRV_SUCCESS')
-        out=1;
-    else
-        warning('Unable to send software trigger.');
-        out=0;
-    end
-end
-
-
-%% HELPER
-function s3=getDayDir
-    t=now;
-    
-    d=['X:\Data'];
-
-    if ~exist(d,'dir')
-        s3=pwd;
-        return;
-    end
-    s1=datestr(t,'yyyy');s2=datestr(t,'yyyy.mm');s3=datestr(t,'mm.dd');
-    s1=[d filesep s1];s2=[s1 filesep s2];s3=[s2 filesep s3];
-
-    if ~exist(s1,'dir'); mkdir(s1); end
-    if ~exist(s2,'dir'); mkdir(s2); end
-    if ~exist(s3,'dir'); mkdir(s3); end
-end
-
-function [vals,units,flags]=grabSequenceParams2(src)
-    if nargin~=1
-        src='Y:\_communication\control2.mat';
-    end    
-    data=load(src);    
-    disp(['Opening information from from ' src]);
-    vals=data.vals;
-    units=data.units;   
-    flags=data.flags;
-end
-
-
-
