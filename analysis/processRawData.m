@@ -27,7 +27,8 @@ if nargin == 1
 end
 
 if ~isfield(opts,'doRotate'); opts.doRotate = 1;end
-    
+        opts.doScale=1;
+    opts.ScaleFactor = 2;
 
 for kk=1:length(data)
 
@@ -59,8 +60,7 @@ for kk=1:length(data)
     data(kk).Zraw = data(kk).Z;
     
     %% Scale Image
-    opts.doScale=1;
-    opts.ScaleFactor = 2;
+
     if isfield(opts,'doScale') && opts.doScale 
        data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor)/(opts.ScaleFactor)^2;
     end
