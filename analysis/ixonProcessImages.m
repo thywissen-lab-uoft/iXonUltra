@@ -104,8 +104,10 @@ for kk=1:length(data)
         data(kk).ZfPhase = zeros(Nfft,Nfft,size(data(kk).Z,3));
         for ii=1:size(data(kk).Z,3)
             zf = fft2(data(kk).Z(:,:,ii),Nfft,Nfft);
-            zf = fftshift(zf);        
-            data(kk).f = 1/2*linspace(-1,1,size(zf,1));       
+            zf = fftshift(zf);                    
+            dX = data(kk).X(2)-data(kk).X(1);
+            f_max = 1/dX;
+            data(kk).f = 1/2*linspace(-f_max,f_max,size(zf,1));              
             data(kk).Zf(:,:,ii) = zf;
             data(kk).ZfNorm(:,:,ii) = abs(zf);
             data(kk).ZfPhase(:,:,ii) = angle(zf);
@@ -136,6 +138,8 @@ for kk=1:length(data)
     t2 = now;
     disp(['done (' num2str(round((t2-t1)*24*60*60,2)) ' s)']);         
     data(kk).ProcessOptions = opts;
+%         data(kk).X = 1:size(data(kk).Z,2);
+%     data(kk).Y = 1:size(data(kk).Z,1); 
 end
 
 end

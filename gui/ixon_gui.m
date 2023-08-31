@@ -1282,7 +1282,7 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
                     p1 = tblBasis.Data(1,3);
                     p2 = tblBasis.data(2,3);
             end
-            opts.ScaleFactor = 5;    
+            opts.ScaleFactor = 4;    
             opts.a1 = a1;
             opts.a2 = a2;
             opts.p1 = p1;
@@ -1291,10 +1291,14 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             opts.UsePixelThreshold = 1;
             opts.DigitizationThreshold = tblDig.Data;            
             ROI=tblROI.Data;
-            data.ROI=ROI;                   
-            x = ROI(1):ROI(2);
-            y = ROI(3):ROI(4);      
-            z = data.Z(y,x,kk);                   
+            data.ROI=ROI;               
+            ix_1 = find(data.X>=ROI(1),1);
+            ix_2 = find(data.X>=ROI(2),1);
+            iy_1 = find(data.Y>=ROI(3),1);
+            iy_2 = find(data.Y>=ROI(4),1);
+            x = data.X(ix_1:ix_2);
+            y = data.Y(iy_1:iy_2);   
+            z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);    
             tic;
             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
                 ') binning into lattice ...']);    
