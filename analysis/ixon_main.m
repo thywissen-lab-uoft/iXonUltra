@@ -1,9 +1,5 @@
 % ixonAnalysis.m
-%
 % Author : CF Fujiwara
-%
-% This script is the primary analysis file for the iXon MATLAB code. It
-% calls and plots all other analyses.
 
 % Display this filename
 disp(repmat('-',1,60));disp(repmat('-',1,60));    
@@ -68,20 +64,18 @@ end
 % display properties.
 
 % Choose what kind of variable to plot against (sequencer/camera)
-varType             ='param'; % always select 'param' for now 
+varType             = 'param'; % always select 'param' for now 
 ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'qgm_raman_2photon_detuning'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
-ixon_doSave         =   0;    % Save Analysis?
-
+ixon_doSave         = 1;    % Save Analysis?
 outdata=struct;
 
 %% Analysis Options
 % Select what kinds of analyses you'd like to perform
 
-doRawImageHistogram=0;
-doDarkImageAnalysis = 1;
+doRawImageHistogram=1;
 ixon_doBoxCount=1;
 ixon_doGaussFit=0;
 
@@ -113,8 +107,8 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 0;        % Deconolve with PSF
-img_opt.PSF                 = [1.3 50 5]; % PSF parameters [sigma, N, Niter]
+img_opt.doPSF               = 1;        % Deconolve with PSF
+img_opt.PSF                 = [1.3163 50 12]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
 img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
@@ -131,9 +125,7 @@ for kk=1:length(files)
     str=fullfile(ixon_imgdir,files{kk});
     [a,b,c]=fileparts(str);      
     disp(['     (' num2str(kk) ')' files{kk}]);    
-    data=load(str);     
-    data=data.data;  
-    % Display image properties
+    data=load(str);data=data.data;  
     try
         disp(['     Image Name     : ' data.Name]);
         disp(['     Execution Time : ' datestr(data.Date)]);
@@ -155,20 +147,15 @@ ixondata = ixon_matchParamsFlags(ixondata);
 % If auto unit and variable are chosen, search through the parameters and
 % data to find which variable(s) are being changed.
 
-% Also, sort the data by that chosen variable.
-
 if ixon_autoXVar
     xVars = ixon_findXVars(ixondata);
     disp([' Found ' num2str(length(xVars)) ...
         ' valid variables that are changing to plot against.']);
-    disp(xVars);
-    
+    disp(xVars);    
     % Select the first variable that is changed
     ind = 1;    
-    ixon_xVar = xVars{ind};
-    
-    disp([' Setting ' ixon_xVar ' to be the x-variable']);
-    
+    ixon_xVar = xVars{ind};    
+    disp([' Setting ' ixon_xVar ' to be the x-variable']);    
     for kk=1:length(ixondata)
         disp([' (' num2str(kk) ') (' num2str(ixondata(kk).Params.(ixon_xVar)) ') ' ...
             ixondata(kk).Name]); 
@@ -219,20 +206,15 @@ outdata.Params=ixondata.Params;
 % perform analysis on.
 
 % Full ROI
-ixonROI = [1 512 1 512]; 
-
+ixonROI = [1 1023 1 1023]; 
 [ixondata.ROI]=deal(ixonROI);
 
-%% Image Processing : Bias, Mask, and Filtering
-
-ixondata = processRawData(ixondata);
-
-
+%% Process the Raw Data
+ixondata = processRawData(ixondata,img_opt);
 
 %% Basic Raw Image Analysis
 
 if doRawImageHistogram   
-
     % Do basic analysis on raw counts
     ixondata=ixon_computeRawCounts(ixondata);
 
@@ -247,66 +229,26 @@ if doRawImageHistogram
     hist_opts.ImageNumber=1;    % Which image to histogram (overwritten)
     hist_opts.YScale='Log';     % Histogram y scale
     % hist_opts.YScale='Linear';
-
     for kk=1:size(ixondata(1).RawImages,3)
         hist_opts.ImageNumber=kk;
         hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,ixon_xVar,hist_opts);
         if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawhist,['ixon_raw_hist' num2str(kk)]);end
     end
-
     % Plot raw count total
     raw_opts=struct;   
-    raw_opts.xUnit=ixon_unit;
-    
+    raw_opts.xUnit=ixon_unit;    
     % Define the variable and units    
-    raw_opts.FitLinear=0;
-    
+    raw_opts.FitLinear=0;    
     hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,ixon_xVar,raw_opts);
-
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
-
 end
-
-%% Calculate FFT
-% 
-% fft_opts=struct;
-% fft_opts.doSmooth=1;
-% fft_opts.smoothRadius=1;
-% fft_opts.fft_N=2^11; % Can go higher for smoother data
-% 
-% fft_opts.maskIR=0;
-% fft_opts.maskUV=0;
-% fft_opts.LMax=50;
-% fft_opts.LMin=5;
-% 
-% 
-% if ixon_doFFT
-%     ixondata=ixon_computeFFT(ixondata,fft_opts);
-% end
-% 
-% % Apply makss to FFT Data
-% ixon_mask_IR=1;
-% ixon_mask_UV=0;
-% 
-% 
-% if fft_opts.maskIR
-%     ixondata=ixon_fft_maskIR(ixondata,fft_opts.LMax);    
-% end
-% 
-% if fft_opts.maskUV
-%     ixondata=ixon_fft_maskUV(ixondata,fft_opts.LMin);    
-% end
-
 %% ANALYSIS : FFT BOX COUNT
-
-
-if ixon_fft_doBoxCount && ixon_doFFT
-    
-fft_boxOpts=struct;
-fft_boxOpts.maskIR=fft_opts.maskIR;
-fft_boxOpts.LMax=fft_opts.LMax;
-fft_boxOpts.maskUV=fft_opts.maskUV;
-fft_boxOpts.LMin=fft_opts.LMin;
+if ixon_fft_doBoxCount && ixon_doFFT    
+    fft_boxOpts=struct;
+    fft_boxOpts.maskIR=fft_opts.maskIR;
+    fft_boxOpts.LMax=fft_opts.LMax;
+    fft_boxOpts.maskUV=fft_opts.maskUV;
+    fft_boxOpts.LMin=fft_opts.LMin;
     ixondata=ixon_fft_boxCount(ixondata,fft_boxOpts);
 end
 
@@ -315,20 +257,16 @@ end
 ixon_fft_boxPopts=struct;
 ixon_fft_boxPopts.xUnit=ixon_unit;
 
-if ixon_fft_doBoxCount  && ixon_doFFT
- 
+if ixon_fft_doBoxCount  && ixon_doFFT 
     % Plot the second moments
     hF_ixon_size=ixon_fft_showBoxMoments(ixondata,ixon_xVar,ixon_fft_boxPopts);   
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_fft_box_size');end     
-     
 end
 
 %% ANALYSIS : BOX COUNT
-
 if ixon_doBoxCount
     ixondata=ixon_boxCount(ixondata);
 end
-
 %% PLOTTING : BOX COUNT
 
 ixon_boxPopts=struct;
@@ -343,7 +281,7 @@ ixon_boxPopts.NumberExp2SumFit = 0;
 ixon_boxPopts.NumberLorentzianFit=0;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
 ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
 
 if ixon_doBoxCount  
