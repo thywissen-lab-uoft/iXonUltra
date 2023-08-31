@@ -53,7 +53,7 @@ ixon_autoXVar = 1;
 ixon_autoUnit=1;
 
 % The variable to plot against
-ixon_xVar='qgm_raman_2photon_detuning';
+ixon_xVar='ExecutionDate';
 
 % If ixon_autoUnit=0, this will be used.
 ixon_overrideUnit='V';
@@ -74,7 +74,7 @@ doDarkImageAnalysis = 1;
 
 ixon_doBoxCount=1;
 
-ixon_doGaussFit=1;
+ixon_doGaussFit=0;
 
 % Fast Fourier Transform Analysis
 % Use if you are looking for astigmatism in the image
@@ -249,6 +249,12 @@ end
 %% Assign Params to outdata
 outdata.Params=ixondata.Params;
 
+
+if doSave
+    Params =[ixondata.Params];
+    filename=fullfile(ixon_imgdir,'figures','Params.mat');
+    save(filename,'Params');
+end
 %% Analysis ROI
 % Analysis ROI is an Nx4 matrix of [X1 X2 Y1 Y2] which specifies a region
 % to analyze. Each new row in the matrix indicates a separate ROI to
@@ -400,6 +406,28 @@ if ixon_doBoxCount
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end 
 
     outdata.Ndatabox=Ndatabox;
+    outdata.Xcbox = Xc;
+    outdata.Ycbox = Yc;
+    
+    if ixon_doSave
+        BC = [ixondata.BoxCount];
+        P = [ixondata.Params];
+        BoxData_SourceFiles = {P.ExecutionDateStr};
+        BoxData_xVarName = ixon_xVar;
+        BoxData_xVarUnit = ixon_unit;
+        BoxData_xVar = [P.(ixon_xVar)];
+        BoxData_N = [BC.Ncounts];
+        BoxData_Xc = [BC.Xc];
+        BoxData_Yc = [BC.Yc];
+        BoxData_Xs = [BC.Xs];
+        BoxData_Ys = [BC.Ys];
+
+        filename=fullfile(ixon_imgdir,'figures','BoxData.mat');
+        save(filename,'BoxData_SourceFiles','BoxData_xVarName','BoxData_xVarUnit',...
+            'BoxData_xVar','BoxData_N','BoxData_Xc','BoxData_Yc',...
+            'BoxData_Xs','BoxData_Ys');
+    end
+    
 end
 
 %% ANALYSIS : 2D Gaussian
@@ -500,7 +528,7 @@ if ixon_doAnimate == 1 && ixon_doSave
          ixon_animateOpts.CLim=[0 300];   % Color limits
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-       ixon_animateOpts.CLim=[0 3000];   % Color limits
+       ixon_animateOpts.CLim=[0 1000];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end

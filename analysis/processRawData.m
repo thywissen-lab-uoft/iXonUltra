@@ -15,9 +15,11 @@ if nargin == 1
     opts.Mask               = ones(512,512);
     opts.doPSF              = 0;    
     opts.PSF                = [1.3 50 5];    
-    opts.doRotate           = 0;
-    opts.Theta              = 0;
-        
+    opts.doRotate           = 1;
+    opts.Theta              = 60.2077;
+%     opts.Theta              = 40.95;
+%opts.Theta =0;
+
     % Momentum Space
     opts.doFFT              = 1;
     opts.doMaskIR           = 1;
