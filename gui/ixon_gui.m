@@ -2632,7 +2632,7 @@ function updateImages
     opt.doFFTFilter        = cKGaussFilter.Value;
     opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
-    data = processRawData(data,opt);   
+    data = ixonProcessImages(data,opt);   
     
     updateImageLists;        
 

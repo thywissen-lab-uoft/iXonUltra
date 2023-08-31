@@ -1,4 +1,4 @@
-function [data] = processRawData(data,opts)
+function [data] = ixonProcessImages(data,opts)
 
 % This function takes the raw images and does processing on them.
 

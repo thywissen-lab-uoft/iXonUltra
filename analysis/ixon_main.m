@@ -210,7 +210,7 @@ ixonROI = [1 1023 1 1023];
 [ixondata.ROI]=deal(ixonROI);
 
 %% Process the Raw Data
-ixondata = processRawData(ixondata,img_opt);
+ixondata = ixonProcessImages(ixondata,img_opt);
 
 %% Basic Raw Image Analysis
 
