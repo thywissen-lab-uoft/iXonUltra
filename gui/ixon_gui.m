@@ -1287,9 +1287,7 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             opts.a2 = a2;
             opts.p1 = p1;
             opts.p2 = p2;
-            opts.PixelThreshold = tblDigPixel.Data;
-            opts.UsePixelThreshold = 1;
-            opts.DigitizationThreshold = tblDig.Data;            
+       
             
             if isfield(data,'RotationMask')
                opts.Mask =  data.RotationMask;
@@ -1312,8 +1310,8 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
         end        
-        
-        data = ixon_digitalBoxCount(data);
+        data = ixon_digitize(data,tblDig.Data);
+
         updateBinnedHistogram;
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;                 
@@ -2600,10 +2598,9 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             'YData',data.LatticeBin(imgnum).n2,...
             'CData',data.LatticeBin(imgnum).Zbin);
         
-        set(hImg_D,'XData',data.LatticeBin(imgnum).n1,...
-            'YData',data.LatticeBin(imgnum).n2,...
-            'CData',data.LatticeBin(imgnum).Zdig);
-        
+        set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
+            'YData',data.LatticeDig(imgnum).n2,...
+            'CData',data.LatticeDig(imgnum).Zdig);        
         
         updateCoM_D;
         

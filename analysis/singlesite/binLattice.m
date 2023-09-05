@@ -116,14 +116,14 @@ out.n2 = n2;
 out.Zbin = Zbin;
 out.Xn = Xn;
 out.Yn = Yn;
-
-if isfield(opts, 'DigitizationThreshold')
-    
-   out.Zdig = Zbin>=opts.DigitizationThreshold; 
-   
-  
-
-end
+% 
+% if isfield(opts, 'DigitizationThreshold')
+%     
+%    out.Zdig = Zbin>=opts.DigitizationThreshold; 
+%    
+%   
+% 
+% end
 
 %% Digital Box Count
 

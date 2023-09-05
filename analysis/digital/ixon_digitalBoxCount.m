@@ -4,12 +4,13 @@ function ixondata = ixon_digitalBoxCount(ixondata)
 %     data.LatticeDig(kk) = ixon_digitalBoxCount(data.LatticeDig(kk));
 
     for kk=1:length(ixondata)
-        LatticeDig = ixondata(kk).LatticeDig;
-        for k=1:length(LatticeDig)
-            Zdig = LatticeDig(k).Zdig;      
+        LatticeBin = ixondata(kk).LatticeDig;
+        LatticeDig = struct;
+        for k=1:length(LatticeBin)
+            Zdig = LatticeBin(k).Zdig;      
             
-            x = LatticeDig(k).n1;
-            y = LatticeDig(k).n2;
+            x = LatticeBin(k).n1;
+            y = LatticeBin(k).n2;
             
             Natoms = sum(sum(Zdig));        % Total number of atoms
             Nsites = length(Zdig(:));       % Total number of sites        
