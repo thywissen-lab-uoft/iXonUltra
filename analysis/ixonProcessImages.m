@@ -52,6 +52,15 @@ for kk=1:length(data)
     end  
 %% Raw Data
     data(kk).Zraw = data(kk).Z;    
+    
+%% Image Mask
+if opts.doMask
+    fprintf('masking ...');
+    for ii=1:size(data(kk).Z,3)  
+        data(kk).Z(:,:,ii) = data(kk).Z(:,:,ii).*opts.Mask;        
+    end
+end
+    
 %% Scale Image
     if isfield(opts,'doScale') && opts.doScale         
        data(kk).X = linspace(1,length(data(kk).X),length(data(kk).X)*opts.ScaleFactor);
@@ -63,16 +72,12 @@ for kk=1:length(data)
         theta = opts.Theta;
         fprintf([' rotating (' num2str(theta) ' deg)...']);
         data(kk).Z = imrotate(data(kk).Z,theta,'bicubic','crop');
+        data(kk).RotationMask = imrotate(ones(size(data(kk).Z,1),size(data(kk).Z,1)),theta,'bicubic','crop');
+        data(kk).RotationMask = logical(round(data(kk).RotationMask));
     end           
 %% No Filter
     data(kk).ZNoFilter = data(kk).Z; 
-%% Image Mask
-    if opts.doMask
-        fprintf('masking ...');
-        for ii=1:size(data(kk).Z,3)  
-            data(kk).Z(:,:,ii) = data(kk).Z(:,:,ii).*opts.Mask;        
-        end
-    end
+
 %% Gaussian Fitler
     if opts.doGaussFilter  
         fprintf('smooth position ...');
