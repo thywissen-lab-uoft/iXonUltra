@@ -2538,7 +2538,6 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
            tTopLeftK.Visible='on';
         else
            tTopLeftK.Visible='off';
-
         end
     end
 
@@ -2600,12 +2599,9 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         
         set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
             'YData',data.LatticeDig(imgnum).n2,...
-            'CData',data.LatticeDig(imgnum).Zdig);        
-        
-        updateCoM_D;
-        
-        if cAutoColor_B.Value;setClim('B');end                
-
+            'CData',data.LatticeDig(imgnum).Zdig);                
+        updateCoM_D;        
+        if cAutoColor_B.Value;setClim('B');end          
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
