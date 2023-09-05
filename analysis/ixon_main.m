@@ -250,7 +250,7 @@ end
 outdata.Params=ixondata.Params;
 
 
-if doSave
+if ixon_doSave
     Params =[ixondata.Params];
     filename=fullfile(ixon_imgdir,'figures','Params.mat');
     save(filename,'Params');
@@ -260,7 +260,7 @@ end
 % to analyze. Each new row in the matrix indicates a separate ROI to
 % perform analysis on.
 
-% Full ROI
+% Full ROI 
 ixonROI = [1 1024 1 1024]; 
 
 [ixondata.ROI]=deal(ixonROI);
@@ -385,7 +385,8 @@ ixon_boxPopts.NumberExp2SumFit = 0;
 ixon_boxPopts.NumberLorentzianFit=0;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_boxPopts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterGrowSineFit = 1;  % Fit decaying sine to cloud center
 ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
 
 if ixon_doBoxCount  
