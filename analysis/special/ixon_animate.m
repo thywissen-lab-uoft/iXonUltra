@@ -85,8 +85,8 @@ filename=fullfile(figDir,[filename '.gif']);
 
 % grab initial data
 Z=ixondata(1).Z;
-Y=1:size(Z,1);
-X=1:size(Z,2);
+Y=ixondata(1).Y;
+X=ixondata(1).X;
 
 
 hF=figure('Name',[str ' : Ixon Animate'],...
