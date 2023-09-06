@@ -163,7 +163,6 @@ if doFit
     drawnow;
 end
 %% Fits
-
 if isequal(opts.CenterDecaySineFit,1) && length(xvals)>4
     tVec=linspace(min(xvals),max(xvals),100);    
     
@@ -441,7 +440,7 @@ iHigh=find((Y-gD)/gA>.8,1);
 iLow=find((Y-gD)/gA<-.8,1);
 gB=abs(X(iHigh)-X(iLow))*2.2;
 
-gB=30;
+gB=8;
 
 minValues=X(Y==min(Y));
 maxValues=X(Y==max(Y));

@@ -18,10 +18,10 @@ for kk=1:length(ixondata)
    for nn=1:length(ixondata(kk).GaussFit)
         fout=ixondata(kk).GaussFit{nn};             % Grab the fit
         Xc(kk,nn)=fout.Xc;Yc(kk,nn)=fout.Yc;        % X and Y center
-        s1(kk,nn)=fout.s1;s2(kk,nn)=fout.s2;        % X and Y sigma   
+        Xs(kk,nn)=fout.Xs;Ys(kk,nn)=fout.Ys;        % X and Y sigma   
         A(kk,nn)=fout.A;                            % Amplitude
         nbg(kk,nn)=fout.nbg;                        % Background
-        N(kk,nn)=2*pi*s1(kk,nn)*s2(kk,nn)*A(kk,nn); % Number of counts
+        N(kk,nn)=2*pi*Xs(kk,nn)*Ys(kk,nn)*A(kk,nn); % Number of counts
         
         if ismember('theta',coeffnames(fout))   
             theta(kk,nn)=fout.theta;        
@@ -41,9 +41,9 @@ Y_scale = (ixondata(1).CameraInformation.PixelSize(1))/...
 %% out data
 
 out=struct;
-out.s1=s1;
-out.s2=s2;
-out.s1s2=s1./s2;
+out.s1=Xs;
+out.s2=Ys;
+out.s1s2=Xs./Ys;
 
 %% Make Figure
 

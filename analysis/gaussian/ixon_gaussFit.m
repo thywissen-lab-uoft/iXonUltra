@@ -23,12 +23,14 @@ for n=1:length(ixondata)
     fprintf([num2str(n) ' of ' num2str(length(ixondata)) ' :']);
 
     for k=1:size(ixondata(n).ROI,1)
-        ROI=ixondata(n).ROI(k,:);
-
-        % Acquire the data
-        X=double(ixondata(n).X(ROI(1):ROI(2)));
-        Y=double(ixondata(n).Y(ROI(3):ROI(4)));
-        Z=double(ixondata(n).Z(ROI(3):ROI(4),ROI(1):ROI(2)));       
+        ROI=ixondata(n).ROI(k,:);       
+        ix_1 = find(ixondata(n).X>=ROI(1),1);
+        ix_2 = find(ixondata(n).X>=ROI(2),1);
+        iy_1 = find(ixondata(n).Y>=ROI(3),1);
+        iy_2 = find(ixondata(n).Y>=ROI(4),1);            
+        X = ixondata(n).X(ix_1:ix_2);
+        Y = ixondata(n).Y(iy_1:iy_2);   
+        Z = ixondata(n).Z(iy_1:iy_2,ix_1:ix_2,k);         
 
         % Rescale images for fitting speed
         if opts.doRescale
@@ -87,15 +89,15 @@ for n=1:length(ixondata)
                 (1/(2*s1^2))*(xx-Xc).^2 + ...     
                  (1/(2*s2^2))*(yy-Yc).^2))+nbg;        
 
-            myfit=fittype(@(A,Xc,Yc,s1,s2,nbg,xx,yy) gaussme(A,Xc,Yc,s1,s2,nbg,xx,yy),...
-                'independent',{'xx','yy'},'coefficients',{'A','Xc','Yc','s1','s2','nbg'});
+            myfit=fittype(@(A,Xc,Yc,Xs,Ys,nbg,xx,yy) gaussme(A,Xc,Yc,Xs,Ys,nbg,xx,yy),...
+                'independent',{'xx','yy'},'coefficients',{'A','Xc','Yc','Xs','Ys','nbg'});
             opt=fitoptions(myfit);
             opt.StartPoint=[A Xc Yc s1 s2 nbg];
 %             opt.Upper=[A*1.3 Xc+50 Yc+50 s1*2.5 s2*1.5 inf];
 %             opt.Lower=[A*0.1 Xc-50 Yc-50 s1*.1 s2*.5 -500];   
             
             % Display initial guess            
-            gStr=[' guess (Xc,Yc,s1,s2,A,bg)=(' num2str(round(Xc)) ',' ...
+            gStr=[' guess (Xc,Yc,Xs,Ys,A,bg)=(' num2str(round(Xc)) ',' ...
                 num2str(round(Yc)) ',' num2str(round(s1)) ',' num2str(round(s2)) ',' ...
                 num2str(A,'%.e') ',' num2str(round(nbg)) ')' ];     
             fprintf([gStr ' ... ']);
@@ -107,7 +109,7 @@ for n=1:length(ixondata)
             
             % Fit String
             fStr=['(' num2str(round(fout.Xc)) ',' ...
-                num2str(round(fout.Yc)) ',' num2str(round(fout.s1)) ',' num2str(round(fout.s2)) ',' ...
+                num2str(round(fout.Yc)) ',' num2str(round(fout.Xs)) ',' num2str(round(fout.Ys)) ',' ...
                 num2str(fout.A,'%.e') ',' num2str(round(fout.nbg)) ')' ];     
             fprintf([' fit ' fStr]);
             

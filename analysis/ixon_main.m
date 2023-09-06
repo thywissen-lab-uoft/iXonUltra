@@ -6,11 +6,9 @@
 % calls and plots all other analyses.
 
 % Display this filename
-disp(repmat('-',1,60));    
-disp(repmat('-',1,60));    
+disp(repmat('-',1,60));disp(repmat('-',1,60));    
 disp(['Calling ' mfilename '.m']);
-disp(repmat('-',1,60));    
-disp(repmat('-',1,60));    
+disp(repmat('-',1,60));disp(repmat('-',1,60));    
 
 % Add all subdirectories for this m file
 curpath = fileparts(mfilename('fullpath'));
@@ -21,8 +19,8 @@ figs=get(groot,'Children');
 disp('Closing all non GUI figures.');
 for kk=1:length(figs)
    if ~isequal(figs(kk).Tag,'GUI')
-       disp(['Closing figure ' num2str(figs(kk).Number) ' ' figs(kk).Name]);
-      close(figs(kk)) 
+        disp(['Closing figure ' num2str(figs(kk).Number) ' ' figs(kk).Name]);
+        close(figs(kk)) 
    end
 end
 disp(' ');
@@ -41,26 +39,22 @@ m=40*amu;
 % Choose the directory where the images to analyze are stored
 disp([datestr(now,13) ' Choose an image analysis folder...']);
 dialog_title='Choose the root directory of the images';
+default_analysis_dir = ixon_getDayDir;
+saveOpts = struct;
+saveOpts.Quality = 'auto';
 
-if ixon_getImageDir(datevec(now))
-    newdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
-    saveOpts = struct;
-    if isequal(newdir,0)
-        disp('Canceling.');    
-        return; 
-    else
-        imgdir = newdir;
-        ixon_imgdir = imgdir;
-        saveDir = [imgdir filesep 'figures'];
-        if ~exist(saveDir,'dir'); mkdir(saveDir);end   
-        saveOpts.saveDir=saveDir;
-        saveOpts.Quality = 'auto';
-        strs=strsplit(imgdir,filesep);
-        FigLabel=[strs{end-1} filesep strs{end}];
-    end
+newdir=uigetdir(default_analysis_dir,dialog_title);
+if isequal(newdir,0)
+    disp('Canceling.');    
+    return; 
 else
-    disp('Canceling.');
-    return;
+    imgdir = newdir;
+    ixon_imgdir = imgdir;
+    saveDir = [imgdir filesep 'figures'];
+    if ~exist(saveDir,'dir'); mkdir(saveDir);end   
+    saveOpts.saveDir=saveDir;
+    strs=strsplit(imgdir,filesep);
+    FigLabel=[strs{end-1} filesep strs{end}];
 end
 
 %% Analysis Variable
@@ -76,7 +70,6 @@ ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'qgm_raman_2photon_detuning'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
-outdata=struct;
 
 %% Analysis Options
 % Select what kinds of analyses you'd like to perform
@@ -113,12 +106,20 @@ img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
 img_opt.doPSF               = 0;        % Deconolve with PSF
-img_opt.PSF                 = [1.3163 50 12]; % PSF parameters [sigma, N, Niter]
+img_opt.PSF                 = [1.3163 51 12]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
 img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
 img_opt.doFFTFilter         = 1;        % Filter FFT?
 img_opt.FFTFilterRadius     = 1;        % FFT Filter radius (1/px)
+
+%% Analysis ROI
+% Analysis ROI is an Nx4 matrix of [X1 X2 Y1 Y2] which specifies a region
+% to analyze. Each new row in the matrix indicates a separate ROI to
+% perform analysis on.
+
+% Full ROI 
+ixonROI = [1 512 1 512]; 
 
 %% Load the data
 clear ixondata
@@ -159,14 +160,11 @@ if ixon_autoXVar
     xVars = ixon_findXVars(ixondata);
     disp([' Found ' num2str(length(xVars)) ...
         ' valid variables that are changing to plot against.']);
-    disp(xVars);
-    
+    disp(xVars);    
     % Select the first variable that is changed
     ind = 1;    
-    ixon_xVar = xVars{ind};
-    
-    disp([' Setting ' ixon_xVar ' to be the x-variable']);
-    
+    ixon_xVar = xVars{ind};    
+    disp([' Setting ' ixon_xVar ' to be the x-variable']);    
     for kk=1:length(ixondata)
         disp([' (' num2str(kk) ') (' num2str(ixondata(kk).Params.(ixon_xVar)) ') ' ...
             ixondata(kk).Name]); 
@@ -208,36 +206,19 @@ switch varType
     otherwise
         error('uhh you chose the wrong thing to plot');
 end
-%% Assign Params to outdata
-outdata.Params=ixondata.Params;
-
-
+%% Save Params
 if ixon_doSave
     Params =[ixondata.Params];
     filename=fullfile(ixon_imgdir,'figures','Params.mat');
     save(filename,'Params');
 end
-%% Analysis ROI
-% Analysis ROI is an Nx4 matrix of [X1 X2 Y1 Y2] which specifies a region
-% to analyze. Each new row in the matrix indicates a separate ROI to
-% perform analysis on.
-
-% Full ROI 
-ixonROI = [1 512 1 512]; 
-
+%% Distribute ROI
 [ixondata.ROI]=deal(ixonROI);
-
-%% Image Processing : Bias, Mask, and Filtering
-
-% ixondata = processRawData(ixondata);
+%% Process Images
 ixondata = ixonProcessImages(ixondata,img_opt);
-
-
-
 %% Basic Raw Image Analysis
 
 if doRawImageHistogram   
-
     % Do basic analysis on raw counts
     ixondata=ixon_computeRawCounts(ixondata);
 
@@ -258,18 +239,74 @@ if doRawImageHistogram
         hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,ixon_xVar,hist_opts);
         if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawhist,['ixon_raw_hist' num2str(kk)]);end
     end
-
     % Plot raw count total
     raw_opts=struct;   
-    raw_opts.xUnit=ixon_unit;
-    
+    raw_opts.xUnit=ixon_unit;    
     % Define the variable and units    
-    raw_opts.FitLinear=0;
-    
+    raw_opts.FitLinear=0;    
     hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,ixon_xVar,raw_opts);
-
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
+end
+%% ANALYSIS : BOX COUNT
 
+if ixon_doBoxCount
+    ixondata=ixon_boxCount(ixondata);    
+    ixon_boxdata = ixon_getBoxData(ixondata,ixon_xVar);
+    ixon_boxdata.ProcessOptions = img_opt;
+    if ixon_doSave
+        P = [ixon_boxdata.Params];
+        BoxData_SourceFiles = {P.ExecutionDateStr};
+        BoxData_xVarName = ixon_xVar;
+        BoxData_xVarUnit = ixon_unit;
+        BoxData_xVar = [P.(ixon_xVar)];
+        BoxData_N = [ixon_boxdata.N];
+        BoxData_Xc = [ixon_boxdata.Xc];
+        BoxData_Yc = [ixon_boxdata.Yc];
+        BoxData_Xs = [ixon_boxdata.Xs];
+        BoxData_Ys = [ixon_boxdata.Ys];
+
+        filename=fullfile(ixon_imgdir,'figures','ixon_boxdata_python.mat');
+        save(filename,'BoxData_SourceFiles','BoxData_xVarName','BoxData_xVarUnit',...
+            'BoxData_xVar','BoxData_N','BoxData_Xc','BoxData_Yc',...
+            'BoxData_Xs','BoxData_Ys');
+        filename=fullfile(ixon_imgdir,'figures','ixon_boxdata.mat');
+        save(filename,'ixon_boxdata');
+    end
+end
+
+%% ANALYSIS : 2D Gaussian
+% do a very basic PCA to determine angle of the atomic cloud
+if ixon_doGaussFit  
+    ixon_gauss_opts=struct;
+    ixon_gauss_opts.doRescale=1;     % Rescaling the image makes fitting faster
+    ixon_gauss_opts.doMask=1;        % Apply the image mask
+    ixon_gauss_opts.Scale=0.25;       % Scale to rescale the image by
+    ixon_gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
+    ixon_gauss_opts.Mask=ixon_mask;  % The image mask
+    ixon_gauss_opts.doBackground = 1; % Enable a background to the fit
+    
+    ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
+    ixon_gaussdata = ixon_getGaussData(ixondata,ixon_xVar);
+    ixon_gaussdata.ProcessOptions = img_opt;    
+    
+    if ixon_doSave
+        P = [ixon_gaussdata.Params];
+        GaussData_SourceFiles = {P.ExecutionDateStr};
+        GaussData_xVarName = ixon_xVar;
+        GaussData_xVarUnit = ixon_unit;
+        GaussData_xVar = [P.(ixon_xVar)];
+        GaussData_N = [ixon_gaussdata.N];
+        GaussData_Xc = [ixon_gaussdata.Xc];
+        GaussData_Yc = [ixon_gaussdata.Yc];
+        GaussData_Xs = [ixon_gaussdata.Xs];
+        GaussData_Ys = [ixon_gaussdata.Ys];
+        filename=fullfile(ixon_imgdir,'figures','ixon_gaussdata_python.mat');
+        save(filename,'GaussData_SourceFiles','GaussData_xVarName','GaussData_xVarUnit',...
+            'GaussData_xVar','GaussData_N','GaussData_Xc','GaussData_Yc',...
+            'GaussData_Xs','GaussData_Ys');
+        filename=fullfile(ixon_imgdir,'figures','ixon_gaussdata.mat');
+        save(filename,'ixon_gaussdata');
+    end    
 end
 
 %% Calculate FFT
@@ -304,35 +341,23 @@ end
 
 %% ANALYSIS : FFT BOX COUNT
 
-
-if ixon_fft_doBoxCount && ixon_doFFT
-    
-fft_boxOpts=struct;
-fft_boxOpts.maskIR=fft_opts.maskIR;
-fft_boxOpts.LMax=fft_opts.LMax;
-fft_boxOpts.maskUV=fft_opts.maskUV;
-fft_boxOpts.LMin=fft_opts.LMin;
-    ixondata=ixon_fft_boxCount(ixondata,fft_boxOpts);
-end
+% if ixon_fft_doBoxCount && ixon_doFFT    
+%     fft_boxOpts=struct;
+%     fft_boxOpts.maskIR=fft_opts.maskIR;
+%     fft_boxOpts.LMax=fft_opts.LMax;
+%     fft_boxOpts.maskUV=fft_opts.maskUV;
+%     fft_boxOpts.LMin=fft_opts.LMin;
+%         ixondata=ixon_fft_boxCount(ixondata,fft_boxOpts);
+% end
 
 %% PLOTTING : FFT BOX COUNT
-
-ixon_fft_boxPopts=struct;
-ixon_fft_boxPopts.xUnit=ixon_unit;
-
-if ixon_fft_doBoxCount  && ixon_doFFT
- 
-    % Plot the second moments
-    hF_ixon_size=ixon_fft_showBoxMoments(ixondata,ixon_xVar,ixon_fft_boxPopts);   
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_fft_box_size');end     
-     
-end
-
-%% ANALYSIS : BOX COUNT
-
-if ixon_doBoxCount
-    ixondata=ixon_boxCount(ixondata);
-end
+% ixon_fft_boxPopts=struct;
+% ixon_fft_boxPopts.xUnit=ixon_unit;
+% if ixon_fft_doBoxCount  && ixon_doFFT 
+%     % Plot the second moments
+%     hF_ixon_size=ixon_fft_showBoxMoments(ixondata,ixon_xVar,ixon_fft_boxPopts);   
+%     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_fft_box_size');end          
+% end
 
 %% PLOTTING : BOX COUNT
 
@@ -369,45 +394,10 @@ if ixon_doBoxCount
     [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_boxPopts); 
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end 
 
-    outdata.Ndatabox=Ndatabox;
-    outdata.Xcbox = Xc;
-    outdata.Ycbox = Yc;
-    
-    if ixon_doSave
-        BC = [ixondata.BoxCount];
-        P = [ixondata.Params];
-        BoxData_SourceFiles = {P.ExecutionDateStr};
-        BoxData_xVarName = ixon_xVar;
-        BoxData_xVarUnit = ixon_unit;
-        BoxData_xVar = [P.(ixon_xVar)];
-        BoxData_N = [BC.Ncounts];
-        BoxData_Xc = [BC.Xc];
-        BoxData_Yc = [BC.Yc];
-        BoxData_Xs = [BC.Xs];
-        BoxData_Ys = [BC.Ys];
-
-        filename=fullfile(ixon_imgdir,'figures','BoxData.mat');
-        save(filename,'BoxData_SourceFiles','BoxData_xVarName','BoxData_xVarUnit',...
-            'BoxData_xVar','BoxData_N','BoxData_Xc','BoxData_Yc',...
-            'BoxData_Xs','BoxData_Ys');
-    end
     
 end
 
-%% ANALYSIS : 2D Gaussian
-% do a very basic PCA to determine angle of the atomic cloud
-% ixondata=ixon_simple_pca(ixondata);
 
-ixon_gauss_opts=struct;
-ixon_gauss_opts.doRescale=1;     % Rescaling the image makes fitting faster
-ixon_gauss_opts.doMask=1;        % Apply the image mask
-ixon_gauss_opts.Scale=0.5;       % Scale to rescale the image by
-ixon_gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
-ixon_gauss_opts.Mask=ixon_mask;  % The image mask
-ixon_gauss_opts.doBackground = 1; % Enable a background to the fit
-if ixon_doGaussFit  
-    ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
-end
 
 %% PLOTTING : GAUSSIAN
 ixon_gauss_opts.xUnit=ixon_unit;
@@ -417,7 +407,7 @@ ixon_gauss_opts.NumberScale = 'linear';
 % ixon_gauss_opts.NumberScale = 'log'; 
 
 ixon_gauss_opts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_gauss_opts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
+ixon_gauss_opts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
 ixon_gauss_opts.CenterParabolaFit = 0;
 ixon_gauss_opts.CenterLinearFit = 0;     % Linear fit to cloud center
 
@@ -470,7 +460,6 @@ if ixon_doGaussFit
         end
     end
     
-    outdata.Ndatagauss=Ndatagauss;    
 end
 
 
@@ -544,9 +533,3 @@ if doStripeAnalysis
    ixon_stripe_1d; 
 end
 
-
-%% save output data
-if ixon_doSave
-    filename=fullfile(ixon_imgdir,'figures','outdata.mat');
-    save(filename,'outdata');
-end
