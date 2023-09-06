@@ -41,26 +41,22 @@ m=40*amu;
 % Choose the directory where the images to analyze are stored
 disp([datestr(now,13) ' Choose an image analysis folder...']);
 dialog_title='Choose the root directory of the images';
+default_analysis_dir = ixon_getDayDir;
+saveOpts = struct;
+saveOpts.Quality = 'auto';
 
-if ixon_getImageDir(datevec(now))
-    newdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
-    saveOpts = struct;
-    if isequal(newdir,0)
-        disp('Canceling.');    
-        return; 
-    else
-        imgdir = newdir;
-        ixon_imgdir = imgdir;
-        saveDir = [imgdir filesep 'figures'];
-        if ~exist(saveDir,'dir'); mkdir(saveDir);end   
-        saveOpts.saveDir=saveDir;
-        saveOpts.Quality = 'auto';
-        strs=strsplit(imgdir,filesep);
-        FigLabel=[strs{end-1} filesep strs{end}];
-    end
+newdir=uigetdir(default_analysis_dir,dialog_title);
+if isequal(newdir,0)
+    disp('Canceling.');    
+    return; 
 else
-    disp('Canceling.');
-    return;
+    imgdir = newdir;
+    ixon_imgdir = imgdir;
+    saveDir = [imgdir filesep 'figures'];
+    if ~exist(saveDir,'dir'); mkdir(saveDir);end   
+    saveOpts.saveDir=saveDir;
+    strs=strsplit(imgdir,filesep);
+    FigLabel=[strs{end-1} filesep strs{end}];
 end
 
 %% Analysis Variable
@@ -348,8 +344,8 @@ ixon_boxPopts.NumberExp2SumFit = 0;
 ixon_boxPopts.NumberLorentzianFit=0;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
-ixon_boxPopts.CenterGrowSineFit = 1;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterGrowSineFit = 0;  % Fit decaying sine to cloud center
 ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
 
 if ixon_doBoxCount  

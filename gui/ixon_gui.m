@@ -497,8 +497,7 @@ tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,
 % Browse button callback
     function browseCB(~,~)
         str=ixon_getDayDir;
-        str=uigetdir(str);
-        
+        str=uigetdir(str);        
         if str
             tSaveDir.UserData=str; % Full directory to save
             str=strsplit(str,filesep);
