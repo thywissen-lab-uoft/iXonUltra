@@ -161,14 +161,11 @@ if ixon_autoXVar
     xVars = ixon_findXVars(ixondata);
     disp([' Found ' num2str(length(xVars)) ...
         ' valid variables that are changing to plot against.']);
-    disp(xVars);
-    
+    disp(xVars);    
     % Select the first variable that is changed
     ind = 1;    
-    ixon_xVar = xVars{ind};
-    
-    disp([' Setting ' ixon_xVar ' to be the x-variable']);
-    
+    ixon_xVar = xVars{ind};    
+    disp([' Setting ' ixon_xVar ' to be the x-variable']);    
     for kk=1:length(ixondata)
         disp([' (' num2str(kk) ') (' num2str(ixondata(kk).Params.(ixon_xVar)) ') ' ...
             ixondata(kk).Name]); 
@@ -222,17 +219,12 @@ end
 %% Distribute ROI
 [ixondata.ROI]=deal(ixonROI);
 
-%% Image Processing : Bias, Mask, and Filtering
-
-% ixondata = processRawData(ixondata);
+%% Process Images
 ixondata = ixonProcessImages(ixondata,img_opt);
-
-
 
 %% Basic Raw Image Analysis
 
 if doRawImageHistogram   
-
     % Do basic analysis on raw counts
     ixondata=ixon_computeRawCounts(ixondata);
 
@@ -253,18 +245,13 @@ if doRawImageHistogram
         hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,ixon_xVar,hist_opts);
         if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawhist,['ixon_raw_hist' num2str(kk)]);end
     end
-
     % Plot raw count total
     raw_opts=struct;   
-    raw_opts.xUnit=ixon_unit;
-    
+    raw_opts.xUnit=ixon_unit;    
     % Define the variable and units    
-    raw_opts.FitLinear=0;
-    
+    raw_opts.FitLinear=0;    
     hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,ixon_xVar,raw_opts);
-
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
-
 end
 
 %% Calculate FFT
