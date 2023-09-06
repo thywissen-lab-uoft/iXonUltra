@@ -181,6 +181,9 @@ for n=1:length(ixondata)
             
         end
     end
+    if n==7
+        keyboard
+    end
     ixondata(n).GaussFit=GaussFit;
 end
 

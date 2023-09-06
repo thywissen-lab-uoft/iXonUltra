@@ -18,10 +18,10 @@ for kk=1:length(ixondata)
    for nn=1:length(ixondata(kk).GaussFit)
         fout=ixondata(kk).GaussFit{nn};             % Grab the fit
         Xc(kk,nn)=fout.Xc;Yc(kk,nn)=fout.Yc;        % X and Y center
-        s1(kk,nn)=fout.s1;s2(kk,nn)=fout.s2;        % X and Y sigma   
+        Xs(kk,nn)=fout.Xs;Ys(kk,nn)=fout.Ys;        % X and Y sigma   
         A(kk,nn)=fout.A;                            % Amplitude
         nbg(kk,nn)=fout.nbg;                        % Background
-        N(kk,nn)=2*pi*s1(kk,nn)*s2(kk,nn)*A(kk,nn); % Number of counts
+        N(kk,nn)=2*pi*Xs(kk,nn)*Ys(kk,nn)*A(kk,nn); % Number of counts
         
         if ismember('theta',coeffnames(fout))   
             theta(kk,nn)=fout.theta;        
@@ -35,8 +35,8 @@ X_scale = (ixondata(1).CameraInformation.PixelSize(1))/...
 Y_scale = (ixondata(1).CameraInformation.PixelSize(1))/...
     ixondata(1).Magnification(2);
 
-s1=X_scale*s1;
-s2=Y_scale*s2;
+Xs=X_scale*Xs;
+Ys=Y_scale*Ys;
 
 
 %% Make Filename
@@ -80,7 +80,7 @@ co=get(gca,'colororder');
 
 for nn=1:size(ixondata(1).ROI,1)
     [cface,cedge] = ixoncolororder(nn);
-   plot(xvals,s1(:,nn),'o-','color',cedge,'linewidth',1,'markersize',8,...
+   plot(xvals,Xs(:,nn),'o-','color',cedge,'linewidth',1,'markersize',8,...
        'markerfacecolor',cface,'markeredgecolor',cedge);
 end
 
@@ -100,7 +100,7 @@ xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 co=get(gca,'colororder');
 for nn=1:size(ixondata(1).ROI,1)
     [cface,cedge] = ixoncolororder(nn);
-   plot(xvals,s2(:,nn),'o-','color',cedge,'linewidth',1,'markersize',8,...
+   plot(xvals,Ys(:,nn),'o-','color',cedge,'linewidth',1,'markersize',8,...
        'markerfacecolor',cface,'markeredgecolor',cedge);
 end
 str='$\sigma_Y (\mathrm{px}^2)$';
@@ -119,7 +119,7 @@ xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 co=get(gca,'colororder');
 for nn=1:size(ixondata(1).ROI,1)
     [cface,cedge] = ixoncolororder(nn);
-   plot(xvals,pi*s1(:,nn).*s2(:,nn),'o-','color',cedge,'linewidth',1,'markersize',8,...
+   plot(xvals,pi*Xs(:,nn).*Ys(:,nn),'o-','color',cedge,'linewidth',1,'markersize',8,...
        'markerfacecolor',cface,'markeredgecolor',cedge);
 end
 str='$\pi \sigma_X \sigma_Y (\mathrm{px}^2)$';

@@ -105,7 +105,7 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 1;        % Deconolve with PSF
+img_opt.doPSF               = 0;        % Deconolve with PSF
 img_opt.PSF                 = [1.3163 51 12]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
@@ -300,7 +300,6 @@ if ixon_doGaussFit
         GaussData_Yc = [ixon_gaussdata.Yc];
         GaussData_Xs = [ixon_gaussdata.Xs];
         GaussData_Ys = [ixon_gaussdata.Ys];
-
         filename=fullfile(ixon_imgdir,'figures','ixon_gaussdata_python.mat');
         save(filename,'GaussData_SourceFiles','GaussData_xVarName','GaussData_xVarUnit',...
             'GaussData_xVar','GaussData_N','GaussData_Xc','GaussData_Yc',...
@@ -408,7 +407,7 @@ ixon_gauss_opts.NumberScale = 'linear';
 % ixon_gauss_opts.NumberScale = 'log'; 
 
 ixon_gauss_opts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_gauss_opts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
+ixon_gauss_opts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
 ixon_gauss_opts.CenterParabolaFit = 0;
 ixon_gauss_opts.CenterLinearFit = 0;     % Linear fit to cloud center
 
