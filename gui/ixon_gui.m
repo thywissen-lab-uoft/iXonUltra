@@ -223,7 +223,7 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         strstatus.String='DISCONNECTING';
         drawnow;
         % Disconnect from camera
-        out=ixon_disconnectCam; 
+        out=ixon_disconnectCamera; 
        
         if ~out && ~doDebug
            return;
