@@ -50,7 +50,15 @@ defaultBasis  = [0.1923 0.3244 .3;
 
 % Add the Andor MATLAB drivers to the MATLAB path. You need to have
 % installed the MATLAB drivers in order for this to work.
-addpath(genpath(fullfile(matlabroot,'toolbox','Andor')));
+dir_andor = fullfile(matlabroot,'toolbox','Andor');
+if ~exist(dir_andor,'dir')
+    warning(['You have not installed the Andor toolbox ' ...
+        ' for running the camera. Certain capabilities will not ' ...
+        'work.']);
+else
+    addpath(genpath(dir_andor));
+end
+
 % Add all subdirectories for this m file
 mpath = fileparts(mfilename('fullpath'));
 addpath(mpath);addpath(genpath(mpath))
@@ -316,8 +324,7 @@ hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
             hbCool.Enable='on';
             hbCoolOff.Enable='off';
             cam_status.isCooling=0;
-        end
-        
+        end        
     end
 
 % Table set point
@@ -2029,13 +2036,10 @@ l=80;   % Left gap for fitting and data analysis summary
         if hp.Position(3)<200 || hp.Position(4)<200
             return;
         end 
-
-        axi.Position = [40 110 hp.Position(3)-200 hp.Position(4)-200];     
-        
+        axi.Position = [40 110 hp.Position(3)-200 hp.Position(4)-200];             
         % Get the aspect ratio of plot objects
         Rimg=axi.PlotBoxAspectRatio;Rimg=Rimg(1)/Rimg(2);
-        Rax=axi.Position(3:4);Rax=Rax(1)/Rax(2);
-        
+        Rax=axi.Position(3:4);Rax=Rax(1)/Rax(2);        
         % Size of plot objects (position is weird in axis equal tight);
         if Rax>Rimg
             h1=axi.Position(4);
@@ -2049,17 +2053,14 @@ l=80;   % Left gap for fitting and data analysis summary
                 w1 80-15];
             axy.Position=[axi.Position(1)+axi.Position(3)+15 ...
                 110+(axi.Position(4)-h1)/2 l h1];            
-        end
-        
+        end        
         % Match cut limits with the images limits
         set(axx,'XLim',axi.XLim,'XTick',axi.XTick);
-        set(axy,'YLim',axi.YLim,'YTick',axi.YTick);
-        
+        set(axy,'YLim',axi.YLim,'YTick',axi.YTick);        
         % Move the colorbar
         cbar.Position=[axx.Position(1) axy.Position(2)+axy.Position(4)+23 ...
             axx.Position(3) 15]; 
-        drawnow;
-        
+        drawnow;        
     end
 
     function resizePlots       
@@ -3152,30 +3153,20 @@ end
 
 %% FINISH
 updateImages;
-
 % Go to most recent image
 chData([],[],0);   
-
-
 drawnow;
 SizeChangedFcn
 axes(axImg);
-
 updateCMAP(menuSelectCMAP);
-
 addlistener(axImg,'XLim','PostSet',@foo); 
 addlistener(axImg,'YLim','PostSet',@foo); 
-
 addlistener(axImg_K,'XLim','PostSet',@foo3); 
 addlistener(axImg_K,'YLim','PostSet',@foo3); 
-
 addlistener(axImg_B,'XLim','PostSet',@foo4); 
 addlistener(axImg_B,'YLim','PostSet',@foo4); 
-
-
 addlistener(axImg_D,'XLim','PostSet',@foo5); 
 addlistener(axImg_D,'YLim','PostSet',@foo5); 
-
 
 set(hF,'WindowState','maximized');
     function foo5(~,~)
@@ -3218,17 +3209,12 @@ set(hF,'WindowState','maximized');
         end      
     end
 
-
-
-
 axes(axImg);
 set(axImg,'XLim',[1 512],'YLim',[ 1 512]); 
-
 enableDefaultInteractivity(axImg);
 enableDefaultInteractivity(axImg_K);
 enableDefaultInteractivity(axImg_B);
 enableDefaultInteractivity(axImg_D);
-
 end
  
     
