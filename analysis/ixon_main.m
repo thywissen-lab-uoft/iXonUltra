@@ -306,8 +306,7 @@ end
 
 %% ANALYSIS : BOX COUNT
 if ixon_doBoxCount
-    ixondata=ixon_boxCount(ixondata);
-    
+    ixondata=ixon_boxCount(ixondata);    
     ixon_boxdata = ixon_getBoxData(ixondata,ixon_xVar);
     
     if ixon_doSave
@@ -322,10 +321,12 @@ if ixon_doBoxCount
         BoxData_Xs = [ixon_boxdata.Xs];
         BoxData_Ys = [ixon_boxdata.Ys];
 
-        filename=fullfile(ixon_imgdir,'figures','BoxData.mat');
+        filename=fullfile(ixon_imgdir,'figures','ixon_boxdata_python.mat');
         save(filename,'BoxData_SourceFiles','BoxData_xVarName','BoxData_xVarUnit',...
             'BoxData_xVar','BoxData_N','BoxData_Xc','BoxData_Yc',...
             'BoxData_Xs','BoxData_Ys');
+        filename=fullfile(ixon_imgdir,'figures','ixon_boxdata.mat');
+        save(filename,'ixon_boxdata');
     end
 end
 %% PLOTTING : BOX COUNT
