@@ -37,6 +37,32 @@ lambda=770E-9;
 amu=1.660539E-27; 
 m=40*amu;
 
+%% Select image directory
+% Choose the directory where the images to analyze are stored
+disp([datestr(now,13) ' Choose an image analysis folder...']);
+dialog_title='Choose the root directory of the images';
+
+if ixon_getImageDir(datevec(now))
+    newdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
+    saveOpts = struct;
+    if isequal(newdir,0)
+        disp('Canceling.');    
+        return; 
+    else
+        imgdir = newdir;
+        ixon_imgdir = imgdir;
+        saveDir = [imgdir filesep 'figures'];
+        if ~exist(saveDir,'dir'); mkdir(saveDir);end   
+        saveOpts.saveDir=saveDir;
+        saveOpts.Quality = 'auto';
+        strs=strsplit(imgdir,filesep);
+        FigLabel=[strs{end-1} filesep strs{end}];
+    end
+else
+    disp('Canceling.');
+    return;
+end
+
 %% Analysis Variable
 % This section of code chooses the variable to plot against for aggregate
 % plots.  The chosen variable MUST match a variable provided in the params
@@ -44,36 +70,18 @@ m=40*amu;
 % display properties.
 
 % Choose what kind of variable to plot against (sequencer/camera)
-varType='param'; % always select 'param' for now 
-
-% Should the analysis attempt to automatically find the xvariable?
-ixon_autoXVar = 1;
-
-% Should the analysis attempt to automatically find the unit?
-ixon_autoUnit=1;
-
-% The variable to plot against
-ixon_xVar='ExecutionDate';
-
-% If ixon_autoUnit=0, this will be used.
-ixon_overrideUnit='V';
-
-% Flag whether to save the output figures or not (code is faster if not
-% saving)
-ixon_doSave=1;
-
-% Define the output data
+varType             = 'param'; % always select 'param' for now 
+ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoUnit       = 1;      % Auto detect unit for variable?
+ixon_xVar           = 'qgm_raman_2photon_detuning'; % Variable Name
+ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
+ixon_doSave         = 1;    % Save Analysis?
 outdata=struct;
 
 %% Analysis Options
 % Select what kinds of analyses you'd like to perform
-
-doRawImageHistogram=0;
-
-doDarkImageAnalysis = 1;
-
+doRawImageHistogram=1;
 ixon_doBoxCount=1;
-
 ixon_doGaussFit=0;
 
 % Fast Fourier Transform Analysis
@@ -88,67 +96,29 @@ doStripeAnalysis=0;
 
 ixon_doAnimate = 1;
 %% Image Processing Options
+
 % What do you do to the raw data?
 maskname=fullfile('ixon_mask.mat');
 ixon_mask=load(maskname);
 ixon_mask=ixon_mask.BW;
 
-img_process = struct;
-img_process.doSubtractBias      = 1;
-img_process.doGaussFilter       = 0;
-img_process.GaussFilterRadius   = 1;
-img_process.doMask              = 0;
-img_process.Mask                = ixon_mask;
-img_process.doPSF               = 0;
-img_process.PSF                 = [1.3 50 5]; % [sigma, N, Niter]
-img_process.doFFT               = 1;
-img_process.doMaskIR            = 1;
-img_process.IRMaskRadius        = 0.01;
-img_process.doFFTFilter         = 1;
-img_process.FFTFilterRadius     = 1;
-
-
-%% Select image directory
-% % Choose the directory where the images to analyze are stored
-% disp([datestr(now,13) ' Choose an image analysis folder...']);
-% dialog_title='Choose the root dire ctory of the images';
-% ixon_imgdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
-% if isequal(ixon_imgdir,0)
-%     disp('Canceling.');
-%     return 
-% end
-% 
-% % Choose the directory where the images to analyze are stored
-disp([datestr(now,13) ' Choose an image analysis folder...']);
-dialog_title='Choose the root directory of the images';
-
-
-if ixon_getImageDir(datevec(now))
-    newdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
-    saveOpts = struct;
-
-    if isequal(newdir,0)
-        disp('Canceling.');    
-        return; 
-    else
-                imgdir = newdir;
-
-        ixon_imgdir = imgdir;
-        saveDir = [imgdir filesep 'figures'];
-
-        if ~exist(saveDir,'dir'); mkdir(saveDir);end    
-
-        saveOpts.saveDir=saveDir;
-        saveOpts.Quality = 'auto';
-
-        strs=strsplit(imgdir,filesep);
-        FigLabel=[strs{end-1} filesep strs{end}];
-    end
-else
-    disp('Canceling.');
-    return;
-end
-
+img_opt = struct;
+img_opt.doSubtractBias      = 1;        % Subtract 200 count electronic offset
+img_opt.doScale             = 1;        % Scale up image? (good for single-site)
+img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
+img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
+img_opt.Theta               = 60.2077;  % Rotation amount (deg.)
+img_opt.doMask              = 0;        % Mask the data? (not used)
+img_opt.Mask                = ixon_mask;% Mask File 512x512
+img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
+img_opt.GaussFilterRadius   = 1;        % Filter radius
+img_opt.doPSF               = 0;        % Deconolve with PSF
+img_opt.PSF                 = [1.3163 50 12]; % PSF parameters [sigma, N, Niter]
+img_opt.doFFT               = 1;        % Compute FFT?
+img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
+img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
+img_opt.doFFTFilter         = 1;        % Filter FFT?
+img_opt.FFTFilterRadius     = 1;        % FFT Filter radius (1/px)
 
 %% Load the data
 clear ixondata
@@ -156,35 +126,27 @@ disp(['Loading data from ' ixon_imgdir]);
 files=dir([ixon_imgdir filesep '*.mat']);
 files={files.name};
 
-
 for kk=1:length(files)
     str=fullfile(ixon_imgdir,files{kk});
     [a,b,c]=fileparts(str);      
     disp(['     (' num2str(kk) ')' files{kk}]);    
-    data=load(str);     
-    data=data.data;  
-
-    % Display image properties
+    data=load(str);data=data.data;  
     try
         disp(['     Image Name     : ' data.Name]);
         disp(['     Execution Time : ' datestr(data.Date)]);
         if ~ixon_autoXVar
             disp(['     ' ixon_xVar ' : ' num2str(data.Params.(ixon_xVar))]);
         end
-
         disp(' ');
     end    
-    
     data.Params.ExecutionDate = datenum(data.Params.ExecutionDate);
-data.Params.ExecutionDateStr = datestr(data.Params.ExecutionDate);    
-%     
-%     if isequal(ixon_xVar,'ExecutionDate')
-%         data.Params.(ixon_xVar)=datenum(data.Params.(ixon_xVar))*24*60*60;
-%     end    
+    data.Params.ExecutionDateStr = datestr(data.Params.ExecutionDate); 
     ixondata(kk)=data;    
 end
 disp(' ');
-
+%% Match Parameters and Flags
+% This makes sure that all data as has all the flags and params in each. 
+% This is usually not necessary.
 ixondata = ixon_matchParamsFlags(ixondata);
 
 %% X Variable and Units
@@ -261,13 +223,14 @@ end
 % perform analysis on.
 
 % Full ROI 
-ixonROI = [1 1024 1 1024]; 
+ixonROI = [1 512 1 512]; 
 
 [ixondata.ROI]=deal(ixonROI);
 
 %% Image Processing : Bias, Mask, and Filtering
 
-ixondata = processRawData(ixondata);
+% ixondata = processRawData(ixondata);
+ixondata = ixonProcessImages(ixondata,img_opt);
 
 
 
