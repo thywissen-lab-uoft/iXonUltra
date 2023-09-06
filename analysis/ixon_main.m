@@ -253,6 +253,45 @@ if doRawImageHistogram
     hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,ixon_xVar,raw_opts);
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
 end
+%% ANALYSIS : BOX COUNT
+
+if ixon_doBoxCount
+    ixondata=ixon_boxCount(ixondata);    
+    ixon_boxdata = ixon_getBoxData(ixondata,ixon_xVar);
+    
+    if ixon_doSave
+        P = [ixon_boxdata.Params];
+        BoxData_SourceFiles = {P.ExecutionDateStr};
+        BoxData_xVarName = ixon_xVar;
+        BoxData_xVarUnit = ixon_unit;
+        BoxData_xVar = [P.(ixon_xVar)];
+        BoxData_N = [ixon_boxdata.N];
+        BoxData_Xc = [ixon_boxdata.Xc];
+        BoxData_Yc = [ixon_boxdata.Yc];
+        BoxData_Xs = [ixon_boxdata.Xs];
+        BoxData_Ys = [ixon_boxdata.Ys];
+
+        filename=fullfile(ixon_imgdir,'figures','ixon_boxdata_python.mat');
+        save(filename,'BoxData_SourceFiles','BoxData_xVarName','BoxData_xVarUnit',...
+            'BoxData_xVar','BoxData_N','BoxData_Xc','BoxData_Yc',...
+            'BoxData_Xs','BoxData_Ys');
+        filename=fullfile(ixon_imgdir,'figures','ixon_boxdata.mat');
+        save(filename,'ixon_boxdata');
+    end
+end
+
+%% ANALYSIS : 2D Gaussian
+% do a very basic PCA to determine angle of the atomic cloud
+if ixon_doGaussFit  
+    ixon_gauss_opts=struct;
+    ixon_gauss_opts.doRescale=1;     % Rescaling the image makes fitting faster
+    ixon_gauss_opts.doMask=1;        % Apply the image mask
+    ixon_gauss_opts.Scale=0.5;       % Scale to rescale the image by
+    ixon_gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
+    ixon_gauss_opts.Mask=ixon_mask;  % The image mask
+    ixon_gauss_opts.doBackground = 1; % Enable a background to the fit
+    ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
+end
 
 %% Calculate FFT
 % 
@@ -304,31 +343,8 @@ end
 %     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_fft_box_size');end          
 % end
 
-%% ANALYSIS : BOX COUNT
-if ixon_doBoxCount
-    ixondata=ixon_boxCount(ixondata);    
-    ixon_boxdata = ixon_getBoxData(ixondata,ixon_xVar);
-    
-    if ixon_doSave
-        P = [ixon_boxdata.Params];
-        BoxData_SourceFiles = {P.ExecutionDateStr};
-        BoxData_xVarName = ixon_xVar;
-        BoxData_xVarUnit = ixon_unit;
-        BoxData_xVar = [P.(ixon_xVar)];
-        BoxData_N = [ixon_boxdata.N];
-        BoxData_Xc = [ixon_boxdata.Xc];
-        BoxData_Yc = [ixon_boxdata.Yc];
-        BoxData_Xs = [ixon_boxdata.Xs];
-        BoxData_Ys = [ixon_boxdata.Ys];
 
-        filename=fullfile(ixon_imgdir,'figures','ixon_boxdata_python.mat');
-        save(filename,'BoxData_SourceFiles','BoxData_xVarName','BoxData_xVarUnit',...
-            'BoxData_xVar','BoxData_N','BoxData_Xc','BoxData_Yc',...
-            'BoxData_Xs','BoxData_Ys');
-        filename=fullfile(ixon_imgdir,'figures','ixon_boxdata.mat');
-        save(filename,'ixon_boxdata');
-    end
-end
+
 %% PLOTTING : BOX COUNT
 
 ixon_boxPopts=struct;
@@ -372,20 +388,7 @@ if ixon_doBoxCount
     
 end
 
-%% ANALYSIS : 2D Gaussian
-% do a very basic PCA to determine angle of the atomic cloud
-% ixondata=ixon_simple_pca(ixondata);
 
-ixon_gauss_opts=struct;
-ixon_gauss_opts.doRescale=1;     % Rescaling the image makes fitting faster
-ixon_gauss_opts.doMask=1;        % Apply the image mask
-ixon_gauss_opts.Scale=0.5;       % Scale to rescale the image by
-ixon_gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
-ixon_gauss_opts.Mask=ixon_mask;  % The image mask
-ixon_gauss_opts.doBackground = 1; % Enable a background to the fit
-if ixon_doGaussFit  
-    ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
-end
 
 %% PLOTTING : GAUSSIAN
 ixon_gauss_opts.xUnit=ixon_unit;
