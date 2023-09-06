@@ -258,7 +258,7 @@ end
 if ixon_doBoxCount
     ixondata=ixon_boxCount(ixondata);    
     ixon_boxdata = ixon_getBoxData(ixondata,ixon_xVar);
-    
+    ixon_boxdata.ProcessOptions = img_opt;
     if ixon_doSave
         P = [ixon_boxdata.Params];
         BoxData_SourceFiles = {P.ExecutionDateStr};
@@ -290,7 +290,31 @@ if ixon_doGaussFit
     ixon_gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
     ixon_gauss_opts.Mask=ixon_mask;  % The image mask
     ixon_gauss_opts.doBackground = 1; % Enable a background to the fit
+    
     ixondata=ixon_gaussFit(ixondata,ixon_gauss_opts);
+    ixon_gaussdata = ixon_getGaussData(ixondata,ixon_xVar);
+    ixon_gaussdata.ProcessOptions = img_opt;    
+    
+    if ixon_doSave
+        P = [ixon_gaussdata.Params];
+        GaussData_SourceFiles = {P.ExecutionDateStr};
+        GaussData_xVarName = ixon_xVar;
+        GaussData_xVarUnit = ixon_unit;
+        GaussData_xVar = [P.(ixon_xVar)];
+        GaussData_N = [ixon_gaussdata.N];
+        GaussData_Xc = [ixon_gaussdata.Xc];
+        GaussData_Yc = [ixon_gaussdata.Yc];
+        GaussData_Xs = [ixon_gaussdata.Xs];
+        GaussData_Ys = [ixon_gaussdata.Ys];
+
+        filename=fullfile(ixon_imgdir,'figures','ixon_gaussdata_python.mat');
+        save(filename,'GaussData_SourceFiles','GaussData_xVarName','GaussData_xVarUnit',...
+            'GaussData_xVar','GaussData_N','GaussData_Xc','GaussData_Yc',...
+            'GaussData_Xs','GaussData_Ys');
+        filename=fullfile(ixon_imgdir,'figures','ixon_gaussdata.mat');
+        save(filename,'ixon_gaussdata');
+    end
+    
 end
 
 %% Calculate FFT
