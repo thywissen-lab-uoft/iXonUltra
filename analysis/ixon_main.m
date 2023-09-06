@@ -19,8 +19,8 @@ figs=get(groot,'Children');
 disp('Closing all non GUI figures.');
 for kk=1:length(figs)
    if ~isequal(figs(kk).Tag,'GUI')
-       disp(['Closing figure ' num2str(figs(kk).Number) ' ' figs(kk).Name]);
-      close(figs(kk)) 
+        disp(['Closing figure ' num2str(figs(kk).Number) ' ' figs(kk).Name]);
+        close(figs(kk)) 
    end
 end
 disp(' ');
@@ -114,6 +114,14 @@ img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
 img_opt.doFFTFilter         = 1;        % Filter FFT?
 img_opt.FFTFilterRadius     = 1;        % FFT Filter radius (1/px)
 
+%% Analysis ROI
+% Analysis ROI is an Nx4 matrix of [X1 X2 Y1 Y2] which specifies a region
+% to analyze. Each new row in the matrix indicates a separate ROI to
+% perform analysis on.
+
+% Full ROI 
+ixonROI = [1 512 1 512]; 
+
 %% Load the data
 clear ixondata
 disp(['Loading data from ' ixon_imgdir]);
@@ -205,20 +213,13 @@ end
 %% Assign Params to outdata
 outdata.Params=ixondata.Params;
 
-
 if ixon_doSave
     Params =[ixondata.Params];
     filename=fullfile(ixon_imgdir,'figures','Params.mat');
     save(filename,'Params');
 end
-%% Analysis ROI
-% Analysis ROI is an Nx4 matrix of [X1 X2 Y1 Y2] which specifies a region
-% to analyze. Each new row in the matrix indicates a separate ROI to
-% perform analysis on.
 
-% Full ROI 
-ixonROI = [1 512 1 512]; 
-
+%% Distribute ROI
 [ixondata.ROI]=deal(ixonROI);
 
 %% Image Processing : Bias, Mask, and Filtering
