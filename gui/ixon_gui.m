@@ -116,7 +116,7 @@ set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
         if doClose
             disp('Closing iXon GUI...');      
             stop(statusTimer);
-            if cam_status.isConnected;ixon_disconnectCam;end
+            if cam_status.isConnected;ixon_disconnectCamera;end
             delete(statusTimer);
             delete(fig);      % Delete the figure          
         end
