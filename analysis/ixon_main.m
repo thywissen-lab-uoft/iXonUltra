@@ -37,6 +37,32 @@ lambda=770E-9;
 amu=1.660539E-27; 
 m=40*amu;
 
+%% Select image directory
+% Choose the directory where the images to analyze are stored
+disp([datestr(now,13) ' Choose an image analysis folder...']);
+dialog_title='Choose the root directory of the images';
+
+if ixon_getImageDir(datevec(now))
+    newdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
+    saveOpts = struct;
+    if isequal(newdir,0)
+        disp('Canceling.');    
+        return; 
+    else
+        imgdir = newdir;
+        ixon_imgdir = imgdir;
+        saveDir = [imgdir filesep 'figures'];
+        if ~exist(saveDir,'dir'); mkdir(saveDir);end   
+        saveOpts.saveDir=saveDir;
+        saveOpts.Quality = 'auto';
+        strs=strsplit(imgdir,filesep);
+        FigLabel=[strs{end-1} filesep strs{end}];
+    end
+else
+    disp('Canceling.');
+    return;
+end
+
 %% Analysis Variable
 % This section of code chooses the variable to plot against for aggregate
 % plots.  The chosen variable MUST match a variable provided in the params
@@ -93,50 +119,6 @@ img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
 img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
 img_opt.doFFTFilter         = 1;        % Filter FFT?
 img_opt.FFTFilterRadius     = 1;        % FFT Filter radius (1/px)
-
-
-
-%% Select image directory
-% % Choose the directory where the images to analyze are stored
-% disp([datestr(now,13) ' Choose an image analysis folder...']);
-% dialog_title='Choose the root dire ctory of the images';
-% ixon_imgdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
-% if isequal(ixon_imgdir,0)
-%     disp('Canceling.');
-%     return 
-% end
-% 
-% % Choose the directory where the images to analyze are stored
-disp([datestr(now,13) ' Choose an image analysis folder...']);
-dialog_title='Choose the root directory of the images';
-
-
-if ixon_getImageDir(datevec(now))
-    newdir=uigetdir(ixon_getImageDir(datevec(now)),dialog_title);
-    saveOpts = struct;
-
-    if isequal(newdir,0)
-        disp('Canceling.');    
-        return; 
-    else
-                imgdir = newdir;
-
-        ixon_imgdir = imgdir;
-        saveDir = [imgdir filesep 'figures'];
-
-        if ~exist(saveDir,'dir'); mkdir(saveDir);end    
-
-        saveOpts.saveDir=saveDir;
-        saveOpts.Quality = 'auto';
-
-        strs=strsplit(imgdir,filesep);
-        FigLabel=[strs{end-1} filesep strs{end}];
-    end
-else
-    disp('Canceling.');
-    return;
-end
-
 
 %% Load the data
 clear ixondata
