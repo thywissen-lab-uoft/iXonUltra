@@ -126,35 +126,27 @@ disp(['Loading data from ' ixon_imgdir]);
 files=dir([ixon_imgdir filesep '*.mat']);
 files={files.name};
 
-
 for kk=1:length(files)
     str=fullfile(ixon_imgdir,files{kk});
     [a,b,c]=fileparts(str);      
     disp(['     (' num2str(kk) ')' files{kk}]);    
-    data=load(str);     
-    data=data.data;  
-
-    % Display image properties
+    data=load(str);data=data.data;  
     try
         disp(['     Image Name     : ' data.Name]);
         disp(['     Execution Time : ' datestr(data.Date)]);
         if ~ixon_autoXVar
             disp(['     ' ixon_xVar ' : ' num2str(data.Params.(ixon_xVar))]);
         end
-
         disp(' ');
     end    
-    
     data.Params.ExecutionDate = datenum(data.Params.ExecutionDate);
-data.Params.ExecutionDateStr = datestr(data.Params.ExecutionDate);    
-%     
-%     if isequal(ixon_xVar,'ExecutionDate')
-%         data.Params.(ixon_xVar)=datenum(data.Params.(ixon_xVar))*24*60*60;
-%     end    
+    data.Params.ExecutionDateStr = datestr(data.Params.ExecutionDate); 
     ixondata(kk)=data;    
 end
 disp(' ');
-
+%% Match Parameters and Flags
+% This makes sure that all data as has all the flags and params in each. 
+% This is usually not necessary.
 ixondata = ixon_matchParamsFlags(ixondata);
 
 %% X Variable and Units
