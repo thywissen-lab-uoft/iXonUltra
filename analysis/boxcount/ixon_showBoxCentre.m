@@ -499,7 +499,7 @@ iHigh=find((Y-gD)/gA>.8,1);
 iLow=find((Y-gD)/gA<-.8,1);
 gB=abs(X(iHigh)-X(iLow))*2.2;
 
-gB=4;
+gB=30;
 
 minValues=X(Y==min(Y));
 maxValues=X(Y==max(Y));

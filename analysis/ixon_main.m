@@ -348,8 +348,8 @@ ixon_boxPopts.NumberExp2SumFit = 0;
 ixon_boxPopts.NumberLorentzianFit=0;
 
 ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_boxPopts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
-ixon_boxPopts.CenterGrowSineFit = 1;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterGrowSineFit = 0;  % Fit decaying sine to cloud center
 ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
 
 if ixon_doBoxCount  
