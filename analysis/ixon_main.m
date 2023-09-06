@@ -106,8 +106,8 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 0;        % Deconolve with PSF
-img_opt.PSF                 = [1.3163 50 12]; % PSF parameters [sigma, N, Niter]
+img_opt.doPSF               = 1;        % Deconolve with PSF
+img_opt.PSF                 = [1.3163 51 12]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
 img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
@@ -307,6 +307,26 @@ end
 %% ANALYSIS : BOX COUNT
 if ixon_doBoxCount
     ixondata=ixon_boxCount(ixondata);
+    
+    ixon_boxdata = ixon_getBoxData(ixondata,ixon_xVar);
+    
+    if ixon_doSave
+        P = [ixon_boxdata.Params];
+        BoxData_SourceFiles = {P.ExecutionDateStr};
+        BoxData_xVarName = ixon_xVar;
+        BoxData_xVarUnit = ixon_unit;
+        BoxData_xVar = [P.(ixon_xVar)];
+        BoxData_N = [ixon_boxdata.N];
+        BoxData_Xc = [ixon_boxdata.Xc];
+        BoxData_Yc = [ixon_boxdata.Yc];
+        BoxData_Xs = [ixon_boxdata.Xs];
+        BoxData_Ys = [ixon_boxdata.Ys];
+
+        filename=fullfile(ixon_imgdir,'figures','BoxData.mat');
+        save(filename,'BoxData_SourceFiles','BoxData_xVarName','BoxData_xVarUnit',...
+            'BoxData_xVar','BoxData_N','BoxData_Xc','BoxData_Yc',...
+            'BoxData_Xs','BoxData_Ys');
+    end
 end
 %% PLOTTING : BOX COUNT
 
@@ -347,24 +367,7 @@ if ixon_doBoxCount
     outdata.Xcbox = Xc;
     outdata.Ycbox = Yc;
     
-    if ixon_doSave
-        BC = [ixondata.BoxCount];
-        P = [ixondata.Params];
-        BoxData_SourceFiles = {P.ExecutionDateStr};
-        BoxData_xVarName = ixon_xVar;
-        BoxData_xVarUnit = ixon_unit;
-        BoxData_xVar = [P.(ixon_xVar)];
-        BoxData_N = [BC.Ncounts];
-        BoxData_Xc = [BC.Xc];
-        BoxData_Yc = [BC.Yc];
-        BoxData_Xs = [BC.Xs];
-        BoxData_Ys = [BC.Ys];
-
-        filename=fullfile(ixon_imgdir,'figures','BoxData.mat');
-        save(filename,'BoxData_SourceFiles','BoxData_xVarName','BoxData_xVarUnit',...
-            'BoxData_xVar','BoxData_N','BoxData_Xc','BoxData_Yc',...
-            'BoxData_Xs','BoxData_Ys');
-    end
+    
     
 end
 
