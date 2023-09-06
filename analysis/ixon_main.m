@@ -80,7 +80,7 @@ outdata=struct;
 
 %% Analysis Options
 % Select what kinds of analyses you'd like to perform
-doRawImageHistogram=1;
+doRawImageHistogram=0;
 ixon_doBoxCount=1;
 ixon_doGaussFit=0;
 
