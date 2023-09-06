@@ -6,11 +6,9 @@
 % calls and plots all other analyses.
 
 % Display this filename
-disp(repmat('-',1,60));    
-disp(repmat('-',1,60));    
+disp(repmat('-',1,60));disp(repmat('-',1,60));    
 disp(['Calling ' mfilename '.m']);
-disp(repmat('-',1,60));    
-disp(repmat('-',1,60));    
+disp(repmat('-',1,60));disp(repmat('-',1,60));    
 
 % Add all subdirectories for this m file
 curpath = fileparts(mfilename('fullpath'));
