@@ -69,14 +69,24 @@ for kk=1:(ceil(length(ixondata)/pMax))
         ROI=ixondataSUB(ii).ROI(1,:);
 
         % Get the data
-        x=ixondataSUB(ii).X;    % X vector
-        y=ixondataSUB(ii).Y;    % Y vector
-        z=ixondataSUB(ii).Z; % N counts
-
-        % Get data over the selected ROI
-        x=x(ROI(1):ROI(2));
-        y=y(ROI(3):ROI(4));
-        z=z(ROI(3):ROI(4),ROI(1):ROI(2));
+%         x=ixondataSUB(ii).X;    % X vector
+%         y=ixondataSUB(ii).Y;    % Y vector
+%         z=ixondataSUB(ii).Z; % N counts
+% 
+%         % Get data over the selected ROI
+%         x=x(ROI(1):ROI(2));
+%         y=y(ROI(3):ROI(4));
+%         z=z(ROI(3):ROI(4),ROI(1):ROI(2));
+        
+        
+        ix_1 = find(ixondataSUB(ii).X>=ROI(1),1);
+        ix_2 = find(ixondataSUB(ii).X>=ROI(2),1);
+        iy_1 = find(ixondataSUB(ii).Y>=ROI(3),1);
+        iy_2 = find(ixondataSUB(ii).Y>=ROI(4),1);            
+        x = ixondataSUB(ii).X(ix_1:ix_2);
+        y = ixondataSUB(ii).Y(iy_1:iy_2);   
+        z = ixondataSUB(ii).Z(iy_1:iy_2,ix_1:ix_2);         
+        
 
         % Get the gaussian fit
         fout=ixondataSUB(ii).GaussFit{1};

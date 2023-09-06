@@ -280,7 +280,7 @@ if ixon_doGaussFit
     ixon_gauss_opts=struct;
     ixon_gauss_opts.doRescale=1;     % Rescaling the image makes fitting faster
     ixon_gauss_opts.doMask=1;        % Apply the image mask
-    ixon_gauss_opts.Scale=0.5;       % Scale to rescale the image by
+    ixon_gauss_opts.Scale=0.25;       % Scale to rescale the image by
     ixon_gauss_opts.doRotate=1;      % Allow for gaussian to be rotated (requires PCA)
     ixon_gauss_opts.Mask=ixon_mask;  % The image mask
     ixon_gauss_opts.doBackground = 1; % Enable a background to the fit

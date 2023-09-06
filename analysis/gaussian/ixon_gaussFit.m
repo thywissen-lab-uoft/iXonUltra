@@ -23,12 +23,14 @@ for n=1:length(ixondata)
     fprintf([num2str(n) ' of ' num2str(length(ixondata)) ' :']);
 
     for k=1:size(ixondata(n).ROI,1)
-        ROI=ixondata(n).ROI(k,:);
-
-        % Acquire the data
-        X=double(ixondata(n).X(ROI(1):ROI(2)));
-        Y=double(ixondata(n).Y(ROI(3):ROI(4)));
-        Z=double(ixondata(n).Z(ROI(3):ROI(4),ROI(1):ROI(2)));       
+        ROI=ixondata(n).ROI(k,:);       
+        ix_1 = find(ixondata(n).X>=ROI(1),1);
+        ix_2 = find(ixondata(n).X>=ROI(2),1);
+        iy_1 = find(ixondata(n).Y>=ROI(3),1);
+        iy_2 = find(ixondata(n).Y>=ROI(4),1);            
+        X = ixondata(n).X(ix_1:ix_2);
+        Y = ixondata(n).Y(iy_1:iy_2);   
+        Z = ixondata(n).Z(iy_1:iy_2,ix_1:ix_2,k);         
 
         % Rescale images for fitting speed
         if opts.doRescale
@@ -180,9 +182,6 @@ for n=1:length(ixondata)
             GaussFit(k)={fout};
             
         end
-    end
-    if n==7
-        keyboard
     end
     ixondata(n).GaussFit=GaussFit;
 end
