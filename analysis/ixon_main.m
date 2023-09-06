@@ -70,24 +70,30 @@ doStripeAnalysis=0;
 
 ixon_doAnimate = 1;
 %% Image Processing Options
+
 % What do you do to the raw data?
 maskname=fullfile('ixon_mask.mat');
 ixon_mask=load(maskname);
 ixon_mask=ixon_mask.BW;
 
-img_process = struct;
-img_process.doSubtractBias      = 1;
-img_process.doGaussFilter       = 0;
-img_process.GaussFilterRadius   = 1;
-img_process.doMask              = 0;
-img_process.Mask                = ixon_mask;
-img_process.doPSF               = 0;
-img_process.PSF                 = [1.3 50 5]; % [sigma, N, Niter]
-img_process.doFFT               = 1;
-img_process.doMaskIR            = 1;
-img_process.IRMaskRadius        = 0.01;
-img_process.doFFTFilter         = 1;
-img_process.FFTFilterRadius     = 1;
+img_opt = struct;
+img_opt.doSubtractBias      = 1;        % Subtract 200 count electronic offset
+img_opt.doScale             = 1;        % Scale up image? (good for single-site)
+img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
+img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
+img_opt.Theta               = 60.2077;  % Rotation amount (deg.)
+img_opt.doMask              = 0;        % Mask the data? (not used)
+img_opt.Mask                = ixon_mask;% Mask File 512x512
+img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
+img_opt.GaussFilterRadius   = 1;        % Filter radius
+img_opt.doPSF               = 0;        % Deconolve with PSF
+img_opt.PSF                 = [1.3163 50 12]; % PSF parameters [sigma, N, Niter]
+img_opt.doFFT               = 1;        % Compute FFT?
+img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
+img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
+img_opt.doFFTFilter         = 1;        % Filter FFT?
+img_opt.FFTFilterRadius     = 1;        % FFT Filter radius (1/px)
+
 
 
 %% Select image directory
