@@ -54,13 +54,8 @@ outdata=struct;
 
 %% Analysis Options
 % Select what kinds of analyses you'd like to perform
-
-doRawImageHistogram=0;
-
-doDarkImageAnalysis = 1;
-
+doRawImageHistogram=1;
 ixon_doBoxCount=1;
-
 ixon_doGaussFit=0;
 
 % Fast Fourier Transform Analysis
