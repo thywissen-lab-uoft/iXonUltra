@@ -206,20 +206,16 @@ switch varType
     otherwise
         error('uhh you chose the wrong thing to plot');
 end
-%% Assign Params to outdata
-
+%% Save Params
 if ixon_doSave
     Params =[ixondata.Params];
     filename=fullfile(ixon_imgdir,'figures','Params.mat');
     save(filename,'Params');
 end
-
 %% Distribute ROI
 [ixondata.ROI]=deal(ixonROI);
-
 %% Process Images
 ixondata = ixonProcessImages(ixondata,img_opt);
-
 %% Basic Raw Image Analysis
 
 if doRawImageHistogram   
@@ -399,9 +395,7 @@ if ixon_doBoxCount
     [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_boxPopts); 
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end 
 
-    outdata.Ndatabox=Ndatabox;
-    outdata.Xcbox = Xc;
-    outdata.Ycbox = Yc; 
+    
 end
 
 
@@ -467,7 +461,6 @@ if ixon_doGaussFit
         end
     end
     
-    outdata.Ndatagauss=Ndatagauss;    
 end
 
 
