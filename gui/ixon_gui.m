@@ -472,7 +472,7 @@ hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',8,
 
 % Save checkbox callback
     function saveCheck(src,~)
-        if src.Value
+        if src.Value;
             tSaveDir.Enable='on';
             bBrowse.Enable='on';
         else
@@ -981,8 +981,8 @@ tblROI.Position(1:2)=[5 hpAnl.Position(4)-tblROI.Position(4)-20];
         % Check that ROI is within image bounds
         if ROI(1)<1; ROI(1)=1; end       
         if ROI(3)<1; ROI(3)=1; end   
-%         if ROI(4)>512; ROI(4)=512; end       
-%         if ROI(2)>512; ROI(2)=512; end         
+        if ROI(4)>512; ROI(4)=512; end       
+        if ROI(2)>512; ROI(2)=512; end         
         % Reassign the ROI
         src.Data(m,:)=ROI;      
         % Try to update ROI graphics
@@ -998,7 +998,7 @@ tblROI.Position(1:2)=[5 hpAnl.Position(4)-tblROI.Position(4)-20];
 % Button to enable GUI selection of analysis ROI
 ttstr='Select the analysis ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
-hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
     'Backgroundcolor','w','Position',[130 tblROI.Position(2)+2 18 18],'Callback',@slctROICB,...
     'ToolTipString',ttstr);
 
@@ -1023,8 +1023,8 @@ hbSlctROI=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
         % Constrain ROI to image
         if ROI(1)<1; ROI(1)=1; end       
         if ROI(3)<1; ROI(3)=1; end   
-%         if ROI(4)>512; ROI(4)=512; end       
-%         if ROI(2)>512; ROI(2)=512; end   
+         if ROI(4)>512; ROI(4)=512; end       
+         if ROI(2)>512; ROI(2)=512; end   
         
         % Try to update ROI graphics
         tblROI.Data=ROI;   
@@ -1113,7 +1113,6 @@ hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
         disp('Redoing fits...');
         updateImages;
     end
-
 
 %% Momentum Panel
 hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
@@ -1669,6 +1668,7 @@ cCoMStr_D.Position=[2 2 125 15];
         end
     end
 
+% Change display ROI on plots
     function [ROI,err] = chDispROI(ROI,img_type)  
         err = 0;        
         % Determine the ROI limits depending on image type

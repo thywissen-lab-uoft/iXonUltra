@@ -74,7 +74,6 @@ outdata=struct;
 
 %% Analysis Options
 % Select what kinds of analyses you'd like to perform
-
 doRawImageHistogram=1;
 ixon_doBoxCount=1;
 ixon_doGaussFit=0;
@@ -198,6 +197,7 @@ switch varType
         error('uhh you chose the wrong thing to plot');
 end
 %% Assign Params to outdata
+
 outdata.Params=ixondata.Params;
 
 %% Analysis ROI
