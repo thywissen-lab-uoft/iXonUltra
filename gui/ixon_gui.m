@@ -138,22 +138,22 @@ function SizeChangedFcn(~,~)
         resizePlots;                                                % Resize plots                          
         
         % Resize Panels
-        hpCam.Position(2:3)=[H-hpCam.Position(4) hF.Position(3)];        
-        hpSave.Position(2:3)=[hpCam.Position(2)-hpSave.Position(4) hF.Position(3)];                 
-        hpNav.Position(2:3)=[hpSave.Position(2)-hpSave.Position(4) hF.Position(3)];               
-        hpAcq.Position(2)=hpNav.Position(2)-hpAcq.Position(4);
-        hpADV.Position(2)=hpAcq.Position(2)-hpADV.Position(4);
-        hpAnl.Position(2)=hpADV.Position(2)-hpAnl.Position(4);        
-        hpKspace.Position(2) = hpAnl.Position(2)-hpKspace.Position(4);
-        hpDig.Position(2) = hpKspace.Position(2) - hpDig.Position(4);   
-        hpDisp_Select.Position(2)=hpNav.Position(2) - hpDisp_Select.Position(4);
-        hpDisp_X.Position(2)=hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
-        hpDisp_K.Position(2)=hpDisp_X.Position(2) - hpDisp_K.Position(4);     
-        hpDisp_B.Position(2)=hpDisp_K.Position(2) - hpDisp_B.Position(4);    
-        hpDisp_HB.Position(2)=hpDisp_B.Position(2) - hpDisp_HB.Position(4); 
-        hpDisp_D.Position(2) = hpDisp_HB.Position(2) - hpDisp_D.Position(4);
-        hpFit.Position(4)=H-Ht;                        
-        strstatus.Position(1)=hpCam.Position(3)-strstatus.Position(3)-2;        
+        hpCam.Position(2:3)     = [H-hpCam.Position(4) hF.Position(3)];        
+        hpSave.Position(2:3)    = [hpCam.Position(2)-hpSave.Position(4) hF.Position(3)];                 
+        hpNav.Position(2:3)     = [hpSave.Position(2)-hpSave.Position(4) hF.Position(3)];               
+        hpAcq.Position(2)       = hpNav.Position(2)-hpAcq.Position(4);
+        hpADV.Position(2)       = hpAcq.Position(2)-hpADV.Position(4);
+        hpAnl.Position(2)       = hpADV.Position(2)-hpAnl.Position(4);        
+        hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
+        hpDig.Position(2)       = hpKspace.Position(2) - hpDig.Position(4);   
+        hpDisp_Select.Position(2) =hpNav.Position(2) - hpDisp_Select.Position(4);
+        hpDisp_X.Position(2)    = hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
+        hpDisp_K.Position(2)    = hpDisp_X.Position(2) - hpDisp_K.Position(4);     
+        hpDisp_B.Position(2)    = hpDisp_K.Position(2) - hpDisp_B.Position(4);    
+        hpDisp_HB.Position(2)   = hpDisp_B.Position(2) - hpDisp_HB.Position(4); 
+        hpDisp_D.Position(2)    = hpDisp_HB.Position(2) - hpDisp_D.Position(4);
+        hpFit.Position(4)       = H-Ht;                        
+        strstatus.Position(1)   = hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;       
 end
 
