@@ -44,25 +44,12 @@ m=40*amu;
 % display properties.
 
 % Choose what kind of variable to plot against (sequencer/camera)
-varType='param'; % always select 'param' for now 
-
-% Should the analysis attempt to automatically find the xvariable?
-ixon_autoXVar = 1;
-
-% Should the analysis attempt to automatically find the unit?
-ixon_autoUnit=1;
-
-% The variable to plot against
-ixon_xVar='ExecutionDate';
-
-% If ixon_autoUnit=0, this will be used.
-ixon_overrideUnit='V';
-
-% Flag whether to save the output figures or not (code is faster if not
-% saving)
-ixon_doSave=1;
-
-% Define the output data
+varType             = 'param'; % always select 'param' for now 
+ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoUnit       = 1;      % Auto detect unit for variable?
+ixon_xVar           = 'qgm_raman_2photon_detuning'; % Variable Name
+ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
+ixon_doSave         = 1;    % Save Analysis?
 outdata=struct;
 
 %% Analysis Options
