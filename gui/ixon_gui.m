@@ -933,14 +933,11 @@ hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize'
     'backgroundcolor','w','Position',[5 cScale.Position(2)+22 120 13],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
-
 % Subtract bias
 ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
 hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',7,...
     'backgroundcolor','w','Position',[5 hcMask.Position(2)+18 80 15],...
     'ToolTipString',ttstr,'enable','on','Value',1);
-
-
 
 % process button
 hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
@@ -1079,12 +1076,8 @@ hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',7,...
              cGaussRet.Value=0;
              cGaussRet.Enable='off';
           end
-       end
-       
-       if src.Value
-           hcGaussRot.Value=0;
-       end
-
+       end       
+       if src.Value;hcGaussRot.Value=0;end
     end
 
 hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize',7,...
@@ -1101,12 +1094,8 @@ hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize'
              cGaussRet.Value=0;
              cGaussRet.Enable='off';
           end
-      end
-      
-      if src.Value
-         hcGauss.Value=0;
-      end
-        
+      end      
+      if src.Value;hcGauss.Value=0;end        
     end
 
 ttstr='Analyze stripe pattern in image to measure field stability';
@@ -1293,9 +1282,7 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             opts.a1 = a1;
             opts.a2 = a2;
             opts.p1 = p1;
-            opts.p2 = p2;
-       
-            
+            opts.p2 = p2;     
             if isfield(data,'RotationMask')
                opts.Mask =  data.RotationMask;
             end
@@ -1477,19 +1464,6 @@ cTextLattice=uicontrol(hpDisp_X,'style','checkbox','string','lattice text',...
     'enable','on','value',1);
 cTextLattice.Position=[cDrawLattice.Position(3)+cDrawLattice.Position(1)+5 2 120 15];
 
-% Button group for deciding what the X/Y plots show
-% bgDeconv = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w','BorderType','None',...
-%     'SelectionChangeFcn',@chPlotCB);  
-% bgDeconv.Position(3:4)=[125 15];
-% bgDeconv.Position(1:2)=[2 47];
-%     
-% % Radio buttons for cuts vs sum
-% rbPosRaw=uicontrol(bgDeconv,'Style','radiobutton','String','show raw imagee',...
-%     'Position',[0 0 60 15],'units','pixels','backgroundcolor','w','Value',1,...
-%     'fontsize',7);
-% rbPosDeconv=uicontrol(bgDeconv,'Style','radiobutton','String','show deconvolved image',...
-%     'Position',[60 0 60 15],'units','pixels','backgroundcolor','w','Value',0,...
-%     'fontsize',7);
 
 %% Display Options Panel
 
@@ -1713,8 +1687,7 @@ cCoMStr_D.Position=[2 2 125 15];
                 ROI_LIM = [-500 500 -500 500];
             otherwise
                 warning('OH GOD NO');            
-        end
-        
+        end        
         % Check for string inputs of max and min
         if isa(ROI,'char')
             if isequal(ROI,'max')
@@ -1738,11 +1711,8 @@ cCoMStr_D.Position=[2 2 125 15];
                                min(data.LatticeDig(1).n2) max(data.LatticeDig(1).n2)];
                         else
                             aROI=[0 100 0 100];
-                        end
-                        
-                end
-
-                      
+                        end                        
+                end                      
                 ROI=[min(aROI(:,1)) max(aROI(:,2)) min(aROI(:,3)) max(aROI(:,4))];
            end
         end
@@ -1785,13 +1755,10 @@ cCoMStr_D.Position=[2 2 125 15];
             end
             drawnow;
             resizePlots;
-
         catch ME
             warning('Unable to change display ROI.');
             err = 1;
-        end          
-        
-        
+        end    
     end
 
 % Callback for selecting an ROI based upon mouse click input.
