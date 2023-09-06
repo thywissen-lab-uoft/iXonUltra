@@ -70,7 +70,6 @@ ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'qgm_raman_2photon_detuning'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
-outdata=struct;
 
 %% Analysis Options
 % Select what kinds of analyses you'd like to perform
@@ -208,7 +207,6 @@ switch varType
         error('uhh you chose the wrong thing to plot');
 end
 %% Assign Params to outdata
-outdata.Params=ixondata.Params;
 
 if ixon_doSave
     Params =[ixondata.Params];
@@ -313,8 +311,7 @@ if ixon_doGaussFit
             'GaussData_Xs','GaussData_Ys');
         filename=fullfile(ixon_imgdir,'figures','ixon_gaussdata.mat');
         save(filename,'ixon_gaussdata');
-    end
-    
+    end    
 end
 
 %% Calculate FFT
@@ -367,8 +364,6 @@ end
 %     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_fft_box_size');end          
 % end
 
-
-
 %% PLOTTING : BOX COUNT
 
 ixon_boxPopts=struct;
@@ -406,10 +401,7 @@ if ixon_doBoxCount
 
     outdata.Ndatabox=Ndatabox;
     outdata.Xcbox = Xc;
-    outdata.Ycbox = Yc;
-    
-    
-    
+    outdata.Ycbox = Yc; 
 end
 
 
@@ -549,9 +541,3 @@ if doStripeAnalysis
    ixon_stripe_1d; 
 end
 
-
-%% save output data
-if ixon_doSave
-    filename=fullfile(ixon_imgdir,'figures','outdata.mat');
-    save(filename,'outdata');
-end
