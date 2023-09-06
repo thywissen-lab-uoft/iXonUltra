@@ -223,13 +223,14 @@ end
 % perform analysis on.
 
 % Full ROI 
-ixonROI = [1 1024 1 1024]; 
+ixonROI = [1 512 1 512]; 
 
 [ixondata.ROI]=deal(ixonROI);
 
 %% Image Processing : Bias, Mask, and Filtering
 
-ixondata = processRawData(ixondata);
+% ixondata = processRawData(ixondata);
+ixondata = ixonProcessImages(ixondata,img_opt);
 
 
 
