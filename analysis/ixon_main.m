@@ -213,11 +213,7 @@ end
 [ixondata.ROI]=deal(ixonROI);
 %% Process Images
 ixondata = ixonProcessImages(ixondata,img_opt);
-%% Basic Raw Image Analysis
 
-if ixon_doAnalyzeRaw   
-  ixon_AnalyzeRawImages;
-end
 
 %% ANALYSIS : BOX COUNT
 
@@ -393,15 +389,12 @@ if ixon_doGaussFit
     end    
 end
 
+%% Standard Cloud Analysis
 
-
+%% Raw Image Analysis
+if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis
-if ixon_doAnalyzeFourier
-    ixon_AnalyzeFourer;
-end
-
+if ixon_doAnalyzeFourier;ixon_AnalyzeFourer;end
 %% Stripe Analysis
-if ixon_DoAnalyzeStripes2D
-   ixon_stripe_2d; 
-end
+if ixon_DoAnalyzeStripes2D;ixon_stripe_2d;end
 
