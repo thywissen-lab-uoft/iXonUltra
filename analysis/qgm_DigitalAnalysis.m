@@ -82,7 +82,9 @@ title('average digitized image N=29');
 c = colorbar;
 c.Label.String = 'filling fraction';
 N=fout.A*sqrt(2*pi*fout.Xs^2)*sqrt(2*pi*fout.Ys^2);
-                        str  = ['n_0=' num2str(fout.A,3) ', N=' num2str(round(N))];
+
+str  = ['n_0=' num2str(fout.A,3) ', N=' num2str(round(N)) newline ...
+    'sx = ' num2str(round(fout.Xs)) ', ' 'sy = ' num2str(round(fout.Ys))];
 
 text(.02,.02,str,'units','normalized','horizontalalignment','left',...
     'verticalalignment','bottom','color','w','fontsize',14);
@@ -103,6 +105,58 @@ hold on
 plot(n1,sum(Zfit,1),'r-');
 
 %%
+
+
+%% Animate
+filename='animation_qgm.gif';
+hF = figure(301);
+clf
+hImg = imagesc(n1,n2,Zdig_tot);
+xlabel('x site');
+ylabel('y site');
+startDelay = 1;
+midDelay = 0.2;
+endDelay = .5;
+
+for kk=1:length(digdata)   % Iterate over all unique xvalues
+    
+    %%%% Update the graphics
+    
+%     if isequal(xVar,'ExecutionDate')
+%             t.String=[xVar ': ' datestr(uxvals(kk),'YYYY-mm-DD_HH-MM-SS')];          % Variable string
+%     else
+%             t.String=[xVar ': ' num2str(uxvals(kk))];          % Variable string
+%     end
+
+
+    set(hImg,'CData',digdata(kk).Zdig)  % Image data
+    set(gca,'XDir','normal','YDir','normal');
+    
+    drawnow % update graphcis
+    
+    
+    % Write the image data
+    frame = getframe(hF);
+    im = frame2im(frame);
+    [A,map] = rgb2ind(im,256);           
+
+    if kk == 1
+        imwrite(A,map,filename,'gif','LoopCount',Inf,'DelayTime',startDelay);
+    else
+        if kk==29
+            imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',endDelay);
+        else
+            imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',midDelay);
+        end
+    end
+
+end
+close;
+
+disp('done');
+
+
+%%
 x = [params.(xVar)];
 n = [digdata.Natoms];
 xc = [digdata.Xc];
@@ -113,22 +167,22 @@ ys = [digdata.Ys];
 figure(200);
 clf
 
-subplot(4,2,1);
-histogram(n,10);
+subplot(3,2,1);
+histogram(n,7);
 xlabel('atom number');
 
-subplot(4,2,3);
-histogram(xc,10);
+subplot(3,2,3);
+histogram(xc,7);
 xlabel('x center (sites)');
 
-subplot(4,2,4);
-histogram(xs,10);
+subplot(3,2,4);
+histogram(xs,7);
 xlabel('x size (sites)');
 
-subplot(4,2,5);
-histogram(yc,10);
+subplot(3,2,5);
+histogram(yc,7);
 xlabel('y center (sites)');
 
-subplot(4,2,6);
-histogram(ys,10);
+subplot(3,2,6);
+histogram(ys,7);
 xlabel('y sizes (sites)');
