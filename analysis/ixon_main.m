@@ -303,7 +303,7 @@ if ixon_doPlotProfiles
         if ixon_doSave
             for kk=1:length(hF_Xs_rNum) 
                 figure(hF_Xs_rNum(kk));
-                ixon_saveFigure2(hF_Xs_rNum(kk),['OD_R' num2str(rNum) '_X' num2str(kk)],saveOpts);
+                ixon_saveFigure2(hF_Xs_rNum(kk),['ixon_R' num2str(rNum) '_X' num2str(kk)],saveOpts);
                 pause(0.1);
             end 
         end
@@ -313,7 +313,7 @@ if ixon_doPlotProfiles
         if ixon_doSave        
             for kk=1:length(hF_Ys_rNum)
                 figure(hF_Ys_rNum(kk));
-                ixon_saveFigure2(hF_Ys_rNum(kk),['OD_R' num2str(rNum) '_Y' num2str(kk)],saveOpts);
+                ixon_saveFigure2(hF_Ys_rNum(kk),['ixon_R' num2str(rNum) '_Y' num2str(kk)],saveOpts);
                 pause(0.1);
             end
         end
