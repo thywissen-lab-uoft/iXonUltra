@@ -309,36 +309,6 @@ if ixon_doGaussFit
     end    
 end
 
-%% Calculate FFT
-% 
-% fft_opts=struct;
-% fft_opts.doSmooth=1;
-% fft_opts.smoothRadius=1;
-% fft_opts.fft_N=2^11; % Can go higher for smoother data
-% 
-% fft_opts.maskIR=0;
-% fft_opts.maskUV=0;
-% fft_opts.LMax=50;
-% fft_opts.LMin=5;
-% 
-% 
-% if ixon_doFFT
-%     ixondata=ixon_computeFFT(ixondata,fft_opts);
-% end
-% 
-% % Apply makss to FFT Data
-% ixon_mask_IR=1;
-% ixon_mask_UV=0;
-% 
-% 
-% if fft_opts.maskIR
-%     ixondata=ixon_fft_maskIR(ixondata,fft_opts.LMax);    
-% end
-% 
-% if fft_opts.maskUV
-%     ixondata=ixon_fft_maskUV(ixondata,fft_opts.LMin);    
-% end
-
 %% ANALYSIS : FFT BOX COUNT
 
 % if ixon_fft_doBoxCount && ixon_doFFT    
