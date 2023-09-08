@@ -80,6 +80,7 @@ ixon_doGaussFit             = 1;
 
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
+ixon_doPlotProfiles         = 1;
 ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
@@ -279,6 +280,47 @@ if ixon_doGaussFit
         filename=fullfile(ixon_imgdir,'figures','ixon_gaussdata.mat');
         save(filename,'ixon_gaussdata');
     end    
+end
+
+
+%% Profiles
+profile_opts = struct;
+profile_opts.Style = 'cut'; 'sum';  % Cut or sum?
+% profile_opts.Style = 'sum';  % Cut or sum?
+
+profile_opts.FigLabel = FigLabel;
+
+clear hF_X;clear hF_Y;
+hF_X=[];hF_Y=[];
+
+if ixon_doPlotProfiles
+
+    for rNum=1:size(ixondata(1).ROI,1)
+        profile_opts.ROINum = rNum;
+
+        hF_Xs_rNum=ixon_showProfile(ixondata,'X',ixon_xVar,profile_opts);
+
+        if ixon_doSave
+            for kk=1:length(hF_Xs_rNum) 
+                figure(hF_Xs_rNum(kk));
+                ixon_saveFigure2(hF_Xs_rNum(kk),['OD_R' num2str(rNum) '_X' num2str(kk)],saveOpts);
+                pause(0.1);
+            end 
+        end
+
+        hF_Ys_rNum=ixon_showProfile(ixondata,'Y',ixon_xVar,profile_opts);          
+    %   Save the figures (this can be slow)
+        if ixon_doSave        
+            for kk=1:length(hF_Ys_rNum)
+                figure(hF_Ys_rNum(kk));
+                ixon_saveFigure2(hF_Ys_rNum(kk),['OD_R' num2str(rNum) '_Y' num2str(kk)],saveOpts);
+                pause(0.1);
+            end
+        end
+        hF_X=[hF_X; hF_Xs_rNum];
+        hF_Y=[hF_Y; hF_Ys_rNum];
+    end  
+ 
 end
 
 %% Animate cloud 
