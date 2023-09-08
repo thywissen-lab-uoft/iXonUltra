@@ -1,4 +1,4 @@
-function [hF,hF2]=ixon_showCentre(data,xVar,plt_opts,fit_opts)
+function hF = ixon_showCentre(data,xVar,plt_opts,fit_opts)
 
 if nargin <4 
     fit_opts = struct;
@@ -33,8 +33,8 @@ hF=figure('Name',[pad(['iXon ' data.FitType ' centre'],20) plt_opts.FigLabel],..
     'units','pixels','color','w','numbertitle','off');
 hF.Position(1)=510;
 hF.Position(2)=380;
-hF.Position(3)=500;
-hF.Position(4)=600;
+hF.Position(3)=700;
+hF.Position(4)=500;
 drawnow;
 
 % Image directory folder string
@@ -44,9 +44,9 @@ t.Position(4)=t.Extent(4);
 t.Position(3)=hF.Position(3);
 t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
-uicontrol('style','text','string','PCO','units','pixels','backgroundcolor',...
+uicontrol('style','text','string',['iXon ' data.FitType],'units','pixels','backgroundcolor',...
     'w','horizontalalignment','left','fontsize',12,'fontweight','bold',...
-    'position',[2 2 40 20]);
+    'position',[2 2 80 20]);
 
 ixon_resizeFig(hF,t)
 
@@ -133,8 +133,9 @@ if doFit
     drawnow;
 end
 
-%% Fits
-if isfield(ixon_fit_opts,'Center_SineDecay') && ixon_fit_opts.Center_SineDecay && length(xvals)>4
+%% Sine Decay
+
+if isfield(fit_opts,'Center_SineDecay') && fit_opts.Center_SineDecay && length(xvals)>4
     tVec=linspace(min(xvals),max(xvals),100);    
     
     % X Fit
@@ -233,9 +234,9 @@ if isfield(ixon_fit_opts,'Center_SineDecay') && ixon_fit_opts.Center_SineDecay &
     drawnow;
 end
 
-%%
+%% Sine Grow
 
-if isfield(ixon_fit_opts,'Center_SineGrow') && ixon_fit_opts.Center_SineGrow && length(xvals)>4
+if isfield(fit_opts,'Center_SineGrow') && fit_opts.Center_SineGrow && length(xvals)>4
     tVec=linspace(min(xvals),max(xvals),100);    
     
     % X Fit
@@ -333,8 +334,8 @@ if isfield(ixon_fit_opts,'Center_SineGrow') && ixon_fit_opts.Center_SineGrow && 
 end
 
 
-%%
-if isfield(ixon_fit_opts,'Center_Linear') && ixon_fit_opts.Center_Linear && length(xvals)>1
+%% Linear Fit
+if isfield(fit_opts,'Center_Linear') && fit_opts.Center_Linear && length(xvals)>1
     tVec=linspace(min(xvals),max(xvals),100);   
     
     D1=Xc(:,nn);    
@@ -396,12 +397,8 @@ if isfield(ixon_fit_opts,'Center_Linear') && ixon_fit_opts.Center_Linear && leng
     
 
 end
-
-
-% hax1.Position(4)=hax1.Position(4)-15;
-% hax2.Position(4)=hax1.Position(4);
 %%
-ixon_resizeFig(hF2,t)
+ixon_resizeFig(hF,t)
 end
 
 function fitResult=makeSineDecayFit(X,Y,W)

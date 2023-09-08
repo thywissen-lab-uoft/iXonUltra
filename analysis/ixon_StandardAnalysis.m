@@ -18,12 +18,12 @@ ixon_fit_opts.Number_Lorentzian   = 0;
 
 % Center position fit
 ixon_fit_opts.Center_Sine         = 0;
-ixon_fit_opts.Center_SineDecay    = 0;
+ixon_fit_opts.Center_SineDecay    = 1;
 ixon_fit_opts.Center_SineGrow     = 0;
 ixon_fit_opts.Center_Linear       = 0;
 
 
-%% PLOTTING : BOX COUNT
+%% PLOTTING : BOX
 
 if ixon_doBoxCount  
     % Counts
@@ -32,21 +32,28 @@ if ixon_doBoxCount
     
     % Size
     hF_ixon_box_size = ixon_showSize(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_size,'ixon_box_sizes');end     
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_size,'ixon_box_size');end     
     
     % Center
     hF_ixon_box_centre = ixon_showCentre(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_centre,'ixon_box_centre');end     
-
-%     % Plot the second moments
-%     hF_ixon_bsize=ixon_showBoxMoments(ixondata,ixon_xVar,ixon_plt_opts);   
-%     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size');end     
-    
-    % Plot the cloud center
-%     [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_plt_opts); 
-%     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end    
 end
 
+%% PLOTTING : GAUSS
+
+if ixon_doGaussFit  
+    % Counts
+    hF_ixon_gauss_counts = ixon_showCounts(ixon_gaussdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_counts,'ixon_gauss_counts');end     
+    
+    % Size
+    hF_ixon_gauss_size = ixon_showSize(ixon_gaussdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_gauss_size,'ixon_gauss_size');end     
+    
+    % Center
+    hF_ixon_gauss_centre = ixon_showCentre(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_gauss_centre,'ixon_gauss_centre');end     
+end
 
 %% PLOTTING : GAUSSIAN
 
@@ -59,7 +66,6 @@ if ixon_doGaussFit
        
     % Counts
     [hF_numbergauss,Ndatagauss]=ixon_showGaussNumber(ixondata,ixon_xVar,ixon_plt_opts);  
-%  xlim([0 1.4]);
     if ixon_doSave;ixon_saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
     
     % Size
