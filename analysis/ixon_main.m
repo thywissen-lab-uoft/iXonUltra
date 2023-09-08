@@ -309,6 +309,31 @@ if ixon_doGaussFit
 end
 
 
+%% Animate cloud 
+if ixon_doAnimate == 1 && ixon_doSave
+    ixon_animateOpts=struct;
+    
+    ixon_animateOpts.xUnit=ixon_unit;
+    ixon_animateOpts.StartDelay=2; % Time to hold on first picture
+    ixon_animateOpts.MidDelay=1;     % Time to hold in middle picutres
+    ixon_animateOpts.EndDelay=2;     % Time to hold final picture
+
+    % Animate in ascending or descending order?
+    % animateOpts.Order='descend';    % Asceneding or descending
+    ixon_animateOpts.Order='ascend';
+    
+    % Color limit for image
+%     ixon_animateOpts.CLim=[50 200];   % Color limits
+         ixon_animateOpts.CLim=[0 300];   % Color limits
+
+     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+       ixon_animateOpts.CLim=[0 1000];   % Color limits
+
+    ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
+end
+
+
+
 %% PLOTTING : BOX COUNT
 
 ixon_boxPopts=struct;
@@ -332,8 +357,6 @@ if ixon_doBoxCount
     [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,ixon_xVar,ixon_boxPopts);      
     yl=get(gca,'YLim');
     set(gca,'YLim',[0 yl(2)]);
-%     set(gca,'YLim',[2.0e8 2.5e8]);
-%     set(gca,'XScale','log');
     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
     
     % Plot the second moments
@@ -342,11 +365,8 @@ if ixon_doBoxCount
     
     % Plot the cloud center
     [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_boxPopts); 
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end 
-
-    
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end    
 end
-
 
 
 %% PLOTTING : GAUSSIAN
@@ -408,74 +428,12 @@ if ixon_doGaussFit
         for kk=1:length(hF_Ys)
             ixon_saveFigure(ixondata,hF_Ys(kk),['ixon_gauss_profile_Y' '_' num2str(kk)]);
         end
-    end
-    
+    end    
 end
 
 
-%% Animate cloud 
-if ixon_doAnimate == 1 && ixon_doSave
-    ixon_animateOpts=struct;
-    
-    ixon_animateOpts.xUnit=ixon_unit;
-    ixon_animateOpts.StartDelay=2; % Time to hold on first picture
-    ixon_animateOpts.MidDelay=1;     % Time to hold in middle picutres
-    ixon_animateOpts.EndDelay=2;     % Time to hold final picture
-
-    % Animate in ascending or descending order?
-    % animateOpts.Order='descend';    % Asceneding or descending
-    ixon_animateOpts.Order='ascend';
-    
-    % Color limit for image
-%     ixon_animateOpts.CLim=[50 200];   % Color limits
-         ixon_animateOpts.CLim=[0 300];   % Color limits
-
-     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-       ixon_animateOpts.CLim=[0 1000];   % Color limits
-
-    ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
-end
-
-%% Animate cloud FFT
-% ixon_doAnimateFFT = 1;
-% 
-% ixon_animateOptsFFT=struct;   
-% 
-% 
-% % Variable to animate versus
-% ixon_animateOptsFFT.xUnit=ixon_unit;
-% 
-% % Animation Timings
-% ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
-% ixon_animateOptsFFT.MidDelay=.25;     % Time to hold in middle picutres
-% ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
-% 
-% % Animate in ascending or descending order?
-% % animateOpts.Order='descend';    
-% ixon_animateOptsFFT.Order='ascend';
-% 
-% % Color limit for image
-% ixon_animateOptsFFT.CLim=[0 .5];   % Color limits 
-% ixon_animateOptsFFT.CLim=[0 3];   % Color limits 
-% 
-% ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
-% 
-% % FFT UV Cutoff
-% % Reduce the animation view to within a frequency of 1/L
-% ixon_animateOptsFFT.mask_UV=1;
-% ixon_animateOptsFFT.LMin=20;
-% 
-% % FFT IR Cutoff
-% % Apply mask to interior regions to mask 
-% ixon_animateOptsFFT.mask_IR=1;
-% ixon_animateOptsFFT.LMax=200;
-% 
-% if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
-%     ixon_animateFFT(ixondata,ixon_xVar,ixon_animateOptsFFT);
-% end
 
 %% Fourier Analysis
-
 if do_IxonAnalyzeFourier
     ixon_AnalyzeFourer;
 end
@@ -483,9 +441,5 @@ end
 %% Stripe Analysis
 if do_2dStripeAnalysis
    ixon_stripe_2d; 
-end
-
-if doStripeAnalysis
-   ixon_stripe_1d; 
 end
 
