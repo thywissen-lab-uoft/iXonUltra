@@ -72,21 +72,19 @@ ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
 
 %% Analysis Options
-% Select what kinds of analyses you'd like to perform
-doRawImageHistogram=0;
-ixon_doBoxCount=1;
-ixon_doGaussFit=0;
+% Fitting options
+ixon_doBoxCount             = 1;
+ixon_doGaussFit             = 0;
 
-% Fast Fourier Transform Analysis
-% Use if you are looking for astigmatism in the image
-ixon_doAnalyzeFourier = 0;
 
-% Stripe Analysis
-% This is used to analyze the field during the plane selection
-do_2dStripeAnalysis=0;
-doStripeAnalysis=0;
+% Analysis to run
+ixon_doStandardAnalysis     = 1;
+ixon_doAnimate              = 1;    % Animate in position domain
+ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
+ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
+ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
-ixon_doAnimate = 1;
+
 %% Image Processing Options
 
 % What do you do to the raw data?
@@ -217,35 +215,10 @@ end
 ixondata = ixonProcessImages(ixondata,img_opt);
 %% Basic Raw Image Analysis
 
-if doRawImageHistogram   
-    % Do basic analysis on raw counts
-    ixondata=ixon_computeRawCounts(ixondata);
-
-    % Plot histogram of raw counts
-    hist_opts=struct;    
-    hist_opts.xUnit=ixon_unit;
-
-    % Specify the plot variable and units    
-    hist_opts.Outliers=[10 50]; % Histogram wont plot outliers of this many low/high
-    hist_opts.GlobalLimits=1;   % Maintain historgram x limits
-    hist_opts.BinWidth=10;       % Histogram bin width
-    hist_opts.ImageNumber=1;    % Which image to histogram (overwritten)
-    hist_opts.YScale='Log';     % Histogram y scale
-    % hist_opts.YScale='Linear';
-
-    for kk=1:size(ixondata(1).RawImages,3)
-        hist_opts.ImageNumber=kk;
-        hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,ixon_xVar,hist_opts);
-        if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawhist,['ixon_raw_hist' num2str(kk)]);end
-    end
-    % Plot raw count total
-    raw_opts=struct;   
-    raw_opts.xUnit=ixon_unit;    
-    % Define the variable and units    
-    raw_opts.FitLinear=0;    
-    hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,ixon_xVar,raw_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
+if ixon_doAnalyzeRaw   
+  ixon_AnalyzeRawImages;
 end
+
 %% ANALYSIS : BOX COUNT
 
 if ixon_doBoxCount
@@ -323,34 +296,23 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-%     ixon_animateOpts.CLim=[50 200];   % Color limits
-         ixon_animateOpts.CLim=[0 300];   % Color limits
-
-     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-       ixon_animateOpts.CLim=[0 1000];   % Color limits
-
+    ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+    ixon_animateOpts.CLim=[0 1000];   % Color limits
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
-
-
 
 %% PLOTTING : BOX COUNT
 
 ixon_boxPopts=struct;
 ixon_boxPopts.xUnit=ixon_unit;
-
-% ixon_boxPopts.NumberScale='Log';
 ixon_boxPopts.NumberScale='Linear';
-
-ixon_boxPopts.NumberExpFit = 0;
-ixon_boxPopts.NumberExp2SumFit = 0;
-
-ixon_boxPopts.NumberLorentzianFit=0;
-
-ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_boxPopts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
-ixon_boxPopts.CenterGrowSineFit = 0;  % Fit decaying sine to cloud center
-ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
+ixon_boxPopts.NumberExpFit              = 0;
+ixon_boxPopts.NumberExp2SumFit          = 0;
+ixon_boxPopts.NumberLorentzianFit       = 0;
+ixon_boxPopts.CenterSineFit             = 0;       % Fit sine fit to cloud center
+ixon_boxPopts.CenterDecaySineFit        = 1;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterGrowSineFit         = 0;  % Fit decaying sine to cloud center
+ixon_boxPopts.CenterLinearFit           = 0;     % Linear fit to cloud center
 
 if ixon_doBoxCount  
     % Plot the atom number
@@ -434,12 +396,12 @@ end
 
 
 %% Fourier Analysis
-if do_IxonAnalyzeFourier
+if ixon_doAnalyzeFourier
     ixon_AnalyzeFourer;
 end
 
 %% Stripe Analysis
-if do_2dStripeAnalysis
+if ixon_DoAnalyzeStripes2D
    ixon_stripe_2d; 
 end
 
