@@ -277,7 +277,6 @@ if ixon_doGaussFit
     end    
 end
 
-
 %% Animate cloud 
 if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts=struct;
@@ -296,7 +295,6 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.CLim=[0 1000];   % Color limits
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
-
 
 %% Standard Cloud Analysis
 if ixon_doStandardAnalysis;ixon_StandardAnalysis;end
