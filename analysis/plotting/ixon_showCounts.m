@@ -1,10 +1,19 @@
-function hF = ixon_showCounts(data,xVar,opts)
+function hF = ixon_showCounts(data,xVar,plt_opts,fit_opts)
 
-if nargin == 3 && isfield(opts,'FigLabel') 
-    FigLabel = opts.FigLabel;
-else
-    FigLabel = '';
-    opts = struct;
+if nargin <4 
+    fit_opts = struct;
+end
+
+if nargin < 3 
+    plt_opts = struct;
+end
+
+if nargin < 2
+    xVar = 'ExecutionDate';
+end
+
+if ~isfield(plt_opts,'FigLabel')
+    plt_opts.FigLabel = '';
 end
 
 %% Sort the data by the parameter given
@@ -14,13 +23,13 @@ N = data.N;
 
 %% Make Figure
 
-hF=figure('Name',[pad(['ixon ' data.FitType ' number'],20) FigLabel],...
+hF=figure('Name',[pad(['ixon ' data.FitType ' number'],20) plt_opts.FigLabel],...
     'units','pixels','color','w','Menubar','figure','Resize','on',...
     'numbertitle','off');
 hF.Position=[5 380 500 300];clf;
 
 % Image directory folder string
-t=uicontrol('style','text','string',FigLabel,'units','pixels','backgroundcolor',...
+t=uicontrol('style','text','string',plt_opts.FigLabel,'units','pixels','backgroundcolor',...
     'w','horizontalalignment','left','fontsize',6);
 drawnow;
 t.Position(4)=t.Extent(4);
@@ -36,7 +45,7 @@ uicontrol('style','text','string','iXon','units','pixels','backgroundcolor',...
 hax=axes;
 set(hax,'box','on','linewidth',1,'fontsize',10,'xgrid','on','ygrid','on');
 hold on
-xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
+xlabel([xVar ' (' plt_opts.xUnit ')'],'interpreter','none');
 ylabel([data.FitType ' number']);
         
 % Plot the data

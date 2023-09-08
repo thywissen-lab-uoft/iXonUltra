@@ -27,9 +27,9 @@ end
 
 % Convert sizes in meters
 X_scale = (ixondata(1).CameraInformation.PixelSize(1))/...
-    ixondata(1).Magnification(1);
+    ixondata(1).Magnification;
 Y_scale = (ixondata(1).CameraInformation.PixelSize(1))/...
-    ixondata(1).Magnification(2);
+    ixondata(1).Magnification;
 
 Xs=X_scale*Xs;
 Ys=Y_scale*Ys;

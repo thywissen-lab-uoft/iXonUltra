@@ -1,4 +1,4 @@
-%% Fitting Options and Plotting Options
+%% Plotting Options
 ixon_plt_opts = struct;
 ixon_plt_opts.FigLabel = FigLabel;
 ixon_plt_opts.xUnit = ixon_unit;
@@ -8,36 +8,43 @@ ixon_plt_opts.NumberScale = 'Linear';
 ixon_plt_opts.PositionUnit = 'px';
 % plt_opts.PositionUnit = 'um';
 
+%% Fitting Options
+ixon_fit_opts = struct;
+
 % Number of counts fit
-ixon_plt_opts.FitNumber_Exp          = 0;
-ixon_plt_opts.FitNumber_Exp2Sum      = 0;
-ixon_plt_opts.FitNumber_Lorentzian   = 0;
+ixon_fit_opts.Number_Exp          = 0;
+ixon_fit_opts.Number_Exp2Sum      = 0;
+ixon_fit_opts.Number_Lorentzian   = 0;
 
 % Center position fit
-ixon_plt_opts.FitCenter_Sine         = 0;
-ixon_plt_opts.FitCenter_SineDecay    = 0;
-ixon_plt_opts.FitCenter_SineGrow     = 0;
-ixon_plt_opts.FitCenter_Linear       = 0;
+ixon_fit_opts.Center_Sine         = 0;
+ixon_fit_opts.Center_SineDecay    = 0;
+ixon_fit_opts.Center_SineGrow     = 0;
+ixon_fit_opts.Center_Linear       = 0;
 
 
 %% PLOTTING : BOX COUNT
 
 if ixon_doBoxCount  
     % Counts
-    hF_box_counts = ixon_showCounts(ixon_boxdata,ixon_xVar,ixon_plt_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_box_counts,'ixon_box_counts');end     
+    hF_ixon_box_counts = ixon_showCounts(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_counts,'ixon_box_counts');end     
     
     % Size
-    hF_box_size = ixon_showSize(ixon_boxdata,ixon_xVar,ixon_plt_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_box_size,'ixon_box_sizes');end     
+    hF_ixon_box_size = ixon_showSize(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_size,'ixon_box_sizes');end     
+    
+    % Center
+    hF_ixon_box_centre = ixon_showCentre(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_centre,'ixon_box_centre');end     
 
 %     % Plot the second moments
-%     hF_ixon_size=ixon_showBoxMoments(ixondata,ixon_xVar,ixon_plt_opts);   
+%     hF_ixon_bsize=ixon_showBoxMoments(ixondata,ixon_xVar,ixon_plt_opts);   
 %     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size');end     
     
     % Plot the cloud center
-    [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_plt_opts); 
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end    
+%     [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_plt_opts); 
+%     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end    
 end
 
 
