@@ -5,7 +5,7 @@ if ~isfield(ixondata,'LatticeBin')
 end
 for kk=1:length(ixondata)
     LatticeDig = struct;
-    for k = 1:length(ixondata.LatticeBin)
+    for k = 1:length(ixondata(kk).LatticeBin)
         x = ixondata(kk).LatticeBin(k).n1;
         y = ixondata(kk).LatticeBin(k).n2;
         Zdig = ixondata(kk).LatticeBin(k).Zbin>=threshold; 
