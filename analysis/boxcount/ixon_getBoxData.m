@@ -43,6 +43,8 @@ output.Params       = params;
 output.Units        = [ixondata.Units];
 output.Flags        = [ixondata.Flags];
 output.FitType      = 'box';
+output.PixelSize    = ixondata(1).PixelSize;
+output.Magnification = ixondata(1).Magnification;
 
 % Assign fit outputs
 output.bgROI        = bgROI;

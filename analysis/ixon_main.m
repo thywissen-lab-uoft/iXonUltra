@@ -70,7 +70,8 @@ ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'qgm_raman_2photon_detuning'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
-
+ixon_Magnification = 83;        % Magnification of imaging system
+ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
 ixon_doBoxCount             = 1;
@@ -211,6 +212,9 @@ if ixon_doSave
 end
 %% Distribute ROI
 [ixondata.ROI]=deal(ixonROI);
+[ixondata.Magnification] = deal(ixon_Magnification);
+[ixondata.PixelSize] = deal(ixon_PixelSize);
+
 %% Process Images
 ixondata = ixonProcessImages(ixondata,img_opt);
 

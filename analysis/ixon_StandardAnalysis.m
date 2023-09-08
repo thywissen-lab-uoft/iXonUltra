@@ -1,5 +1,6 @@
 %% Fitting Options and Plotting Options
 ixon_plt_opts = struct;
+ixon_plt_opts.FigLabel = FigLabel;
 ixon_plt_opts.xUnit = ixon_unit;
 ixon_plt_opts.xVar = ixon_xVar;
 ixon_plt_opts.NumberScale = 'Linear';
@@ -22,17 +23,17 @@ ixon_plt_opts.FitCenter_Linear       = 0;
 %% PLOTTING : BOX COUNT
 
 if ixon_doBoxCount  
-    % Plot the atom number
-%     [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,ixon_xVar,ixon_plt_opts);      
-%     yl=get(gca,'YLim');
-%     set(gca,'YLim',[0 yl(2)]);
-%     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
-
-    hF_counts = showCounts(ixon_boxdata,ixon_xVar,ixon_plt_opts);
+    % Counts
+    hF_box_counts = ixon_showCounts(ixon_boxdata,ixon_xVar,ixon_plt_opts);
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_box_counts,'ixon_box_counts');end     
     
-    % Plot the second moments
-    hF_ixon_size=ixon_showBoxMoments(ixondata,ixon_xVar,ixon_plt_opts);   
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size');end     
+    % Size
+    hF_box_size = ixon_showSize(ixon_boxdata,ixon_xVar,ixon_plt_opts);
+    if ixon_doSave;ixon_saveFigure(ixondata,hF_box_size,'ixon_box_sizes');end     
+
+%     % Plot the second moments
+%     hF_ixon_size=ixon_showBoxMoments(ixondata,ixon_xVar,ixon_plt_opts);   
+%     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size');end     
     
     % Plot the cloud center
     [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_plt_opts); 
