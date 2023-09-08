@@ -307,5 +307,5 @@ if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis
 if ixon_doAnalyzeFourier;ixon_AnalyzeFourer;end
 %% Stripe Analysis
-if ixon_DoAnalyzeStripes2D;ixon_stripe_2d;end
+if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 

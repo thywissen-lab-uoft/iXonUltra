@@ -28,15 +28,15 @@ ixon_fit_opts.Center_Linear       = 0;
 if ixon_doBoxCount  
     % Counts
     hF_ixon_box_counts = ixon_showCounts(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_counts,'ixon_box_counts');end     
+    if ixon_doSave;ixon_saveFigure2(hF_ixon_box_counts,'ixon_box_counts',saveOpts);end     
     
     % Size
     hF_ixon_box_size = ixon_showSize(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_size,'ixon_box_size');end     
+    if ixon_doSave;ixon_saveFigure2(hF_ixon_box_size,'ixon_box_size',saveOpts);end     
     
     % Center
     hF_ixon_box_centre = ixon_showCentre(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_box_centre,'ixon_box_centre');end     
+    if ixon_doSave;ixon_saveFigure2(hF_ixon_box_centre,'ixon_box_centre',saveOpts);end     
 end
 
 %% PLOTTING : GAUSS
@@ -44,15 +44,15 @@ end
 if ixon_doGaussFit  
     % Counts
     hF_ixon_gauss_counts = ixon_showCounts(ixon_gaussdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_gauss_counts,'ixon_gauss_counts');end     
+    if ixon_doSave;ixon_saveFigure2(hF_ixon_gauss_counts,'ixon_gauss_counts');end     
     
     % Size
     hF_ixon_gauss_size = ixon_showSize(ixon_gaussdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_gauss_size,'ixon_gauss_size');end     
+    if ixon_doSave;ixon_saveFigure2(hF_ixon_gauss_size,'ixon_gauss_size');end     
     
     % Center
     hF_ixon_gauss_centre = ixon_showCentre(ixon_gaussdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_gauss_centre,'ixon_gauss_centre');end     
+    if ixon_doSave;ixon_saveFigure2(hF_ixon_gauss_centre,'ixon_gauss_centre');end     
 end
 
 %% PLOTTING : GAUSSIAN
