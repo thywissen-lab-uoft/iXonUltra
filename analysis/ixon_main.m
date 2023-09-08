@@ -75,7 +75,7 @@ ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
 ixon_doBoxCount             = 1;
-ixon_doGaussFit             = 0;
+ixon_doGaussFit             = 1;
 
 
 % Analysis to run

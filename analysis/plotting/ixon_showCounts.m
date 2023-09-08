@@ -22,7 +22,6 @@ X=[params.(xVar)]';
 N = data.N;
 
 %% Make Figure
-
 hF=figure('Name',[pad(['ixon ' data.FitType ' number'],20) plt_opts.FigLabel],...
     'units','pixels','color','w','Menubar','figure','Resize','on',...
     'numbertitle','off');
@@ -38,7 +37,7 @@ t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
 % Draw iXon label
 uicontrol('style','text','string',['iXon ' data.FitType],'units','pixels','backgroundcolor',...
-    'w','horizontalalignment','left','fontsize',12,'fontweight','bold',...
+    'w','horizontalalignment','left','fontsize',10,'fontweight','bold',...
     'position',[2 2 80 20]);
 
 % Make axis
