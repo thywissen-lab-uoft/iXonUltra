@@ -331,7 +331,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     ixon_animateOpts.xUnit=ixon_unit;
     ixon_animateOpts.StartDelay=2; % Time to hold on first picture
-    ixon_animateOpts.MidDelay=1;     % Time to hold in middle picutres
+    ixon_animateOpts.MidDelay=.1;     % Time to hold in middle picutres
     ixon_animateOpts.EndDelay=2;     % Time to hold final picture
 
     % Animate in ascending or descending order?
@@ -340,7 +340,8 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     % Color limit for image
     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-    ixon_animateOpts.CLim=[0 1000];   % Color limits
+    %ixon_animateOpts.CLim=[0 1000];   % Color limits
+
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
 
