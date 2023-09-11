@@ -70,24 +70,26 @@ ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'qgm_raman_2photon_detuning'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
-
+ixon_Magnification = 83;        % Magnification of imaging system
+ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
-% Select what kinds of analyses you'd like to perform
-doRawImageHistogram=0;
-ixon_doBoxCount=1;
-ixon_doGaussFit=0;
+% Fitting options
+ixon_doBoxCount             = 1;
+ixon_doGaussFit             = 1;
 
-% Fast Fourier Transform Analysis
-% Use if you are looking for astigmatism in the image
-ixon_doFFT=0;
-ixon_fft_doBoxCount=0;
 
-% Stripe Analysis
-% This is used to analyze the field during the plane selection
-do_2dStripeAnalysis=0;
-doStripeAnalysis=0;
+% Analysis to run
+ixon_doStandardAnalysis     = 1;
+ixon_doPlotProfiles         = 1;
+ixon_doAnimate              = 1;    % Animate in position domain
+ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
+ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
+ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
-ixon_doAnimate = 1;
+% QGM Single Plane Analysis
+ixon_doQGM                  = 1;
+
+
 %% Image Processing Options
 
 % What do you do to the raw data?
@@ -105,7 +107,7 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 0;        % Deconolve with PSF
+img_opt.doPSF               = 1;        % Deconolve with PSF
 img_opt.PSF                 = [1.3163 51 12]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
@@ -214,39 +216,12 @@ if ixon_doSave
 end
 %% Distribute ROI
 [ixondata.ROI]=deal(ixonROI);
+[ixondata.Magnification] = deal(ixon_Magnification);
+[ixondata.PixelSize] = deal(ixon_PixelSize);
+
 %% Process Images
 ixondata = ixonProcessImages(ixondata,img_opt);
-%% Basic Raw Image Analysis
 
-if doRawImageHistogram   
-    % Do basic analysis on raw counts
-    ixondata=ixon_computeRawCounts(ixondata);
-
-    % Plot histogram of raw counts
-    hist_opts=struct;    
-    hist_opts.xUnit=ixon_unit;
-
-    % Specify the plot variable and units    
-    hist_opts.Outliers=[10 50]; % Histogram wont plot outliers of this many low/high
-    hist_opts.GlobalLimits=1;   % Maintain historgram x limits
-    hist_opts.BinWidth=10;       % Histogram bin width
-    hist_opts.ImageNumber=1;    % Which image to histogram (overwritten)
-    hist_opts.YScale='Log';     % Histogram y scale
-    % hist_opts.YScale='Linear';
-
-    for kk=1:size(ixondata(1).RawImages,3)
-        hist_opts.ImageNumber=kk;
-        hF_ixon_rawhist=ixon_showRawCountHistogram(ixondata,ixon_xVar,hist_opts);
-        if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawhist,['ixon_raw_hist' num2str(kk)]);end
-    end
-    % Plot raw count total
-    raw_opts=struct;   
-    raw_opts.xUnit=ixon_unit;    
-    % Define the variable and units    
-    raw_opts.FitLinear=0;    
-    hF_ixon_rawtotal=ixon_showRawCountTotal(ixondata,ixon_xVar,raw_opts);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_rawtotal,['ixon_raw_counts']);end
-end
 %% ANALYSIS : BOX COUNT
 
 if ixon_doBoxCount
@@ -309,159 +284,46 @@ if ixon_doGaussFit
     end    
 end
 
-%% Calculate FFT
-% 
-% fft_opts=struct;
-% fft_opts.doSmooth=1;
-% fft_opts.smoothRadius=1;
-% fft_opts.fft_N=2^11; % Can go higher for smoother data
-% 
-% fft_opts.maskIR=0;
-% fft_opts.maskUV=0;
-% fft_opts.LMax=50;
-% fft_opts.LMin=5;
-% 
-% 
-% if ixon_doFFT
-%     ixondata=ixon_computeFFT(ixondata,fft_opts);
-% end
-% 
-% % Apply makss to FFT Data
-% ixon_mask_IR=1;
-% ixon_mask_UV=0;
-% 
-% 
-% if fft_opts.maskIR
-%     ixondata=ixon_fft_maskIR(ixondata,fft_opts.LMax);    
-% end
-% 
-% if fft_opts.maskUV
-%     ixondata=ixon_fft_maskUV(ixondata,fft_opts.LMin);    
-% end
 
-%% ANALYSIS : FFT BOX COUNT
+%% Profiles
+profile_opts = struct;
+profile_opts.Style = 'cut'; 'sum';  % Cut or sum?
+% profile_opts.Style = 'sum';  % Cut or sum?
 
-% if ixon_fft_doBoxCount && ixon_doFFT    
-%     fft_boxOpts=struct;
-%     fft_boxOpts.maskIR=fft_opts.maskIR;
-%     fft_boxOpts.LMax=fft_opts.LMax;
-%     fft_boxOpts.maskUV=fft_opts.maskUV;
-%     fft_boxOpts.LMin=fft_opts.LMin;
-%         ixondata=ixon_fft_boxCount(ixondata,fft_boxOpts);
-% end
+profile_opts.FigLabel = FigLabel;
 
-%% PLOTTING : FFT BOX COUNT
-% ixon_fft_boxPopts=struct;
-% ixon_fft_boxPopts.xUnit=ixon_unit;
-% if ixon_fft_doBoxCount  && ixon_doFFT 
-%     % Plot the second moments
-%     hF_ixon_size=ixon_fft_showBoxMoments(ixondata,ixon_xVar,ixon_fft_boxPopts);   
-%     if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_fft_box_size');end          
-% end
+clear hF_X;clear hF_Y;
+hF_X=[];hF_Y=[];
 
-%% PLOTTING : BOX COUNT
+if ixon_doPlotProfiles
 
-ixon_boxPopts=struct;
-ixon_boxPopts.xUnit=ixon_unit;
+    for rNum=1:size(ixondata(1).ROI,1)
+        profile_opts.ROINum = rNum;
 
-% ixon_boxPopts.NumberScale='Log';
-ixon_boxPopts.NumberScale='Linear';
+        hF_Xs_rNum=ixon_showProfile(ixondata,'X',ixon_xVar,profile_opts);
 
-ixon_boxPopts.NumberExpFit = 0;
-ixon_boxPopts.NumberExp2SumFit = 0;
-
-ixon_boxPopts.NumberLorentzianFit=0;
-
-ixon_boxPopts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_boxPopts.CenterDecaySineFit = 1;  % Fit decaying sine to cloud center
-ixon_boxPopts.CenterGrowSineFit = 0;  % Fit decaying sine to cloud center
-ixon_boxPopts.CenterLinearFit = 0;     % Linear fit to cloud center
-
-if ixon_doBoxCount  
-    % Plot the atom number
-    [hF_ixon_numberbox,Ndatabox]=ixon_showBoxNumber(ixondata,ixon_xVar,ixon_boxPopts);      
-    yl=get(gca,'YLim');
-    set(gca,'YLim',[0 yl(2)]);
-%     set(gca,'YLim',[2.0e8 2.5e8]);
-%     set(gca,'XScale','log');
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_numberbox,'ixon_box_number');end     
-    
-    % Plot the second moments
-    hF_ixon_size=ixon_showBoxMoments(ixondata,ixon_xVar,ixon_boxPopts);   
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_size,'ixon_box_size');end     
-    
-    % Plot the cloud center
-    [hF_ixon_center,Xc,Yc]=ixon_showBoxCentre(ixondata,ixon_xVar,ixon_boxPopts); 
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ixon_center,'ixon_box_centre');end 
-
-    
-end
-
-
-
-%% PLOTTING : GAUSSIAN
-ixon_gauss_opts.xUnit=ixon_unit;
-ixon_gauss_opts.NumberExpFit = 0;        % Fit exponential decay to atom number
-ixon_gauss_opts.NumberLorentzianFit=0;   % Fit atom number to lorentzian
-ixon_gauss_opts.NumberScale = 'linear'; 
-% ixon_gauss_opts.NumberScale = 'log'; 
-
-ixon_gauss_opts.CenterSineFit = 0;       % Fit sine fit to cloud center
-ixon_gauss_opts.CenterDecaySineFit = 0;  % Fit decaying sine to cloud center
-ixon_gauss_opts.CenterParabolaFit = 0;
-ixon_gauss_opts.CenterLinearFit = 0;     % Linear fit to cloud center
-
-if ixon_doGaussFit
-    % Statistics if no variable is changing
-    if isequal(ixon_xVar,'ExecutionDate')
-        hF_stats=ixon_showGaussStats(ixondata);     
-        if ixon_doSave;ixon_saveFigure(ixondata,hF_stats,'ixon_gauss_stats');end
-    end
-       
-    % Counts
-    [hF_numbergauss,Ndatagauss]=ixon_showGaussNumber(ixondata,ixon_xVar,ixon_gauss_opts);  
-%  xlim([0 1.4]);
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_numbergauss,'ixon_gauss_number');end    
-    
-    % Size
-    hF_size=ixon_showGaussSize(ixondata,ixon_xVar,ixon_gauss_opts);    
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_size,'ixon_gauss_size');end
-        
-    % Aspect Ratio
-    hF_ratio=ixon_showGaussAspectRatio(ixondata,ixon_xVar,ixon_gauss_opts);    
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_ratio,'ixon_gauss_ratio');end
-    
-    % Centre
-    hF_Centre=ixon_showGaussCentre(ixondata,ixon_xVar,ixon_gauss_opts);    
-    if ixon_doSave;ixon_saveFigure(ixondata,hF_Centre,'ixon_gauss_position');end
-    
-%     hF_stats=ixon_showGaussStats(ixondata,ixon_gauss_opts);     
-%     if ixon_doSave;ixon_saveFigure(ixondata,hF_stats,'ixon_stats');end
-
-        
-     % Style of profile --> cut or sum?
-    style='cut';
-%     style='sum';
-    clear hF_X;    
-    clear hF_Y;
-    hF_X=[];
-    hF_Y=[];
-    
-    hF_Xs=ixon_showGaussProfile(ixondata,'X',style,ixon_xVar,ixon_gauss_opts);        
-    hF_Ys=ixon_showGaussProfile(ixondata,'Y',style,ixon_xVar,ixon_gauss_opts);  
-
-%   Save the figures (this can be slow)
-    if ixon_doSave
-        for kk=1:length(hF_Xs)            
-            ixon_saveFigure(ixondata,hF_Xs(kk),['ixon_gauss_profile_X'  num2str(kk)]);
+        if ixon_doSave
+            for kk=1:length(hF_Xs_rNum) 
+                figure(hF_Xs_rNum(kk));
+                ixon_saveFigure2(hF_Xs_rNum(kk),['ixon_R' num2str(rNum) '_X' num2str(kk)],saveOpts);
+                pause(0.1);
+            end 
         end
-        for kk=1:length(hF_Ys)
-            ixon_saveFigure(ixondata,hF_Ys(kk),['ixon_gauss_profile_Y' '_' num2str(kk)]);
-        end
-    end
-    
-end
 
+        hF_Ys_rNum=ixon_showProfile(ixondata,'Y',ixon_xVar,profile_opts);          
+    %   Save the figures (this can be slow)
+        if ixon_doSave        
+            for kk=1:length(hF_Ys_rNum)
+                figure(hF_Ys_rNum(kk));
+                ixon_saveFigure2(hF_Ys_rNum(kk),['ixon_R' num2str(rNum) '_Y' num2str(kk)],saveOpts);
+                pause(0.1);
+            end
+        end
+        hF_X=[hF_X; hF_Xs_rNum];
+        hF_Y=[hF_Y; hF_Ys_rNum];
+    end  
+ 
+end
 
 %% Animate cloud 
 if ixon_doAnimate == 1 && ixon_doSave
@@ -477,59 +339,19 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-%     ixon_animateOpts.CLim=[50 200];   % Color limits
-%          ixon_animateOpts.CLim=[0 300];   % Color limits
-
-     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-%        ixon_animateOpts.CLim=[0 1000];   % Color limits
+    ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+    %ixon_animateOpts.CLim=[0 1000];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
 
-%% Animate cloud FFT
-% ixon_doAnimateFFT = 1;
-% 
-% ixon_animateOptsFFT=struct;   
-% 
-% 
-% % Variable to animate versus
-% ixon_animateOptsFFT.xUnit=ixon_unit;
-% 
-% % Animation Timings
-% ixon_animateOptsFFT.StartDelay=2; % Time to hold on first picture
-% ixon_animateOptsFFT.MidDelay=.25;     % Time to hold in middle picutres
-% ixon_animateOptsFFT.EndDelay=2;     % Time to hold final picture
-% 
-% % Animate in ascending or descending order?
-% % animateOpts.Order='descend';    
-% ixon_animateOptsFFT.Order='ascend';
-% 
-% % Color limit for image
-% ixon_animateOptsFFT.CLim=[0 .5];   % Color limits 
-% ixon_animateOptsFFT.CLim=[0 3];   % Color limits 
-% 
-% ixon_animateOptsFFT.CLim='auto';   % Automatically choose CLIM?
-% 
-% % FFT UV Cutoff
-% % Reduce the animation view to within a frequency of 1/L
-% ixon_animateOptsFFT.mask_UV=1;
-% ixon_animateOptsFFT.LMin=20;
-% 
-% % FFT IR Cutoff
-% % Apply mask to interior regions to mask 
-% ixon_animateOptsFFT.mask_IR=1;
-% ixon_animateOptsFFT.LMax=200;
-% 
-% if ixon_doAnimateFFT == 1 && ixon_doFFT && ixon_doSave
-%     ixon_animateFFT(ixondata,ixon_xVar,ixon_animateOptsFFT);
-% end
-
+%% Standard Cloud Analysis
+if ixon_doStandardAnalysis;ixon_StandardAnalysis;end
+%% Raw Image Analysis
+if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
+%% Fourier Analysis
+if ixon_doAnalyzeFourier;ixon_AnalyzeFourer;end
 %% Stripe Analysis
-if do_2dStripeAnalysis
-   ixon_stripe_2d; 
-end
-
-if doStripeAnalysis
-   ixon_stripe_1d; 
-end
-
+if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
+%% Quantum Gas Micrscopy
+if ixon_doQGM; ixon_QGM;end
