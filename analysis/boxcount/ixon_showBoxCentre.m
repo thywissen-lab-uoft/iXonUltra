@@ -432,7 +432,7 @@ end
 function fitResult=makeSineDecayFit(X,Y,W)
 
 % Guess the amplitude and offset
-gA=0.5*range(Y);
+gA=range(Y)/2;
 gD=(max(Y)+min(Y))*.5;
 
 % Guess the period
@@ -440,7 +440,7 @@ iHigh=find((Y-gD)/gA>.8,1);
 iLow=find((Y-gD)/gA<-.8,1);
 gB=abs(X(iHigh)-X(iLow))*2.2;
 
-gB=8;
+gB=10;
 
 minValues=X(Y==min(Y));
 maxValues=X(Y==max(Y));
@@ -457,7 +457,7 @@ gD=0.5*(max(Y)+min(Y));
 gC=pi/2;
 gE = range(X);
 
-cosFit=fittype('A*cos(2*pi*t/B+C)*exp(t/E)+D','independent',{'t'},...
+cosFit=fittype('A*cos(2*pi*t/B+C)*exp(-t/E)+D','independent',{'t'},...
     'coefficients',{'A','B','C','D','E'});
 options=fitoptions(cosFit);          
         set(options, 'TolFun', 1E-14);
@@ -498,7 +498,7 @@ iHigh=find((Y-gD)/gA>.8,1);
 iLow=find((Y-gD)/gA<-.8,1);
 gB=abs(X(iHigh)-X(iLow))*2.2;
 
-gB=4;
+gB=10;
 
 minValues=X(Y==min(Y));
 maxValues=X(Y==max(Y));
