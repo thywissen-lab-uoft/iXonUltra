@@ -480,6 +480,8 @@ hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',8,
             bBrowse.Enable='off';
         end
     end
+
+
 % Browse button
 ttstr='Select directory to save images.';
 cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[20 20]);
