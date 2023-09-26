@@ -13,6 +13,9 @@ disp(repmat('-',1,60));disp(repmat('-',1,60));
 % Add all subdirectories for this m file
 curpath = fileparts(mfilename('fullpath'));
 addpath(curpath);addpath(genpath(curpath));
+
+a = fileparts(curpath);
+addpath(a);addpath(genpath(a));
 %% Close all non GUI figures
 % Close all figures without the GUI tag.
 figs=get(groot,'Children');
@@ -339,8 +342,8 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-    ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-    %ixon_animateOpts.CLim=[0 1000];   % Color limits
+%     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+    ixon_animateOpts.CLim=[0 100];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end

@@ -231,10 +231,10 @@ errorbar([zlattice_y.depths],[zlattice_y.freq],[zlattice_y.freq_err],'o','marker
 legend({'y+xdt','x+xdt','z+xdt x dir','z+xdt y dir'});
 
 xlabel('lattice depth (Er)');
-ylabel('measured oscillation frequency (Hz)');
 set(gca,'fontsize',14,'xgrid','on','ygrid','on');
 xlim([0 6]);
 ylim([0 100]);
+ylabel('measured oscillation frequency (Hz)');
 
 
 figure(202);
@@ -262,10 +262,15 @@ errorbar([zlattice_y.depths],sqrt([zlattice_y.freq].^2-fxdt^2),[zlattice_y.freq_
 legend({'y+xdt','x+xdt','z+xdt x dir','z+xdt y dir'});
 
 xlabel('lattice depth (Er)');
-ylabel('measured oscillation frequency (Hz)');
+ylabel('inferred trap frequency (Hz)');
+
 set(gca,'fontsize',14,'xgrid','on','ygrid','on');
 xlim([0 6]);
 ylim([0 100]);
+
+
+
+save('trap_freq','uy','fy','fey','ux','fx','fex','uzx','fzx','fzex','uzy','fzy','fzey');
 %% Plot and Analyze
 
 % 
