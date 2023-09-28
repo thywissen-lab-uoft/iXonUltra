@@ -87,7 +87,7 @@ ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-ixon_doQGM                  = 1;
+ixon_doQGM                  = 0;
 
 
 %% Image Processing Options
@@ -107,7 +107,7 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 1;        % Deconolve with PSF
+img_opt.doPSF               = 0;        % Deconolve with PSF
 img_opt.PSF                 = [1.3163 51 12]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
@@ -331,7 +331,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     ixon_animateOpts.xUnit=ixon_unit;
     ixon_animateOpts.StartDelay=2; % Time to hold on first picture
-    ixon_animateOpts.MidDelay=.1;     % Time to hold in middle picutres
+    ixon_animateOpts.MidDelay=.5;     % Time to hold in middle picutres
     ixon_animateOpts.EndDelay=2;     % Time to hold final picture
 
     % Animate in ascending or descending order?
@@ -340,7 +340,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     % Color limit for image
     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-    %ixon_animateOpts.CLim=[0 1000];   % Color limits
+%     ixon_animateOpts.CLim=[0 300];   % Color limits
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
