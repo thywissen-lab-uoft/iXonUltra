@@ -47,74 +47,74 @@
 % end
 %% Quench Data 1
 
-% runs=[
-%     2023 09 12 16;
-%     2023 09 12 17;
-%     2023 09 12 06;
-%     2023 09 12 07;
-%     2023 09 12 08;
-%     2023 09 12 09;
-%     2023 09 12 10;
-%     2023 09 12 11;
-%     2023 09 12 12;
-%     2023 09 12 13;
-%     2023 09 12 14;
-%     2023 09 12 15;
-%     2023 09 12 18;
-%     2023 09 12 19;
-%     2023 09 12 20;
-%     2023 09 12 21;
-%     2023 09 12 22;
-%     2023 09 12 23;
-% 
-%     ];
-% 
-% fit_types = {'cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','exp','cos','cos','cos','cos','exp','exp'};
-% data_label = '1 Er Quench'; 
-% dVar = 'Xc';
-% varname = 'quench_1Er_4v4v_09_12';
-% n = 100;
-% 
-% 
-% clear data
-% fname = 'ixon_gaussdata';
-% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-% data = [all_data.(fname)];
-%% Quench Data 1 Er 2v 2v 09/13
-% % 
 runs=[
-    2023 09 13 02;
-    2023 09 13 03;
-    2023 09 13 04;
-    2023 09 13 05;
-    2023 09 13 06;
-    2023 09 13 07;
-    2023 09 13 08;
-    2023 09 13 09;
-    2023 09 13 10;
-    2023 09 13 11;
-    2023 09 13 12;
-    2023 09 13 13;
-    2023 09 13 14;
-    2023 09 13 15;
-    2023 09 13 16;
-    2023 09 13 16;
-    2023 09 13 17;
-    2023 09 13 18;
-    2023 09 13 19;
+    2023 09 12 16;
+    2023 09 12 17;
+    2023 09 12 06;
+    2023 09 12 07;
+    2023 09 12 08;
+    2023 09 12 09;
+    2023 09 12 10;
+    2023 09 12 11;
+    2023 09 12 12;
+    2023 09 12 13;
+    2023 09 12 14;
+    2023 09 12 15;
+    2023 09 12 18;
+    2023 09 12 19;
+    2023 09 12 20;
+    2023 09 12 21;
+    2023 09 12 22;
+    2023 09 12 23;
 
     ];
 
-fit_types = {'cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos'};
-data_label = '1 Er Quench 2v'; 
+fit_types = {'cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','exp','cos','cos','cos','cos','exp','exp'};
+data_label = '1 Er Quench'; 
 dVar = 'Xc';
-varname = 'quench_1Er_2v2v_09_13';
+varname = 'quench_1Er_4v4v_09_12';
 n = 100;
+
 
 clear data
 fname = 'ixon_gaussdata';
 [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
 data = [all_data.(fname)];
+%% Quench Data 1 Er 2v 2v 09/13
+% % 
+% runs=[
+%     2023 09 13 02;
+%     2023 09 13 03;
+%     2023 09 13 04;
+%     2023 09 13 05;
+%     2023 09 13 06;
+%     2023 09 13 07;
+%     2023 09 13 08;
+%     2023 09 13 09;
+%     2023 09 13 10;
+%     2023 09 13 11;
+%     2023 09 13 12;
+%     2023 09 13 13;
+%     2023 09 13 14;
+%     2023 09 13 15;
+%     2023 09 13 16;
+%     2023 09 13 16;
+%     2023 09 13 17;
+%     2023 09 13 18;
+%     2023 09 13 19;
+% 
+%     ];
+% 
+% fit_types = {'cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos'};
+% data_label = '1 Er Quench 2v'; 
+% dVar = 'Xc';
+% varname = 'quench_1Er_2v2v_09_13';
+% n = 100;
+% 
+% clear data
+% fname = 'ixon_gaussdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
 
 %% 
 B2a = @(Bfield) 167*(1-(6.910)./(Bfield-202.15));
