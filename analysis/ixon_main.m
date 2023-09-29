@@ -65,9 +65,9 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'qgm_raman_2photon_detuning'; % Variable Name
+ixon_xVar           = 'conductivity_snap_and_hold_time'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
@@ -75,7 +75,7 @@ ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
 ixon_doBoxCount             = 1;
-ixon_doGaussFit             = 0;
+ixon_doGaussFit             = 1;
 
 
 % Analysis to run
