@@ -46,40 +46,40 @@
 % 
 % end
 %% Quench Data 1
-
-runs=[
-    2023 09 12 16;
-    2023 09 12 17;
-    2023 09 12 06;
-    2023 09 12 07;
-    2023 09 12 08;
-    2023 09 12 09;
-    2023 09 12 10;
-    2023 09 12 11;
-    2023 09 12 12;
-    2023 09 12 13;
-    2023 09 12 14;
-    2023 09 12 15;
-    2023 09 12 18;
-    2023 09 12 19;
-    2023 09 12 20;
-    2023 09 12 21;
-    2023 09 12 22;
-    2023 09 12 23;
-
-    ];
-
-fit_types = {'cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','exp','cos','cos','cos','cos','exp','exp'};
-data_label = '1 Er Quench'; 
-dVar = 'Xc';
-varname = 'quench_1Er_4v4v_09_12';
-n = 100;
-
-
-clear data
-fname = 'ixon_gaussdata';
-[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-data = [all_data.(fname)];
+% 
+% runs=[
+%     2023 09 12 16;
+%     2023 09 12 17;
+%     2023 09 12 06;
+%     2023 09 12 07;
+%     2023 09 12 08;
+%     2023 09 12 09;
+%     2023 09 12 10;
+%     2023 09 12 11;
+%     2023 09 12 12;
+%     2023 09 12 13;
+%     2023 09 12 14;
+%     2023 09 12 15;
+%     2023 09 12 18;
+%     2023 09 12 19;
+%     2023 09 12 20;
+%     2023 09 12 21;
+%     2023 09 12 22;
+%     2023 09 12 23;
+% 
+%     ];
+% 
+% fit_types = {'cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','cos','exp','cos','cos','cos','cos','exp','exp'};
+% data_label = '1 Er Quench'; 
+% dVar = 'Xc';
+% varname = 'quench_1Er_4v4v_09_12';
+% n = 100;
+% 
+% 
+% clear data
+% fname = 'ixon_gaussdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
 %% Quench Data 1 Er 2v 2v 09/13
 % % 
 % runs=[
@@ -115,7 +115,60 @@ data = [all_data.(fname)];
 % fname = 'ixon_gaussdata';
 % [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
 % data = [all_data.(fname)];
+%% Quench Data 3
 
+runs=[
+    2023 09 28 08;
+    2023 09 28 09;
+    2023 09 28 10;
+    2023 09 28 11;
+    2023 09 28 12;% 
+    2023 09 28 13;% 
+    2023 09 28 14;% 
+    2023 09 28 15;% 
+    2023 09 28 16;% 
+    2023 09 28 17;% 
+
+    ];
+
+fit_types = {'exp','exp','exp','exp','exp','exp','exp','exp','exp','exp','exp'};
+data_label = '2.5 Er Quench'; 
+dVar = 'Xc';
+varname = 'quench_25Er_4v4v_09_28';
+n = 400;
+% 
+% 
+clear data
+fname = 'ixon_gaussdata';
+[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+data = [all_data.(fname)];
+%% Quench Data 3
+% 
+% runs=[
+%     2023 09 28 18;
+%     2023 09 28 19;
+%     2023 09 28 20;
+%     2023 09 28 21;
+%     2023 09 28 22;% 
+%     2023 09 28 23;% 
+%     2023 09 28 24;% 
+%     2023 09 28 25;% 
+%     2023 09 28 26;% 
+%     2023 09 28 27;% 
+% 
+%     ];
+% 
+% fit_types = {'cos','cos','cos','cos','cos','cos','cos','cos','exp','exp','exp'};
+% data_label = '1.5 Er Quench'; 
+% dVar = 'Xc';
+% varname = 'quench_15Er_4v4v_09_28';
+% n = 500;
+% % 
+% % 
+% clear data
+% fname = 'ixon_gaussdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
 %% 
 B2a = @(Bfield) 167*(1-(6.910)./(Bfield-202.15));
 clear hFs
@@ -186,7 +239,11 @@ for nn=1:length(data)
     
     switch fit_types{nn}
         case 'cos'
-            cosFit=fittype('A*cos(2*pi*t/B+C)*exp(-E/2 * t)+D','independent',{'t'},...
+%             inds = X>=7.5;
+%             X=X(inds);
+%             Y=Y(inds);
+            
+            cosFit=fittype('A*cos(2*pi*t/B+C)*exp(-E/2*t)+D','independent',{'t'},...
                 'coefficients',{'A','B','C','D','E'});
             options=fitoptions(cosFit);          
             set(options, 'TolFun', 1E-14);
@@ -208,11 +265,13 @@ for nn=1:length(data)
             tau(nn) = 2/fout.E;
             
         case 'exp'
+            tt = linspace(0,max(X),150);
+
             expFit=fittype(@(A,E,D,t) A*exp(-E/2*t)+D,'independent',{'t'},...
                 'coefficients',{'A','E','D'});
             options=fitoptions(expFit);          
             set(options, 'TolFun', 1E-14);
-            set(options, 'StartPoint', [-gA 20 262]);     
+            set(options, 'StartPoint', [-gA 1/10 262]);     
             set(options, 'MaxIter',5000);
             set(options, 'MaxFunEvals',5000);
             set(options,'TolFun',10^-9);
@@ -223,6 +282,29 @@ for nn=1:length(data)
             gamma(nn) = fout.E;
             gamma_err(nn) = range(cint(:,5))/2;
             tau(nn) = 2/fout.E;
+        case 'oexp'
+            tt = linspace(0,max(X),150);
+
+            func = @(A,B,G,omega,D,t) ...
+                A*exp(t*(-G/2+sqrt((G/2)^2-omega^2))) + ...
+                B*exp(t*(-G/2-sqrt((G/2)^2-omega^2))) + ...
+                D;
+
+            expFit=fittype(@(A,G,D,t) func(A,0,G,2*pi*0.04,D,t),'independent',{'t'},...
+                'coefficients',{'A','G','D'});
+            options=fitoptions(expFit);          
+            set(options, 'TolFun', 1E-14);
+            set(options, 'StartPoint', [-gA 1 270]);     
+            set(options, 'MaxIter',5000);
+            set(options, 'MaxFunEvals',5000);
+            set(options,'TolFun',10^-9);
+            fout = fit(X,Y,expFit,options);
+            plot(tt,feval(fout,tt),'k-');
+            f(nn) = NaN;
+            f_err(nn) = NaN;
+            gamma(nn) = fout.G;
+            gamma_err(nn) = range(cint(:,5))/2;
+            tau(nn) = 2/fout.G;
     end
     
 
@@ -309,7 +391,9 @@ errorbar(B,gamma,gamma_err,'o','markerfacecolor',[.5 .5 .5],...
 xlabel('field (G)');
 ylabel('decay rate \Gamma (ms^{-1})');
 set(gca,'fontsize',12,'xgrid','on','ygrid','on');
-
+ yl=get(gca,'ylim');
+ ylim([0 yl(2)]);
+ 
 % rate vs field Track
 hf4=figure(1004);
 set(gcf,'WindowStyle','docked','color','w');
@@ -325,8 +409,10 @@ t.Position(1:2)=[5 p(4)-t.Position(4)];
 xlabel('a^2 (a_0)');
 ylabel('decay rate \Gamma (ms^{-1})');
 set(gca,'fontsize',12,'xgrid','on','ygrid','on');
- 
-
+ yl=get(gca,'ylim');
+ ylim([0 yl(2)]);
+ xl=get(gca,'xlim');
+ xlim([0 xl(2)]);
 %% Save and UPload data
 doUpload = 1;
 GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_2023' filesep varname];
