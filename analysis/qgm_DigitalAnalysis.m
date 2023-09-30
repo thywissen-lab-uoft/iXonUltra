@@ -78,7 +78,7 @@ imagesc(n1,n2,Zdig_tot/length(digdata));
 colormap parula
 xlabel('x site')
 ylabel('y site');
-title('average digitized image N=29');
+title(['average digitized image N =' num2str(length(digdata))]);
 c = colorbar;
 c.Label.String = 'filling fraction';
 N=fout.A*sqrt(2*pi*fout.Xs^2)*sqrt(2*pi*fout.Ys^2);
