@@ -13,7 +13,7 @@ qgm_doDigitalAnalysis = 1;
 %%
 if qgm_doFindLattice
     for n=1:length(ixondata)
-        for k=1:size(ixondata(n).Zf,3)
+        for kk=1:size(ixondata(n).Zf,3)
             tic;
             fprintf(['(' num2str(kk) '/' num2str(size(ixondata(n).Zf,3)) ') Fitting reciprocal lattice ...']);
             ixondata(n).LatticeK(kk) = findLatticeK(ixondata(n).f,ixondata(n).f,ixondata(n).Zf(:,:,kk),ixondata(n).ProcessOptions);                

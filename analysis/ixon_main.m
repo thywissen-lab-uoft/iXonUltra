@@ -70,7 +70,7 @@ end
 varType             = 'param'; % always select 'param' for now 
 ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'qgm_raman_2photon_detuning'; % Variable Name
+ixon_xVar           = 'conductivity_snap_and_hold_time'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
@@ -78,12 +78,12 @@ ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
 ixon_doBoxCount             = 1;
-ixon_doGaussFit             = 1;
+ixon_doGaussFit             = 0;
 
 
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
-ixon_doPlotProfiles         = 1;
+ixon_doPlotProfiles         = 0;
 ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
@@ -334,7 +334,7 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     ixon_animateOpts.xUnit=ixon_unit;
     ixon_animateOpts.StartDelay=2; % Time to hold on first picture
-    ixon_animateOpts.MidDelay=.1;     % Time to hold in middle picutres
+    ixon_animateOpts.MidDelay=.5;     % Time to hold in middle picutres
     ixon_animateOpts.EndDelay=2;     % Time to hold final picture
 
     % Animate in ascending or descending order?
@@ -342,8 +342,11 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
+
 %     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
     ixon_animateOpts.CLim=[0 100];   % Color limits
+%     ixon_animateOpts.CLim=[0 300];   % Color limits
+
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
