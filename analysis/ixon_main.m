@@ -70,7 +70,7 @@ end
 varType             = 'param'; % always select 'param' for now 
 ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'conductivity_snap_and_hold_time'; % Variable Name
+ixon_xVar           = 'ExecutionDate'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
@@ -80,10 +80,9 @@ ixon_PixelSize = 16;            % Pixel size in um
 ixon_doBoxCount             = 1;
 ixon_doGaussFit             = 0;
 
-
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
-ixon_doPlotProfiles         = 0;
+ixon_doPlotProfiles         = 1;
 ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
@@ -110,7 +109,7 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 1;        % Deconolve with PSF
+img_opt.doPSF               = 1;        % Deconvolve with PSF
 img_opt.PSF                 = [1.3163 51 12]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
@@ -342,10 +341,10 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts.Order='ascend';
     
     % Color limit for image
-
-%     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-    ixon_animateOpts.CLim=[0 100];   % Color limits
-%     ixon_animateOpts.CLim=[0 300];   % Color limits
+ixon_animateOpts.Source = 'ZNoFilter';
+     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+%     ixon_animateOpts.CLim=[0 100];   % Color limits
+    ixon_animateOpts.CLim=[0 300];   % Color limits
 
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);

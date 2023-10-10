@@ -35,7 +35,7 @@ for kk=1:length(uxvals) % Iterate over unique x values
     inds=find(uxvals(kk)==xvals);    
     for ii=1:length(inds)
         ind=inds(ii);
-        Z=ixondata(ind).Z;
+        Z=ixondata(ind).(opts.Source);
         Zall(:,:,kk)=Zall(:,:,kk)+Z;        
     end        
     Zall(:,:,kk)=Zall(:,:,kk)/length(inds);   

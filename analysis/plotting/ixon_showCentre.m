@@ -133,6 +133,103 @@ if doFit
     drawnow;
 end
 
+%% Sine 
+
+if isfield(fit_opts,'Center_Sine') && fit_opts.Center_Sine && length(xvals)>4
+    tVec=linspace(min(xvals),max(xvals),100);    
+    
+    % X Fit
+    axes(hax1);
+    fit1=makeSineFit(xvals',Xc(:,nn));
+    plot(tVec,feval(fit1,tVec),'r-');  
+
+    sTblX.ColumnWidth={60 60 60};
+    sTblY.ColumnWidth={60 60 60};
+
+    cX=coeffvalues(fit1);
+    cIntX=confint(fit1);
+    
+    data={};
+    
+    %data{1,3}=range(cInt(:,1))/2;
+    %data{2,3}=range(cInt(:,2))/2;
+
+    %data{3,3}=1./(range(cInt(:,2))/2);
+    %data{4,3}=range(cInt(:,3))/2;
+    %data{5,3}=range(cInt(:,4))/2;
+    %data{6,3}=range(cInt(:,5))/2;
+
+    
+    sTblX.Data={};
+    data{1,1}='amp (px)';
+    data{2,1}='period';
+    data{3,1}='freq';
+
+    data{4,1}='phase (rad)';
+    data{5,1}='offset (px)';
+
+    data{1,2}=cX(1);
+    data{2,2}=cX(2);
+    data{3,2}=1/cX(2);
+
+    data{4,2}=cX(3);
+    data{5,2}=cX(4);
+    
+    data{7,1}='<HTML> &Delta;X (px)</HTML>';
+    data{7,2}=range(Xc(:,nn));
+    data{8,1}='<HTML> Mean(x) </HTML>';
+    data{8,2}=mean(Xc(:,nn));
+    
+    sTblX.Data=data;
+    sTblX.Position(3)=sTblX.Extent(3);
+    sTblX.Position(4)=sTblX.Extent(4); 
+    
+    % Y Fit
+    data={};
+    
+    
+    axes(hax2);
+    fit2=makeSineDecayFit(xvals',Yc(:,nn));
+    cIntY=confint(fit2);
+    
+    %data{1,3}=range(cInt(:,1))/2;
+    %data{2,3}=range(cInt(:,2))/2;
+
+    %data{3,3}=1./(range(cInt(:,2))/2);
+    %data{4,3}=range(cInt(:,3))/2;
+    %data{5,3}=range(cInt(:,4))/2;
+    %data{6,3}=range(cInt(:,5))/2;
+    
+    
+    plot(tVec,feval(fit2,tVec),'r-');  
+
+    cY=coeffvalues(fit2);
+    
+    sTblY.Data={};
+    data{1,1}='amp (px)';
+    data{2,1}='period';
+    data{3,1}='freq';
+    data{4,1}='phase (rad)';
+    data{5,1}='offset (px)';
+
+    data{1,2}=cY(1);
+    data{2,2}=cY(2);
+    data{3,2}=1/cY(2);
+
+    data{4,2}=cY(3);
+    data{5,2}=cY(4);
+    
+    data{7,1}='<HTML> &Delta;Y (px)</HTML>';
+    data{7,2}=range(Yc(:,nn));
+    data{8,1}='<HTML> Mean(y) </HTML>';
+    data{8,2}=mean(Yc(:,nn));
+    
+    sTblY.Data=data;
+    sTblY.Position(3)=sTblY.Extent(3);
+    sTblY.Position(4)=sTblY.Extent(4); 
+    drawnow;
+end
+
 %% Sine Decay
 
 if isfield(fit_opts,'Center_SineDecay') && fit_opts.Center_SineDecay && length(xvals)>4
@@ -501,6 +598,63 @@ options=fitoptions(cosFit);
             1.5*gD,inf]);            
         set(options, 'StartPoint', [gA, gB,...
             gC,gD,gE]);     
+        set(options, 'MaxIter',3000);
+        set(options, 'MaxFunEvals',3000);
+        set(options,'TolFun',10^-9);
+        
+        if nargin==3
+           set(options,'Weights',W); 
+        end        
+        
+        
+        fitResult=fit(X,Y,cosFit,options);      
+        
+disp(fitResult)
+end
+
+
+function fitResult=makeSineFit(X,Y,W)
+
+% Guess the amplitude and offset
+gA=range(Y)/max(X)*0.5;
+gD=(max(Y)+min(Y))*.5;
+
+% Guess the period
+iHigh=find((Y-gD)/gA>.8,1);
+iLow=find((Y-gD)/gA<-.8,1);
+gB=abs(X(iHigh)-X(iLow))*2.2;
+
+gB=4;
+
+minValues=X(Y==min(Y));
+maxValues=X(Y==max(Y));
+% gB=1*abs(maxValues(1)-minValues(1));
+% gB=range(X)/2;
+
+
+
+
+gC=maxValues(1);
+gC=pi;
+gD=0.5*(max(Y)+min(Y));
+
+gC=pi/2;
+gE = 0;
+
+cosFit=fittype('A*cos(2*pi*t/B+C)+D','independent',{'t'},...
+    'coefficients',{'A','B','C','D'});
+options=fitoptions(cosFit);          
+        set(options, 'TolFun', 1E-14);
+        set(options,'Lower', [0.25*gA,...
+            .1*gB,...
+            0, ...
+            0.75*gD]);
+        set(options, 'Upper', [5*gA, ...
+            20*gB,...
+            2*pi, ...
+            1.5*gD]);            
+        set(options, 'StartPoint', [gA, gB,...
+            gC,gD]);     
         set(options, 'MaxIter',3000);
         set(options, 'MaxFunEvals',3000);
         set(options,'TolFun',10^-9);

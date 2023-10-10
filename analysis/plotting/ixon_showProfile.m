@@ -100,7 +100,7 @@ for kk=1:(ceil(length(ixondata)/pMax))
         % Get the box count
         clear doBox
         doBox = 0;        
-        if isfield(ixondataSUB(ii),'BoxCount') && ~(doGauss || doErf || doBM || doFermi)
+        if isfield(ixondataSUB(ii),'BoxCount') && ~(doGauss)
             Yc(end+1) = ixondataSUB(ii).BoxCount(rNum).Yc;
             Xc(end+1) = ixondataSUB(ii).BoxCount(rNum).Xc;
             
