@@ -94,18 +94,24 @@ end
     
     subplot(321)
     plot([digdata.X],[digdata.Xc],'ko');
+    ylabel('xc (sites)');
     
     subplot(322)
     plot([digdata.X],[digdata.Yc],'ko');
-    
+    ylabel('yc (sites)');
+
     subplot(323)
     plot([digdata.X],[digdata.N],'ko');
-    
-        subplot(324)
+    ylabel('N (atoms)');
+
+    subplot(324)
     plot([digdata.X],[digdata.Xs],'ko');
-    
+    ylabel('\sigma_x)');
+
             subplot(325)
     plot([digdata.X],[digdata.Ys],'ko');
+    ylabel('\sigma_y)');
+
         %%
 %{
 %% Fit to gaussian distribution
