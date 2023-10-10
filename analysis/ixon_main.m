@@ -39,19 +39,34 @@ amu=1.660539E-27;
 m=40*amu;
 
 %% Select image directory
-% Choose the directory where the images to analyze are stored
-disp([datestr(now,13) ' Choose an image analysis folder...']);
-dialog_title='Choose the root directory of the images';
-default_analysis_dir = ixon_getDayDir;
-saveOpts = struct;
-saveOpts.Quality = 'auto';
 
-newdir=uigetdir(default_analysis_dir,dialog_title);
-if isequal(newdir,0)
-    disp('Canceling.');    
-    return; 
+if ~exist('ixon_auto_dir')
+   ixon_auto_dir = 1; 
+end
+
+if ixon_auto_dir
+
+    % Choose the directory where the images to analyze are stored
+    disp([datestr(now,13) ' Choose an image analysis folder...']);
+    dialog_title='Choose the root directory of the images';
+    default_analysis_dir = ixon_getDayDir;
+    saveOpts = struct;
+    saveOpts.Quality = 'auto';
+
+    newdir=uigetdir(default_analysis_dir,dialog_title);
+    if isequal(newdir,0)
+        disp('Canceling.');    
+        return; 
+    else
+        imgdir = newdir;
+        ixon_imgdir = imgdir;
+        saveDir = [imgdir filesep 'figures'];
+        if ~exist(saveDir,'dir'); mkdir(saveDir);end   
+        saveOpts.saveDir=saveDir;
+        strs=strsplit(imgdir,filesep);
+        FigLabel=[strs{end-1} filesep strs{end}];
+    end
 else
-    imgdir = newdir;
     ixon_imgdir = imgdir;
     saveDir = [imgdir filesep 'figures'];
     if ~exist(saveDir,'dir'); mkdir(saveDir);end   
@@ -59,7 +74,6 @@ else
     strs=strsplit(imgdir,filesep);
     FigLabel=[strs{end-1} filesep strs{end}];
 end
-
 %% Analysis Variable
 % This section of code chooses the variable to plot against for aggregate
 % plots.  The chosen variable MUST match a variable provided in the params
