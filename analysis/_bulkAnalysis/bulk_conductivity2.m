@@ -15,9 +15,9 @@ runs=[
     ];
 
 % fit_types = {''};
-data_label = '2.5 Er Quench'; 
+data_label = '2.5 Er'; 
 dVar = 'Xc';
-varname = 'shake_25Er_2v2v_170G';
+varname = 'shake_25Er_2v2v_170G_73mW';
 n = 400;
 % 
 % %
@@ -26,6 +26,7 @@ fname = 'digdata';
 [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
 data = [all_data.(fname)];
 pddir = 'X:\LabJackLogs\ODTQPD\2023\2023.10\10.07';
+
 %%
 runs=[
     2023 10 07 22;
@@ -33,13 +34,18 @@ runs=[
     2023 10 07 24;
     2023 10 07 25;
     2023 10 07 26;
-
+    2023 10 07 27;
+    2023 10 07 28;
+    2023 10 07 29;
+    2023 10 07 30;
+    2023 10 07 31;
+    2023 10 07 32;
     ];
 
 % fit_types = {''};
 data_label = '2.5 Er Quench'; 
 dVar = 'Xc';
-varname = 'shake_25Er_2v2v_54Hz';
+varname = 'shake_25Er_2v2v_54Hz_70mW';
 n = 400;
 % 
 % 
@@ -75,14 +81,18 @@ clear phi_err
 out = struct;
 
 for nn=1:length(data)      
-    
-    
-    
     fme = datestr(data(nn).Params(end).ExecutionDateStr,'YYYY-mm-dd_HH-MM-SS');
+   
+    pdsrc = 'X:\LabJackLogs\ODTQPD';
+    pddir = fullfile(pdsrc,fme(1:4),[fme(1:4) '.' fme(6:7)],[fme(6:7) '.' fme(9:10)]);
+
+    
+    
     fname = ['ODTQPD_' fme '.mat'];
     qpdfile = fullfile(pddir,fname);
        
     if ~exist(qpdfile)
+        warning('cant find pd file');
         qpdfile = fullfile(pddir,'ODTQPD_2023-10-07_19-41-04.mat');
     end
       dpd = load(qpdfile);
@@ -101,20 +111,33 @@ for nn=1:length(data)
     X = data(nn).X;
     % Ydata
     Y = data(nn).(dVar); 
+    N = data(nn).N;
+    Xs = data(nn).Xs;
     
     Ym = median(Y);
     
-%     binds = abs(Y-Ym)>15;
+     binds = abs(Y-Ym)>8;    
+     X(binds)=[];
+     Y(binds)=[];
+     N(binds)=[];
+     Xs(binds)=[];
     
-%     X(binds)=[];
-%     Y(binds)=[];
-    
+    binds = N/max(N)<.20;    
+     X(binds)=[];
+     Y(binds)=[];
+     N(binds)=[];
+     Xs(binds)=[];
     
 %     tpd=1e3*dpd.t-775+X(end);
     tpd = 1e3*dpd.t-680;
     
     vpd1 = dpd.data(:,1)./dpd.data(:,3);
     vpd2 = dpd.data(:,4)./dpd.data(:,6);
+    
+    % add minus sign to account for the fact that + peizo movies cloud
+    % negative
+    vpd1 = -vpd1;
+    vpd2 = -vpd2;
     
     i1 = find(tpd>=min(X),1);
     i2 = find(tpd>=max(X),1);
@@ -151,7 +174,7 @@ for nn=1:length(data)
     
     Agp = (max(vpd1_sub)-min(vpd1_sub))/2;
     Cgp = mean(vpd1_sub);
-    Bgp =  mod(2*pi*(150)/T,2*pi);
+    Bgp =  mod(2*pi*(150)/T+pi,2*pi);% additional pi since positive piezo moves cloud to -
     opt = fitoptions(myfit);
     opt.StartPoint = [Agp Bgp Cgp];
     fout_pd = fit(t_sub',vpd1_sub,myfit,opt);
@@ -172,7 +195,47 @@ for nn=1:length(data)
 
          
     % Make Axis and Plot Data
-    subplot(3,3,mod(nn-1,nPlotMax)+1);    
+    axbot=subplot(3,3,mod(nn-1,nPlotMax)+1);    
+    
+    pos = axbot.Position;
+    pos1 = pos;
+    pos1(4) = pos(4)*.5;
+    
+    pos2 = pos;
+    pos2(2)  = pos1(2)+pos1(4);    
+    pos2(4) = pos(4)*.25;  
+    
+    pos3 = pos;
+    pos3(2) = pos2(2)+pos2(4);
+    pos3(4) = pos(4)*.25;      
+       
+    axbot.Position = pos1;        
+    axmid = axes('position',pos2);
+    axtop = axes('position',pos3);
+
+    % Size Plot
+    axes(axtop);
+    plot(X,Xs,'^','markerfacecolor',myco,...
+        'markeredgecolor',myco*.5,'color',myco,...
+        'linewidth',1,'markersize',4);    
+    set(gca,'YColor',myco*.5);
+    ylabel(['\sigma X (a_L)']);
+    xlim([min(X) max(X)]); 
+    title([num2str(B(nn)) ' G, ' num2str(f(nn)) ' Hz']);       
+
+    % Atom Number plot
+    axes(axmid);
+    plot(X,N,'s','markerfacecolor',myco,...
+        'markeredgecolor',myco*.5,'color',myco,...
+        'linewidth',1,'markersize',4);    
+    set(gca,'YColor',myco*.5);
+    ylabel(['N']);
+    xlim([min(X) max(X)]); 
+    
+
+    
+    axes(axbot);
+%     
     yyaxis right
     plot(tpd,vpd1,'k-');
     hold on
@@ -189,15 +252,22 @@ for nn=1:length(data)
     ylabel([dVar ' (a_L)']);
     xlabel(data(nn).xVar,'interpreter','none');
     hold on
-    title([num2str(B(nn)) ' G, ' num2str(f(nn)) ' Hz']);
-
-    ylim(Ym+[-8 8]);
+    yyaxis left
+    plot(tpd,vpd1,'k-');
+    hold on
+    plot(tt,feval(fout_pd,tt),'-','color',[.5 .5 .5],'linewidth',2);
+    set(gca,'YColor','k');   
+    ylim(Ym+[-15 15]);
     xlim([min(X) max(X)]); 
+    
+    
+           
+
     myamp(nn) = fout_dig.A;
     myamp_err(nn) = (c(2,1)-c(1,1))/2;
 
    % phi(nn) = mod(fout_dig.B,2*pi)-mod(fout_pd.B,2*pi);
-    phi(nn) = mod(fout_dig.B-fout_pd.B,2*pi)-pi;
+    phi(nn) = mod(fout_dig.B-fout_pd.B,2*pi)-1.5*pi;
     %phi(nn) = mod(fout_dig.B-Bgp,2*pi)-pi/2;
     phi_err(nn) = (c(2,2)-c(1,2))/2;
 
