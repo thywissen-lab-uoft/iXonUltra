@@ -54,6 +54,72 @@ fname = 'digdata';
 [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
 data = [all_data.(fname)];
 pddir = 'X:\LabJackLogs\ODTQPD\2023\2023.10\10.07';
+
+%%
+
+runs = [2023 10 07 33;
+    2023 10 07 34;
+    2023 10 07 35;
+    2023 10 07 36;
+    2023 10 07 37;
+    2023 10 07 38;
+    2023 10 07 39;
+    2023 10 07 40;
+    2023 10 07 41;
+    2023 10 07 42;
+    2023 10 07 43;
+    2023 10 07 44;
+    2023 10 07 45;
+    2023 10 07 46;
+    2023 10 07 47;
+    2023 10 07 48;
+    2023 10 07 49;
+    2023 10 07 50;
+    2023 10 07 51;
+    2023 10 07 52;
+    ];
+
+% fit_types = {''};
+data_label = '2.5 Er Quench'; 
+dVar = 'Xc';
+varname = 'shake_25Er_2v2v_54Hz_80mW';
+n = 400;
+% 
+% 
+clear data
+fname = 'digdata';
+[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+data = [all_data.(fname)];
+
+%%
+
+runs = [2023 10 09 03;
+    2023 10 09 04;
+2023 10 09 05;
+2023 10 09 06;
+2023 10 09 07;
+2023 10 09 08;
+2023 10 09 09;
+2023 10 09 10;
+2023 10 09 11;
+2023 10 09 12;
+2023 10 09 13;
+2023 10 09 14;
+2023 10 09 15;
+    ];
+
+% fit_types = {''};
+dVar = 'Xc';
+varname = 'shake_25Er_2v2v_54Hz_80mW';
+data_label = varname; 
+
+n = 400;
+% 
+% 
+clear data
+fname = 'digdata';
+[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+data = [all_data.(fname)];
 %% 
 B2a = @(Bfield) 167*(1-(6.910)./(Bfield-202.15));
 clear hFs
@@ -114,15 +180,23 @@ for nn=1:length(data)
     N = data(nn).N;
     Xs = data(nn).Xs;
     
-    Ym = median(Y);
     
-     binds = abs(Y-Ym)>8;    
-     X(binds)=[];
+    binds = isnan(Y);
+       X(binds)=[];
      Y(binds)=[];
-     N(binds)=[];
-     Xs(binds)=[];
+      N(binds)=[];
+      Xs(binds)=[];  
+      
+
     
-    binds = N/max(N)<.20;    
+%      binds = abs(Y-Ym)>8;    
+%      X(binds)=[];
+%      Y(binds)=[];
+%      N(binds)=[];
+%      Xs(binds)=[];
+
+      Ym = median(Y);
+    binds = N/median(N)<.25;    
      X(binds)=[];
      Y(binds)=[];
      N(binds)=[];
@@ -304,6 +378,9 @@ ylabel('N atoms');
 xlabel('frequency (Hz)');
 grid on
 
+%%
+
+%%
 f2=figure(1214)
 clf
 f2.WindowStyle='docked';
@@ -326,9 +403,28 @@ errorbar(B,Nbar,Nerr,'ko','markerfacecolor','k');
 ylabel('N atoms');
 xlabel('Bfield (G)');
 grid on
-
 %%
-
-figure(1214)
+f3=figure(125)
 clf
+f3.WindowStyle='docked';
+
+subplot(131);
+errorbar(B2a(B).^2,myamp,myamp_err,'ko','markerfacecolor','k');
+xlabel('a^2 (a_0^2)');
+ylabel('amplitude (lattice sites)');
+grid on
+ylim([0 5]);
+subplot(132);
+errorbar(B2a(B).^2,phi/(2*pi),phi_err/(2*pi),'o','markerfacecolor','b');
+ylabel('phase difference (2*pi)');
+ylim([-0.5 0.5]);
+grid on
+xlabel('a^2 (a_0^2)');
+
+subplot(133);
+errorbar(B2a(B).^2,Nbar,Nerr,'ko','markerfacecolor','k');
+ylabel('N atoms');
+xlabel('a^2 (a_0^2)');
+grid on
+%%
 
