@@ -10,6 +10,9 @@ disp(repmat('-',1,60));disp(repmat('-',1,60));
 disp(['Calling ' mfilename '.m']);
 disp(repmat('-',1,60));disp(repmat('-',1,60));   
 
+%% Initial checks
+% Check to make sure that PSF deconvolution had been done 
+
 if ~exist('ixondata')
    error(['This code assume you have run ixon_main.m first, which should ' ...
        'define the variable ixondata.']);
@@ -23,35 +26,48 @@ for kk=1:length(img_opts)
     end
 end
 
-%%
+%% Initialize the structure
 qgmdata = struct;
-
 %% Options
-qgm_doFindLattice = 1;
+
+% These are the analysis options, typically these all need to be on in
+% order to digitze the image
+qgm_doFindLattice = 1;          
 qgm_doBinLattice = 1;
-qgm_doDigitize   = 1;
-qgm_DigitizationThreshhold = 1500;
+
+
+
 qgm_doDigitalAnalysis = 1;
 
 %% Using the FFT find the k vectors of the lattice and the phase
-
-
-
+% Using the FFT, find the kvectors of the lattice and fit them.  The
+% k-vectors give the lattice spacing.
+%
+% Using the k-vectors caluate the phase of the phase by fully calcuating
+% the Fourier Transform. (FFT algorithm isn't precise enough)
+%
+% If the SNR is poor, the k-vectors fit may fail. This is determined by
+% comparing the measured k-vectors to a predetermined "close enough" one
+% which is set by the magnification, lattice angle, and lattice beams.
+% These dont change unless the optics are altered.
+%
+% If the fitted k-vector differ from these "close enough" values too much
+% the data pont is assigned the average fitted kvector at the end.
 if qgm_doFindLattice
     
 % This flag checks whether the fitted k-vectors are close to an
 % approximation
 doApproxCheck = 1;
-
-badLatticeAction = 'Remove';
 badLatticeAction = 'Use Average';
 
-% Define some expected k-vectors
+% Define some expected k-vectors "close enough"
 k10 = [0.3749; 0];k20 = [0.0031; 0.3743];    
 
-% % 
+% Average fitted k-vectors
 k1Avg = [0;0];
 k2Avg = [0;0];
+
+% Keep track of which indices have a good k-vector fit
 goodLatticeInds = ones(1,length(ixondata));
     
 disp(repmat('-',1,60));disp(repmat('-',1,60)); 
@@ -131,19 +147,19 @@ for n=1:length(ixondata)
     end
     disp(' ');
 end
-% 
+
+% Caculate the average k-vector
 k1Avg = k1Avg/sum(goodLatticeInds);
 k2Avg = k2Avg/sum(goodLatticeInds);
 
-
+% Assign the average k-vector to bad data points
 if sum(goodLatticeInds)~=length(ixondata)
-    warning('Bad fits for lattices found, attempting to fix using the average good ones');
-    
+    warning('Bad fits for lattices found, attempting to fix using the average good ones');    
     for n=1:length(goodLatticeInds)
        if  goodLatticeInds(n)==0
            fprintf([num2str(n,'%02.f') '/' num2str(length(ixondata),'%02.f') ' ']);
              for kk=1:size(ixondata(n).Zf,3)
-           % Calculate lattice phase from Fourier Transform
+                % Calculate lattice phase from Fourier Transform
                 ixondata(n).LatticePhase(kk) = findLatticePhase(...
                     ixondata(n).X,ixondata(n).Y,ixondata(n).Z,...
                     k1Avg,k2Avg);  
