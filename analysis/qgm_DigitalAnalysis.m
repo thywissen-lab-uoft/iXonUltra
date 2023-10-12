@@ -1,3 +1,12 @@
+qgm_doDigitize   = 1;
+qgm_DigitizationThreshhold = 1500;
+if qgm_doDigitize
+   [ixondata] = ixon_digitize(ixondata,qgm_DigitizationThreshhold);
+   for n=1:length(ixondata)
+       qgmdata(n).LatticeDig = ixondata(n).LatticeDig;
+   end
+end
+
 P = [ixondata.Params];
 F = [ixondata.Flags];
 U = [ixondata.Units];

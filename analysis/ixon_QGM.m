@@ -36,6 +36,8 @@ qgm_doFindLattice = 1;
 qgm_doBinLattice = 1;
 
 
+qgm_AssessLattice = 1;
+
 
 qgm_doDigitalAnalysis = 1;
 
@@ -177,7 +179,9 @@ if sum(goodLatticeInds)~=length(ixondata)
     end  
 end
 end
-%% 
+%% Bin into Lattice Sites
+% Having calculated the lattice spacing and phase. Bin all counts into a
+% lattice site.
 if qgm_doBinLattice
     for n=1:length(ixondata)
         for kk=1:size(ixondata(n).Z,3)
@@ -186,7 +190,7 @@ if qgm_doBinLattice
             a2 = ixondata(n).LatticePhase(kk).a2;                        
             p1 = ixondata(n).LatticePhase(kk).p1;
             p2 = ixondata(n).LatticePhase(kk).p2;        
-            opts.ScaleFactor = 2;    
+            opts.ScaleFactor = 3;    
             opts.a1 = a1;
             opts.a2 = a2;
             opts.p1 = p1;
@@ -215,13 +219,10 @@ end
 
 %%
 
-if qgm_doDigitize
-   [ixondata] = ixon_digitize(ixondata,qgm_DigitizationThreshhold);
-   for n=1:length(ixondata)
-       qgmdata(n).LatticeDig = ixondata(n).LatticeDig;
-   end
+if qgm_AssessLattice
+    
 end
-            
+      
 %% 
 if qgm_doDigitalAnalysis
    qgm_DigitalAnalysis; 
