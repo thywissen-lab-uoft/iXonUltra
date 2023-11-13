@@ -18,7 +18,7 @@ stripe_2d_opts.StartDelay=1;
 stripe_2d_opts.MidDelay=.25;
 stripe_2d_opts.EndDelay=1;
 
-if do_2dStripeAnalysis
+if ixon_doAnalyzeStripes2D
     [hF_stripe_2d,stripe_data2d]=analyzeStripes2(ixondata,ixon_xVar,stripe_2d_opts);
 
     if ixon_doSave
