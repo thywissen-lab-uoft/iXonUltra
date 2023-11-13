@@ -371,7 +371,9 @@ for kk=1:length(ixondata)
     opt.Lower = [0 0 0 0 0 pG(end-2)-2 pG(end-1)-3 pG(end)-1.5];
     opt.Upper = [AG(kk)*1.5 xCG(kk)+50 yCG(kk)+50 sG(kk)+60 BG(kk)+2000 pG(end-2)+2 pG(end-1)+3 pG(end)+1.5];
 
-
+%     opt.Lower(6)=-1.01;
+%     opt.Upper(6)=-.99;
+%     opt.Start(6)=-1;
     
     opt.StartPoint=pG;
 

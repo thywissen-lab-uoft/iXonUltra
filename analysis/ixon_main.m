@@ -91,7 +91,7 @@ ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
-ixon_doBoxCount             = 1;
+ixon_doBoxCount             = 0;
 ixon_doGaussFit             = 0;
 
 % Analysis to run
@@ -100,7 +100,7 @@ ixon_doPlotProfiles         = 1;
 ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
-ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
+ixon_doAnalyzeStripes2D     = 1;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
 ixon_doQGM                  = 0;
@@ -337,8 +337,7 @@ if ixon_doPlotProfiles
         end
         hF_X=[hF_X; hF_Xs_rNum];
         hF_Y=[hF_Y; hF_Ys_rNum];
-    end  
- 
+    end   
 end
 
 %% Animate cloud 
