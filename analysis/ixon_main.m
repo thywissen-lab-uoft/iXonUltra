@@ -91,7 +91,7 @@ ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
-ixon_doBoxCount             = 0;
+ixon_doBoxCount             = 1;
 ixon_doGaussFit             = 0;
 
 % Analysis to run

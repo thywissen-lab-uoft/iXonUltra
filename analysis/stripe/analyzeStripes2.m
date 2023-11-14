@@ -21,6 +21,9 @@ end
 params=[ixondata.Params];
 xvals=[params.(xVar)];
 [xvals,inds]=sort(xvals,'ascend');
+
+% [xvals,inds]=sort(xvals,'descend');
+
 ixondata=ixondata(inds);
 
 %% Fitting Function
@@ -128,6 +131,7 @@ for kk=1:length(ixondata)
     [~,ind]=max(CC);    
     theta=thetaVec(ind);
     thetaG(kk)=theta;
+    
 
     % Find the cloud gaussian radius
     % Caclulate the second moment orthongal to the fringes
