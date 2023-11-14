@@ -3,6 +3,8 @@ function ixon_ps_qp_compare(ixondata)
 src='X:\LabJackLogs\CATS';
 Iall = zeros(length(ixondata),2);
 for kk=1:length(ixondata)
+    disp([num2str(kk) '/' num2str(length(atomdata)]);
+    
     t = ixondata(kk).Params.ExecutionDate;
    
     yyyy= datestr(t,'yyyy');
@@ -19,48 +21,49 @@ for kk=1:length(ixondata)
 %     MM = f(15:16);
 %     SS = f(18:19);
 %     fdata=f;
-    tdata=[str2num(yyyy) str2num(mm) str2num(dd) str2num(HH) str2num(MM) str2num(SS)];
+%     tdata=[str2num(yyyy) str2num(mm) str2num(dd) str2num(HH) str2num(MM) str2num(SS)];
     
     mydir = fullfile(src,yyyy,[yyyy '.' mm],[mm '.' dd]);    
-    names = dir(fullfile(mydir,'*.mat'));
-    names={names.name};
-    names=sort(names);
     
+    fname = ['CATS_' yyyy '-' mm '-' dd '_' HH '-' MM '-' SS '.mat'];
+    str = fullfile(src,yyyy,[yyyy '.' mm],[mm '.' dd],fname);          
+    cats = load(str);            
 
+%     CATS_2023-11-14_00-04-15
     
-    for jj = 1:length(names)
-        if contains(names{jj},'extra')
-           continue 
-        end
-        f=names{jj};
-        f=f(6:end);        
-        yyyy = f(1:4);
-        mm=f(6:7);
-        dd=f(9:10);
-        HH=f(12:13);
-        MM = f(15:16);
-        SS = f(18:19);
-        
-        tcats=[str2num(yyyy) str2num(mm) str2num(dd) str2num(HH) str2num(MM) str2num(SS)];
-        dT=(datenum(tcats)-datenum(t))*24*60;
-        if abs(dT)<3            
-            str = fullfile(src,yyyy,[yyyy '.' mm],[mm '.' dd],names{jj});    
+%     names = dir(fullfile(mydir,'*.mat'));
+%     names={names.name};
+%     names=sort(names);
+    
+%     str = fullfile(src,yyyy,[yyyy '.' mm],[mm '.' dd],names{jj});            
 
-            
-            cats = load(str);
-            
-            t1 = cats.SequencerTime;
-            
-            
-            t2 = datestr(t,'yyyy-mm-dd_HH-MM-SS');
-            
-            if isequal(t1,t2)
-                break
-            end
-            
-        end      
 
-    end
+%     
+%     for jj = 1:length(names)
+%         if contains(names{jj},'extra')
+%            continue 
+%         end
+%         f=names{jj};
+%         f=f(6:end);        
+%         yyyy = f(1:4);
+%         mm=f(6:7);
+%         dd=f(9:10);
+%         HH=f(12:13);
+%         MM = f(15:16);
+%         SS = f(18:19);
+%         
+%         tcats=[str2num(yyyy) str2num(mm) str2num(dd) str2num(HH) str2num(MM) str2num(SS)];
+%         dT=(datenum(tcats)-datenum(t))*24*60;
+%         if abs(dT)<3            
+%             str = fullfile(src,yyyy,[yyyy '.' mm],[mm '.' dd],names{jj});            
+%             cats = load(str);            
+%             t1 = cats.SequencerTime;           
+%             t2 = datestr(t,'yyyy-mm-dd_HH-MM-SS');            
+%             if isequal(t1,t2)
+%                 break
+%             end            
+%         end      
+%     end
     
     x = cats.t;
     y = cats.data(:,end-1);
@@ -78,11 +81,16 @@ for kk=1:length(ixondata)
 %     keyboard
     Iall(kk,1)=Ithis;
         Iall(kk,2)=dIthis;
-
 end
 P=[ixondata.Params];
 itot = [P.qgm_plane_IQP];
-keyboard
+x=[P.ExecutionDate];
 
+figure(917)
+clf
+errorbar(x,Iall(:,1),Iall(:,2),'o');
+datetick('x');
+ylabel('coil 16 ps current (A)');
+set(gcf,'windowstyle','docked')
 end
 

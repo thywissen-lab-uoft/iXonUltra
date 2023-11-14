@@ -380,6 +380,18 @@ for kk=1:length(ixondata)
 %     opt.Start(6)=-1;
     
     opt.StartPoint=pG;
+    
+    if isfield(opts,'ConstrainWavelength') && ~isnan(opts.ConstrainWavelength)
+        opt.StartPoint(7) = opts.ConstrainWavelength;
+        opt.Upper(7) = opts.ConstrainWavelength+.01;
+        opt.Lower(7) = opts.ConstrainWavelength-0.01;
+    end
+    
+    if isfield(opts,'ConstrainAngle') && ~isnan(opts.ConstrainAngle)
+        opt.StartPoint(6) = opts.ConstrainAngle;
+        opt.Upper(6) = opts.ConstrainAngle+.1;
+        opt.Lower(6) = opts.ConstrainAngle-0.1;
+    end
 
     
     % Grab the data
