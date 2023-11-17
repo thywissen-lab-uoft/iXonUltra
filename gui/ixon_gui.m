@@ -929,15 +929,21 @@ tblScale=uitable('parent',hpADV,'units','pixels',...
     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
 tblScale.Position=[hpADV.Position(3)-70 cScale.Position(2) 50 20];
 
+% Subtract background image
+ttstr='Subtract off background image from atoms images.';
+hcSubBG=uicontrol(hpADV,'style','checkbox','string','subtract bgd','fontsize',7,...
+    'backgroundcolor','w','Position',[5 cScale.Position(2)+15 80 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
+
 ttstr='Apply mask to image to eliminate aperture clipping';
 hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',7,...
-    'backgroundcolor','w','Position',[5 cScale.Position(2)+22 120 13],...
+    'backgroundcolor','w','Position',[5 hcSubBG.Position(2)+15 120 13],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
 % Subtract bias
 ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
 hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hcMask.Position(2)+18 80 15],...
+    'backgroundcolor','w','Position',[5 hcMask.Position(2)+13 80 15],...
     'ToolTipString',ttstr,'enable','on','Value',1);
 
 % process button
@@ -2679,6 +2685,7 @@ function updateImages
     x=ROI(1):ROI(2);y=ROI(3):ROI(4);         
     opt = struct;    
     opt.doSubtractBias     = hcSubBias.Value;
+    opt.doSubtractBG       = hcSubBG.Value;
     opt.doScale            = cScale.Value;
     opt.ScaleFactor        = tblScale.Data;
     opt.doGaussFilter      = cGaussFilter.Value;

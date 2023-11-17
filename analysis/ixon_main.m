@@ -82,7 +82,7 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
@@ -92,7 +92,7 @@ ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
 ixon_doBoxCount             = 1;
-ixon_doGaussFit             = 1;
+ixon_doGaussFit             = 0;
 
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
@@ -100,10 +100,10 @@ ixon_doPlotProfiles         = 1;
 ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
-ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
+ixon_doAnalyzeStripes2D     = 1;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-ixon_doQGM                  = 1;
+ixon_doQGM                  = 0;
 
 
 %% Image Processing Options
@@ -115,6 +115,7 @@ ixon_mask=ixon_mask.BW;
 
 img_opt = struct;
 img_opt.doSubtractBias      = 1;        % Subtract 200 count electronic offset
+img_opt.doSubtractBG        = 0;
 img_opt.doScale             = 1;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)

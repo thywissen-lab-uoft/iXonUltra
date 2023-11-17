@@ -60,22 +60,29 @@ else
     hax1=subplot(211);
 end
 
-set(hax1,'box','on','linewidth',1,'fontsize',10,'units','pixels');
-hold on
-xlabel([xVar ' (' plt_opts.xUnit ')'],'interpreter','none');
 for nn=1:size(Xc,2)
     [cface,cedge] = ixoncolororder(nn);
    plot(xvals,Xc(:,nn),'o','color',cedge,'linewidth',1,'markersize',8,...
        'markerfacecolor',cface,'markeredgecolor',cedge);
+   
+   
+if isequal(xVar,'ExecutionDate')
+    datetick('x');
+    xlabel('ExecutionDate');
+end
+   hold on
+
 end
 str='X centre (px)';
 text(0.02,.98,str,'units','normalized','fontsize',12,'verticalalignment','cap',...
     'interpreter','latex');
 
-if isequal(xVar,'ExecutionDate')
-    datetick('x');
-    xlabel('ExecutionDate');
-end
+
+set(hax1,'box','on','linewidth',1,'fontsize',10,'units','pixels');
+xlabel([xVar ' (' plt_opts.xUnit ')'],'interpreter','none');
+
+
+
 %% Table X
 
 if doFit
@@ -100,24 +107,25 @@ else
     hax2=subplot(212);
 end
 
-set(hax2,'box','on','linewidth',1,'fontsize',10,'units','pixels');
-hold on
-xlabel([xVar ' (' plt_opts.xUnit ')'],'interpreter','none');
+
 co=get(gca,'colororder');
 for nn=1:size(Xc,2)
     [cface,cedge] = ixoncolororder(nn);
    plot(xvals,Yc(:,nn),'o','color',cedge,'linewidth',1,'markersize',8,...
        'markerfacecolor',cface,'markeredgecolor',cedge);
+   if isequal(xVar,'ExecutionDate')
+    datetick('x');
+    xlabel('ExecutionDate');
+   end
+hold on
 end
 str='Y centre (px)';
 text(0.02,0.98,str,'units','normalized','fontsize',12,'verticalalignment','cap',...
     'interpreter','latex');
 
-if isequal(xVar,'ExecutionDate')
-    datetick('x');
-    xlabel('ExecutionDate');
-end
 
+set(hax2,'box','on','linewidth',1,'fontsize',10,'units','pixels');
+xlabel([xVar ' (' plt_opts.xUnit ')'],'interpreter','none');
 
 %% Table Y
 if doFit

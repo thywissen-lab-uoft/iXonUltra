@@ -71,199 +71,203 @@ filename=fullfile(figDir,[filename '.gif']);
 %   Modulation depth - assume 50%
 
 % Vectors for initial guess
-xCG=zeros(length(ixondata),1);
-yCG=zeros(length(ixondata),1);
-thetaG=zeros(length(ixondata),1);
-sG=zeros(length(ixondata),1);
-BG=zeros(length(ixondata),1);
-AG=zeros(length(ixondata),1);
-phiG=zeros(length(ixondata),1);
+% xCG=zeros(length(ixondata),1);
+% yCG=zeros(length(ixondata),1);
+% thetaG=zeros(length(ixondata),1);
+% sG=zeros(length(ixondata),1);
+% BG=zeros(length(ixondata),1);
+% AG=zeros(length(ixondata),1);
+% phiG=zeros(length(ixondata),1);
 
-fprintf('Constructing initial guesses ...');
-t1=now;
+% fprintf('Constructing initial guesses ...');
+% t1=now;
 
 % In debug mode, plot the guesses
-if doDebug
-    hf_guess=figure;
-    clf
-    hf_guess.Color='w';
-    hf_guess.Position=[50 50 1000 400];
-end
+% if doDebug
+%     hf_guess=figure;
+%     clf
+%     hf_guess.Color='w';
+%     hf_guess.Position=[50 50 1000 400];
+% end
 
-for kk=1:length(ixondata)    
-    
-    thetaVec=linspace(opts.Theta(1),opts.Theta(2),90);        
-    
-    % Get raw data
-    Z2=ixondata(kk).Z;
-    Z2(Z2<0)=0;
-    x2=1:size(Z2,2);x2=x2';
-    y2=1:size(Z2,1);y2=y2';    
-
-    % Resize
-    sc=0.1;
-    Z2=imresize(Z2,sc);
-    x2=imresize(x2,sc);
-    y2=imresize(y2,sc);
-    
-    % Calculate cetner
-    Zx=sum(Z2,1)'/sum(sum(Z2));    
-    Zy=sum(Z2,2)/sum(sum(Z2));  
-    Zx(Zx<0)=0;
-    Zy(Zy<0)=0;
-    
-    xC=sum(Zx.*x2);
-    yC=sum(Zy.*y2);     
-    
-    % Add guesses to external vector
-    xCG(kk)=xC;
-    yCG(kk)=yC;
-
-    % Compute sum contrasts at many angles
-    for jj=1:length(thetaVec)        
-        Zrot=imrotate(Z2,thetaVec(jj));        
-        Zsum=sum(Zrot,1);
-        Zsum=smooth(Zsum,5);
-        CC(jj)=sum(abs(diff(Zsum)).^2);    
-    end
-    
-    % Find the angle which maximizes the contrast
-    [~,ind]=max(CC);    
-    theta=thetaVec(ind);
-    thetaG(kk)=theta;
-    
-
-    % Find the cloud gaussian radius
-    % Caclulate the second moment orthongal to the fringes
-    Zrot=imrotate(Z2,theta,'crop');
-    Zsum1=sum(Zrot,1)/sum(sum(Zrot));
-    Zsum2=sum(Zrot,2)/sum(sum(Zrot));   
-    Zsum2(Zsum2<0)=0;    
-    yrC=sum(y2.*Zsum2);
-    s=sqrt(sum(((y2-yrC).^2.*Zsum2)))*.75;
-    
-    sG(kk)=s;    
-    
-    % Find the guess wavelength
-    % On the rotated data find the separation of local maxima
-    ZsumSmooth=smooth(Zsum1,10);
-    [yA,P]=islocalmax(ZsumSmooth,'MinSeparation',50*sc,...
-        'MaxNumExtrema',4,'MinProminence',range(ZsumSmooth)*0.05);
-    xA=diff(x2(yA));
-    L=mean(xA);
-    
-    if isnan(L) || isinf(L) || isinf(-L) || L<50
-       L=80; 
-    end
-    
-    LG(kk)=L;
-    
-    % Find the initial phase of the data
-    % Compute correlations of the image with a plane wave at the guess
-    % angle
-    phiVec=linspace(0,2*pi,50);
-    [xx,yy]=meshgrid(x2,y2);
-    Sphi=zeros(length(phiVec),1);
-    for nn=1:length(phiVec)        
-        plane_wave=sin(2*pi/L*(cosd(theta)*xx+sind(theta)*yy)+phiVec(nn));
-        Sphi(nn)=sum(sum(plane_wave.*imgaussfilt(Z2,1)));     
-    end
-    [~,ind]=max(Sphi);
-    phi=phiVec(ind);
-    phiG(kk)=phi;
-
-    % Guess the modulation strength
-    B=max(P)/range(ZsumSmooth);
-    B=0.5;
-    BG(kk)=B;
-    
-    % Guess the gaussian envelope
-    A=sum(sum(Z2))/(2*pi*s);
-    A=max(max(Z2))/(2*(1+B));
-    AG(kk)=A;
-    
-    % Construct the initial guess
-    pG=[A,xC,yC,s,B,theta,L,phi];
-    Zguess=gauss2dSine(pG(1),pG(2),pG(3),pG(4),pG(5),pG(6),pG(7),pG(8),xx,yy);
-        
-    % Plot the initial guess metrics    
-    yL=[-1 1]*200.*sind(theta);
-    xL=[-1 1]*200.*cosd(theta);
-    
-    yL2=[-1 1]*200.*sind(theta+90);
-    xL2=[-1 1]*200.*cosd(theta+90);
-    tt=linspace(0,2*pi,100);    
-    %% Debug Plot for guess
-    if doDebug
-        % If in debug mode, plot the guess and some plots to show how it is
-        % obtained.
-        figure(hf_guess);
-        clf
-        colormap(purplemap);
-        % Raw data
-        subplot(231)
-        imagesc(x2,y2,Z2);
-        set(gca,'ydir','normal');
-        axis equal tight
-        hold on
-        plot(xL+xC,yL+yC,'k-')    
-        plot(xL2+xC,yL2+yC,'r-')    
-
-        plot(s*cos(tt)+xC,s*sin(tt)+yC,'r-')
-        colorbar
-        
-        % Show guess        
-        subplot(232)   
-        imagesc(x2,y2,Zguess);
-        set(gca,'ydir','normal');
-        axis equal tight
-        colorbar
-
-        % Guess residue
-        subplot(233)  
-        imagesc(x2,y2,Zguess-Z2);
-        set(gca,'ydir','normal');
-        axis equal tight
-        colorbar
-        drawnow;            
-        
-        % Contrast versus angle
-        subplot(234)    
-        plot(thetaVec,CC);
-        xlabel('rotation angle (deg.)')
-        ylabel('contrast (au)');
-        xlim([min(thetaVec) max(thetaVec)]);
-        hold on
-        plot([1 1]*theta,get(gca,'YLim'),'r--');
-
-        
-        drawnow;    
-
-        % Sum along non styriep direction local maxima
-        subplot(235)    
-        plot(x2,ZsumSmooth,'k-','linewidth',1);
-        xlabel('rotated position (px)')
-        ylabel('sum');
-            hold on
-        yP=yA.*ZsumSmooth;
-        iP=[yP~=0];
-        plot(x2(iP),yP(iP),'b*');
-        xlim([min(x2) max(x2)]);
-        plot(y2,Zsum2,'r-','linewidth',1);
-        drawnow; 
-
-        % Phase correlator
-        subplot(236)    
-        plot(phiVec/pi,Sphi);
-        xlabel('initial phase (\pi)')
-        ylabel('correlation');
-        drawnow;  
-%         keyboard
-        waitforbuttonpress
-    end
-end
-t2=now;
-disp(['done (' num2str(round((t2-t1)*24*60*60),2) ' s)']);
+% for kk=1:length(ixondata)    
+%     
+%     thetaVec=linspace(opts.Theta(1),opts.Theta(2),90);        
+%     
+%     % Get raw data
+%     Z2=ixondata(kk).Z;
+%     Z2(Z2<0)=0;
+%     
+%     x2 = ixondata(kk).X';
+%     y2 = ixondata(kk).Y';
+% 
+% 
+%     % Resize
+%     sc=0.1;
+%     Z2=imresize(Z2,sc);
+%     x2=imresize(x2,sc);
+%     y2=imresize(y2,sc);
+%     
+%     % Calculate cetner
+%     Zx=sum(Z2,1)'/sum(sum(Z2));    
+%     Zy=sum(Z2,2)/sum(sum(Z2));  
+%     Zx(Zx<0)=0;
+%     Zy(Zy<0)=0;
+%     
+%     xC=sum(Zx.*x2);
+%     yC=sum(Zy.*y2);     
+%     
+%     % Add guesses to external vector
+%     xCG(kk)=xC;
+%     yCG(kk)=yC;
+% 
+%     % Compute sum contrasts at many angles
+%     for jj=1:length(thetaVec)        
+%         Zrot=imrotate(Z2,thetaVec(jj));        
+%         Zsum=sum(Zrot,1);
+%         Zsum=smooth(Zsum,5);
+%         CC(jj)=sum(abs(diff(Zsum)).^2);    
+%     end
+%     
+% 
+%     
+%     % Find the angle which maximizes the contrast
+%     [~,ind]=max(CC);    
+%     theta=thetaVec(ind);
+%     thetaG(kk)=theta;
+%     
+% 
+%     % Find the cloud gaussian radius
+%     % Caclulate the second moment orthongal to the fringes
+%     Zrot=imrotate(Z2,theta,'crop');
+%     Zsum1=sum(Zrot,1)/sum(sum(Zrot));
+%     Zsum2=sum(Zrot,2)/sum(sum(Zrot));   
+%     Zsum2(Zsum2<0)=0;    
+%     yrC=sum(y2.*Zsum2);
+%     s=sqrt(sum(((y2-yrC).^2.*Zsum2)))*.75;
+%     
+%     sG(kk)=s;    
+%     
+%     % Find the guess wavelength
+%     % On the rotated data find the separation of local maxima
+%     ZsumSmooth=smooth(Zsum1,10);
+%     [yA,P]=islocalmax(ZsumSmooth,'MinSeparation',50*sc,...
+%         'MaxNumExtrema',4,'MinProminence',range(ZsumSmooth)*0.05);
+%     xA=diff(x2(yA));
+%     L=mean(xA);
+%     
+%     if isnan(L) || isinf(L) || isinf(-L) || L<50
+%        L=80; 
+%     end
+%     
+%     LG(kk)=L;
+%     
+%     % Find the initial phase of the data
+%     % Compute correlations of the image with a plane wave at the guess
+%     % angle
+%     phiVec=linspace(0,2*pi,50);
+%     [xx,yy]=meshgrid(x2,y2);
+%     Sphi=zeros(length(phiVec),1);
+%     for nn=1:length(phiVec)        
+%         plane_wave=sin(2*pi/L*(cosd(theta)*xx+sind(theta)*yy)+phiVec(nn));
+%         Sphi(nn)=sum(sum(plane_wave.*imgaussfilt(Z2,1)));     
+%     end
+%     [~,ind]=max(Sphi);
+%     phi=phiVec(ind);
+%     phiG(kk)=phi;
+% 
+%     % Guess the modulation strength
+%     B=max(P)/range(ZsumSmooth);
+%     B=0.5;
+%     BG(kk)=B;
+%     
+%     % Guess the gaussian envelope
+%     A=sum(sum(Z2))/(2*pi*s);
+%     A=max(max(Z2))/(2*(1+B));
+%     AG(kk)=A;
+%     
+%     % Construct the initial guess
+%     pG=[A,xC,yC,s,B,theta,L,phi];
+%     Zguess=gauss2dSine(pG(1),pG(2),pG(3),pG(4),pG(5),pG(6),pG(7),pG(8),xx,yy);
+%         
+%     % Plot the initial guess metrics    
+%     yL=[-1 1]*200.*sind(theta);
+%     xL=[-1 1]*200.*cosd(theta);
+%     
+%     yL2=[-1 1]*200.*sind(theta+90);
+%     xL2=[-1 1]*200.*cosd(theta+90);
+%     tt=linspace(0,2*pi,100);    
+%     %% Debug Plot for guess
+%     if doDebug
+%         % If in debug mode, plot the guess and some plots to show how it is
+%         % obtained.
+%         figure(hf_guess);
+%         clf
+%         colormap(purplemap);
+%         % Raw data
+%         subplot(231)
+%         imagesc(x2,y2,Z2);
+%         set(gca,'ydir','normal');
+%         axis equal tight
+%         hold on
+%         plot(xL+xC,yL+yC,'k-')    
+%         plot(xL2+xC,yL2+yC,'r-')    
+% 
+%         plot(s*cos(tt)+xC,s*sin(tt)+yC,'r-')
+%         colorbar
+%         
+%         % Show guess        
+%         subplot(232)   
+%         imagesc(x2,y2,Zguess);
+%         set(gca,'ydir','normal');
+%         axis equal tight
+%         colorbar
+% 
+%         % Guess residue
+%         subplot(233)  
+%         imagesc(x2,y2,Zguess-Z2);
+%         set(gca,'ydir','normal');
+%         axis equal tight
+%         colorbar
+%         drawnow;            
+%         
+%         % Contrast versus angle
+%         subplot(234)    
+%         plot(thetaVec,CC);
+%         xlabel('rotation angle (deg.)')
+%         ylabel('contrast (au)');
+%         xlim([min(thetaVec) max(thetaVec)]);
+%         hold on
+%         plot([1 1]*theta,get(gca,'YLim'),'r--');
+% 
+%         
+%         drawnow;    
+% 
+%         % Sum along non styriep direction local maxima
+%         subplot(235)    
+%         plot(x2,ZsumSmooth,'k-','linewidth',1);
+%         xlabel('rotated position (px)')
+%         ylabel('sum');
+%             hold on
+%         yP=yA.*ZsumSmooth;
+%         iP=[yP~=0];
+%         plot(x2(iP),yP(iP),'b*');
+%         xlim([min(x2) max(x2)]);
+%         plot(y2,Zsum2,'r-','linewidth',1);
+%         drawnow; 
+% 
+%         % Phase correlator
+%         subplot(236)    
+%         plot(phiVec/pi,Sphi);
+%         xlabel('initial phase (\pi)')
+%         ylabel('correlation');
+%         drawnow;  
+% %         keyboard
+%         waitforbuttonpress
+%     end
+% end
+% t2=now;
+% disp(['done (' num2str(round((t2-t1)*24*60*60),2) ' s)']);
 %% Fit it
 
 fRs={};
@@ -277,7 +281,7 @@ clf
 colormap(purplemap);
 
 ax1=subplot(4,4,[1 2 5 6 9 10 13 14]);    
-hImg_raw=imagesc(ixondata(1).Z);
+hImg_raw=imagesc(ixondata(1).X,ixondata(1).Y,ixondata(1).Z);
 set(gca,'ydir','normal');
 axis equal tight
 % colorbar
@@ -296,7 +300,7 @@ pCirc=plot(0,0,'-','color',co(1,:),'linewidth',2);
 
 
 ax3=subplot(4,4,[11 15]);    
-hImg_err=imagesc(ixondata(1).Z);
+hImg_err=imagesc(ixondata(1).X,ixondata(1).Y,ixondata(1).Z);
 set(gca,'ydir','normal');
 axis equal tight
 % colorbar
@@ -359,27 +363,37 @@ uicontrol('style','text','string','iXon, stripe','units','pixels','backgroundcol
 
 vart=uicontrol('style','text','string','variable','units','pixels','backgroundcolor',...
     'w','horizontalalignment','left','fontsize',8,'fontweight','normal',...
-    'position',[2 25 100 20]);
-
+    'position',[125 2 400 20]);
+%%
 for kk=1:length(ixondata)
-    fprintf(['Fitting ' num2str(kk) ' of ' num2str(length(ixondata)) ' ... ']);
-    pG=[AG(kk),xCG(kk),yCG(kk),sG(kk),BG(kk),thetaG(kk),LG(kk),phiG(kk)];
+    fprintf([num2str(kk) '/' num2str(length(ixondata)) ' ']);
+      
+    % Grab the data
+    Z=ixondata(kk).Z;
+    Z=imgaussfilt(Z,1);
+    x=ixondata(kk).X;x=x';
+    y =ixondata(kk).Y;y=y'; 
     
-    
+    % Create a meshgrid
+    [xx,yy]=meshgrid(x,y);
+
+    fprintf('guessing ...')
+    tic
+    G=calculateInitialGuess(x,y,Z,opts);     
+    t=toc;
+    fprintf(['(' num2str(t,2) 's) ']);
+     
+    pG = [G(1),G(2),G(3),G(4),G(6),G(7),G(8),G(9)];
+     
     if kk>1 && isequal(xVar,'ExecutionDate')
         pG(end-2) = fout.theta;
         pG(end-1) = fout.L;
         pG(end) = fout.phi;    
-    end
+    end    
     
-    opt.Lower = [0 0 0 0 0 pG(end-2)-2 pG(end-1)-3 pG(end)-1.5];
-    opt.Upper = [AG(kk)*1.5 xCG(kk)+50 yCG(kk)+50 sG(kk)+60 BG(kk)+2000 pG(end-2)+2 pG(end-1)+3 pG(end)+1.5];
-
-%     opt.Lower(6)=-1.01;
-%     opt.Upper(6)=-.99;
-%     opt.Start(6)=-1;
-    
-    opt.StartPoint=pG;
+    opt.Lower = [-inf -inf -inf -inf 0 -inf -inf -inf];
+%     opt.Upper = [AG(kk)*1.5 xCG(kk)+50 yCG(kk)+50 sG(kk)+60 BG(kk)+2000 pG(end-2)+2 pG(end-1)+3 pG(end)+1.5];
+    opt.StartPoint=pG;       
     
     if isfield(opts,'ConstrainWavelength') && ~isnan(opts.ConstrainWavelength)
         opt.StartPoint(7) = opts.ConstrainWavelength;
@@ -391,31 +405,34 @@ for kk=1:length(ixondata)
         opt.StartPoint(6) = opts.ConstrainAngle;
         opt.Upper(6) = opts.ConstrainAngle+.1;
         opt.Lower(6) = opts.ConstrainAngle-0.1;
-    end
-
-    
-    % Grab the data
-    Z=ixondata(kk).Z;
-    Z=imgaussfilt(Z,1);
-    x=1:size(Z,2);x=x';
-    y=1:size(Z,1);
-    
-    % Create a meshgrid
-    [xx,yy]=meshgrid(x,y);
-    
-    % Create the initial guess
-    Zg=gauss2dSine(pG(1),pG(2),pG(3),pG(4),pG(5),pG(6),pG(7),pG(8),xx,yy); 
-%     disp(pG)
+    end                  
+     
+    Zg=gauss2dSine(G(1),G(2),G(3),G(4),G(6),G(7),G(8),G(9),xx,yy);      
     
     % Rescale the data for fitting
     sc=0.3;
-    Zsc=imresize(Z,sc);
-    xsc=imresize(x,sc);
-    ysc=imresize(y,sc);
+    Zsc=imresize(Z,sc);xsc=imresize(x,sc);ysc=imresize(y,sc);
     [xxsc,yysc]=meshgrid(xsc,ysc);
-    xxsc(Zsc<10)=[];
-    yysc(Zsc<10)=[];
-    Zsc(Zsc<10)=[];
+    
+    if isfield(opts,'Threshhold') && ~isnan(opts.Threshhold)
+        lvl = opts.Threshhold;
+        xxsc(Zsc<lvl)=[];yysc(Zsc<lvl)=[];Zsc(Zsc<lvl)=[];  
+    else
+        xxsc(Zsc<10)=[];yysc(Zsc<10)=[];Zsc(Zsc<10)=[];        
+    end
+    
+    
+    if isfield(opts,'ROI') && ~sum(isnan(opts.ROI))
+        ROI = opts.ROI;        
+        ii = xxsc<ROI(1);
+        xxsc(ii)=[];yysc(ii)=[];Zsc(ii)=[];          
+        i2 = xxsc>ROI(2);
+        xxsc(ii)=[];yysc(ii)=[];Zsc(ii)=[];  
+        i3 = yysc<ROI(3);
+        xxsc(ii)=[];yysc(ii)=[];Zsc(ii)=[];  
+        i4 = yysc>ROI(4);
+        xxsc(ii)=[];yysc(ii)=[];Zsc(ii)=[];  
+    end
 
     % Show the raw data and the initial guess
     set(hImg_raw,'XData',x,'YData',y,'CData',Z);
@@ -424,21 +441,27 @@ for kk=1:length(ixondata)
     drawnow;   
     
     % Perform the fit
+    fprintf('fitting ...');
+    tic;
     [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit,opt);
+    t=toc;
+    fprintf(['(' num2str(t,2) 's) ']);
+    
+    % Grab fit data
     fRs{kk}=fout;
     sse(kk)=gof.sse;
+    
     % Evalulate the fit
     Zf=feval(fout,xx,yy);
     disp(fout);
-    % Overwrite the guess with the fit
-    
-%     set(hImg_fit,'CData',Zf);
-    
+    % Overwrite the guess with the fit   
     set(hImg_err,'CData',Zf-Z);
-    set(ax1,'CLim',[0 fout.A*(1+fout.B)]);
+%     set(ax1,'CLim',[0 fout.A*(1+fout.B)]);
+% axes(ax1);
+% caxis(opts.CLim);
+    set(ax1,'CLim',opts.CLim);
 
-%     set(ax2,'CLim',[0 fout.A]);
-    set(ax3,'CLim',[-1 1]*fout.A*.5);
+%     set(ax3,'CLim',[-1 1]*fout.A*.5);
 
     set(pFringe,'XData',255+[0 1]*200*cosd(fout.theta),...
         'Ydata',255+[0 1]*200*sind(fout.theta));
@@ -452,9 +475,7 @@ for kk=1:length(ixondata)
         'YData',255+50*sind(tt));
     
     set(ax1,'XLim',[min(x) max(x)]);
-%     set(ax2,'XLim',[min(x) max(x)]);
     set(ax3,'XLim',[min(x) max(x)]);
-
         
     % Show the sum counts along the stripe axis    
     set(pSum1_fit,'XData',x,'YData',sum(imrotate(Zf,fout.theta,'crop'),1));
@@ -476,7 +497,13 @@ for kk=1:length(ixondata)
     tbl.Data{7,2}=num2str(round(fout.A,2));
     tbl.Data{8,2}=num2str(round(fout.sG,2));
     drawnow;
-
+    
+    
+    if isequal(xVar,'ExecutionDate')
+            vart.String=[xVar ': ' datestr(xvals(kk),'YYYY-mm-DD_HH-MM-SS')];          % Variable string
+    else
+            vart.String=[xVar ': ' num2str(xvals(kk))];          % Variable string
+    end
     
     if opts.saveAnimation    
          % Write the image data
@@ -645,4 +672,79 @@ outdata.xvals=xvals;
 outdata.Wavelength=Ls;
 outdata.Theta=thetas;
 outdata.Phi=phis;
+end
+
+function guess_out=calculateInitialGuess(x,y,z,opts)    
+    thetaVec=linspace(opts.Theta(1),opts.Theta(2),90);    
+    
+    % remove negative data points
+    z(z<0) = 0;    
+        
+    % Calculate center
+    Zx=sum(z,1)'/sum(sum(z));xC=sum(Zx.*x);
+    Zy=sum(z,2)/sum(sum(z));yC=sum(Zy.*y);  
+    
+    % Resize the image (makes it quicker)
+    sc=0.2;
+    z=imresize(z,sc);x=imresize(x,sc);y=imresize(y,sc);  
+
+    % Compute sum contrasts at many rotation angles
+    for jj=1:length(thetaVec)        
+        Zrot=imrotate(z,thetaVec(jj));        
+        Zsum=sum(Zrot,1);
+        Zsum=smooth(Zsum,5);
+        CC(jj)=sum(abs(diff(Zsum)).^2);    
+    end
+    
+    % Find the rotation angle which maximizes the contrast
+    [~,ind]=max(CC);    
+    theta=thetaVec(ind);    
+
+    % Find the cloud gaussian radius
+    % Caclulate the second moment orthongal to the fringes
+    Zrot=imrotate(z,theta,'crop');
+    Zsum1=sum(Zrot,1)/sum(sum(Zrot));
+    Zsum2=sum(Zrot,2)/sum(sum(Zrot));   
+    yrC=sum(y.*Zsum2);
+    sPerp=sqrt(sum(((y-yrC).^2.*Zsum2)))*.75;
+    
+    % Assume gaussian radius along fringes is similar
+    sParallel = sPerp;
+    
+    % Find the guess wavelength
+    % On the rotated data find the separation of local maxima
+    ZsumSmooth=smooth(Zsum1,10);
+    [yA,P]=islocalmax(ZsumSmooth,'MinSeparation',50*sc,...
+        'MaxNumExtrema',4,'MinProminence',range(ZsumSmooth)*0.05);
+    xA=diff(x(yA));
+    L=mean(xA);
+    
+    if isnan(L) || isinf(L) || isinf(-L) || L<20
+       L=80; 
+    end
+    
+    % Find the initial phase of the data
+    % Compute correlations of the image with a plane wave at the guess
+    % angle
+    phiVec=linspace(0,2*pi,50);
+    [xx,yy]=meshgrid(x,y);
+    Sphi=zeros(length(phiVec),1);
+    for nn=1:length(phiVec)        
+        plane_wave=sin(2*pi/L*(cosd(theta)*xx+sind(theta)*yy)+phiVec(nn));
+        Sphi(nn)=sum(sum(plane_wave.*imgaussfilt(z,1)));     
+    end
+    
+    [~,ind]=max(Sphi);
+    phi=phiVec(ind);
+
+    % Guess the modulation strength
+    B=max(P)/range(ZsumSmooth);
+    B=0.5;
+    
+    % Guess the gaussian envelope
+    A=sum(sum(z))/(2*pi*sPerp);
+    A=max(max(z))/(2*(1+B));
+    
+    % Construct the initial guess
+    guess_out=[A,xC,yC,sPerp,sParallel,B,theta,L,phi];   
 end

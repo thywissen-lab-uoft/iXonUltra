@@ -18,12 +18,19 @@ stripe_2d_opts.saveAnimation=1;        % save the animation?
 stripe_2d_opts.StartDelay=1;
 stripe_2d_opts.MidDelay=.25;
 stripe_2d_opts.EndDelay=1;
+stripe_2d_opts.CLim = [0 100];
+
+stripe_2d_opts.ROI = NaN;
+% stripe_2d_opts.ROI = [100 450 25 425];
+
+stripe_2d_opts.Threshhhold = 20; % Ignore pixels below this threshhhold
+stripe_2d_opts.Threshhhold = NaN;
 
 stripe_2d_opts.ConstrainWavelength = NaN;
-stripe_2d_opts.ConstrainWavelength = 99.7;
+% stripe_2d_opts.ConstrainWavelength = 99.7;
 
 stripe_2d_opts.ConstrainAngle = NaN;
- stripe_2d_opts.ConstrainAngle = -3.25;
+%  stripe_2d_opts.ConstrainAngle = -3.25;
 
 ixondata=flip(ixondata);
 if ixon_doAnalyzeStripes2D
@@ -37,7 +44,7 @@ if ixon_doAnalyzeStripes2D
 end
 
 %% Stripe Analysis FFT
-ixon_doAnalyzeStripes2D_Focusing=1;
+ixon_doAnalyzeStripes2D_Focusing=0;
 if ixon_doAnalyzeStripes2D_Focusing
     for kk=90:90
         Z = ixondata(kk).Z;

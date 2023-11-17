@@ -6,6 +6,7 @@ if nargin == 1
     opts                    = struct;    
     % Position Space
     opts.doSubtractBias     = 1;
+    opts.doSubtractBGD      = 0;
     opts.doScale            = 1;
     opts.ScaleFactor        = 2;
     opts.doGaussFilter      = 0;
@@ -16,6 +17,7 @@ if nargin == 1
     opts.PSF                = [1.3 50 5];    
     opts.doRotate           = 0;
     opts.Theta              = 0;
+    
         
     % Momentum Space
     opts.doFFT              = 1;
@@ -32,7 +34,7 @@ for kk=1:length(data)
     t1=now;
     data(kk).Z = data(kk).RawImages;           
     data(kk).X = 1:size(data(kk).Z,2);
-    data(kk).Y = 1:size(data(kk).Z,1); 
+    data(kk).Y = 1:size(data(kk).Z,1);
     
 %% Remove extra exposure data
     if isfield(data(kk),'Flags') && isfield(data(kk).Flags,'lattice_ClearCCD_IxonTrigger') 
@@ -50,17 +52,33 @@ for kk=1:length(data)
         fprintf(' biasing ...');
         data(kk).Z = data(kk).Z - 200;
     end  
+    
+
 %% Raw Data
     data(kk).Zraw = data(kk).Z;    
     
+%% Remove background exposure data
+    if isfield(data(kk),'Flags') && isfield(data(kk).Flags,'lattice_fluor_bkgd') 
+        if data(kk).Flags.lattice_fluor_bkgd
+            data(kk).BG = data(kk).Z(:,:,end);
+            if opts.doSubtractBG
+                fprintf('removing background exposure ...');
+                numImag = size(data(kk).Z,3);
+                for ii=1:(numImag-1)
+                    data(kk).Z(:,:,ii)=data(kk).Z(:,:,ii)-data(kk).BG;
+                end
+            end
+            data(kk).Z(:,:,end) = [];
+        end
+    end 
 %% Image Mask
-if opts.doMask
-    fprintf('masking ...');
-    for ii=1:size(data(kk).Z,3)  
-        data(kk).Z(:,:,ii) = data(kk).Z(:,:,ii).*opts.Mask;        
+    if opts.doMask
+        fprintf('masking ...');
+        for ii=1:size(data(kk).Z,3)  
+            data(kk).Z(:,:,ii) = data(kk).Z(:,:,ii).*opts.Mask;        
+        end
     end
-end
-    
+
 %% Scale Image
     if isfield(opts,'doScale') && opts.doScale         
        data(kk).X = linspace(1,length(data(kk).X),length(data(kk).X)*opts.ScaleFactor);
