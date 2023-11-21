@@ -16,9 +16,10 @@ if nargin == 1
     opts.doPSF              = 0;    
     opts.PSF                = [1.3 50 5];    
     opts.doRotate           = 1;
-    opts.Theta              = 60.2077;
+%     opts.Theta              = 60.2077;
 %     opts.Theta              = 40.95;
 %opts.Theta =0;
+opts.Theta =59.64;
 
     % Momentum Space
     opts.doFFT              = 1;
@@ -127,7 +128,7 @@ for kk=1:length(data)
     if opts.doFFT
         fprintf('FFT ...');
         % Compute FFT
-        Nfft = 2^10;
+        Nfft = 2^10+1;
         
         data(kk).Zf = zeros(Nfft,Nfft,size(data(kk).Z,3));
         data(kk).ZfNorm = zeros(Nfft,Nfft,size(data(kk).Z,3));
