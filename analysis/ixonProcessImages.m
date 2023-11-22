@@ -121,7 +121,7 @@ for kk=1:length(data)
     if opts.doFFT
         fprintf('FFT ...');
         % Compute FFT
-        Nfft = 2^10;        
+        Nfft = 2^10+1;        
         data(kk).Zf = zeros(Nfft,Nfft,size(data(kk).Z,3));
         data(kk).ZfNorm = zeros(Nfft,Nfft,size(data(kk).Z,3));
         data(kk).ZfPhase = zeros(Nfft,Nfft,size(data(kk).Z,3));

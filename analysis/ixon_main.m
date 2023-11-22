@@ -86,7 +86,7 @@ ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
-ixon_doSave         = 1;    % Save Analysis?
+ixon_doSave         = 0;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
@@ -121,6 +121,7 @@ img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
 img_opt.Theta               = 60.2077;  % Rotation amount (deg.)
 img_opt.Theta               = 59.64;  % Rotation amount (deg.)
+% img_opt.Theta               = 59.81;  % Rotation amount (deg.)
 
 img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512

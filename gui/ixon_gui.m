@@ -912,7 +912,7 @@ cRotate=uicontrol('style','checkbox','string','rotate (deg.)',...
 cRotate.Position=[5 cGaussFilter.Position(2)+15 80 15];
 
 tblTheta=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',59.64,'columneditable',[true],...
+    'rowname',{},'columnname',{},'Data',59.81,'columneditable',[true],...
     'columnwidth',{60},'fontsize',8,'ColumnFormat',{'numeric'});
 tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
 
@@ -1992,6 +1992,7 @@ hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
 
 % Tab Groups for each display
 tabX=uitab(hp,'Title','position','units','pixels','backgroundcolor','w');
+tabStripe=uitab(hp,'Title','stripe','units','pixels','backgroundcolor','w');
 tabH=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
 tabK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
 tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
@@ -2121,6 +2122,10 @@ drawnow
 
 linkaxes([axImg hAxY],'y');
 linkaxes([axImg hAxX],'x');
+
+%% Stripe
+
+ax_stripe_img = subplot(2,2,1,'parent',tabH);
 
 %% Histgoram
 

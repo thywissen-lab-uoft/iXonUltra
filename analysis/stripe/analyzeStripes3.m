@@ -59,14 +59,21 @@ axis equal tight
 
 % Sum Plots
 ax4=subplot(4,4,[3 4 7 8]);    
-pSum1_fit=plot(0,0,'r-','linewidth',2);
+pSum2_fit=plot(0,0,'k--','linewidth',1);
 hold on
-pSum1_data=plot(0,0,'-','color',co(1,:),'linewidth',2);
-xlabel('rotated position');
-ylabel('sum counts');
-pSum2_fit=plot(0,0,'r-','linewidth',1);
 pSum2_data=plot(0,0,'-','color',co(5,:),'linewidth',1);
 
+pSum1_fit=plot(0,0,'-','linewidth',2,'color',co(2,:));
+hold on
+pSum1_data=plot(0,0,'-','color',co(1,:),'linewidth',1);
+xlabel('rotated position (px)');
+ylabel('sum counts');
+
+str = {'fringe','fringe fit','perp','perp fit'};
+legend([pSum1_data, pSum1_fit, pSum2_data, pSum2_fit],str,'fontsize',8,...
+    'location','northeast')
+text(.01,.98,'projected sum counts','units','normalized',...
+    'verticalalignment','top','fontsize',8);
 % Output Table
 ax6=subplot(4,4,[12 16]);
 tbl=uitable('units','normalized','fontsize',8);
@@ -79,7 +86,7 @@ tbl_labels = {'Amplitude', '';
     'yC (px)', '';
     'Sigma1 (px)', '';
     'Sigma2 (px)', '';
-    'Mod Depth (px)', '';
+    'Mod Depth', '';
     'Rotation (deg)', '';
     'Wavelength (px)', '';
     'Phase (2*pi)', '';};
@@ -156,6 +163,8 @@ for kk=1:length(ixondata)
     % Show the sum counts orthogonal to the stripe axis
     set(pSum2_fit,'XData',y,'YData',sum(imrotate(Zfit,theta,'crop'),2));
     set(pSum2_data,'XData',y,'YData',sum(imrotate(Z,theta,'crop'),2));
+
+    set(ax4,'YLim',[0 ax4.YLim(2)]);
 
     % Summary table
     tbl.Data{1,2}=num2str(round(stripes(kk).A,2));
