@@ -30,16 +30,54 @@ ixondata=ixondata(inds);
 % Define the fitting function. It is a 2D gaussian who is modulated by a
 % sine wave at an angle
 
+phase_map = @(L,theta,phi,xx,yy) ...
+    2*pi/L*(cosd(theta)*xx+sind(theta)*yy)+phi;
+
 gauss2dSine=@(A,xC,yC,sG,B,theta,L,phi,xx,yy) A*...
         exp(-((xx-xC).^2+(yy-yC).^2)/(2*sG^2)).*...
-        (1+B*sin(2*pi/L*(cosd(theta)*xx+sind(theta)*yy)+phi));    
+        (1+B*sin(phase_map(L,theta,phi,xx,yy)));    
 
 myfit=fittype(@(A,xC,yC,sG,B,theta,L,phi,xx,yy) ...
     gauss2dSine(A,xC,yC,sG,B,theta,L,phi,xx,yy),...
     'independent',{'xx','yy'},...
     'coefficients',{'A','xC','yC','sG','B','theta','L','phi'});
-
 opt=fitoptions(myfit);
+
+% 
+
+% mod_func = @(B,theta,L,phi,duty,xx,yy) ...
+%     (1-B*(0.5*square(phase_map(L,theta,phi,xx,yy)+pi/2,duty)+.5));
+% gauss2dsquare=@(A,xC,yC,sG,B,theta,L,phi,duty,xx,yy) A*...
+%         exp(-((xx-xC).^2+(yy-yC).^2)/(2*sG^2)).*...
+%         mod_func(B,theta,L,phi,duty,xx,yy);    
+
+% 
+% myfit2=fittype(@(A,xC,yC,sG,B,theta,L,phi,duty,xx,yy) ...
+%     gauss2dsquare(A,xC,yC,sG,B,theta,L,phi,duty,xx,yy),...
+%     'independent',{'xx','yy'},...
+%     'coefficients',{'A','xC','yC','sG','B','theta','L','phi','duty'});
+% opt2=fitoptions(myfit);
+
+% https://en.wikipedia.org/wiki/Gaussian_function
+% But we add a minus sign to make it counter clockwise angle
+% When theta=0 s1 is on the x axis
+a = @(theta,s1,s2) cosd(theta)^2/(2*s1^2) + sind(theta)^2/(2*s2^2);
+b = @(theta,s1,s2) -sind(2*theta)/(4*s1^2) + sind(2*theta)/(4*s2^2);
+c = @(theta,s1,s2) sind(theta)^2/(2*s1^2) + cosd(theta)^2/(2*s2^2);
+
+gauss2dSineRot = @(A,xC,yC,s1,s2,B,theta,L,phi,xx,yy) ...
+    A.*exp(-(...
+    a(theta,s1,s2)*(xx-xC).^2 + ...
+    2*b(theta,s1,s2)*(xx-xC).*(yy-yC)+ ...
+    c(theta,s1,s2)*(yy-yC).^2)).*...
+    (1+B*sin(2*pi/L*(cosd(theta)*xx+sind(theta)*yy)+phi));
+myfit2=fittype(@(A,xC,yC,s1,s2,B,theta,L,phi,xx,yy) ...
+    gauss2dSineRot(A,xC,yC,s1,s2,B,theta,L,phi,xx,yy),...
+    'independent',{'xx','yy'},...
+    'coefficients',{'A','xC','yC','s1','s2','B','theta','L','phi'});
+opt2=fitoptions(myfit);
+
+             
 
 % Define fit options
 % opt.Robust='bisquare';
@@ -64,7 +102,7 @@ filename=fullfile(figDir,[filename '.gif']);
 fRs={};
 hF_live=figure;
 hF_live.Color='w';
-hF_live.Position=[100 100 1100 500];
+hF_live.Position=[100 500 1100 500];
 
 co=get(gca,'colororder');
 
@@ -128,6 +166,15 @@ data={'Wavelength (px)', '';
     'Amplitude', '';
     'Sigma (px)', ''};
 
+data={'Wavelength (px)', '';
+    'Angle (deg.)','';
+    'Phase (2*pi)', '';
+    'Mod Depth','';
+    'Xc', '';
+    'Yc', '';
+    'Amplitude', '';
+    'Sigma1 (px)', '';
+    'Sigma2 (px)', ''};
 
 tbl.Data=data;
 tbl.Position(3:4)=tbl.Extent(3:4);
@@ -162,6 +209,8 @@ for kk=1:length(ixondata)
     % Grab the data
     Z=ixondata(kk).Z;
     Z=imgaussfilt(Z,1);
+%     Z=imgaussfilt(Z,[1 5]);
+
     x=ixondata(kk).X;x=x';
     y =ixondata(kk).Y;y=y'; 
     
@@ -180,11 +229,26 @@ for kk=1:length(ixondata)
         pG(end-2) = fout.theta;
         pG(end-1) = fout.L;
         pG(end) = fout.phi;    
-    end    
-    
+    end  
+
+           
+    opt.Upper = [inf inf inf inf 1 inf inf inf];
     opt.Lower = [-inf -inf -inf -inf 0 -inf -inf -inf];
-%     opt.Upper = [AG(kk)*1.5 xCG(kk)+50 yCG(kk)+50 sG(kk)+60 BG(kk)+2000 pG(end-2)+2 pG(end-1)+3 pG(end)+1.5];
     opt.StartPoint=pG;       
+    
+
+    opt2.StartPoint = G;
+    opt2.Upper = [G(1)*2 512 512 250 250 1  200 512 inf];
+    opt2.Lower = [0        0   0   0   0 0 -200   0 -inf];
+    
+    if kk>1 
+        phi0 = opt2.StartPoint(end);        
+        phivec = phi0+(-100:1:100)*2*pi;
+        phiold = fout.phi;         
+        [val,ind]=min(abs(phivec-phiold));        
+        phinew = phivec(ind);
+        opt2.StartPoint(end) = phinew;       
+    end  
     
     if isfield(opts,'ConstrainWavelength') && ~isnan(opts.ConstrainWavelength)
         opt.StartPoint(7) = opts.ConstrainWavelength;
@@ -194,12 +258,12 @@ for kk=1:length(ixondata)
     
     if isfield(opts,'ConstrainAngle') && ~isnan(opts.ConstrainAngle)
         opt.StartPoint(6) = opts.ConstrainAngle;
-        opt.Upper(6) = opts.ConstrainAngle+.1;
-        opt.Lower(6) = opts.ConstrainAngle-0.1;
+        opt.Upper(6) = opts.ConstrainAngle+1;
+        opt.Lower(6) = opts.ConstrainAngle-1;
     end                  
      
     Zg=gauss2dSine(G(1),G(2),G(3),G(4),G(6),G(7),G(8),G(9),xx,yy);      
-    
+
     % Rescale the data for fitting
     sc=0.3;
     Zsc=imresize(Z,sc);xsc=imresize(x,sc);ysc=imresize(y,sc);
@@ -209,7 +273,7 @@ for kk=1:length(ixondata)
         lvl = opts.Threshhold;
         xxsc(Zsc<lvl)=[];yysc(Zsc<lvl)=[];Zsc(Zsc<lvl)=[];  
     else
-        xxsc(Zsc<10)=[];yysc(Zsc<10)=[];Zsc(Zsc<10)=[];        
+        xxsc(Zsc<=0)=[];yysc(Zsc<=0)=[];Zsc(Zsc<=0)=[];        
     end
     
     
@@ -234,8 +298,12 @@ for kk=1:length(ixondata)
     % Perform the fit
     fprintf('fitting ...');
     tic;
-    [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit,opt);
+%     [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit,opt);
+%     
+    [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit2,opt2);
+
     t=toc;
+    
     fprintf(['(' num2str(t,2) 's) ']);
     
     % Grab fit data
@@ -281,12 +349,16 @@ for kk=1:length(ixondata)
     % Summary table
     tbl.Data{1,2}=num2str(round(fout.L,3));
     tbl.Data{2,2}=num2str(round(fout.theta,3));    
-    tbl.Data{3,2}=num2str(round(fout.phi/pi,3));
+    tbl.Data{3,2}=num2str(round(fout.phi/(2*pi),3));
     tbl.Data{4,2}=num2str(round(fout.B,2));
     tbl.Data{5,2}=num2str(round(fout.xC,2));
     tbl.Data{6,2}=num2str(round(fout.yC,2));
     tbl.Data{7,2}=num2str(round(fout.A,2));
-    tbl.Data{8,2}=num2str(round(fout.sG,2));
+%     tbl.Data{8,2}=num2str(round(fout.sG,2));
+
+    tbl.Data{8,2}=num2str(round(fout.s1,2));
+    tbl.Data{9,2}=num2str(round(fout.s2,2));
+
     drawnow;
     
     
@@ -389,11 +461,11 @@ xlim([min(xvals) max(xvals)]);
 
 % Phase
 subplot(133);
-errorbar(xvals,phis(:,1)/pi,phis(:,2)/pi,'marker','o',...
+errorbar(xvals,phis(:,1)/(2*pi),phis(:,2)/(2*pi),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
 xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
-ylabel('phase (\pi)');
+ylabel('phase (2\pi)');
 grid on
 if isequal(xVar,'ExecutionDate')
     datetick('x');
@@ -498,6 +570,7 @@ function guess_out=calculateInitialGuess(x,y,z,opts)
     Zsum2=sum(Zrot,2)/sum(sum(Zrot));   
     yrC=sum(y.*Zsum2);
     sPerp=sqrt(sum(((y-yrC).^2.*Zsum2)))*.75;
+    
     
     % Assume gaussian radius along fringes is similar
     sParallel = sPerp;
