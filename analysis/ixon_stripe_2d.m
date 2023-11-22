@@ -1,56 +1,84 @@
-%% Sort Data
-
-params=[ixondata.Params];
-xvals=[params.(ixon_xVar)];
-[xvals,inds]=sort(xvals,'ascend');
-
-% [xvals,inds]=sort(xvals,'descend');
-
-ixondata=ixondata(inds);
+% %% Sort Data
+% 
+% params=[ixondata.Params];
+% xvals=[params.(ixon_xVar)];
+% [xvals,inds]=sort(xvals,'ascend');
+% 
+% % [xvals,inds]=sort(xvals,'descend');
+% 
+% ixondata=ixondata(inds);
+% 
+% %% 2D Stripe Analysis
+% % This analzyes the stripes for take from the ixon camera.  This is a 2D
+% % fit over the entire cloud.  This fits a 2D gaussian modulated by a sine
+% % wave at a particular angle.  This is pariticularly useful to fit the
+% % angular dependence of the data. 
+% %
+% % The input fit parameters are specified in the options structure.
+% 
+% 
+% stripe_2d_opts=struct;
+% 
+% stripe_2d_opts.xUnit=ixon_unit;
+% 
+% stripe_2d_opts.ShimFit=0;
+% stripe_2d_opts.Theta=[10 190]; % Specify the domain (MUST BE 180 DEGREES)
+% 
+% stripe_2d_opts.saveAnimation=1;        % save the animation?
+% stripe_2d_opts.StartDelay=1;
+% stripe_2d_opts.MidDelay=.25;
+% stripe_2d_opts.EndDelay=1;
+% stripe_2d_opts.CLim = [0 100];
+% 
+% stripe_2d_opts.ROI = NaN;
+% % stripe_2d_opts.ROI = [100 450 25 425];
+% 
+% stripe_2d_opts.Threshhhold = 20; % Ignore pixels below this threshhhold
+% stripe_2d_opts.Threshhhold = NaN;
+% 
+% stripe_2d_opts.ConstrainWavelength = NaN;
+% % stripe_2d_opts.ConstrainWavelength = 72;
+% 
+% stripe_2d_opts.ConstrainAngle = NaN;
+% %  stripe_2d_opts.ConstrainAngle = 88;
+% 
+% ixondata=flip(ixondata);
+% if ixon_doAnalyzeStripes2D
+%     [hF_stripe_2d,stripe_data2d]=analyzeStripes2(ixondata,ixon_xVar,stripe_2d_opts);
+% 
+%     if ixon_doSave
+%         ixon_saveFigure(ixondata,hF_stripe_2d,'ixon_field_stripe_2d');        
+%     end
+% 
+%     outdata.stripe_data2d=stripe_data2d;   
+% end
 
 %% 2D Stripe Analysis
-% This analzyes the stripes for take from the ixon camera.  This is a 2D
-% fit over the entire cloud.  This fits a 2D gaussian modulated by a sine
-% wave at a particular angle.  This is pariticularly useful to fit the
-% angular dependence of the data. 
-%
-% The input fit parameters are specified in the options structure.
-
-
-stripe_2d_opts=struct;
-
-stripe_2d_opts.xUnit=ixon_unit;
-
-stripe_2d_opts.ShimFit=0;
-stripe_2d_opts.Theta=[10 190]; % Specify the domain (MUST BE 180 DEGREES)
-
-stripe_2d_opts.saveAnimation=1;        % save the animation?
-stripe_2d_opts.StartDelay=1;
-stripe_2d_opts.MidDelay=.25;
-stripe_2d_opts.EndDelay=1;
-stripe_2d_opts.CLim = [0 100];
-
-stripe_2d_opts.ROI = NaN;
-% stripe_2d_opts.ROI = [100 450 25 425];
-
-stripe_2d_opts.Threshhhold = 20; % Ignore pixels below this threshhhold
-stripe_2d_opts.Threshhhold = NaN;
-
-stripe_2d_opts.ConstrainWavelength = NaN;
-% stripe_2d_opts.ConstrainWavelength = 72;
-
-stripe_2d_opts.ConstrainAngle = NaN;
-%  stripe_2d_opts.ConstrainAngle = 88;
-
-ixondata=flip(ixondata);
 if ixon_doAnalyzeStripes2D
-    [hF_stripe_2d,stripe_data2d]=analyzeStripes2(ixondata,ixon_xVar,stripe_2d_opts);
+    
+    stripe_2d_opts=struct;
+    stripe_2d_opts.xVar = ixon_xVar;
+    stripe_2d_opts.xUnit=ixon_unit;
+    stripe_2d_opts.ShimFit=0;
+    stripe_2d_opts.Theta=[10 190]; % Specify the domain (MUST BE 180 DEGREES)
+    stripe_2d_opts.saveAnimation=1;        % save the animation?
+    stripe_2d_opts.StartDelay=1;
+    stripe_2d_opts.MidDelay=.25;
+    stripe_2d_opts.EndDelay=1;
+    stripe_2d_opts.CLim = [0 100];
+    
+    params=[ixondata.Params];
+    xvals=[params.(ixon_xVar)];
+    [xvals,inds]=sort(xvals,'ascend');
+    
+    % Analyze the stripes
+    stripes = analyzeStripes3(ixondata,ixon_xVar,stripe_2d_opts);    
+
+    hF_stripe_summary = ixon_stripeSummary(stripes,xvals,stripe_2d_opts);
 
     if ixon_doSave
-        ixon_saveFigure(ixondata,hF_stripe_2d,'ixon_field_stripe_2d');        
+        ixon_saveFigure(ixondata,hF_stripe_summary,'ixon_stripe_summary');        
     end
-    
-    outdata.stripe_data2d=stripe_data2d;   
 end
 
 %% Stripe Analysis FFT
@@ -202,7 +230,7 @@ if ixon_doAnalyzeStripes2D_Focusing
         text(.1,.1,s,'units','normalized');
         yfoci(kk)=yfocus;           
         dosave=1;
-        
+
         if dosave 
              % Write the image data
             frame = getframe(hF);

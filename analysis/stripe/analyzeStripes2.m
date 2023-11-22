@@ -43,8 +43,6 @@ myfit=fittype(@(A,xC,yC,sG,B,theta,L,phi,xx,yy) ...
     'coefficients',{'A','xC','yC','sG','B','theta','L','phi'});
 opt=fitoptions(myfit);
 
-% 
-
 % mod_func = @(B,theta,L,phi,duty,xx,yy) ...
 %     (1-B*(0.5*square(phase_map(L,theta,phi,xx,yy)+pi/2,duty)+.5));
 % gauss2dsquare=@(A,xC,yC,sG,B,theta,L,phi,duty,xx,yy) A*...
@@ -371,7 +369,6 @@ for kk=1:length(ixondata)
             warning(ME);
         end
    end  
-
 
 
     % Process output
