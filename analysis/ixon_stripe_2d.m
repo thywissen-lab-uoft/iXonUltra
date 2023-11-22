@@ -22,7 +22,7 @@ stripe_2d_opts=struct;
 stripe_2d_opts.xUnit=ixon_unit;
 
 stripe_2d_opts.ShimFit=0;
-stripe_2d_opts.Theta=[10 100]; % Specify the domain (MUST BE 180 DEGREES)
+stripe_2d_opts.Theta=[10 190]; % Specify the domain (MUST BE 180 DEGREES)
 
 stripe_2d_opts.saveAnimation=1;        % save the animation?
 stripe_2d_opts.StartDelay=1;
@@ -200,11 +200,9 @@ if ixon_doAnalyzeStripes2D_Focusing
          end
         s=[num2str(round(yfocus))];
         text(.1,.1,s,'units','normalized');
-        yfoci(kk)=yfocus;
-                
+        yfoci(kk)=yfocus;           
+        dosave=1;
         
-        
-dosave=1;
         if dosave 
              % Write the image data
             frame = getframe(hF);

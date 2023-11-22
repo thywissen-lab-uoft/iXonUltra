@@ -1,5 +1,5 @@
 function [hF2,outdata]=analyzeStripes2(ixondata,xVar,opts)
-
+tic
 global ixon_imgdir
 % maskname=fullfile('ixon_mask.mat');
 % ixon_mask=load(maskname);
@@ -113,13 +113,7 @@ ax1=subplot(4,4,[1 2 5 6 9 10 13 14]);
 hImg_raw=imagesc(ixondata(1).X,ixondata(1).Y,ixondata(1).Z);
 set(gca,'ydir','normal');
 axis equal tight
-% colorbar
-    
-% ax2=subplot(4,4,7);    
-% hImg_fit=imagesc(ixondata(1).Z);
-% set(gca,'ydir','normal');
-% axis equal tight
-% % colorbar
+   
 
 hold on
 pFringe=plot(0,0,'-','color',co(1,:),'linewidth',2);
@@ -200,73 +194,56 @@ uicontrol('style','text','string','iXon, stripe','units','pixels','backgroundcol
 vart=uicontrol('style','text','string','variable','units','pixels','backgroundcolor',...
     'w','horizontalalignment','left','fontsize',8,'fontweight','normal',...
     'position',[125 2 400 20]);
+toc
 %%
+
+% Initialize outputs (value,error)
+% A,xC,yC,s1,s2,B,theta,L,phi
+As = zeros(length(ixondata),2);
+xCs = zeros(length(ixondata),2);
+yCs = zeros(length(ixondata),2);
+s1s = zeros(length(ixondata),2);
+s2s = zeros(length(ixondata),2);
+thetas=zeros(length(ixondata),2);
+Ls=zeros(length(ixondata),2);
+phis=zeros(length(ixondata),2);
+R2s = zeros(length(ixondata),1);
+sse = zeros(length(ixondata),1);
+
+
 for kk=1:length(ixondata)
     fprintf([num2str(kk) '/' num2str(length(ixondata)) ' ']);
       
     % Grab the data
     Z=ixondata(kk).Z;
     Z=imgaussfilt(Z,1);
-%     Z=imgaussfilt(Z,[1 5]);
-
-    x=ixondata(kk).X;x=x';
-    y =ixondata(kk).Y;y=y'; 
+    x=ixondata(kk).X;x=x';y =ixondata(kk).Y;y=y'; 
     
-    % Create a meshgrid
+    % Create a 2D meshgrid
     [xx,yy]=meshgrid(x,y);
 
-    fprintf('guessing ...')
-    tic
-    G=calculateInitialGuess(x,y,Z,opts);     
-    t=toc;
-    fprintf(['(' num2str(t,2) 's) ']);
-     
-    pG = [G(1),G(2),G(3),G(4),G(6),G(7),G(8),G(9)];
-     
-    if kk>1 && isequal(xVar,'ExecutionDate')
-        pG(end-2) = fout.theta;
-        pG(end-1) = fout.L;
-        pG(end) = fout.phi;    
-    end  
-
-           
-    opt.Upper = [inf inf inf inf 1 inf inf inf];
-    opt.Lower = [-inf -inf -inf -inf 0 -inf -inf -inf];
-    opt.StartPoint=pG;       
-    
-
+    % Make the initial guess
+    tic;G=calculateInitialGuess(x,y,Z,opts);t=toc;
     opt2.StartPoint = G;
-    opt2.Upper = [G(1)*2 512 512 250 250 1  200 512 inf];
-    opt2.Lower = [0        0   0   0   0 0 -200   0 -inf];
-    
-    if kk>1 
+    % fprintf(['(' num2str(t,2) 's) ']);
+
+    % Assign reasonable upper and lower bounds
+    % A,xC,yC,s1,s2,B,theta,L,phi
+    opt2.Upper = [G(1)*2 512 512 250 250 1  360 512 inf];
+    opt2.Lower = [0        0   0   0   0 0 -360   0 -inf];
+
+    % If secondary data point, choose an initial phase which is within
+    % +-pi of previous.
+    if kk>1         
         phi0 = opt2.StartPoint(end);        
         phivec = phi0+(-100:1:100)*2*pi;
         phiold = fout.phi;         
         [val,ind]=min(abs(phivec-phiold));        
         phinew = phivec(ind);
-        opt2.StartPoint(end) = phinew;   
-%         opt2.Upper(end) = phinew+2*pi;
-%         opt2.Lower(end) = phinew-2*pi;
-        
-        opt2.Upper(7) = opt2.StartPoint(7)+5;
-        opt2.Lower(7) = opt2.StartPoint(7)-5;
-
-    end  
-    
-    if isfield(opts,'ConstrainWavelength') && ~isnan(opts.ConstrainWavelength)
-        opt.StartPoint(7) = opts.ConstrainWavelength;
-        opt.Upper(7) = opts.ConstrainWavelength+.01;
-        opt.Lower(7) = opts.ConstrainWavelength-0.01;
-    end
-    
-    if isfield(opts,'ConstrainAngle') && ~isnan(opts.ConstrainAngle)
-        opt.StartPoint(6) = opts.ConstrainAngle;
-        opt.Upper(6) = opts.ConstrainAngle+1;
-        opt.Lower(6) = opts.ConstrainAngle-1;
-    end                  
+        opt2.StartPoint(end) = phinew;  
+    end                     
      
-    Zg=gauss2dSine(G(1),G(2),G(3),G(4),G(6),G(7),G(8),G(9),xx,yy);      
+    Zg=gauss2dSineRot(G(1),G(2),G(3),G(4),G(5),G(6),G(7),G(8),G(9),xx,yy);
 
     % Rescale the data for fitting
     sc=0.3;
@@ -298,33 +275,128 @@ for kk=1:length(ixondata)
 %     set(hImg_fit,'XData',x,'YData',y,'CData',Zg);
     set(hImg_err,'CData',Zg-Z);
     drawnow;   
-    
     % Perform the fit
-    fprintf('fitting ...');
+    % fprintf('fitting ...');
+    fprintf('(A,xC,yC,s1,s2,B,theta,L,phi):');
+    s = ['(' ...
+        num2str(round(opt2.StartPoint(1))) ',' ...
+        num2str(round(opt2.StartPoint(2))) ',' ...
+        num2str(round(opt2.StartPoint(3))) ',' ...
+        num2str(round(opt2.StartPoint(4))) ',' ...
+        num2str(round(opt2.StartPoint(5))) ',' ...
+        num2str(round(opt2.StartPoint(6))) ',' ...
+        num2str(round(opt2.StartPoint(7))) ',' ...
+        num2str(round(opt2.StartPoint(8))) ',' ...
+        num2str(round(opt2.StartPoint(9),2)) ')'];
+    fprintf(s);
+    fprintf('->');
     tic;
-%     [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit,opt);
-%     
-    [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit2,opt2);
+    [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit2,opt2);    
+    t=toc;    
 
-    t=toc;
+    s = ['(' ...
+        num2str(round(fout.A)) ',' ...
+        num2str(round(fout.xC)) ',' ...
+        num2str(round(fout.xC)) ',' ...
+        num2str(round(fout.s1)) ',' ...
+        num2str(round(fout.s2)) ',' ...
+        num2str(round(fout.B)) ',' ...
+        num2str(round(fout.theta)) ',' ...
+        num2str(round(fout.L)) ',' ...
+        num2str(round(fout.phi,2)) ') '];
+    fprintf(s)
+    disp(['(' num2str(t,2) 's) ']);                
+     
     
-    fprintf(['(' num2str(t,2) 's) ']);
-    
-    % Grab fit data
+
+    % Make sure second data point is within +-pi
+   if kk==2         
+       if abs(fout.phi-phiold)>pi
+           warning('Fitting again to fix the phase')
+            G = [fout.A fout.xC fout.yC fout.s1 fout.s2 fout.B fout.theta fout.L fout.phi];
+            if fout.phi>phiold 
+                G(end) = G(end)-2*pi;
+            else 
+                G(end) = G(end)+2*pi;
+            end
+            opt2.StartPoint = G;
+            tic;
+            [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit2,opt2);    
+            t=toc;    
+       end     
+   end   
+
+   % Make sure that large phase jumps conserve the slope sign dphi/dvar
+    if kk>2         
+        try
+       if abs(fout.phi-phiold)>.8*pi     
+           warning('large phase jump detected, attempting to preserver the slope')
+            thisX = xvals(kk);      % Current X value
+
+            % Get the unique xvalues
+            [ux,inds]=unique(xvals);
+            uphi = phis(inds);
+            iMe = find(ux==thisX,1);
+
+            % Find the previous two phases and compute slope
+            phi1 = uphi(iMe-1);x1 = ux(iMe-1);
+            phi2 = uphi(iMe-2);x2 = ux(iMe-2);         
+            dPhi = (phi1-phi2)/(x1-x2);
+
+            dXme = sign(thisX-x1);
+
+            % Create a list of new possible phis to fit
+            phiVec = fout.phi + [-100:1:100]*2*pi;
+
+            % Find the first phi is that is larger than previous
+            ind=find(phiVec>phis(kk-1),1);
+
+            phiLarger = phiVec(ind);
+            phiSmaller = phiVec(ind-1);
+
+            G = [fout.A fout.xC fout.yC fout.s1 fout.s2 fout.B fout.theta fout.L fout.phi];
+
+            if sign(dPhi*dXme)==1
+                G(end) = phiLarger;
+            else
+                G(end) = phiSmaller;
+            end
+       
+            opt2.StartPoint = G;
+            tic;
+            [fout,gof,output]=fit([xxsc(:) yysc(:)],Zsc(:),myfit2,opt2);    
+            t=toc;    
+       end   
+        catch ME
+            warning(ME);
+        end
+   end  
+
+
+
+    % Process output
+    ci=confint(fout);
     fRs{kk}=fout;
-    sse(kk)=gof.sse;
+    As(kk,:) = [fout.A (ci(2,1)-ci(1,1))*.5];
+    xCs(kk,:) = [fout.xC (ci(2,2)-ci(1,2))*.5];
+    yCs(kk,:) =  [fout.yC (ci(2,3)-ci(1,3))*.5];
+    s1s(kk,:) =  [fout.s1 (ci(2,4)-ci(1,4))*.5];
+    s2s(kk,:) = [fout.s2 (ci(2,5)-ci(1,5))*.5];
+    thetas(kk,:)=[fout.theta (ci(2,6)-ci(1,6))*.5];
+    Ls(kk,:)=[fout.L (ci(2,7)-ci(1,7))*.5];
+    phis(kk,:)=[fout.phi (ci(2,8)-ci(1,8))*.5];
     
+    R2s(kk) = gof.rsquare;
+    sse(kk) = gof.sse;
+
+
     % Evalulate the fit
     Zf=feval(fout,xx,yy);
-    disp(fout);
+
     % Overwrite the guess with the fit   
     set(hImg_err,'CData',Zf-Z);
-%     set(ax1,'CLim',[0 fout.A*(1+fout.B)]);
-% axes(ax1);
-% caxis(opts.CLim);
     set(ax1,'CLim',opts.CLim);
 
-%     set(ax3,'CLim',[-1 1]*fout.A*.5);
 
     set(pFringe,'XData',255+[0 1]*200*cosd(fout.theta),...
         'Ydata',255+[0 1]*200*sind(fout.theta));
@@ -392,24 +464,7 @@ end
 %% Process Fits
 [cface1,cedge1] = ixoncolororder(1);
 
-Ls=zeros(length(fRs),2);
-thetas=zeros(length(fRs),2);
-phis=zeros(length(fRs),2);
 
-for kk=1:length(fRs)
-    ci=confint(fRs{kk});
-    
-    % Get fit value
-    Ls(kk,1)=fRs{kk}.L; 
-    thetas(kk,1)=fRs{kk}.theta;
-    phis(kk,1)=fRs{kk}.phi;
-
-    % Get the 95% confidence interval
-    Ls(kk,2)=(ci(2,7)-ci(1,7))/2;   
-    thetas(kk,2)=(ci(2,6)-ci(1,6))/2;    
-    phis(kk,2)=(ci(2,8)-ci(1,8))/2;       
-
-end
 
 % Summarize the results
 hF2=figure;
@@ -434,8 +489,6 @@ t.Position(1:2)=[5 hF2.Position(4)-t.Position(4)];
 
 % Wavelength
 subplot(131);
-
-
 errorbar(xvals,Ls(:,1),Ls(:,2),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
@@ -468,6 +521,9 @@ subplot(133);
 errorbar(xvals,phis(:,1)/(2*pi),phis(:,2)/(2*pi),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
+% errorbar(xvals,mod(phis(:,1)/(2*pi),1),phis(:,2)/(2*pi),'marker','o',...
+    % 'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
+    % 'linewidth',1.5,'color',cedge1);
 xlabel([xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('phase (2\pi)');
 grid on
@@ -513,7 +569,7 @@ if opts.ShimFit
     
     
     
-    m0=range(yp)./range(xp);
+    m0=(max(yp)-min(yp))./range(xp);
     
     myfit2=fittype('m*x+b','independent','x','coefficients',{'m','b'});
     opt2=fitoptions(myfit2);
@@ -573,7 +629,7 @@ function guess_out=calculateInitialGuess(x,y,z,opts)
     Zsum1=sum(Zrot,1)/sum(sum(Zrot));
     Zsum2=sum(Zrot,2)/sum(sum(Zrot));   
     yrC=sum(y.*Zsum2);
-    sPerp=sqrt(sum(((y-yrC).^2.*Zsum2)))*.75;
+    sPerp=sqrt(sum(((y-yrC).^2.*Zsum2)));
     
     
     % Assume gaussian radius along fringes is similar
@@ -583,7 +639,7 @@ function guess_out=calculateInitialGuess(x,y,z,opts)
     % On the rotated data find the separation of local maxima
     ZsumSmooth=smooth(Zsum1,10);
     [yA,P]=islocalmax(ZsumSmooth,'MinSeparation',50*sc,...
-        'MaxNumExtrema',4,'MinProminence',range(ZsumSmooth)*0.05);
+        'MaxNumExtrema',4,'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
     xA=diff(x(yA));
     L=mean(xA);
     
@@ -606,7 +662,7 @@ function guess_out=calculateInitialGuess(x,y,z,opts)
     phi=phiVec(ind);
 
     % Guess the modulation strength
-    B=max(P)/range(ZsumSmooth);
+    B=max(P)/(max(ZsumSmooth)-min(ZsumSmooth));
     B=0.5;
     
     % Guess the gaussian envelope
@@ -615,4 +671,5 @@ function guess_out=calculateInitialGuess(x,y,z,opts)
     
     % Construct the initial guess
     guess_out=[A,xC,yC,sPerp,sParallel,B,theta,L,phi];   
+
 end
