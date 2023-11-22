@@ -141,8 +141,7 @@ pSum1_data=plot(0,0,'-','color',co(1,:),'linewidth',2);
 % set(gca,'ydir','normal');
 xlabel('rotated position');
 ylabel('sum counts');
-%     
-% ax5=subplot(4,4,[3 4]);    
+
 
 pSum2_fit=plot(0,0,'r-','linewidth',1);
 pSum2_data=plot(0,0,'-','color',co(5,:),'linewidth',1);
@@ -180,8 +179,7 @@ tbl.Data=data;
 tbl.Position(3:4)=tbl.Extent(3:4);
 tbl.Position(1:2)=ax6.Position(1:2);
 delete(ax6);    
-    
-    
+      
 
 % Folder directory
 strs=strsplit(ixon_imgdir,filesep);
@@ -247,7 +245,13 @@ for kk=1:length(ixondata)
         phiold = fout.phi;         
         [val,ind]=min(abs(phivec-phiold));        
         phinew = phivec(ind);
-        opt2.StartPoint(end) = phinew;       
+        opt2.StartPoint(end) = phinew;   
+%         opt2.Upper(end) = phinew+2*pi;
+%         opt2.Lower(end) = phinew-2*pi;
+        
+        opt2.Upper(7) = opt2.StartPoint(7)+5;
+        opt2.Lower(7) = opt2.StartPoint(7)-5;
+
     end  
     
     if isfield(opts,'ConstrainWavelength') && ~isnan(opts.ConstrainWavelength)

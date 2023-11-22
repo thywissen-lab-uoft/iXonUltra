@@ -96,7 +96,7 @@ ixon_doGaussFit             = 0;
 
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
-ixon_doPlotProfiles         = 1;
+ixon_doPlotProfiles         = 0;
 ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
