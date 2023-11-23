@@ -2150,6 +2150,18 @@ stripe_pBar=plot(0,0,'-','color','w','linewidth',1);
 stripe_pAngleCirc=plot(0,0,'-','color','w','linewidth',1);     
 stripe_pCloudEllipse=plot(0,0,'-','color','w','linewidth',1);     
 
+% file name string
+stripe_str_bottom_left=text(3,3,'FILENAME','units','pixels','fontsize',10,'fontweight','bold',...
+    'horizontalalignment','left','verticalalignment','bottom','margin',1,...
+    'interpreter','none','backgroundcolor',[1 1 1 .5]);
+
+% Box Count Analysis String
+stripe_str_bottom_right=text(.99,0.01,'FILENAME','units','normalized','fontsize',10,'fontweight','normal',...
+    'horizontalalignment','right','verticalalignment','bottom','margin',1,...
+    'interpreter','latex',...
+    'color','k','backgroundcolor',[1 1 1 .7]);
+
+
 ax_stripe_fit = subplot(2,3,3,'parent',tabStripe);
 set(ax_stripe_fit,'box','on','fontsize',10,...
     'XAxisLocation','Bottom');
@@ -2915,11 +2927,28 @@ end
         Zfit=feval(stripe.Fit,xx,yy);
         
         theta=stripe.theta;
+        L = stripe.L;
+        phi = stripe.phi;
         xC = stripe.xC;
         yC = stripe.yC;
         s1 = stripe.s1;
         s2 = stripe.s2;
         
+
+        set(stripe_str_bottom_left,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
+
+        str=['$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(xC,1)) ',' ...
+            num2str(round(yC,1)) ')$' newline ...
+            '$(\sigma_1,\sigma_2) = ' '('  num2str(round(s1,1)) ',' ...
+            num2str(round(s2,1)) ')$' newline ...
+            '$(\theta,\phi,\lambda) = (' num2str(round(theta,2)) '^\circ,' ...
+            num2str(round(phi/(2*pi),2)) '\cdot 2\pi,' ...
+            num2str(round(L,1)) ')$']; 
+
+
+
+        set(stripe_str_bottom_right,'String',str);
+
         % Update Image
         set(stripe_hImgStripe,'XData',x,'YData',y,'CData',z);
 
@@ -2956,7 +2985,7 @@ end
         set(stripe_pSum2_fit,'XData',y,'YData',sum(imrotate(Zfit,theta,'crop'),2));
         set(stripe_pSum2_data,'XData',y,'YData',sum(imrotate(z,theta,'crop'),2));
 
-
+      
     end
 
 function updateGaussPlot(data)
@@ -3162,6 +3191,8 @@ function data=updateAnalysis(data)
     ixon_fitresults(M:(M+size(fr,1)-1),1:size(fr,2))=fr; % Append data        
     assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults    
     
+
+    savePosAnalysis(tbl_pos_analysis.Data,datenum(data.Params.ExecutionDate));
 end
 
 %% OTHER HELPER FUNCTIONS
@@ -3311,7 +3342,30 @@ enableDefaultInteractivity(axImg_K);
 enableDefaultInteractivity(axImg_B);
 enableDefaultInteractivity(axImg_D);
 end
- 
+
+
+function savePosAnalysis(tbl,execdate,src)
+    if nargin == 1
+        src = 'X\boop.txt';
+    end
+
+    src = 'C:\Users\coraf\OneDrive\Desktop\bob.csv';
+    % src = 'X:\ixon_gui_analysis.csv';
+
+    vals = [execdate; tbl(:,2)]';
+    names = ['ExecutionDate'; tbl(:,1)];
+
+    vals = vals(~cellfun('isempty',vals));
+    names = names(~cellfun('isempty',names));
+
+    T = cell2table(vals,'VariableNames',names);
+
+    if exist(src,'file')
+        try
+        writetable(T,src);
+        end
+    end
+end
     
 % Connect to the Andor iXon Ultra
 function out=ixon_connectCam
