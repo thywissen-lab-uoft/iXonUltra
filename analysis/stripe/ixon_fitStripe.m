@@ -34,6 +34,7 @@ opt2=fitoptions(myfit2);
 %% Grab the Data
       
 Z=data.Z;
+Z=data.ZNoFilter;
 Z=imgaussfilt(Z,1);
 x=data.X;x=x';
 y =data.Y;y=y'; 

@@ -956,7 +956,7 @@ hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
   end
 
 %% Analysis Panel
-hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
+hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','                   alysis');
 hpAnl.Position=[0 hpADV.Position(2)-130 160 130];
 
 % Table of ROIs
@@ -1342,9 +1342,17 @@ menuSelectImg.Position(1:2)=[2 15];
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
                 pGrid.Color = [.5 .5 .5 .5];
+
+                stripe_pBar.Color='w';
+                stripe_pAngleCirc.Color='w';  
+                stripe_pCloudEllipse.Color='w';  
+
             case 2
                 colormap(hF,purplemap);
                 pGrid.Color = [.5 .5 .5 .5];
+                stripe_pBar.Color='w';
+                stripe_pAngleCirc.Color='w';  
+                stripe_pCloudEllipse.Color='w';
             case 3
                 pGrid.Color = [.3 .3 .3 .3];
                 colormap(hF,purplemap);
@@ -1353,6 +1361,9 @@ menuSelectImg.Position(1:2)=[2 15];
                 cc = [linspace(ca(1),cb(1),1000)' ...
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
+                stripe_pBar.Color='k';
+                stripe_pAngleCirc.Color='k';  
+                stripe_pCloudEllipse.Color='k';
         end
     end
 
@@ -2125,7 +2136,40 @@ linkaxes([axImg hAxX],'x');
 
 %% Stripe
 
-ax_stripe_img = subplot(2,2,1,'parent',tabH);
+ax_stripe_img = subplot(2,3,[1 2 4 5],'parent',tabStripe);
+stripe_hImgStripe=imagesc(data.X,data.Y,data.Z,'parent',ax_stripe_img);
+set(ax_stripe_img,'box','on','linewidth',.1,'fontsize',10,...
+    'XAxisLocation','bottom','colormap',colormap(cmap),...
+    'YDir','normal');
+hold on
+axis equal tight
+
+stripe_pFringe=plot(0,0,'-','color',co(1,:),'linewidth',1);
+stripe_pPerp=plot(0,0,'-','color',co(5,:),'linewidth',1);     
+stripe_pBar=plot(0,0,'-','color','w','linewidth',1);     
+stripe_pAngleCirc=plot(0,0,'-','color','w','linewidth',1);     
+stripe_pCloudEllipse=plot(0,0,'-','color','w','linewidth',1);     
+
+ax_stripe_fit = subplot(2,3,3,'parent',tabStripe);
+set(ax_stripe_fit,'box','on','fontsize',10,...
+    'XAxisLocation','Bottom');
+
+% Add X data data and fit plots
+stripe_pSum2_fit=plot(0,0,'k--','linewidth',1,'parent',ax_stripe_fit);
+hold on
+stripe_pSum2_data=plot(0,0,'-','color',co(5,:),'linewidth',1,'parent',ax_stripe_fit);
+
+stripe_pSum1_fit=plot(0,0,'-','linewidth',2,'color',co(2,:),'parent',ax_stripe_fit);
+hold on
+stripe_pSum1_data=plot(0,0,'-','color',co(1,:),'linewidth',1,'parent',ax_stripe_fit);
+xlabel('rotated position (px)');
+ylabel('sum counts');
+
+legend([stripe_pSum1_data, stripe_pSum1_fit, stripe_pSum2_data, stripe_pSum2_fit],...
+    {'fringe','fringe fit','perp','perp fit'},'fontsize',6,...
+    'location','northeast')
+text(.01,.98,'projected sum counts','units','normalized',...
+    'verticalalignment','top','fontsize',6,'parent',ax_stripe_fit);
 
 %% Histgoram
 
@@ -2862,6 +2906,59 @@ function updateDataPlots(data)
     end   
 end
 
+    function updateStripePlot(data,stripe)
+        x = data.X;
+        y = data.Y;
+        z = data.ZNoFilter;
+        [xx,yy] = meshgrid(x,y);
+        
+        Zfit=feval(stripe.Fit,xx,yy);
+        
+        theta=stripe.theta;
+        xC = stripe.xC;
+        yC = stripe.yC;
+        s1 = stripe.s1;
+        s2 = stripe.s2;
+        
+        % Update Image
+        set(stripe_hImgStripe,'XData',x,'YData',y,'CData',z);
+
+        
+        
+        % Update Image markers
+        set(stripe_pFringe,'XData',xC+[-2 2]*s1*cosd(theta),...
+            'Ydata',yC+[-2 2]*s1*sind(theta));
+        set(stripe_pPerp,'XData',xC+[-2 2]*s2*cosd(theta+90),...
+            'Ydata',yC+[-2 2]*s2*sind(theta+90));
+         set(stripe_pBar,'XData',xC+[50 0],...
+            'Ydata',yC*[1 1]);
+        
+        tt=linspace(0,2*pi,100);
+        xell = 2*s1*cosd(theta)*cos(tt)-2*s2*sind(theta)*sin(tt)+xC;
+        yell = 2*s2*cosd(theta)*sin(tt)+2*s1*sind(theta)*cos(tt)+yC;
+
+        
+        set(stripe_pCloudEllipse,'XData',xell,'YData',yell);
+
+  
+
+        tt=linspace(0,theta,100);
+        set(stripe_pAngleCirc,'XData',xC+25*cosd(tt),...
+            'YData',yC+25*sind(tt));
+        ax_stripe_img.CLim = axImg.CLim;
+
+        
+        % Update fits   
+        set(stripe_pSum1_fit,'XData',x,'YData',sum(imrotate(Zfit,theta,'crop'),1));
+        set(stripe_pSum1_data,'XData',x,'YData',sum(imrotate(z,theta,'crop'),1));
+        % set(ax4,'XLim',[min(1) max([max(x) max(y)])]);    
+        % Show the sum counts orthogonal to the stripe axis
+        set(stripe_pSum2_fit,'XData',y,'YData',sum(imrotate(Zfit,theta,'crop'),2));
+        set(stripe_pSum2_data,'XData',y,'YData',sum(imrotate(z,theta,'crop'),2));
+
+
+    end
+
 function updateGaussPlot(data)
     
     
@@ -2968,7 +3065,27 @@ function data=updateAnalysis(data)
         updateGaussPlot(data);
     end
     
+    
     % Update Guassian Analysis
+    if hcStripe.Value        
+        opts.Theta = [10 190];
+        stripe=ixon_fitStripe(data,opts);   
+        stranl={'','';
+            ['stripe A (amp)'] ,stripe.A;
+            ['stripe xC (px)'],stripe.xC;
+            ['stripe yC (px)'],stripe.yC;
+            ['stripe ' char(963) '1 (px)'],stripe.s1;
+            ['stripe ' char(963) '2 (px)'],stripe.s2;
+            ['stripe B'],stripe.B;
+            ['stripe ' char(952) ' (deg)'],stripe.theta;
+            ['stripe ' char(955) ' (px)'],stripe.L;
+            ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
+
+        updateStripePlot(data,stripe);
+    end  
+
+        % Update Guassian Analysis
     if hcGaussRot.Value
         disp('Fitting data to 2D gaussian...')   
         opts=struct;
@@ -2990,10 +3107,8 @@ function data=updateAnalysis(data)
             ['gauss yc (px)'],data.GaussFit{1}.Yc;
             ['gauss nbg (counts)'],data.GaussFit{1}.nbg;
             ['gauss ' char(952) ' (deg)'],data.GaussFit{1}.theta*180/pi};
-        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
-
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl]; 
         updateGaussPlot(data);
-
     end  
     
     
