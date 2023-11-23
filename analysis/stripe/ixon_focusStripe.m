@@ -82,13 +82,16 @@ for n=1:size(z_stripes,3)
         scores(n)=NaN;
         continue;
     end
+
+
+    [sharpnessScore map]=MLVSharpnessMeasure(z_stripes(:,:,n));
     zf = fft2(z_stripes(:,:,n),Nfft,Nfft);
     zf = fftshift(zf); 
-
+% zf = imgaussfilt(zf,2);
     zf = zf/stripe_sum(n);
 
     zfnorm=abs(zf);
-    LPF = sqrt(fxx.^2+fyy.^2)<(1.5*qPSF);
+    LPF = sqrt(fxx.^2+fyy.^2)<(2*qPSF);
     HPF = sqrt(fxx.^2+fyy.^2)>(.01);
     myfilt = LPF.*HPF;
     zf = zf.*myfilt;
@@ -96,8 +99,8 @@ for n=1:size(z_stripes,3)
     zfnorm2=abs(zf);
     
     % zfnorm2=zfnorm2/stripe_sum(n);
-    scores(n) = norm(sum(zf.*zf_psf,'all'));
-
+    scores(n) = norm(sum(zf.*zf_psf,'all'))
+% scores(n)=sharpnessScore;
     subplot(size(z_stripes,3),2,2*(n-1)+1);
     imagesc(x,y,z_stripes(:,:,n));
         % axis equal tight
@@ -105,7 +108,7 @@ for n=1:size(z_stripes,3)
     subplot(size(z_stripes,3),2,2*n);
     imagesc(f,f,zfnorm2);
     caxis([0 1e-2])
-    % % axis equal tight
+    % % axis equal tigh
     
 end
 

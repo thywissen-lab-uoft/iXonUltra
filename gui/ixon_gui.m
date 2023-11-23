@@ -2205,7 +2205,7 @@ stripe_pFocus=plot(0,0,'o-','color','k','linewidth',1);
 yyaxis right
 
 stripe_pFocus2=plot(0,0,'o-','color','r','linewidth',1);     
-
+yyaxis left
 %% Histgoram
 
 ax_h1 = subplot(2,2,1,'parent',tabH);
@@ -2948,7 +2948,10 @@ end
 % focus.y_coms = y_coms;
 
         set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);
-                set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
+axes(ax_stripe_focus);
+yyaxis left
+        set(ax_stripe_focus,'YLim',[0 max(focus.scores)*1.1]);
+         set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
 
     end
 
