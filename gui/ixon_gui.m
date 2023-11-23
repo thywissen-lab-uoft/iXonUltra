@@ -2150,6 +2150,20 @@ stripe_pBar=plot(0,0,'-','color','w','linewidth',1);
 stripe_pAngleCirc=plot(0,0,'-','color','w','linewidth',1);     
 stripe_pCloudEllipse=plot(0,0,'-','color','w','linewidth',1);     
 
+
+% clear stripe_lines
+% stripe_lines(1) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% stripe_lines(2) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% stripe_lines(3) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% stripe_lines(4) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% stripe_lines(5) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% stripe_lines(6) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% stripe_lines(7) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% stripe_lines(8) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% stripe_lines(9) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% stripe_lines(10) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% 
+
 % file name string
 stripe_str_bottom_left=text(3,3,'FILENAME','units','pixels','fontsize',10,'fontweight','bold',...
     'horizontalalignment','left','verticalalignment','bottom','margin',1,...
@@ -2182,6 +2196,15 @@ legend([stripe_pSum1_data, stripe_pSum1_fit, stripe_pSum2_data, stripe_pSum2_fit
     'location','northeast')
 text(.01,.98,'projected sum counts','units','normalized',...
     'verticalalignment','top','fontsize',6,'parent',ax_stripe_fit);
+
+ax_stripe_focus = subplot(2,3,6,'parent',tabStripe);
+set(ax_stripe_focus,'box','on','fontsize',10,...
+    'XAxisLocation','Bottom');
+
+stripe_pFocus=plot(0,0,'o-','color','k','linewidth',1);     
+yyaxis right
+
+stripe_pFocus2=plot(0,0,'o-','color','r','linewidth',1);     
 
 %% Histgoram
 
@@ -2918,6 +2941,17 @@ function updateDataPlots(data)
     end   
 end
 
+    function updateFocusPlot(data,focus)
+
+        % ocus.scores = scores;
+% focus.x_coms = x_coms;
+% focus.y_coms = y_coms;
+
+        set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);
+                set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
+
+    end
+
     function updateStripePlot(data,stripe)
         x = data.X;
         y = data.Y;
@@ -3112,6 +3146,11 @@ function data=updateAnalysis(data)
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
 
         updateStripePlot(data,stripe);
+
+        focus = ixon_focusStripe(data,stripe);
+
+        updateFocusPlot(data,focus);
+
     end  
 
         % Update Guassian Analysis
