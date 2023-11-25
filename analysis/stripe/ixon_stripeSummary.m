@@ -8,7 +8,7 @@ global ixon_imgdir
 
 % Summarize the results
 hF2=figure;
-hF2.Position=[100 100 900 250];
+hF2.Position=[100 100 1000 500];
 hF2.Color='w';
 clf;
 
@@ -28,7 +28,7 @@ t.Position(1:2)=[5 hF2.Position(4)-t.Position(4)];
 
 
 % Wavelength
-subplot(131);
+subplot(221);
 errorbar(xvals,[stripes.L],[stripes.L_err],'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
@@ -43,7 +43,7 @@ end
 xlim([min(xvals) max(xvals)]);
 
 % Angle
-axb2=subplot(132);
+axb2=subplot(222);
 errorbar(xvals,[stripes.theta],[stripes.theta_err],'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
@@ -57,7 +57,7 @@ end
 xlim([min(xvals) max(xvals)]);
 
 % Phase
-subplot(133);
+subplot(223);
 errorbar(xvals,[stripes.phi]/(2*pi),[stripes.phi_err]/(2*pi),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
@@ -70,6 +70,18 @@ if isequal(opts.xVar,'ExecutionDate')
 end
 xlim([min(xvals) max(xvals)]);
 
-
+% mod depth
+subplot(224);
+errorbar(xvals,[stripes.B],[stripes.B_err],'marker','o',...
+    'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
+    'linewidth',1.5,'color',cedge1);
+xlabel([opts.xVar ' (' opts.xUnit ')'],'interpreter','none');
+ylabel('modulatoin depth');
+grid on
+if isequal(opts.xVar,'ExecutionDate')
+    datetick('x');
+    xlabel('time','fontsize',10);
+end
+xlim([min(xvals) max(xvals)]);
 end
 

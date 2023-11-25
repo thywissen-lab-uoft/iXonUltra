@@ -72,13 +72,77 @@ if ixon_doAnalyzeStripes2D
     [xvals,inds]=sort(xvals,'ascend');
     
     % Analyze the stripes
-    stripes = analyzeStripes3(ixondata,ixon_xVar,stripe_2d_opts);    
+    stripes = analyzeStripes3(ixondata,ixon_xVar,stripe_2d_opts);   
+end
+    %%
+if ixon_doAnalyzeStripes2D
+    stripes_modify = stripes;
+    phi_unwrap = unwrapPhase(xvals,[stripes_modify.phi]);
+     for kk=1:length(stripes_modify)
+         stripes_modify(kk).phi = phi_unwrap(kk);
+%         stripes(kk).phi = mod(stripes(kk).phi+pi/2,(2*pi))-pi/2;
+     end
 
-    hF_stripe_summary = ixon_stripeSummary(stripes,xvals,stripe_2d_opts);
+
+    hF_stripe_summary = ixon_stripeSummary(stripes_modify,xvals,stripe_2d_opts);
 
     if ixon_doSave
         ixon_saveFigure(ixondata,hF_stripe_summary,'ixon_stripe_summary');        
     end
+end
+
+%% Stripe focusing
+ixon_doFocusStripes = 0;
+if ixon_doFocusStripes
+    clear focus
+    for kk=1:length(ixondata)
+        focus(kk) = ixon_focusStripe(ixondata(kk),stripes(kk));
+    end
+    
+    hFme = figure;
+    hFme.Color='w';
+    plot(xvals,[focus.y0],'ko');
+    xlabel('x')
+    ylabel('focus position (px)');  
+end
+
+%% Stability
+
+ixon_doStripeStability = 1;
+
+if ixon_doStripeStability && isequal(ixon_xVar,'ExecutionDate')
+   hFme = figure;
+   hFme.Color='w';
+   hFme.Position=[500 500 800 300];
+   co=get(gca,'colororder');
+   
+   phi0 = 0.9*2*pi;
+   
+   phi_err = [stripes.phi_err];
+   phi = [stripes.phi];
+   p = [ixondata.Params];
+   iz = [p.qgm_plane_tilt_dIz];
+   
+   phi_unwrap = (phi/(2*pi)-round((phi-phi0)/(2*pi)))*2*pi;
+   
+   yyaxis left
+   errorbar(xvals,phi_unwrap/(2*pi),phi_err,'o-','markerfacecolor',co(1,:),...
+       'markeredgecolor',co(1,:)*.5,'color',co(1,:),'linewidth',1,...
+       'markersize',8);
+   datetick('x');
+   xlabel('time');
+   ylabel('phase (2\pi)');
+   
+   hold on
+   plot(get(gca,'XLim'),[1 1]*phi0/(2*pi),'k-');
+      set(gca,'box','on','linewidth',1,'fontsize',12);
+
+   yyaxis right
+   plot(xvals,iz*1e3,'o-','markerfacecolor',co(2,:),...
+       'markeredgecolor',co(2,:)*.5,'color',co(2,:),'linewidth',1,...
+       'markersize',8);
+   ylabel('current shift (mA)');
+   
 end
 
 %% Stripe Analysis FFT

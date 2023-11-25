@@ -5,6 +5,10 @@ if nargin ==1
     % opts.xVar = 'ExecutionDate';
 end
 
+if ~isfield(opts,'Theta');
+   opts.Theta=[10 190]; 
+end
+
 sc = 0.3;
 
 %% Fitting Function

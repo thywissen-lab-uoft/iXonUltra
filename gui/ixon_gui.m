@@ -32,6 +32,10 @@ addpath(analysis_path);addpath(genpath(analysis_path))
 cmap=purplemap;                                 % default colormap
 guiname='iXon GUI';                             % Figure Name
 defaultDir=['C:' filesep 'IxonImageHistory'];   % Temporary save directory
+
+doSaveGUIAnalysis = 1;
+GUIAnalysisSaveDir = 'X:\IxonGUIAnalysisHistory';
+
 currDir=defaultDir;                             % Current directory of navigator is the default one
 if ~exist(defaultDir,'dir'); mkdir(defaultDir);end % Make temp directory if necessary
 
@@ -2202,6 +2206,9 @@ set(ax_stripe_focus,'box','on','fontsize',10,...
     'XAxisLocation','Bottom');
 
 stripe_pFocus=plot(0,0,'o-','color','k','linewidth',1);     
+hold on
+stripe_pFocusFit=plot(0,0,'--','color','k','linewidth',1);     
+
 yyaxis right
 
 stripe_pFocus2=plot(0,0,'o-','color','r','linewidth',1);     
@@ -2948,6 +2955,11 @@ end
 % focus.y_coms = y_coms;
 
         set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);
+        
+        tt=linspace(min([focus.y_coms]),max([focus.y_coms]),100);
+        
+        set(stripe_pFocusFit,'XData',tt,'YData',polyval(focus.poly,tt))
+        
 axes(ax_stripe_focus);
 yyaxis left
         set(ax_stripe_focus,'YLim',[0 max(focus.scores)*1.1]);
@@ -3231,10 +3243,38 @@ function data=updateAnalysis(data)
     
     M=size(ixon_fitresults,1)+1;                         % Find next row
     ixon_fitresults(M:(M+size(fr,1)-1),1:size(fr,2))=fr; % Append data        
-    assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults    
+    assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults
     
+    
+    if doSaveGUIAnalysis
+        gui_saveData = struct;
+        gui_saveData.Date = data.Date;
+        gui_saveData.FileName = data.Name; 
+        gui_saveData.Params = data.Params;
+        gui_saveData.BoxCount = data.BoxCount;    
+        if hcStripe.Value  
+            gui_saveData.Stripe = stripe;
+        end
+        
+       filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
+       filenames={filenames.name};
+       filenames=sort(filenames);
 
-    savePosAnalysis(tbl_pos_analysis.Data,datenum(data.Params.ExecutionDate));
+       % Delete old images
+       if length(filenames)>200
+           f=[GUIAnalysisSaveDir filesep filenames{1}];
+           delete(f);
+       end               
+
+        filename=[data.Name '.mat']; 
+        if ~exist(GUIAnalysisSaveDir,'dir')
+           mkdir(GUIAnalysisSaveDir);
+        end        
+        filename=fullfile(GUIAnalysisSaveDir,filename);
+        fprintf('%s',[filename ' ...']);
+        save(filename,'gui_saveData');
+        disp(' done');    
+    end
 end
 
 %% OTHER HELPER FUNCTIONS
@@ -3391,8 +3431,8 @@ function savePosAnalysis(tbl,execdate,src)
         src = 'X\boop.txt';
     end
 
-    src = 'C:\Users\coraf\OneDrive\Desktop\bob.csv';
-    % src = 'X:\ixon_gui_analysis.csv';
+%     src = 'C:\Users\coraf\OneDrive\Desktop\bob.csv';
+    src = 'Y:\ixon_gui_analysis.csv';
 
     vals = [execdate; tbl(:,2)]';
     names = ['ExecutionDate'; tbl(:,1)];
