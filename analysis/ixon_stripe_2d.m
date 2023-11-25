@@ -102,7 +102,7 @@ if ixon_doFocusStripes
     hFme = figure;
     hFme.Color='w';
     plot(xvals,[focus.y0],'ko');
-    xlabel('x')
+    xlabel('shim current (mA)')
     ylabel('focus position (px)');  
 end
 
@@ -113,8 +113,7 @@ ixon_doStripeStability = 1;
 if ixon_doStripeStability && isequal(ixon_xVar,'ExecutionDate')
    hFme = figure;
    hFme.Color='w';
-   hFme.Position=[500 500 800 300];
-   co=get(gca,'colororder');
+   hFme.Position=[100 500 1400 300];
    
    phi0 = 0.9*2*pi;
    
@@ -125,6 +124,10 @@ if ixon_doStripeStability && isequal(ixon_xVar,'ExecutionDate')
    
    phi_unwrap = (phi/(2*pi)-round((phi-phi0)/(2*pi)))*2*pi;
    
+   ax1=axes('units','normalized');
+   ax1.Position = [.05 .15 .7 .8];
+      co=get(gca,'colororder');
+
    yyaxis left
    errorbar(xvals,phi_unwrap/(2*pi),phi_err,'o-','markerfacecolor',co(1,:),...
        'markeredgecolor',co(1,:)*.5,'color',co(1,:),'linewidth',1,...
@@ -133,16 +136,32 @@ if ixon_doStripeStability && isequal(ixon_xVar,'ExecutionDate')
    xlabel('time');
    ylabel('phase (2\pi)');
    
+   
+   
    hold on
    plot(get(gca,'XLim'),[1 1]*phi0/(2*pi),'k-');
-      set(gca,'box','on','linewidth',1,'fontsize',12);
-
+      set(gca,'box','on','linewidth',1,'fontsize',10);
+    ylim(phi0/(2*pi)+[-.5 .5]);
    yyaxis right
    plot(xvals,iz*1e3,'o-','markerfacecolor',co(2,:),...
        'markeredgecolor',co(2,:)*.5,'color',co(2,:),'linewidth',1,...
        'markersize',8);
    ylabel('current shift (mA)');
    
+  ax2=axes('units','normalized');;
+    ax2.Position = [ax1.Position(1)+ax1.Position(3)+.05 ...
+        ax1.Position(2) .17 ax1.Position(4)];
+
+    histogram(phi_unwrap/(2*pi),20);
+     set(gca,'yaxislocation','right');
+     xlabel('phase (2\pi)');
+     ylabel('occurences','fontsize',8);
+    xlim(phi0/(2*pi)+[-.5 .5]);
+    
+   if ixon_doSave
+        ixon_saveFigure(ixondata,hFme,'ixon_stripe_stability');        
+    end
+
 end
 
 %% Stripe Analysis FFT
