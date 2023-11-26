@@ -15,6 +15,11 @@ A = stripe.A;
 x = data.X;
 y = data.Y;
 z = data.ZNoFilter;
+% z = data.Z;
+
+% z(z<=10)=0;
+% z=imgaussfilt(z,1);
+
 [xx,yy]= meshgrid(x,y);
 
 % Fourier Filtering
@@ -26,10 +31,22 @@ f_max = 1/dX;
 f = 1/2*linspace(-f_max,f_max,Nfft);    
 [fxx,fyy]=meshgrid(f,f);
 zf = fftshift(fft2(z,Nfft,Nfft));
-lpf = exp(-(fxx.^2+fyy.^2)/(2*qPSF.^2));
-zf2 = zf.*lpf;
-z = abs(ifft2(zf2,length(y),length(x)));
-        
+zf_psf = exp(-(fxx.^2+fyy.^2)/(2*qPSF.^2));
+
+
+lpf = ones(length(fyy),length(fyy));
+hpf = ones(length(fyy),length(fyy));
+
+% lpf = exp(-(fxx.^2+fyy.^2)/(2*qPSF.^2));
+% hpf = 1-exp(-(fxx.^2+fyy.^2)/(2*.01));
+
+
+zf = zf.*hpf;
+zf = zf.*lpf;
+
+
+z = abs(ifft2(zf,length(y),length(x)));
+     % z=imgaussfilt(z,1);   
     
 % Create phase and amplitude map
 phiMap = stripe.PhaseMapFunc(L,theta,phi,xx,yy)+pi/2;
@@ -96,8 +113,8 @@ for n=1:length(nVec)
     xThis = x(c1:c2);
     yThis = y(r1:r2);
 
-    PSF = fspecial('gaussian',20,10);
-    zThis = edgetaper(zThis,PSF);
+    PSF = fspecial('gaussian',20,5);
+    % zThis = edgetaper(zThis,PSF);
 
     
     z_stripes{end+1} = zThis;
@@ -133,8 +150,54 @@ scores = zeros(length(z_stripes),1);
 
 for n=1:length(z_stripes)
     z_to_analyze = z_stripes{n};   
+
+% z_to_analyze = imresize(z_to_analyze,3);
+% z_to_analyze=z_to_analyze*1;
     x=x_stripes{n};
     y=y_stripes{n};    
+
+
+    w=hanning(length(y))*hanning(length(x))';
+    % z_to_analyze = w.*z_to_analyze;
+% 
+    [xx,yy]=meshgrid(x,y);
+    nme = 1025;
+
+    % z_to_analyze = z_to_analyze.*exp(-(xx-300).^2/(2*50^2));
+
+    % z_to_analyze=z_to_analyze/sqrt(sum(z_to_analyze,'all'));
+    f = 1/2*linspace(-f_max,f_max,nme);    
+    [fa,fb]=meshgrid(f,f);
+    % zf_psf
+    zf_stripe = fftshift(fft2(z_to_analyze,nme,nme));
+    % zf_stripe = zf_stripe.*hpf.*lpf;
+    
+    zf_psf = exp(-(fa.^2+fb.^2)/(2*qPSF.^2));
+    
+    bb(n)=abs(sum(zf_psf.*zf_stripe,'all'))/sum(zf_stripe,'all');
+    figure(100+n)
+
+    % 
+    % ic = (nme+1)/2;
+    % zf_stripe(ic,ic)=0;
+    % subplot(5,2,2*n)    
+    subplot(5,1,1:4);
+    zn = abs(zf_stripe)/norm(zf_stripe);
+    imagesc(f,f,zn);
+    xlim([-.25 .25])
+    ylim([-.25 .25])
+    axis equal tight
+    title(num2str(y_coms(n)))
+    caxis([0 max(max(zn))])
+
+    subplot(5,1,5);
+
+    % subplot(5,2,2*n-1)    
+    imagesc(x_stripes{n},y_stripes{n},z_to_analyze)
+    axis equal tight
+    caxis([0 100])
+
+    
     [sharpnessScore, map]=MLVSharpnessMeasure(z_to_analyze);  
     scores(n) = sharpnessScore;
 %     ax2=subplot(length(z_stripes),2,2*n,'parent',hFme);
@@ -152,6 +215,8 @@ inds = ~isnan(scores);
 yyy = scores(inds);
 xxx = y_coms(inds)';
 nnn = stripe_sum(inds)';
+% figure(910)
+% plot(xxx,bb)
 
 % scores(binds)=[];
 % y_coms(binds)=[];

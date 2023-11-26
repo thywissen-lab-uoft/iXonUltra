@@ -33,7 +33,7 @@ cmap=purplemap;                                 % default colormap
 guiname='iXon GUI';                             % Figure Name
 defaultDir=['C:' filesep 'IxonImageHistory'];   % Temporary save directory
 
-doSaveGUIAnalysis = 1;
+doSaveGUIAnalysis = 0;
 GUIAnalysisSaveDir = 'X:\IxonGUIAnalysisHistory';
 
 currDir=defaultDir;                             % Current directory of navigator is the default one
