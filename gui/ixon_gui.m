@@ -688,6 +688,7 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
         disp('Starting acquisition');        
         % Send acquistion start command
         out=ixon_startCamera;
+        tic
         start(acqTimer);        
         % Enable/Disable Button/Tables
         rbSingle.Enable='off';
@@ -785,8 +786,16 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
     end
 
 % Timer to check on acquisition
-acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
-    'TimerFcn',@acqTimerFcn,'ExecutionMode','FixedSpacing');
+% boop = struct;
+% boop.ReadTime = [];
+% boop.
+acqTimer.UserData=[0 0];
+acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
+    'TimerFcn',@acqTimerFcn,'ExecutionMode','FixedSpacing','StartFcn',@acqTimerStartFcn);
+
+    function acqTimerStartFcn(src,evt)
+        src.UserData = [0 0];
+    end
 
 % Timer function checks if acquisition is over and restarts it
     function acqTimerFcn(src,evt)      
@@ -794,10 +803,30 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
         % Camera Status
         [out,outstr]=ixon_getCameraStatus;  
 %         disp(now)
+
+%         if src.UserData(2)==0
+%              [ret,camstatus] = GetCameraEventStatus;  
+%              if camstatus
+%                 disp([datestr(now) ' exposure start ' num2str(camstatus)])
+%                 src.UserData(2)=1;
+%              end
+%         end
+% %      
+
+        % Check number of available images and post and upate
+        [ret,first,last] = GetNumberAvailableImages;                    
+        if last~=src.UserData(1)
+            src.UserData(1)=last;
+            disp([datestr(now) ' ixon image ' num2str(last)])
+        end
+                    
         switch outstr
             case 'DRV_IDLE'
+                
+                
                 % Grab the images from the camera
-                imgs=ixon_grabRawImages;          
+                imgs=ixon_grabRawImages; 
+                toc
                 
                 % Assign images metadata
                 mydata=makeImgDataStruct(imgs);
@@ -837,7 +866,8 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.5,...
                 
             case 'DRV_ACQUIRING'
                 % Acquisition is still going.
-                
+                    
+
             otherwise
                 warning('Acuisition timer has unexpected result');
                 stopCamCB;

@@ -228,9 +228,21 @@ if ~isequal(error_code(ret),'DRV_SUCCESS')
     bNames{end+1}='ystart';
     bNames{end+1}='yend';
 end
+%% Set Frame Transfer Mode
+% 0: off, 1: on
+fprintf([' FrameTransferMode        : ' num2str(acq.FrameTransferMode) ' ... ']);
+[ret]=SetFrameTransferMode(acq.FrameTransferMode);
+disp(error_code(ret))
+
+if ~isequal(error_code(ret),'DRV_SUCCESS')
+   out=0;
+   bNames{end+1}='FrameTransferMode';
+end
 
 %%
+[ret,val]=GetReadOutTime()
 
+[ret,val]=GetKeepCleanTime()
 % acq.validExposureTime = 0;
 % acq.validKineticsCycleTime = 0;
 % acq.validAccumulationCycleTime = 0;

@@ -43,16 +43,16 @@ for kk=1:length(data)
             data(kk).Z(:,:,1)=[];    
         end
     else
-        if size(data(kk).Z,3)>1
-            data(kk).Z(:,:,1)=[];   
-        end
+         if size(data(kk).Z,3)>1
+             data(kk).Z(:,:,1)=[];   
+         end
     end         
+    
 %% Subtract Digital Bias
     if opts.doSubtractBias  
         fprintf(' biasing ...');
         data(kk).Z = data(kk).Z - 200;
-    end  
-    
+    end      
 
 %% Raw Data
     data(kk).Zraw = data(kk).Z;    
@@ -67,10 +67,11 @@ for kk=1:length(data)
                 for ii=1:(numImag-1)
                     data(kk).Z(:,:,ii)=data(kk).Z(:,:,ii)-data(kk).BG;
                 end
+                data(kk).Z(:,:,end) = [];
             end
-            data(kk).Z(:,:,end) = [];
         end
     end 
+
 %% Image Mask
     if opts.doMask
         fprintf('masking ...');

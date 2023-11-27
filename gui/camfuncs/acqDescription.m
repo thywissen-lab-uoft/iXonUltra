@@ -106,6 +106,13 @@ switch acq.TriggerMode
         desc.TriggerMode='??';
 end
 
+switch acq.FrameTransferMode
+    case 0
+        desc.FrameTransferMode='off';
+    case 1
+        desc.FrameTransferMode = 'on';
+end
+
 % ExposureTime
 desc.ExposureTime='seconds';
 
