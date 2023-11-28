@@ -32,11 +32,37 @@ if ~isfield(opts,'doRotate'); opts.doRotate = 1;end
 for kk=1:length(data)
     fprintf([num2str(kk) ' of ' num2str(length(data)) ': '])
     t1=now;
-    data(kk).Z = data(kk).RawImages;           
-    data(kk).X = 1:size(data(kk).Z,2);
-    data(kk).Y = 1:size(data(kk).Z,1);
+
+    data(kk).X = 1:size(data(kk).RawImages,2);
+    data(kk).Y = 1:size(data(kk).RawImages,1);
     
-%% Remove extra exposure data
+    Z = data(kk).RawImages;
+    
+    size(Z)
+    
+%% Subtract Digital Bias
+    if opts.doSubtractBias  
+        fprintf(' biasing ...');
+        Z = Z - 200;
+    end      
+    
+%% Remove wipe pics
+
+if isfield(data.Params,'qgm_MultiExposures') && isfield(data.Params,'qgm_MultiPiezos')
+    wipePics = isnan([data.Params.qgm_MultiExposures]);
+    Z(:,:,wipePics)=[];
+    L = size(Z,3);
+    if isfield(data(kk).Flags,'lattice_fluor_bkgd') && mod(L,2)==0
+        Zme = zeros(size(Z,1),size(Z,2),L/2);
+        for n=1:L/2
+            Zme(:,:,n) = Z(:,:,n) -  Z(:,:,n+L/2);
+        end
+        Z=Zme;
+    else
+        Z = Zraw;
+    end
+    
+else
     if isfield(data(kk),'Flags') && isfield(data(kk).Flags,'lattice_ClearCCD_IxonTrigger') 
         fprintf('removing extra exposure ...');
         if data(kk).Flags.lattice_ClearCCD_IxonTrigger && size(data(kk).Z,3)>1
@@ -46,13 +72,15 @@ for kk=1:length(data)
          if size(data(kk).Z,3)>1
              data(kk).Z(:,:,1)=[];   
          end
-    end         
+    end   
+end
+
+data(kk).Z = Z;
+    %%
     
-%% Subtract Digital Bias
-    if opts.doSubtractBias  
-        fprintf(' biasing ...');
-        data(kk).Z = data(kk).Z - 200;
-    end      
+%     data(kk).Z = data(kk).RawImages;           
+
+
 
 %% Raw Data
     data(kk).Zraw = data(kk).Z;    
