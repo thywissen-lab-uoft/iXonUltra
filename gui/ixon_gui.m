@@ -1128,7 +1128,7 @@ hc_anlX_Histogram=uicontrol(hpAnl,'style','checkbox','string','histogram','fonts
 ttstr='Principal component analysis to determine cloud axes..';
 hc_anlX_PCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsize',7,...
     'backgroundcolor','w','Position',[5 62 120 15],...
-    'ToolTipString',ttstr,'enable','on','callback',@hcpcaCB);
+    'ToolTipString',ttstr,'enable','off','callback',@hcpcaCB);
 
     function hcpcaCB(src,~)
        for n=1:length(pPCA)
@@ -1146,8 +1146,8 @@ hc_anlX_PCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','f
     end
 
 
-hc_anlX_Gauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',7,...
-    'backgroundcolor','w','Position',[5 47 100 15],...
+hc_anlX_Gauss=uicontrol(hpAnl,'style','checkbox','string','gaussian','fontsize',7,...
+    'backgroundcolor','w','Position',[5 47 60 15],...
     'ToolTipString',ttstr,'enable','on','callback',@hcgaussCB);
 
     function hcgaussCB(src,~)
@@ -1164,23 +1164,9 @@ hc_anlX_Gauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',
        if src.Value;hc_anlX_GaussRot.Value=0;end
     end
 
-hc_anlX_GaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize',7,...
-    'backgroundcolor','w','Position',[5 32 100 15],'callback',@(~,~) disp('hi'),...
-    'ToolTipString',ttstr,'enable','off','callback',@hcgaussRotCB);
-
-    function hcgaussRotCB(src,~)
-      for n=1:length(pXF)
-          pXF(n).Visible=src.Value;
-          pYF(n).Visible=src.Value;
-          
-          if ~src.Value
-             pGaussRet(n).Visible='off';
-             cGaussRet.Value=0;
-             cGaussRet.Enable='off';
-          end
-      end      
-      if src.Value;hc_anlX_Gauss.Value=0;end        
-    end
+hc_anlX_GaussRot=uicontrol(hpAnl,'style','checkbox','string','rotatable?','fontsize',7,...
+    'backgroundcolor','w','Position',[65 47 100 15],'callback',@(~,~) disp('hi'),...
+    'ToolTipString',ttstr,'enable','off');
 
 ttstr='Analyze stripe pattern in image to measure field stability';
 hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize',7,...
@@ -2883,43 +2869,40 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 %% 
     function updatePositionAnalysis
         tbl_pos_analysis.Data={};
-
         %% Box Analysis
         if hc_anlX_Box.Value                    
             data=ixon_boxCount(data);
         end
         updateBoxGraphics;
-
         %% Sharpness Analysis
         if hc_anlX_Sharpness.Value    
             data=ixon_Sharpness(data);
         end
         updateSharpnessGraphics;
-
         %% Histogram Analysis
         if hc_anlX_Histogram.Value            
             data = ixon_PositionHistgoram(data);
         end
         updatePositionHistogramGraphics;
-
         %%  Update Principal Component Analysis
         if hc_anlX_PCA.Value      
             % Finding cloud principal axes
             data = ixon_simple_pca(data);   
         end
-        updatePCAGraphics;
-    
+        updatePCAGraphics;    
     %% Guassian Analysis
-    if hc_anlX_Gauss.Value
-        disp('Fitting data to 2D gaussian...')   
-        opts=struct;
-        opts.doRescale=1;
-        opts.doMask=hcMask.Value;
-        opts.Scale=0.5;
-        opts.doRotate=0;
-        opts.Mask=ixon_mask;        
-        data=ixon_gaussFit(data,opts);   
-        cGaussRet.Enable='on';        
+        if hc_anlX_Gauss.Value
+            opts=struct;
+            opts.doRescale=1;
+            opts.doMask=hcMask.Value;
+            opts.Scale=0.5;
+            opts.doRotate=0;
+            opts.Mask=ixon_mask;        
+            data = ixon_gaussFit(data,opts);   
+            updateGaussGraphics;
+
+
+            cGaussRet.Enable='on';        
         % Gaussian analysis table string
         stranl={'','';
             ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;

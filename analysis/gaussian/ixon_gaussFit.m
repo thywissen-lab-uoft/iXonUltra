@@ -22,7 +22,7 @@ for n=1:length(ixondata)
     
     fprintf([num2str(n) ' of ' num2str(length(ixondata)) ' :']);
 
-    for k=1:size(ixondata(n).ROI,1)
+    for k=1:size(ixondata(n).Z,3)
         ROI=ixondata(n).ROI(k,:);       
         ix_1 = find(ixondata(n).X>=ROI(1),1);
         ix_2 = find(ixondata(n).X>=ROI(2),1);
