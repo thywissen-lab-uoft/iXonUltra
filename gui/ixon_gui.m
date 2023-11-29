@@ -2604,11 +2604,37 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
                 ['box X' char(963) ' (px)'],bc.Xs};       
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl]; 
     end
+
+%% PCA Stuff
+    function updatePCAGraphics
+        if ~isfield(data,'PCA')
+            pPCA(1).Visible = 'off';
+            pPCA(2).Visible = 'off';
+            return;
+        end
+
+        out=data.PCA;        
+        x1=out.Mean(1)+out.Radii(1)*out.PCA(1,1)*[-1 1];
+        y1=out.Mean(2)+out.Radii(1)*out.PCA(2,1)*[-1 1];
+        x2=out.Mean(1)+out.Radii(2)*out.PCA(1,2)*[-1 1];
+        y2=out.Mean(2)+out.Radii(2)*out.PCA(2,2)*[-1 1];        
+        % PCA analysis table string
+        stranl={'','';
+            ['pca ' char(952) '1 (deg)'] ,atan(out.PCA(2,1)/out.PCA(1,1))*180/pi;
+            ['pca ' char(952) '2 (deg)'],atan(out.PCA(2,2)/out.PCA(1,2))*180/pi;
+            ['pca ' char(963) '1 (px)'],out.Radii(1);
+            ['pca ' char(963) '2 (px)'],out.Radii(2);
+            ['pca xc (px)'],out.Mean(1);
+            ['pca yc (px)'],out.Mean(2);};
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];        
+        set(pPCA(1),'XData',x1,'YData',y1,'Visible','on');
+        set(pPCA(2),'XData',x2,'YData',y2,'Visible','on');
+    end
 %% Histgoram Callbacks
 
 
     function updatePositionHistogramGraphics        
-        if ~isfield(data,'Histogram')
+        if ~isfield(data,'Histogram') || ~isfield(data,'HistogramNoFilter')
             return;
         end
        imgnum = menuSelectImg.Value;          
@@ -2879,24 +2905,9 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         %%  Update Principal Component Analysis
         if hc_anlX_PCA.Value      
             % Finding cloud principal axes
-            data=ixon_simple_pca(data);        
-            out=data.PCA;        
-            x1=out.Mean(1)+out.Radii(1)*out.PCA(1,1)*[-1 1];
-            y1=out.Mean(2)+out.Radii(1)*out.PCA(2,1)*[-1 1];
-            x2=out.Mean(1)+out.Radii(2)*out.PCA(1,2)*[-1 1];
-            y2=out.Mean(2)+out.Radii(2)*out.PCA(2,2)*[-1 1];        
-            % PCA analysis table string
-            stranl={'','';
-                ['pca ' char(952) '1 (deg)'] ,atan(out.PCA(2,1)/out.PCA(1,1))*180/pi;
-                ['pca ' char(952) '2 (deg)'],atan(out.PCA(2,2)/out.PCA(1,2))*180/pi;
-                ['pca ' char(963) '1 (px)'],out.Radii(1);
-                ['pca ' char(963) '2 (px)'],out.Radii(2);
-                ['pca xc (px)'],out.Mean(1);
-                ['pca yc (px)'],out.Mean(2);};
-            tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];        
-            set(pPCA(1),'XData',x1,'YData',y1,'Visible','on');
-            set(pPCA(2),'XData',x2,'YData',y2,'Visible','on');
+            data = ixon_simple_pca(data);   
         end
+        updatePCAGraphics;
     
     %% Guassian Analysis
     if hc_anlX_Gauss.Value
