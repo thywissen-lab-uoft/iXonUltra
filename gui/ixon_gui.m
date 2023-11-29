@@ -1177,7 +1177,8 @@ hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
 % Callback function for redoing fits button
     function analyze_x(~,~)
         disp('Redoing fits...');
-        newDataCallback;
+        updatePositionAnalysis;
+        % newDataCallback;
     end
 
 %% Momentum Panel
@@ -1815,14 +1816,14 @@ cCoMStr_D.Position=[2 2 125 15];
         % Attempt to change the display ROI
         try
             switch img_type
-                case 'X'                
+                case 'X'            
                     set(axImg,'XLim',ROI(1:2),'YLim',ROI(3:4));
-                    set(hAxX,'XLim',ROI(1:2));
-                    set(hAxY,'YLim',ROI(3:4));
+                    % set(hAxX,'XLim',ROI(1:2));
+                    % set(hAxY,'YLim',ROI(3:4));
                 case 'K'
                     set(axImg_K,'XLim',ROI(1:2),'YLim',ROI(3:4));
-                    set(hAxX_K,'XLim',ROI(1:2));
-                    set(hAxY_K,'YLim',ROI(3:4));  
+                    % set(hAxX_K,'XLim',ROI(1:2));
+                    % set(hAxY_K,'YLim',ROI(3:4));  
                 case 'B'
                     set(axImg_B,'XLim',ROI(1:2),'YLim',ROI(3:4));
                 case 'D'
@@ -1840,7 +1841,6 @@ cCoMStr_D.Position=[2 2 125 15];
     function slctDispCB(src,img_type,chDisp)
         disp(['Selecting display ROI.' ...
             ' Click two points that form the rectangle ROI.']);
-
         switch img_type
             case 'X'
                 set(hp,'SelectedTab',tabX);
@@ -1933,6 +1933,8 @@ cCoMStr_D.Position=[2 2 125 15];
     function chPlotCB(~,~)
         % Update Data Plot
         updateDataPlots(data);
+
+        % foo;
         
         if hcGauss.Value
            updateGaussPlot(data); 
@@ -2110,9 +2112,9 @@ l=80;   % Left gap for fitting and data analysis summary
             axy.Position=[axi.Position(1)+axi.Position(3)+15 ...
                 110+(axi.Position(4)-h1)/2 l h1];            
         end        
-        % Match cut limits with the images limits
-        set(axx,'XLim',axi.XLim,'XTick',axi.XTick);
-        set(axy,'YLim',axi.YLim,'YTick',axi.YTick);        
+        % Match cut limits with the images limits (isn't necessary?)
+        % set(axx,'XLim',axi.XLim,'XTick',axi.XTick);
+        % set(axy,'YLim',axi.YLim,'YTick',axi.YTick);        
         % Move the colorbar
         cbar.Position=[axx.Position(1) axy.Position(2)+axy.Position(4)+23 ...
             axx.Position(3) 15]; 
@@ -2875,6 +2877,11 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         end                  
     end
 
+%% 
+    function updatePositionAnalysis
+            % B
+    end
+
 %% New Data
 % What to do when new data is put into the GUI
     function newDataCallback
@@ -2910,67 +2917,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
     % Update the record of the process images
     updateImageDataLists;    
-
-    %% Position Space Analysis
-    
-    % Perform Box Count ALWAYS DONE
-    data=ixon_boxCount(data);
-    bc=data.BoxCount;    
-
-    % Image Sharpness ALWAYS DONE
-    data=ixon_Sharpness(data);
-
-    
-    % Histogram of data (always done)
-    updateHistogram;            
-    updateGraphics; 
-
-    % Create sub image to do center of mass analysis
-    Zsub=data.Z(y,x,1);
-    
-    imgnum = menuSelectImg.Value;
-
-    % Box counts analysis table string    
-     stranl={'box sum (counts)',bc(imgnum).Nraw;
-        'box peak (counts)',bc(imgnum).Npeak;
-        'box Yc (px)',bc(imgnum).Yc;
-        'box Xc (px)',bc(imgnum).Xc;
-        ['box Y' char(963) ' (px)'],bc(imgnum).Ys;
-        ['box X' char(963) ' (px)'],bc(imgnum).Xs};   
-    
-    tbl_pos_analysis.Data=stranl;
-    
-    
-    % Update X, Y, and Z objects
-%     set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,1));
-    updateDispPosImg;
-    
-    if cAutoColor_X.Value
-%        autoClim; 
-    end
-    
-    % Move cross hair to center of mass
-    pCrossX.YData=[1 1]*round(bc(imgnum).Yc);
-    pCrossY.XData=[1 1]*round(bc(imgnum).Xc);
-
-    % Update table that trackes cross hair
-    tblcross.Data(1,2)=pCrossX.YData(1);
-    tblcross.Data(1,1)=pCrossY.XData(1);    
-    
-    % Update plots if sum
-    if rbSum_X.Value
-        Zy=sum(Zsub,2);
-        Zx=sum(Zsub,1);          
-        set(pX,'XData',x,'YData',Zx);
-        set(pY,'XData',Zy,'YData',y);
-        drawnow;
-    end
-    
-    % Update plots if cut
-    if rbCut_X.Value
-        foo;   
-    end           
-        
+%% Update Parameter Data
     % Update table parameters (alphebetically)
     [~,inds] = sort(lower(fieldnames(data.Params)));
     params = orderfields(data.Params,inds);    
@@ -2987,10 +2934,9 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
            tbl_params.Data{nn,2}='[struct]'; 
         end  
     end        
-    
+%% Update Flag Data
     if isfield(data,'Flags')
         flags = data.Flags;
-%         flags = orderfields(data.Flags,inds);    
         fnames=fieldnames(flags);
         for nn=1:length(fnames)
           tbl_flags.Data{nn,1}=fnames{nn};
@@ -2998,13 +2944,54 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             if isa(val,'double')
                 tbl_flags.Data{nn,2}=num2str(val);
             end
-
             if isa(val,'struct')
                tbl_flags.Data{nn,2}='[struct]'; 
             end  
         end     
     end
+    %% Position Space Analysis
+    
+    % Perform Box Count ALWAYS DONE
+    data=ixon_boxCount(data);
+    bc=data.BoxCount;    
+
+    % Image Sharpness ALWAYS DONE
+    data=ixon_Sharpness(data);
+    
+    % Histogram of data (always done)
+    updateHistogram;            
+    updateGraphics; 
+
+    % Create sub image to do center of mass analysis
+    Zsub=data.Z(y,x,1);    
+    imgnum = menuSelectImg.Value;
+
+    % Box counts analysis table string    
+     stranl={'box sum (counts)',bc(imgnum).Nraw;
+        'box peak (counts)',bc(imgnum).Npeak;
+        'box Yc (px)',bc(imgnum).Yc;
+        'box Xc (px)',bc(imgnum).Xc;
+        ['box Y' char(963) ' (px)'],bc(imgnum).Ys;
+        ['box X' char(963) ' (px)'],bc(imgnum).Xs};       
+    tbl_pos_analysis.Data=stranl;        
+    % Update X, Y, and Z objects
+    updateDispPosImg;     
+
+    % Update plots if sum
+    if rbSum_X.Value
+        Zy=sum(Zsub,2);
+        Zx=sum(Zsub,1);          
+        set(pX,'XData',x,'YData',Zx);
+        set(pY,'XData',Zy,'YData',y);
+        drawnow;
+    end    
+    % Update plots if cut
+    if rbCut_X.Value
+        foo;   
+    end   
         
+%% Update Fit Results (depreciated)
+
     % Update parameter for fit results
     frVar=frslct.String{frslct.Value};   % Old fitresults variable
     frslct.String=fieldnames(params); 
@@ -3024,8 +3011,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
     disp('')
     disp('Performing fits and analysis.');
-    
-    % Now do the fits
+%% Now do the fits?!?!
     data=updateAnalysis(data);
 end
 
@@ -3211,16 +3197,12 @@ function data=updateAnalysis(data)
     % Update PCA analysis
     if hcPCA.Value      
         % Finding cloud principal axes
-        data=ixon_simple_pca(data);
-        
-        out=data.PCA;
-        
+        data=ixon_simple_pca(data);        
+        out=data.PCA;        
         x1=out.Mean(1)+out.Radii(1)*out.PCA(1,1)*[-1 1];
         y1=out.Mean(2)+out.Radii(1)*out.PCA(2,1)*[-1 1];
-
         x2=out.Mean(1)+out.Radii(2)*out.PCA(1,2)*[-1 1];
-        y2=out.Mean(2)+out.Radii(2)*out.PCA(2,2)*[-1 1];
-        
+        y2=out.Mean(2)+out.Radii(2)*out.PCA(2,2)*[-1 1];        
         % PCA analysis table string
         stranl={'','';
             ['pca ' char(952) '1 (deg)'] ,atan(out.PCA(2,1)/out.PCA(1,1))*180/pi;
@@ -3229,9 +3211,7 @@ function data=updateAnalysis(data)
             ['pca ' char(963) '2 (px)'],out.Radii(2);
             ['pca xc (px)'],out.Mean(1);
             ['pca yc (px)'],out.Mean(2);};
-
-        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];
-        
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];        
         set(pPCA(1),'XData',x1,'YData',y1,'Visible','on');
         set(pPCA(2),'XData',x2,'YData',y2,'Visible','on');
     end
@@ -3244,11 +3224,9 @@ function data=updateAnalysis(data)
         opts.doMask=hcMask.Value;
         opts.Scale=0.5;
         opts.doRotate=0;
-
         opts.Mask=ixon_mask;        
         data=ixon_gaussFit(data,opts);   
-        cGaussRet.Enable='on';
-        
+        cGaussRet.Enable='on';        
         % Gaussian analysis table string
         stranl={'','';
             ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
@@ -3260,8 +3238,7 @@ function data=updateAnalysis(data)
             ['gauss nbg (counts)'],data.GaussFit{1}.nbg;};
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
         updateGaussPlot(data);
-    end
-    
+    end    
     
     % Update Guassian Analysis
     if hcStripe.Value        
@@ -3278,16 +3255,12 @@ function data=updateAnalysis(data)
             ['stripe ' char(955) ' (px)'],stripe.L;
             ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
-
         updateStripePlot(data,stripe);
-
         focus = ixon_focusStripe(data,stripe);
-
         updateFocusPlot(data,focus);
-
     end  
 
-        % Update Guassian Analysis
+    % Update Guassian Analysis
     if hcGaussRot.Value
         disp('Fitting data to 2D gaussian...')   
         opts=struct;
@@ -3295,11 +3268,9 @@ function data=updateAnalysis(data)
         opts.doMask=hcMask.Value;
         opts.Scale=0.5;
         opts.doRotate=1;
-        opts.Mask=ixon_mask;          
-        
+        opts.Mask=ixon_mask; 
         data=ixon_gaussFit(data,opts);   
-        cGaussRet.Enable='on';
-        
+        cGaussRet.Enable='on';        
         stranl={'','';
             ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
             ['gauss A (counts)'],data.GaussFit{1}.A;
@@ -3311,12 +3282,10 @@ function data=updateAnalysis(data)
             ['gauss ' char(952) ' (deg)'],data.GaussFit{1}.theta*180/pi};
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl]; 
         updateGaussPlot(data);
-    end  
+    end     
     
-    
-    
-    fr=tbl_pos_analysis.Data(:,2)';
-    
+    %% Fit Results    
+    fr=tbl_pos_analysis.Data(:,2)';    
     % Ensure fit results is a number
     for n=1:length(fr)
         % If value is empty, assign a zero
@@ -3518,16 +3487,24 @@ set(hF,'WindowState','maximized');
         end     
     end
 
-    function foo(~,~)        
+    function foo(~,~)      
+     
         % Update crosshair
         set(pCrossX,'XData',axImg.XLim,'YData',[1 1]*mean(axImg.YLim));
-        set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*mean(axImg.XLim));      
-
+        set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*mean(axImg.XLim)); 
         % Update ROI
-        tbl_dROI_X.Data = round([axImg.XLim axImg.YLim]);      
+        tbl_dROI_X.Data = round([axImg.XLim axImg.YLim]); 
         % Update plots if sum
+        
+        % updatePosPlots;
         if rbSum_X.Value
-            
+            c1 = find(data.X>=tbl_dROI_X(1),1);
+            c2 = find(data.X>=tbl_dROI_X(2),1);
+            r1 = find(data.Y>=tbl_dROI_X(3),1);
+            r2 = find(data.Y>=tbl_dROI_X(4),1);
+            z = hImg.CData(r1:r2,c1:c2);
+            set(pX,'XData',data.X,'YData',sum(z,1));
+            set(pY,'YData',data.Y,'XData',sum(z,2));
         end
         % Update plots if cut
         if rbCut_X.Value
