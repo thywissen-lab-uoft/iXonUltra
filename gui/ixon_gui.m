@@ -998,7 +998,7 @@ hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
 %% Analysis Panel
 hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
-hpAnl.Position=[0 hpADV.Position(2)-130 160 150];
+hpAnl.Position=[0 hpADV.Position(2)-130 160 180];
 
 % Table of ROIs
 tblROI=uitable(hpAnl,'units','pixels','ColumnWidth',{30 30 30 30},...
@@ -1106,9 +1106,27 @@ uicontrol(hpAnl,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         delete(p1);delete(p2);                   % Delete markers
     end
 
+% Checkbox for center of mass and sigma 
+ttstr='Find 1st and 2nd moments in the ROI box.';
+hc_anlX_Box=uicontrol(hpAnl,'style','checkbox','string','box','fontsize',7,...
+    'backgroundcolor','w','Position',[5 107 120 15],...
+    'ToolTipString',ttstr,'enable','off','Value',1);
+
+% Checkbox for image sharpness
+ttstr='Calculate the image sharpness';
+hc_anlX_Sharpness=uicontrol(hpAnl,'style','checkbox','string','sharpness','fontsize',7,...
+    'backgroundcolor','w','Position',[5 92 120 15],...
+    'ToolTipString',ttstr,'enable','off','Value',1);
+
+% Checkbox for image sharpness
+ttstr='Calculate histgoram';
+hc_anlX_Histogram=uicontrol(hpAnl,'style','checkbox','string','histogram','fontsize',7,...
+    'backgroundcolor','w','Position',[5 77 120 15],...
+    'ToolTipString',ttstr,'enable','off','Value',1);
+
 % Checkbox for principal component analysis
 ttstr='Principal component analysis to determine cloud axes..';
-hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsize',7,...
+hc_anlX_PCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsize',7,...
     'backgroundcolor','w','Position',[5 62 120 15],...
     'ToolTipString',ttstr,'enable','on','callback',@hcpcaCB);
 
@@ -1120,15 +1138,15 @@ hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsiz
        end  
        
        if src.Value
-          hcGaussRot.Enable='on';
+          hc_anlX_GaussRot.Enable='on';
        else
-            hcGaussRot.Enable='off';
-            hcGaussRot.Value=0;
+            hc_anlX_GaussRot.Enable='off';
+            hc_anlX_GaussRot.Value=0;
        end
     end
 
 
-hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',7,...
+hc_anlX_Gauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',7,...
     'backgroundcolor','w','Position',[5 47 100 15],...
     'ToolTipString',ttstr,'enable','on','callback',@hcgaussCB);
 
@@ -1143,10 +1161,10 @@ hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',7,...
              cGaussRet.Enable='off';
           end
        end       
-       if src.Value;hcGaussRot.Value=0;end
+       if src.Value;hc_anlX_GaussRot.Value=0;end
     end
 
-hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize',7,...
+hc_anlX_GaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize',7,...
     'backgroundcolor','w','Position',[5 32 100 15],'callback',@(~,~) disp('hi'),...
     'ToolTipString',ttstr,'enable','off','callback',@hcgaussRotCB);
 
@@ -1161,7 +1179,7 @@ hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize'
              cGaussRet.Enable='off';
           end
       end      
-      if src.Value;hcGauss.Value=0;end        
+      if src.Value;hc_anlX_Gauss.Value=0;end        
     end
 
 ttstr='Analyze stripe pattern in image to measure field stability';
@@ -1170,15 +1188,15 @@ hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize'
     'ToolTipString',ttstr);
 
 % Refit button
-hbfit=uicontrol(hpAnl,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@analyze_x,'parent',hpAnl,'backgroundcolor','w');
-hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
+uicontrol(hpAnl,'style','pushbutton','string','analyze',...
+    'units','pixels','callback',@analyze_x,'parent',hpAnl,...
+    'backgroundcolor','w','position',[hpAnl.Position(3)-45 1 45 15]);
 
 % Callback function for redoing fits button
     function analyze_x(~,~)
         disp('Redoing fits...');
-        updatePositionAnalysis;
-        % newDataCallback;
+        % updatePositionAnalysis;
+        newDataCallback;
     end
 
 %% Momentum Panel
@@ -1936,7 +1954,7 @@ cCoMStr_D.Position=[2 2 125 15];
 
         % foo;
         
-        if hcGauss.Value
+        if hc_anlX_Gauss.Value
            updateGaussPlot(data); 
         end
     end
@@ -2535,36 +2553,33 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
 %% Position Callbacks
 
-    function updatePositionGraphics              
+    function updatePositionGraphics        
+        tbl_pos_analysis.Data={};
         updateDispPosImg;        
         if cAutoColor_X.Value;setClim('X');end                
         cCrossCB(cCross_X);
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
-        updateCoM;
-        updateSharpness;
+        updateBoxGraphics;
+        updateSharpnessGraphics;
         cCoMCB(cCoMStr_X);        
         set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);        
     end
 
-    function updateSharpness
+    function updateSharpnessGraphics
         if ~isfield(data,'SharpnessScore')
            t_pos_TopRight.Visible='off';
            return
         end
-
         imgnum = menuSelectImg.Value;
         sh1 = data.SharpnessScore(imgnum); 
         sh2 = data.SharpnessScoreNoFilter(imgnum); 
         str = ['sharpness scores $(' num2str(sh1,'%.4e') ',' num2str(sh2,'%.4e') ')$'];
-        set(t_pos_TopRight,'String',str);          
-
-
-
+        set(t_pos_TopRight,'String',str); 
     end
 
-    function updateCoM
+    function updateBoxGraphics
         if ~isfield(data,'BoxCount')
            tCoMAnalysis.Visible='off';
            return
@@ -2579,53 +2594,20 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs,1)) ',' ...
             num2str(round(bc.Ys,1)) ')$']; 
         %Update box count string object
-        set(tCoMAnalysis,'String',str);          
+        set(tCoMAnalysis,'String',str);   
+
+        stranl={'box sum (counts)',bc.Nraw;
+                'box peak (counts)',bc.Npeak;
+                'box Yc (px)',bc.Yc;
+                'box Xc (px)',bc.Xc;
+                ['box Y' char(963) ' (px)'],bc.Ys;
+                ['box X' char(963) ' (px)'],bc.Xs};       
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl]; 
     end
 %% Histgoram Callbacks
 
-    function updateHistogram
-        ROI = tblROI.Data;
-
-        c1 = find(data.X>=ROI(1),1);
-        c2 = find(data.X>=ROI(2),1);
-        r1 = find(data.Y>=ROI(3),1);
-        r2 = find(data.Y>=ROI(4),1);
-
-        x = c1:c2;
-        y = r1:r2;
-        
-        % [N,edges] = histcounts(data.Z(y,x,1),1000);
-        [N,edges] = histcounts(data.ZNoFilter(y,x,1),1000);
-
-        centers = (edges(1:end-1) + edges(2:end))/2;
-        Histogram = struct;
-        Histogram.Edges = edges;
-        Histogram.Centers = centers;
-        Histogram.N = N;  
-        data.Histogram(1) = Histogram;              
-        xe = data.Histogram(1).Edges;
-        
-        for kk=1:size(data.Z,3)            
-            [N,edges] = histcounts(data.Z(y,x,kk),xe);
-            centers = (edges(1:end-1) + edges(2:end))/2;
-            Histogram = struct;
-            Histogram.Edges = edges;
-            Histogram.Centers = centers;
-            Histogram.N = N;  
-            data.Histogram(kk) = Histogram;            
-        end     
-        
-                  
-        for kk=1:size(data.ZNoFilter,3)            
-            [N,edges] = histcounts(data.ZNoFilter(y,x,kk),xe);
-            centers = (edges(1:end-1) + edges(2:end))/2;
-            Histogram = struct;
-            Histogram.Edges = edges;
-            Histogram.Centers = centers;
-            Histogram.N = N;  
-            data.HistogramNoFilter(kk) = Histogram;            
-        end         
-        
+    function updatePositionHistogram        
+        data = ixon_PositionHistogram(data);
         updateHistogramGraphics;
     end
 
@@ -2879,7 +2861,202 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
 %% 
     function updatePositionAnalysis
-            % B
+        tbl_pos_analysis.Data={};
+
+        %% Box Analysis
+        if hc_anlX_Box.Value                    
+            data=ixon_boxCount(data);
+        end
+        updateBoxGraphics;
+
+        %% Sharpness Analysis
+        if hc_anlX_Sharpness.Value    
+            data=ixon_Sharpness(data);
+        end
+        updateSharpnessGraphics;
+
+        %% Histogram Analysis
+        if hc_anlX_Histogram.Value            
+            % Histogram of data (always done)
+            updatePositionHistogram;      
+            % Update Histogram Graphics
+        end
+        updatePositionHistogramGraphics
+
+        %%  Update Principal Component Analysis
+        if hc_anlX_PCA.Value      
+            % Finding cloud principal axes
+            data=ixon_simple_pca(data);        
+            out=data.PCA;        
+            x1=out.Mean(1)+out.Radii(1)*out.PCA(1,1)*[-1 1];
+            y1=out.Mean(2)+out.Radii(1)*out.PCA(2,1)*[-1 1];
+            x2=out.Mean(1)+out.Radii(2)*out.PCA(1,2)*[-1 1];
+            y2=out.Mean(2)+out.Radii(2)*out.PCA(2,2)*[-1 1];        
+            % PCA analysis table string
+            stranl={'','';
+                ['pca ' char(952) '1 (deg)'] ,atan(out.PCA(2,1)/out.PCA(1,1))*180/pi;
+                ['pca ' char(952) '2 (deg)'],atan(out.PCA(2,2)/out.PCA(1,2))*180/pi;
+                ['pca ' char(963) '1 (px)'],out.Radii(1);
+                ['pca ' char(963) '2 (px)'],out.Radii(2);
+                ['pca xc (px)'],out.Mean(1);
+                ['pca yc (px)'],out.Mean(2);};
+            tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];        
+            set(pPCA(1),'XData',x1,'YData',y1,'Visible','on');
+            set(pPCA(2),'XData',x2,'YData',y2,'Visible','on');
+        end
+    
+    %% Guassian Analysis
+    if hc_anlX_Gauss.Value
+        disp('Fitting data to 2D gaussian...')   
+        opts=struct;
+        opts.doRescale=1;
+        opts.doMask=hcMask.Value;
+        opts.Scale=0.5;
+        opts.doRotate=0;
+        opts.Mask=ixon_mask;        
+        data=ixon_gaussFit(data,opts);   
+        cGaussRet.Enable='on';        
+        % Gaussian analysis table string
+        stranl={'','';
+            ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
+            ['gauss A (counts)'],data.GaussFit{1}.A;
+            ['gauss x' char(963) ' (px)'],data.GaussFit{1}.s1;
+            ['gauss y' char(963) ' (px)'],data.GaussFit{1}.s2;
+            ['gauss xc (px)'],data.GaussFit{1}.Xc;
+            ['gauss yc (px)'],data.GaussFit{1}.Yc;
+            ['gauss nbg (counts)'],data.GaussFit{1}.nbg;};
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
+        updateGaussPlot(data);
+    end    
+    
+    %% Stripe Analysis
+    if hcStripe.Value        
+        opts.Theta = [10 190];
+        stripe=ixon_fitStripe(data,opts);   
+        stranl={'','';
+            ['stripe A (amp)'] ,stripe.A;
+            ['stripe xC (px)'],stripe.xC;
+            ['stripe yC (px)'],stripe.yC;
+            ['stripe ' char(963) '1 (px)'],stripe.s1;
+            ['stripe ' char(963) '2 (px)'],stripe.s2;
+            ['stripe B'],stripe.B;
+            ['stripe ' char(952) ' (deg)'],stripe.theta;
+            ['stripe ' char(955) ' (px)'],stripe.L;
+            ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
+        updateStripePlot(data,stripe);
+        focus = ixon_focusStripe(data,stripe);
+        updateFocusPlot(data,focus);
+    end  
+
+    %%  Rotated Gaussian Analysis
+    if hc_anlX_GaussRot.Value
+        disp('Fitting data to 2D gaussian...')   
+        opts=struct;
+        opts.doRescale=1;
+        opts.doMask=hcMask.Value;
+        opts.Scale=0.5;
+        opts.doRotate=1;
+        opts.Mask=ixon_mask; 
+        data=ixon_gaussFit(data,opts);   
+        cGaussRet.Enable='on';        
+        stranl={'','';
+            ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
+            ['gauss A (counts)'],data.GaussFit{1}.A;
+            ['gauss ' char(963) '1 (px)'],data.GaussFit{1}.s1;
+            ['gauss ' char(963) '2 (px)'],data.GaussFit{1}.s2;
+            ['gauss xc (px)'],data.GaussFit{1}.Xc;
+            ['gauss yc (px)'],data.GaussFit{1}.Yc;
+            ['gauss nbg (counts)'],data.GaussFit{1}.nbg;
+            ['gauss ' char(952) ' (deg)'],data.GaussFit{1}.theta*180/pi};
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl]; 
+        updateGaussPlot(data);
+    end     
+    
+    % %% Fit Results    
+    % fr=tbl_pos_analysis.Data(:,2)';    
+    % % Ensure fit results is a number
+    % for n=1:length(fr)
+    %     % If value is empty, assign a zero
+    %     if isempty(fr{n})
+    %         fr{n}=0;
+    %     end
+    % 
+    %     % If string conver to number
+    %     if isstr(fr{n})
+    %         try
+    %             fr{n}=str2double(fr{n});
+    %         catch ME
+    %             fr{n}=NaN;
+    %         end
+    %     end
+    % end
+    % 
+    % % Get fit results variable
+    % frVar=frslct.String{frslct.Value};    
+    % val=data.Params.(frVar);
+    % 
+    % % Convert execution date into a time
+    % if isequal(frVar,'ExecutionDate') 
+    %    val=datenum(val); 
+    %    val=val-floor(val);
+    %    val=val*24*60;
+    % end
+    % 
+    % % Create fit results object
+    % fr=[data.Name frVar val fr];   
+    % 
+    %%%%%% Output to fit results
+    % Output some analysis to the main workspace, this is done to be
+    % comptaible with old regimens for fitting and analysis
+    % 
+    % try
+    %     % Read in fitresults
+    %     ixon_fitresults=evalin('base','ixon_fitresults');        
+    % catch ME
+    %     % Error means that it is probably undefined
+    %     ixon_fitresults={};
+    % end
+    % 
+    % M=size(ixon_fitresults,1)+1;                         % Find next row
+    % ixon_fitresults(M:(M+size(fr,1)-1),1:size(fr,2))=fr; % Append data        
+    % assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults
+    % 
+    
+    % This should happen only at end
+    if doSaveGUIAnalysis
+        gui_saveData = struct;
+        gui_saveData.Date = data.Date;
+        gui_saveData.FileName = data.Name; 
+        gui_saveData.Params = data.Params;
+        gui_saveData.BoxCount = data.BoxCount;    
+        if hcStripe.Value  
+            gui_saveData.Stripe = stripe;
+        end
+        
+       filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
+       filenames={filenames.name};
+       filenames=sort(filenames);
+
+       % Delete old images
+       if length(filenames)>200
+           f=[GUIAnalysisSaveDir filesep filenames{1}];
+           delete(f);
+       end               
+
+        filename=[data.Name '.mat']; 
+        if ~exist(GUIAnalysisSaveDir,'dir')
+           mkdir(GUIAnalysisSaveDir);
+        end        
+        filename=fullfile(GUIAnalysisSaveDir,filename);
+        fprintf('%s',[filename ' ...']);
+        save(filename,'gui_saveData');
+        disp(' done');    
+    end
+        
+
+        updateGraphics; 
+
     end
 
 %% New Data
@@ -2959,7 +3136,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     data=ixon_Sharpness(data);
     
     % Histogram of data (always done)
-    updateHistogram;            
+    updatePositionHistogram;            
     updateGraphics; 
 
     % Create sub image to do center of mass analysis
@@ -3195,7 +3372,7 @@ end
 function data=updateAnalysis(data)    
     
     % Update PCA analysis
-    if hcPCA.Value      
+    if hc_anlX_PCA.Value      
         % Finding cloud principal axes
         data=ixon_simple_pca(data);        
         out=data.PCA;        
@@ -3217,7 +3394,7 @@ function data=updateAnalysis(data)
     end
     
     % Update Guassian Analysis
-    if hcGauss.Value
+    if hc_anlX_Gauss.Value
         disp('Fitting data to 2D gaussian...')   
         opts=struct;
         opts.doRescale=1;
@@ -3261,7 +3438,7 @@ function data=updateAnalysis(data)
     end  
 
     % Update Guassian Analysis
-    if hcGaussRot.Value
+    if hc_anlX_GaussRot.Value
         disp('Fitting data to 2D gaussian...')   
         opts=struct;
         opts.doRescale=1;
