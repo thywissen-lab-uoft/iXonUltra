@@ -1187,9 +1187,9 @@ uicontrol(hpAnl,'style','pushbutton','string','analyze',...
 
 % Callback function for redoing fits button
     function analyze_x(~,~)
-        disp('Redoing fits...');
-        % updatePositionAnalysis;
-        newDataCallback;
+        % disp('Redoing fits...');
+        updatePositionAnalysis;
+        % newDataCallback;
     end
 
 %% Momentum Panel
@@ -2893,6 +2893,9 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
 %% 
     function updatePositionAnalysis
+        data.ROI=tblROI.Data;     
+
+
         tbl_pos_analysis.Data={};
         %% Box Analysis
         if hc_anlX_Box.Value                    
