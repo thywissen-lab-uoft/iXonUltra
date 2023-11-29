@@ -1512,7 +1512,7 @@ cAutoColor_X.Position=[climtbl_X.Position(1)+climtbl_X.Position(3)+1 climtbl_X.P
 
 % Button group for deciding what the X/Y plots show
 bgPlot_X = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w','BorderType','None',...
-    'SelectionChangeFcn',@chPlotCB);  
+    'SelectionChangeFcn',@foo);  
 bgPlot_X.Position(3:4)=[125 15];
 bgPlot_X.Position(1:2)=[2 47];
     
@@ -1600,7 +1600,7 @@ cAutoColor_K.Position=[climtbl_K.Position(1)+climtbl_K.Position(3)+1 climtbl_K.P
 
 % Button group for deciding what the X/Y plots show
 bgPlot_K = uibuttongroup(hpDisp_K,'units','pixels','backgroundcolor','w','BorderType','None',...
-    'SelectionChangeFcn',@foo);  
+    'SelectionChangeFcn',@foo3);  
 bgPlot_K.Position(3:4)=[125 15];
 bgPlot_K.Position(1:2)=[2 climtbl_K.Position(2)-bgPlot_K.Position(4)-2];
     
@@ -3213,18 +3213,15 @@ yyaxis left
         x = data.X;
         y = data.Y;
         z = data.ZNoFilter;
-        [xx,yy] = meshgrid(x,y);
-        
-        Zfit=feval(stripe.Fit,xx,yy);
-        
+        [xx,yy] = meshgrid(x,y);        
+        Zfit=feval(stripe.Fit,xx,yy);        
         theta=stripe.theta;
         L = stripe.L;
         phi = stripe.phi;
         xC = stripe.xC;
         yC = stripe.yC;
         s1 = stripe.s1;
-        s2 = stripe.s2;
-        
+        s2 = stripe.s2;        
 
         set(stripe_str_bottom_left,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
 
@@ -3235,15 +3232,9 @@ yyaxis left
             '$(\theta,\phi,\lambda) = (' num2str(round(theta,2)) '^\circ,' ...
             num2str(round(phi/(2*pi),2)) '\cdot 2\pi,' ...
             num2str(round(L,1)) ')$']; 
-
-
-
         set(stripe_str_bottom_right,'String',str);
-
         % Update Image
-        set(stripe_hImgStripe,'XData',x,'YData',y,'CData',z);
-
-        
+        set(stripe_hImgStripe,'XData',x,'YData',y,'CData',z);       
         
         % Update Image markers
         set(stripe_pFringe,'XData',xC+[-2 2]*s1*cosd(theta),...
@@ -3255,18 +3246,12 @@ yyaxis left
         
         tt=linspace(0,2*pi,100);
         xell = 2*s1*cosd(theta)*cos(tt)-2*s2*sind(theta)*sin(tt)+xC;
-        yell = 2*s2*cosd(theta)*sin(tt)+2*s1*sind(theta)*cos(tt)+yC;
-
-        
+        yell = 2*s2*cosd(theta)*sin(tt)+2*s1*sind(theta)*cos(tt)+yC;        
         set(stripe_pCloudEllipse,'XData',xell,'YData',yell);
-
-  
-
         tt=linspace(0,theta,100);
         set(stripe_pAngleCirc,'XData',xC+25*cosd(tt),...
             'YData',yC+25*sind(tt));
         ax_stripe_img.CLim = axImg.CLim;
-
         
         % Update fits   
         set(stripe_pSum1_fit,'XData',x,'YData',sum(imrotate(Zfit,theta,'crop'),1));
@@ -3274,9 +3259,7 @@ yyaxis left
         % set(ax4,'XLim',[min(1) max([max(x) max(y)])]);    
         % Show the sum counts orthogonal to the stripe axis
         set(stripe_pSum2_fit,'XData',y,'YData',sum(imrotate(Zfit,theta,'crop'),2));
-        set(stripe_pSum2_data,'XData',y,'YData',sum(imrotate(z,theta,'crop'),2));
-
-      
+        set(stripe_pSum2_data,'XData',y,'YData',sum(imrotate(z,theta,'crop'),2));      
     end
 
 
@@ -3285,18 +3268,13 @@ yyaxis left
         if ~isfield(data,'GaussFit') 
             return;
         end
-        imgnum = menuSelectImg.Value;         
-        
+        imgnum = menuSelectImg.Value;   
         % Grab fit data
-        fout=data.GaussFit{imgnum};
- 
-      
-
+        fout=data.GaussFit{imgnum}; 
         A = fout.A;
         Xc = fout.Xc;
         Yc = fout.Yc;
         nbg = fout.nbg;
-
         if ismember('theta',coeffnames(fout))
             theta = fout.theta;
             s1 = fout.s1;
@@ -3306,7 +3284,6 @@ yyaxis left
             s2 = fout.Ys;
             theta = 0;
         end
-
         % Evaluate and plot 1/e^2 gaussian reticle
         t=linspace(0,2*pi,100);          
         if ismember('theta',coeffnames(fout))
@@ -3318,8 +3295,7 @@ yyaxis left
         end   
         % Might need to differentiate between graphics and plot
         set(pGaussRet,'XData',xR,'YData',yR,'linewidth',2);  
-        updateGaussLinePlot;
-      
+        updateGaussLinePlot;      
         drawnow;
         % Gaussian analysis table string
         stranl={'','';
@@ -3330,8 +3306,7 @@ yyaxis left
             ['gauss xc (px)'],Xc;
             ['gauss yc (px)'],Yc;
             ['gauss nbg (counts)'],nbg;
-            ['gauss theta'],theta;};
-    
+            ['gauss theta'],theta;};    
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
     end
 
@@ -3345,25 +3320,31 @@ yyaxis left
         fout=data.GaussFit{imgnum};
 
         [xx,yy]=meshgrid(data.X,data.Y);
-        zF=feval(fout,xx,yy); 
+        Z=feval(fout,xx,yy); 
+
+        % Find indeces in which correspond to ROI boundary
+        ROI=tbl_dROI_X.Data;
+        [~,c1] = min(abs(data.X-ROI(1)));
+        [~,c2] = min(abs(data.X-ROI(2)));
+        [~,r1] = min(abs(data.Y-ROI(3)));
+        [~,r2] = min(abs(data.Y-ROI(4)));
+
+        zsub = Z(r1:r2,c1:c2);    
+        xsub = data.X(c1:c2);
+        ysub = data.Y(r1:r2);
 
         if rbCut_X.Value
             [~,iy] = min(abs(pCrossX.YData(1)-data.Y));
             [~,ix] = min(abs(pCrossY.XData(1)-data.X));
-            ZyF=zF(:,ix);ZxF=zF(iy,:);
+            ZyF=Z(:,ix);ZxF=Z(iy,:);
             set(pXF,'XData',data.X,'YData',ZxF,'Visible','on');
             set(pYF,'XData',ZyF,'YData',data.Y,'Visible','on');
-        else    
-            % WONT WORK             
-            ROI=tbl_dROI_X.Data;
-            c1 = find(data.X>=ROI(1),1);
-            c2 = find(data.X>=ROI(2),1);
-            r1 = find(data.Y>=ROI(3),1);
-            r2 = find(data.Y>=ROI(4),1);
-            
-            ZyF=sum(zF(:,c1:c2),2);ZxF=sum(zF(r1:r2,:),1);   
-            set(pXF,'XData',data.X,'YData',ZxF,'Visible','on');
-            set(pYF,'XData',ZyF,'YData',data.Y,'Visible','on');
+        else       
+            % ZyF=sum(zF(:,c1:c2),2);ZxF=sum(zF(r1:r2,:),1);   
+            % set(pXF,'XData',data.X,'YData',ZxF,'Visible','on');
+            % set(pYF,'XData',ZyF,'YData',data.Y,'Visible','on');
+            set(pXF,'XData',xsub,'YData',sum(zsub,1),'Visible','on');
+            set(pYF,'YData',ysub,'XData',sum(zsub,2),'Visible','on');
         end  
     end
 
@@ -3450,7 +3431,7 @@ function data=updateAnalysis(data)
         opts=struct;
         opts.doRescale=1;
         opts.doMask=hcMask.Value;
-        opts.Scale=0.5;
+        opts.Scale=0.25;
         opts.doRotate=0;
         opts.Mask=ixon_mask;        
         data=ixon_gaussFit(data,opts);   
