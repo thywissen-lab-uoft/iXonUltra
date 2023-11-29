@@ -2484,7 +2484,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 %% Graphical Callbacks
     function updateGraphics        
         updatePositionGraphics;
-        updateHistogramGraphics;
+        updatePositionHistogramGraphics;
         updateMomentumGraphics;          
         updateBinnedGraphics;
         updateBinnedHistogramGraphics;
@@ -2606,12 +2606,8 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     end
 %% Histgoram Callbacks
 
-    function updatePositionHistogram        
-        data = ixon_PositionHistogram(data);
-        updateHistogramGraphics;
-    end
 
-    function updateHistogramGraphics        
+    function updatePositionHistogramGraphics        
         if ~isfield(data,'Histogram')
             return;
         end
@@ -2625,7 +2621,6 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         set(pHist4,'XData',data.HistogramNoFilter(imgnum).Centers,...
             'YData',data.HistogramNoFilter(imgnum).N);   
     end
-
 
 %% Momentum Callbacks
 
@@ -2877,11 +2872,9 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
         %% Histogram Analysis
         if hc_anlX_Histogram.Value            
-            % Histogram of data (always done)
-            updatePositionHistogram;      
-            % Update Histogram Graphics
+            data = ixon_PositionHistgoram(data);
         end
-        updatePositionHistogramGraphics
+        updatePositionHistogramGraphics;
 
         %%  Update Principal Component Analysis
         if hc_anlX_PCA.Value      
@@ -3136,7 +3129,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     data=ixon_Sharpness(data);
     
     % Histogram of data (always done)
-    updatePositionHistogram;            
+    data = ixon_PositionHistogram(data);
     updateGraphics; 
 
     % Create sub image to do center of mass analysis
