@@ -1466,6 +1466,7 @@ menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Positi
                 set(hImg,'XData',data.X,'YData',data.Y,'CData',data.ZNoFilter(:,:,imgnum));
         end
         if cAutoColor_X.Value;setClim('X');end  
+        foo;
     end
 
 % Table for changing display limits
@@ -2471,9 +2472,16 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     'color','k','backgroundcolor',[1 1 1 .7]);
 
 %% Graphical Callbacks
-    function updateGraphics        
+    function updateGraphics  
+        updateDispPosImg;   
+
+        updatePositionAnalysisGraphics
+
+
         updatePositionGraphics;
-        updatePositionHistogramGraphics;
+        % updatePositionHistogramGraphics;
+
+
         updateMomentumGraphics;          
         updateBinnedGraphics;
         updateBinnedHistogramGraphics;
@@ -2543,17 +2551,17 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 %% Position Callbacks
 
     function updatePositionGraphics        
-        tbl_pos_analysis.Data={};
-        updateDispPosImg;        
-        if cAutoColor_X.Value;setClim('X');end                
+        % tbl_pos_analysis.Data={};
+        % updateDispPosImg;        
+        % if cAutoColor_X.Value;setClim('X');end                
         cCrossCB(cCross_X);
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
-        updateBoxGraphics;
-        updateSharpnessGraphics;
-        cCoMCB(cCoMStr_X);        
-        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);        
+        % updateBoxGraphics;
+        % updateSharpnessGraphics;
+        % cCoMCB(cCoMStr_X);        
+        % set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);        
     end
 
     function updateSharpnessGraphics
@@ -2876,23 +2884,19 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         if hc_anlX_Box.Value                    
             data=ixon_boxCount(data);
         end
-        updateBoxGraphics;
         %% Sharpness Analysis
         if hc_anlX_Sharpness.Value    
             data=ixon_Sharpness(data);
         end
-        updateSharpnessGraphics;
         %% Histogram Analysis
         if hc_anlX_Histogram.Value            
             data = ixon_PositionHistogram(data);
         end
-        updatePositionHistogramGraphics;
         %%  Update Principal Component Analysis
         if hc_anlX_PCA.Value      
             % Finding cloud principal axes
             data = ixon_simple_pca(data);   
         end
-        updatePCAGraphics;    
     %% Guassian Analysis
         if hc_anlX_Gauss.Value
             opts=struct;
@@ -2903,7 +2907,6 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             opts.Mask=ixon_mask;        
             data = ixon_gaussFit(data,opts);            
         end    
-        updateGaussGraphics; 
 
     %% Stripe Analysis
     if hcStripe.Value        
@@ -3005,11 +3008,19 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     %     fprintf('%s',[filename ' ...']);
     %     save(filename,'gui_saveData');
     %     disp(' done');    
-    % end
-        
-
+    % end       
         % updateGraphics; 
 
+        updatePositionAnalysisGraphics;
+    end
+
+    function updatePositionAnalysisGraphics
+        tbl_pos_analysis.Data={};
+        updateBoxGraphics;
+        updateSharpnessGraphics;
+        updatePositionHistogramGraphics;
+        updatePCAGraphics;    
+        updateGaussGraphics; 
     end
 
 %% New Data
@@ -3017,7 +3028,6 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     function newDataCallback
     % Grab the ROI
     ROI=tblROI.Data;data.ROI=ROI;       
-    x=ROI(1):ROI(2);y=ROI(3):ROI(4);        
 
     %% Image Processing
     % Grab the RawImages and process them into usable data
