@@ -120,7 +120,7 @@ end
         theta = opts.Theta;
         fprintf([' rotating (' num2str(theta) ' deg)...']);
         data(kk).Z = imrotate(data(kk).Z,theta,'bicubic','crop');
-        data(kk).RotationMask = imrotate(ones(size(data(kk).Z,1),size(data(kk).Z,1)),theta,'bicubic','crop');
+        data(kk).RotationMask = imrotate(ones(size(data(kk).Z,1),size(data(kk).Z,2)),theta,'bicubic','crop');
         data(kk).RotationMask = logical(round(data(kk).RotationMask));
     end           
 %% No Filter
@@ -153,8 +153,24 @@ end
             % data(kk).Z(:,:,ii)=data(kk).Z(:,:,ii)+Nnoise;
             % noise_variance=noise_variance*2;
 
-            data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),...
-                psf,Niter,0,1,noise_variance);      
+            Zpre = data.Z(:,:,ii);
+            iPos = [Zpre>0];
+
+            % if isfield(data(kk),'RotationMask')
+            %     W = double(~data(kk).RotationMask);
+            % else
+            %     W = ones(size(data(kk).Z(:,:,ii),1),size(data(kk).Z(:,:,ii),2));
+            %     % W = double(iPos);  
+            % 
+            % end
+
+            % data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),...
+                % psf,Niter,0,1,noise_variance);   
+            Zsharp = deconvlucy(data(kk).Z(:,:,ii),...
+                psf,Niter,0,1,noise_variance);             
+            Zsharp(~iPos)=Zpre(~iPos);
+            data(kk).Z(:,:,ii) =    Zsharp;
+
             % data(kk).Z(:,:,ii)=data(kk).Z(:,:,ii)-Nnoise;
 
         end        

@@ -10,18 +10,33 @@ for n=1:length(data)
     x = c1:c2;
     y = r1:r2; 
 
-    % Perform Histogram on first no filter image to get the edges
-    [~,xe] = histcounts(data(n).ZNoFilter(y,x,1),1000);
+    z = data(n).ZNoFilter(y,x,1);
 
-    for kk=1:size(data(n).ZNoFilter,3)            
-        [N,edges] = histcounts(data(n).ZNoFilter(y,x,kk),xe);
+    if isfield(data(n),'RotationMask')
+        m = data(n).RotationMask;
+        z = z(m);
+    end
+
+    % Perform Histogram on first no filter image to get the edges
+    [~,xe] = histcounts(z,1000);
+
+    for kk=1:size(data(n).ZNoFilter,3)          
+        z = data(n).ZNoFilter(y,x,kk);
+        if isfield(data(n),'RotationMask')
+            z = z(m);
+        end        
+        [N,edges] = histcounts(z,xe);
         centers = (edges(1:end-1) + edges(2:end))/2;
         data(n).HistogramNoFilter(kk) = ...
             struct('Edges',edges,'Centers',centers,'N',N);
     end   
 
-    for kk=1:size(data(n).Z,3)            
-        [N,edges] = histcounts(data(n).Z(y,x,kk),xe);
+    for kk=1:size(data(n).Z,3)    
+        z = data(n).Z(y,x,kk);
+        if isfield(data(n),'RotationMask')
+            z = z(m);
+        end 
+        [N,edges] = histcounts(z,xe);
         centers = (edges(1:end-1) + edges(2:end))/2;
         data(n).Histogram(kk) = ...
             struct('Edges',edges,'Centers',centers,'N',N);
