@@ -96,7 +96,12 @@ ixon_doFocusStripes = 0;
 if ixon_doFocusStripes
     clear focus
     for kk=1:length(ixondata)
-        focus(kk) = ixon_focusStripe(ixondata(kk),stripes(kk));
+
+        x = ixondata(kk).X;
+        y = ixondata(kk).Y;
+        z = ixondata(kk).ZNoFilter
+
+        focus(kk) = ixon_focusStripe(x,y,z,stripes(kk));
     end
     
     hFme = figure;

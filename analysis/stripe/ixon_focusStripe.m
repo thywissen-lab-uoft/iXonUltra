@@ -1,4 +1,4 @@
-function focus= ixon_focusStripe(data,stripe)
+function focus= ixon_focusStripe(x,y,z,stripe)
 threshhold = 0.1;
 
 % Fit Parameters
@@ -12,9 +12,9 @@ s2 = stripe.s2;
 A = stripe.A;
 
 % Grab Data
-x = data.X;
-y = data.Y;
-z = data.ZNoFilter;
+% x = data.X;
+% y = data.Y;
+% z = data.ZNoFilter;
 % z = data.Z;
 
 % z(z<=10)=0;

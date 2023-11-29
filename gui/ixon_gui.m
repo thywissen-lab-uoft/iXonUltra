@@ -1075,7 +1075,7 @@ uicontrol(hpAnl,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
     'Backgroundcolor','w','Callback',@maxPosAnalysisROI,...
     'ToolTipString',ttstr,'Position',[130 tblROI.Position(2)-11 18 18]);
 
-    function maxPosAnalysisROI(src,evt)
+    function maxPosAnalysisROI(~,evt)
         ROI = [1 512 1 512];
         tblROI.Data = ROI;
         pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
@@ -2482,14 +2482,8 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 %% Graphical Callbacks
     function updateGraphics  
         updateDispPosImg;   
-
         updatePositionAnalysisGraphics
-
-
         updatePositionGraphics;
-        % updatePositionHistogramGraphics;
-
-
         updateMomentumGraphics;          
         updateBinnedGraphics;
         updateBinnedHistogramGraphics;
@@ -2924,28 +2918,25 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         opts = struct;
         opts.Theta = [10 190];
         for ll = 1:size(data.ZNoFilter,3)            
-            stripes(ll)=ixon_fitStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),opts)
+            stripes(ll)=ixon_fitStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),opts);
+            foci(ll)=ixon_focusStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),stripes(ll));
+
         end
+        data.StripeFit = stripes;
 
-        % data=ixon_fitStripe(data,opts);
 
-        stripe = stripes(1);
+%       focus = ixon_focusStripe(data,stripe);
+        % updateFocusPlot(data,focus);
 
-        % stripe=ixon_fitStripe(data,opts);   
-        stranl={'','';
-            ['stripe A (amp)'] ,stripe.A;
-            ['stripe xC (px)'],stripe.xC;
-            ['stripe yC (px)'],stripe.yC;
-            ['stripe ' char(963) '1 (px)'],stripe.s1;
-            ['stripe ' char(963) '2 (px)'],stripe.s2;
-            ['stripe B'],stripe.B;
-            ['stripe ' char(952) ' (deg)'],stripe.theta;
-            ['stripe ' char(955) ' (px)'],stripe.L;
-            ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
-        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
-        updateStripePlot(data,stripe);
-        focus = ixon_focusStripe(data,stripe);
-        updateFocusPlot(data,focus);
+
+        updateStripeGraphics;
+
+        % stripe = stripes(1);
+
+      
+        % updateStripePlot(data,stripe);
+        % focus = ixon_focusStripe(data,stripe);
+        % updateFocusPlot(data,focus);
     end  
      
     
@@ -3041,6 +3032,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         updatePositionHistogramGraphics;
         updatePCAGraphics;    
         updateGaussGraphics; 
+        updateStripeGraphics;
     end
 
 %% New Data
@@ -3187,11 +3179,18 @@ end
         set(ax_stripe_focus,'YLim',[0 max(focus.scores)*1.1]);
         set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
     end
+   
+  function updateStripeGraphics
+         if ~isfield(data,'StripeFit') 
+            return;
+        end
+        imgnum = menuSelectImg.Value;   
 
-    function updateStripePlot(data,stripe)
         x = data.X;
         y = data.Y;
-        z = data.ZNoFilter(:,:,1);
+        z = data.ZNoFilter(:,:,imgnum);
+        stripe = data.StripeFit(imgnum);
+
         [xx,yy] = meshgrid(x,y);        
         Zfit=feval(stripe.Fit,xx,yy);        
         theta=stripe.theta;
@@ -3230,14 +3229,27 @@ end
         set(stripe_pAngleCirc,'XData',xC+25*cosd(tt),...
             'YData',yC+25*sind(tt));
         ax_stripe_img.CLim = axImg.CLim;
+        set(ax_stripe_img,'XLim',[1 512],'YLim',[1 512]);
         
         % Update fits   
         set(stripe_pSum1_fit,'XData',x,'YData',sum(imrotate(Zfit,theta,'crop'),1));
         set(stripe_pSum1_data,'XData',x,'YData',sum(imrotate(z,theta,'crop'),1));
-        % set(ax4,'XLim',[min(1) max([max(x) max(y)])]);    
         % Show the sum counts orthogonal to the stripe axis
         set(stripe_pSum2_fit,'XData',y,'YData',sum(imrotate(Zfit,theta,'crop'),2));
         set(stripe_pSum2_data,'XData',y,'YData',sum(imrotate(z,theta,'crop'),2));      
+
+          % stripe=ixon_fitStripe(data,opts);   
+        stranl={'','';
+            ['stripe A (amp)'] ,stripe.A;
+            ['stripe xC (px)'],stripe.xC;
+            ['stripe yC (px)'],stripe.yC;
+            ['stripe ' char(963) '1 (px)'],stripe.s1;
+            ['stripe ' char(963) '2 (px)'],stripe.s2;
+            ['stripe B'],stripe.B;
+            ['stripe ' char(952) ' (deg)'],stripe.theta;
+            ['stripe ' char(955) ' (px)'],stripe.L;
+            ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];          
     end
 
 
@@ -3394,9 +3406,9 @@ function data=updateAnalysis(data)
             ['stripe ' char(955) ' (px)'],stripe.L;
             ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
-        updateStripePlot(data,stripe);
-        focus = ixon_focusStripe(data,stripe);
-        updateFocusPlot(data,focus);
+        % updateStripePlot(data,stripe);
+        % focus = ixon_focusStripe(data,stripe);
+        % updateFocusPlot(data,focus);
     end  
 
     % Update Guassian Analysis
