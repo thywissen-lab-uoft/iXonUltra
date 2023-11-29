@@ -3095,48 +3095,8 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         end     
     end
     %% Position Space Analysis
-
     updatePositionAnalysis;
-    % 
-    % % Perform Box Count ALWAYS DONE
-    % data=ixon_boxCount(data);
-    % bc=data.BoxCount;    
-    % 
-    % % Image Sharpness ALWAYS DONE
-    % data=ixon_Sharpness(data);
-    % 
-    % % Histogram of data (always done)
-    % data = ixon_PositionHistogram(data);
-    % updateGraphics; 
-    % 
-    % % Create sub image to do center of mass analysis
-    % Zsub=data.Z(y,x,1);    
-    % imgnum = menuSelectImg.Value;
-    % 
-    % % Box counts analysis table string    
-    %  stranl={'box sum (counts)',bc(imgnum).Nraw;
-    %     'box peak (counts)',bc(imgnum).Npeak;
-    %     'box Yc (px)',bc(imgnum).Yc;
-    %     'box Xc (px)',bc(imgnum).Xc;
-    %     ['box Y' char(963) ' (px)'],bc(imgnum).Ys;
-    %     ['box X' char(963) ' (px)'],bc(imgnum).Xs};       
-    % tbl_pos_analysis.Data=stranl;        
-    % % Update X, Y, and Z objects
-    % updateDispPosImg;     
-    % 
-    % % Update plots if sum
-    % if rbSum_X.Value
-    %     Zy=sum(Zsub,2);
-    %     Zx=sum(Zsub,1);          
-    %     set(pX,'XData',x,'YData',Zx);
-    %     set(pY,'XData',Zy,'YData',y);
-    %     drawnow;
-    % end    
-    % % Update plots if cut
-    % if rbCut_X.Value
-    %     foo;   
-    % end   
-        
+  
 %% Update Fit Results (depreciated)
 
     % % Update parameter for fit results
@@ -3189,11 +3149,9 @@ function updateDataPlots(data)
     % Update plots if cut
     if rbCut_X.Value
         indy=find(round(pCrossX.YData(1))==y,1);           % Y center
-        indx=find(round(pCrossY.XData(1))==x,1);           % X center        
-        
+        indx=find(round(pCrossY.XData(1))==x,1);           % X center 
         Zy=data.Z(:,indx);        
-        Zx=data.Z(indy,:);
-        
+        Zx=data.Z(indy,:);        
         set(pX,'XData',data.X,'YData',Zx);
         set(pY,'XData',Zy,'YData',data.Y);
         drawnow;
@@ -3201,22 +3159,13 @@ function updateDataPlots(data)
 end
 
     function updateFocusPlot(data,focus)
-
-        % ocus.scores = scores;
-% focus.x_coms = x_coms;
-% focus.y_coms = y_coms;
-
-        set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);
-        
-        tt=linspace(min([focus.y_coms]),max([focus.y_coms]),100);
-        
-        set(stripe_pFocusFit,'XData',tt,'YData',polyval(focus.poly,tt))
-        
-axes(ax_stripe_focus);
-yyaxis left
+        set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);        
+        tt=linspace(min([focus.y_coms]),max([focus.y_coms]),100);        
+        set(stripe_pFocusFit,'XData',tt,'YData',polyval(focus.poly,tt))        
+        axes(ax_stripe_focus);
+        yyaxis left
         set(ax_stripe_focus,'YLim',[0 max(focus.scores)*1.1]);
-         set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
-
+        set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
     end
 
     function updateStripePlot(data,stripe)
@@ -3358,55 +3307,6 @@ yyaxis left
         end  
     end
 
-
-
-    % end
-% function updateGaussPlot(data)
-% 
-% 
-%     for n=1:length(data.GaussFit)
-%         ROI=data.ROI(n,:);
-%         x=ROI(1):ROI(2);
-%         y=ROI(3):ROI(4);
-% 
-%         % Grab fit data
-%         fout=data.GaussFit{n};
-%         [xx,yy]=meshgrid(x,y);
-%         zF=feval(fout,xx,yy); 
-% 
-%         % Evaluate and plot 1/e^2 gaussian reticle
-%         t=linspace(0,2*pi,100);  
-% 
-%         if ismember('theta',coeffnames(fout))
-%             xR=fout.Xc+fout.s1*cos(fout.theta)*cos(t)-fout.s2*sin(fout.theta)*sin(t);
-%             yR=fout.Yc+fout.s1*sin(fout.theta)*cos(t)+fout.s2*cos(fout.theta)*sin(t); 
-%         else
-%             xR=fout.Xc+fout.s1*cos(t);
-%             yR=fout.Yc+fout.s2*sin(t);    
-%         end   
-%         set(pGaussRet(n),'XData',xR,'YData',yR,'linewidth',2);  
-% 
-%         drawnow;
-% 
-%         if rbCut_X.Value            
-% 
-%             indy=find(round(pCrossX.YData(1))==y,1);           % Y center
-%             indx=find(round(pCrossY.XData(1))==x,1);           % X center               
-% 
-%             ZyF=zF(:,indx);
-%             ZxF=zF(indy,:);
-% 
-%             set(pXF(n),'XData',x,'YData',ZxF,'Visible','on');
-%             set(pYF(n),'XData',ZyF,'YData',y,'Visible','on');
-%         else    
-%             ZyF=sum(zF,2);
-%             ZxF=sum(zF,1);   
-% 
-%             set(pXF(n),'XData',x,'YData',ZxF,'Visible','on');
-%             set(pYF(n),'XData',ZyF,'YData',y,'Visible','on');
-%         end  
-%     end
-% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % updateAnalysis
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
