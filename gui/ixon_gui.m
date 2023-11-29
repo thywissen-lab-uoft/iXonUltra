@@ -990,7 +990,7 @@ hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
   end
 
 %% Analysis Panel
-hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','                   alysis');
+hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
 hpAnl.Position=[0 hpADV.Position(2)-130 160 150];
 
 % Table of ROIs
@@ -1040,45 +1040,56 @@ tblROI.Position(1:2)=[5 hpAnl.Position(4)-tblROI.Position(4)-20];
 ttstr='Select the analysis ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
 uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-    'Backgroundcolor','w','Position',[130 tblROI.Position(2)+2 18 18],'Callback',@slctROICB,...
-    'ToolTipString',ttstr);
+    'Backgroundcolor','w','Position',[130 tblROI.Position(2)+2 18 18],...
+    'Callback',{@(src,evt) slctDispCB(tblROI,'X',0)},'ToolTipString',ttstr);
 
+
+
+% slctDispROI(tblROI
+% Button for maximizing the display limits
+% ttstr='Max analysis ROI to full image size.';
+% cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
+% uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+%     'Backgroundcolor','w','Callback',{@(~,~) chDispROI('max','X');},'ToolTipString',ttstr);
+% hbFullLim_X.Position = [tbl_dROI_X.Position(1)+tbl_dROI_X.Position(3) ...
+%     tbl_dROI_X.Position(2)-12 18 18];
+% 
+% % Button to snap display ROI to the data ROI
+% ttstr='Snap analysis ROI to display ROI.';
+% cdata=imresize(imread(fullfile(mpath,'icons','snapLim.png')),[15 15]);
+% hbSnapLim_X=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+%     'Backgroundcolor','w','Position',hbFullLim_X.Position,...
+%     'Callback',{@(~,~) chDispROI('min','X');},'ToolTipString',ttstr);
+% hbSnapLim_X.Position(2) = [hbSnapLim_X.Position(2)+18];
 
 % Callback for selecting an ROI based upon mouse click input.
     function slctROICB(~,~)
         disp(['Selecting display ROI .' ...
             ' Click two points that form the rectangle ROI.']);
-        axes(axImg)                 % Select the OD image axis
+        set(hp,'SelectedTab',tabX);
         [x1,y1]=ginputMe(1);          % Get a mouse click
-        x1=round(x1);y1=round(y1);  % Round to interger        
-        tic
-        p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it
-        toc
+        x1=round(x1);y1=round(y1);  % Round to interger       
+        p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it        
         [x2,y2]=ginputMe(1);          % Get a mouse click
         x2=round(x2);y2=round(y2);  % Round it        
         p2=plot(x2,y2,'+','color','r','linewidth',1,'markersize',10,'hittest','off');  % Plot it
-
         % Create the ROI
         ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
-
         % Constrain ROI to image
         if ROI(1)<1; ROI(1)=1; end       
         if ROI(3)<1; ROI(3)=1; end   
-         if ROI(4)>512; ROI(4)=512; end       
-         if ROI(2)>512; ROI(2)=512; end   
-        
+        if ROI(4)>512; ROI(4)=512; end       
+        if ROI(2)>512; ROI(2)=512; end           
         % Try to update ROI graphics
-        tblROI.Data=ROI;   
-        
+        tblROI.Data=ROI;           
         try
             pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
             set(pROI(1),'Position',pos);
             drawnow;        
         catch
-           warning('Unable to change display ROI.');
+           warning('Unable to change ROI.');
         end
         delete(p1);delete(p2);                   % Delete markers
-
     end
 
 % Checkbox for principal component analysis
@@ -1466,7 +1477,7 @@ ttstr='Select the display ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
 hbSlctLim_X=uicontrol(hpDisp_X,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
     'Backgroundcolor','w','Position',hbFullLim_X.Position,...
-    'Callback',{@(src,evt) slctDispCB(tbl_dROI_X,'X')},'ToolTipString',ttstr);
+    'Callback',{@(src,evt) slctDispCB(tbl_dROI_X,'X',1)},'ToolTipString',ttstr);
 hbSlctLim_X.Position(2) = [hbSnapLim_X.Position(2)+18];
 
 % Table to adjust color limits on image
@@ -1557,7 +1568,7 @@ ttstr='Select the display ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
 hbSlctLim_K=uicontrol(hpDisp_K,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
     'Backgroundcolor','w','Position',hbFullLim_K.Position,...
-    'Callback',{@(src,evt) slctDispCB(tbl_dROI_K,'K');},'ToolTipString',ttstr);
+    'Callback',{@(src,evt) slctDispCB(tbl_dROI_K,'K',1);},'ToolTipString',ttstr);
 hbSlctLim_K.Position(2) = [hbSnapLim_K.Position(2)+18];
 
 % Table to adjust color limits on image
@@ -1640,7 +1651,7 @@ ttstr='Select the display ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
 hbSlctLim_B=uicontrol(hpDisp_B,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
     'Backgroundcolor','w','Position',hbSnapLim_B.Position,...
-    'Callback',{@(src,evt) slctDispCB(tbl_dROI_B,'B')},'ToolTipString',ttstr);
+    'Callback',{@(src,evt) slctDispCB(tbl_dROI_B,'B',1)},'ToolTipString',ttstr);
 hbSlctLim_B.Position(2) = [hbSnapLim_B.Position(2)+18];
 
 % Table to adjust color limits on image
@@ -1703,7 +1714,7 @@ ttstr='Select the display ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
 hbSlctLim_B=uicontrol(hpDisp_D,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
     'Backgroundcolor','w','Position',hbSnapLim_B.Position,...
-    'Callback',{@(src,evt) slctDispCB(tbl_dROI_D,'D')},'ToolTipString',ttstr);
+    'Callback',{@(src,evt) slctDispCB(tbl_dROI_D,'D',1)},'ToolTipString',ttstr);
 hbSlctLim_B.Position(2) = [hbSnapLim_B.Position(2)+18];
 
 % Checkbox for enabling display of the CoM analysis
@@ -1726,6 +1737,7 @@ cCoMStr_D.Position=[2 2 125 15];
             src.Data = ROI;                     % Update table in case changed     
         end
     end
+   
 
 % Change display ROI on plots
     function [ROI,err] = chDispROI(ROI,img_type)  
@@ -1821,11 +1833,19 @@ cCoMStr_D.Position=[2 2 125 15];
     end
 
 % Callback for selecting an ROI based upon mouse click input.
-    function slctDispCB(src,img_type)
+    function slctDispCB(src,img_type,chDisp)
         disp(['Selecting display ROI.' ...
             ' Click two points that form the rectangle ROI.']);
-        axes(axImg)                                             % Select image axis
-        
+
+        switch img_type
+            case 'X'
+                set(hp,'SelectedTab',tabX);
+            case 'K'
+                set(hp,'SelectedTab',tabK);
+            case 'B'
+                set(hp,'SelectedTab',tabB);
+        end
+
         % Get click 1
         [x1,y1]=ginputMe(1);                                    % Get a mouse click
         if isequal(img_type,'X') || isequal(img_type,'B');x1=round(x1);y1=round(y1);end  % Round Pos.      
@@ -1836,16 +1856,21 @@ cCoMStr_D.Position=[2 2 125 15];
         if isequal(img_type,'X') || isequal(img_type,'B');x2=round(x2);y2=round(y2);end  % Round Pos.      
         p2=plot(x2,y2,'+','color','k','linewidth',1);           % Marker 2
 
-        delete(p1);delete(p2);                                  % Delete markers        
-        
+        delete(p1);delete(p2);                                  % Delete markers
+
         ROI=[min([x1 x2]) max([x1 x2]) ...                      % ROI
             min([y1 y2]) max([y1 y2])]; 
-        [ROI,err] = chDispROI(ROI,img_type);                    % Change ROI
+
+        if nargin == 3 && chDisp        
+            [ROI,err] = chDispROI(ROI,img_type);                    % Change ROI
+
+            % Update table
+            if ~err                        
+                src.Data = ROI;                     
+            end  
+        end
         
-        % Update table
-        if ~err                        
-            src.Data = ROI;                     
-        end            
+          
     end
 
 % Callback for changing the color limits table
