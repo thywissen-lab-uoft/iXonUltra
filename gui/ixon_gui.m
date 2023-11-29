@@ -2439,25 +2439,49 @@ caxis([0 1]);
 %% Binned Histgoram
 
 % Binned Histogram 1
-ax_hB1=subplot(2,1,1,'parent',tabHB);
-pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none');
-ylabel('occurences');
-xlabel('counts/site');
+% ax_hB1=subplot(2,1,1,'parent',tabHB);
+ax_hB1 = axes('parent',tabHB);
+pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none',...
+    'facecolor','k');
 hold on
-pKernelB1 = plot(1,1,'k-','parent',ax_hB1);
-set(ax_hB1,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+pHistBdivide = plot([1 1]*50,[0 100],'k-','parent',ax_hB1);
+ylabel('occurences');
+xlabel('counts per lattice site');
+
+% hold on
+% pKernelB1 = plot(1,1,'k-','parent',ax_hB1);
+set(ax_hB1,'box','on','linewidth',.1,'fontsize',12,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1');
+yyaxis right
+pHistB2 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none',...
+    'FaceColor',[0.6 0 0.5]);
+ylabel('occurences');
+ax_hB1.YColor=[0.6 0 0.5];
+
+% Add a left hand slider to control the relative size of the analog and
+% digital channels
+% 
+% jSlider = javax.swing.JSlider;
+% [jhSlider, hContainer]=javacomponent(jSlider,[0,60,600,15],tabHB);
+% set(jSlider, 'Value',30, 'PaintLabels',false, 'PaintTicks',true,...
+%     'Orientation',0);  % with ticks, no labels
+% 
+% set(hContainer,'units','normalized','position',...
+%     [ax_hB1.Position(1) ax_hB1.Position(2)+ax_hB1.Position(4) ...
+%     ax_hB1.Position(3) ax_hB1.Position(4)*.05]) ;
+
+% set(jSlider, 'StateChangedCallback', @adjustSize);  %alternative
 
 % Binned Histogram 2
-ax_hB2=subplot(2,1,2,'parent',tabHB);
-pHistB2 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none');
-ylabel('occurences');
-xlabel('counts/site');
-hold on
-pKernelB2 = plot(1,1,'k-','parent',ax_hB2);
-
-set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
-    'XAxisLocation','bottom','YDir','normal','UserData','H2');
+% ax_hB2=subplot(2,1,2,'parent',tabHB);
+% pHistB2 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none');
+% ylabel('occurences');
+% xlabel('counts/site');
+% hold on
+% pKernelB2 = plot(1,1,'k-','parent',ax_hB2);
+% 
+% set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+%     'XAxisLocation','bottom','YDir','normal','UserData','H2');
 
 
 %% Digital Image
@@ -2775,6 +2799,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
+
     end
 
 
@@ -2809,21 +2834,24 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         y = data.LatticeHistogram(imgnum).N;        
         Nthresh = histBtbl.Data(1,1);              
         
-        set(pHistB1,'XData',x,'YData',y);
-        set(pHistB2,'XData',x,'YData',y);
-        set(ax_hB2,'XLim',[Nthresh max(xe)]);          
+        set(pHistB1,'XData',x,'YData',y.*[x<= Nthresh]);
+        set(pHistB2,'XData',x,'YData',y.*[x> Nthresh]);        
+        pHistBdivide.Parent.YAxis(1).Limits = [0 max(pHistB1.YData)*1.1];
+        pHistBdivide.Parent.YAxis(2).Limits = [0 max(pHistB2.YData)*1.1];
+
+        set(pHistBdivide,'Xdata',[1 1]*Nthresh,'Ydata',pHistBdivide.Parent.YAxis(1).Limits);
         
         zall = data.LatticeBin(imgnum).Zbin(:);
         zall(isnan(zall))=[];
         n = numel(zall);      
-        try
-            x2 = data.LatticeHistogramKernel(imgnum).Xi;
-            y2 = data.LatticeHistogramKernel(imgnum).f;        
-            y2 = y2/sum(sum(y2));
-            y2 = y2*n*length(x2)/length(x);    
-            set(pKernelB1,'XData',x2,'YData',y2);        
-            set(pKernelB2,'XData',x2,'YData',y2);           
-        end
+        % try
+        %     x2 = data.LatticeHistogramKernel(imgnum).Xi;
+        %     y2 = data.LatticeHistogramKernel(imgnum).f;        
+        %     y2 = y2/sum(sum(y2));
+        %     y2 = y2*n*length(x2)/length(x);    
+        %     set(pKernelB1,'XData',x2,'YData',y2);        
+        %     set(pKernelB2,'XData',x2,'YData',y2);           
+        % end
     end
 
     function updateBinnedHistogram
@@ -2842,14 +2870,14 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         LatticeHistogram.N = N;  
         data.LatticeHistogram(1) = LatticeHistogram;      
 
-        try
-            [f,xi,bw]=ksdensity(Zall(:));
-            LatticeHistogramKernel = struct;
-            LatticeHistogramKernel.Xi = xi;
-            LatticeHistogramKernel.f = f;
-            LatticeHistogramKernel.BandWidth = bw;
-            data.LatticeHistogramKernel(1) = LatticeHistogramKernel;
-        end
+        % try
+        %     [f,xi,bw]=ksdensity(Zall(:));
+        %     LatticeHistogramKernel = struct;
+        %     LatticeHistogramKernel.Xi = xi;
+        %     LatticeHistogramKernel.f = f;
+        %     LatticeHistogramKernel.BandWidth = bw;
+        %     data.LatticeHistogramKernel(1) = LatticeHistogramKernel;
+        % end
 %         [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw);        
         
   
@@ -2867,15 +2895,15 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             LatticeHistogram.N = N;  
             data.LatticeHistogram(kk) = LatticeHistogram;
             
-            try
-                [f,xi,bw]=ksdensity(Zall(:));
-                [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);  
-                LatticeHistogramKernel = struct;
-                LatticeHistogramKernel.Xi = xi;
-                LatticeHistogramKernel.f = f;
-                LatticeHistogramKernel.BandWidth = bw;
-                data.LatticeHistogramKernel(kk) = LatticeHistogramKernel;
-            end
+            % try
+            %     [f,xi,bw]=ksdensity(Zall(:));
+            %     [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);  
+            %     LatticeHistogramKernel = struct;
+            %     LatticeHistogramKernel.Xi = xi;
+            %     LatticeHistogramKernel.f = f;
+            %     LatticeHistogramKernel.BandWidth = bw;
+            %     data.LatticeHistogramKernel(kk) = LatticeHistogramKernel;
+            % end
         end                  
     end
 

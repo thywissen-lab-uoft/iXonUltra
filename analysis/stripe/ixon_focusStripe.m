@@ -14,26 +14,25 @@ A = stripe.A;
 [xx,yy]= meshgrid(x,y);
 
 % Fourier Filtering
-Nfft = 2^10;
-sPSF = 1.3161;% Gaussian radius of PSF in real space in camera pixels
-qPSF = sqrt(1/(4*pi*sPSF^2));% Gaussian radius of ideal PSF in momentum space
-dX = x(2)-x(1);
-f_max = 1/dX;
-f = 1/2*linspace(-f_max,f_max,Nfft);    
-[fxx,fyy]=meshgrid(f,f);
-zf = fftshift(fft2(z,Nfft,Nfft));
+% Nfft = 2^10;
+% sPSF = 1.3161;% Gaussian radius of PSF in real space in camera pixels
+% qPSF = sqrt(1/(4*pi*sPSF^2));% Gaussian radius of ideal PSF in momentum space
+% dX = x(2)-x(1);
+% f_max = 1/dX;
+% f = 1/2*linspace(-f_max,f_max,Nfft);    
+% [fxx,fyy]=meshgrid(f,f);
+% zf = fftshift(fft2(z,Nfft,Nfft));
 
-lpf = ones(length(fyy),length(fyy));
-hpf = ones(length(fyy),length(fyy));
+% lpf = ones(length(fyy),length(fyy));
+% hpf = ones(length(fyy),length(fyy));
 
 % lpf = exp(-(fxx.^2+fyy.^2)/(2*qPSF.^2));
 % hpf = 1-exp(-(fxx.^2+fyy.^2)/(2*.01));
 
-zf = zf.*hpf;
-zf = zf.*lpf;
+% zf = zf.*hpf;
+% zf = zf.*lpf;
 
-z = abs(ifft2(zf,length(y),length(x)));
-     % z=imgaussfilt(z,1);   
+% z = abs(ifft2(zf,length(y),length(x)));
     
 % Create phase and amplitude map
 phiMap = stripe.PhaseMapFunc(L,theta,phi,xx,yy)+pi/2;
@@ -94,6 +93,8 @@ for n=1:length(nVec)
 
     PSF = fspecial('gaussian',20,5);
     zThis = edgetaper(zThis,PSF);    
+    zThis = imgaussfilt(zThis,1);
+
     z_stripes{end+1} = zThis;
     x_stripes{end+1} =xThis;
     y_stripes{end+1} = yThis;    
@@ -107,36 +108,41 @@ z0 = sum(stripe_sum,'all');
 
 %% Compute Focusing Score for each stripe
 scores = zeros(length(z_stripes),1);
+figure(2000);
 
 for n=1:length(z_stripes)
     z_to_analyze = z_stripes{n};  
     x=x_stripes{n};
     y=y_stripes{n};     
-    [xx,yy]=meshgrid(x,y);
-    nme = 1025;
-    f = 1/2*linspace(-f_max,f_max,nme);    
-    [fa,fb]=meshgrid(f,f);
-    zf_stripe = fftshift(fft2(z_to_analyze,nme,nme));    
-    zf_psf = exp(-(fa.^2+fb.^2)/(2*qPSF.^2));    
-    bb(n)=abs(sum(zf_psf.*zf_stripe,'all'))/sum(zf_stripe,'all');
+    % [xx,yy]=meshgrid(x,y);
+    % nme = 1025;
+    % f = 1/2*linspace(-f_max,f_max,nme);    
+    % [fa,fb]=meshgrid(f,f);
+    % zf_stripe = fftshift(fft2(z_to_analyze,nme,nme));    
+    % zf_psf = exp(-(fa.^2+fb.^2)/(2*qPSF.^2));    
+    % bb(n)=abs(sum(zf_psf.*zf_stripe,'all'))/sum(zf_stripe,'all');
 
-    % figure(100+n)
-    % subplot(5,1,1:4);
-    % zn = abs(zf_stripe)/norm(zf_stripe);
-    % imagesc(f,f,zn);
-    % xlim([-.25 .25])
-    % ylim([-.25 .25])
-    % axis equal tight
-    % title(num2str(y_coms(n)))
-    % caxis([0 max(max(zn))])
-    % subplot(5,1,5);
-    % imagesc(x_stripes{n},y_stripes{n},z_to_analyze)
-    % axis equal tight
-    % caxis([0 100])
-    
-    [sharpnessScore, map]=MLVSharpnessMeasure(z_to_analyze);  
+    mag = 80;
+    pxsize = 16;
+    latt_spacing = 0.532;
+    site_per_px = pxsize/mag/latt_spacing;
+    sc = 2;
+    eff_site_per_px = site_per_px/sc;
+    zeff = imresize(z_to_analyze,eff_site_per_px);
+    zeff = zeff/sum(zeff,'all');
+
+
+    [sharpnessScore, map]=MLVSharpnessMeasure(zeff);  
+
+     subplot(length(z_stripes),2,n*2-1)
+    imagesc(x,y,map); axis equal tight
+
+
+     subplot(length(z_stripes),2,n*2)
+    imagesc(x,y,z_to_analyze); axis equal tight
+    % [sharpnessScore, map]=MLVSharpnessMeasure(z_to_analyze);  
     scores(n) = sharpnessScore;
-    if stripe_sum(n)<(z0*0.05)
+    if stripe_sum(n)<(z0*0.08)
         scores(n)=NaN;
         continue;
     end    
