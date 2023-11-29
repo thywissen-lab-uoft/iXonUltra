@@ -1180,17 +1180,11 @@ hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize'
     'backgroundcolor','w','Position',[5 2 100 15],...
     'ToolTipString',ttstr);
 
-% Refit button
+% Do Position space analysis
 uicontrol(hpAnl,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@analyze_x,'parent',hpAnl,...
+    'units','pixels','callback',{@(~,~) updatePositionAnalysis},'parent',hpAnl,...
     'backgroundcolor','w','position',[hpAnl.Position(3)-45 1 45 15]);
 
-% Callback function for redoing fits button
-    function analyze_x(~,~)
-        % disp('Redoing fits...');
-        updatePositionAnalysis;
-        % newDataCallback;
-    end
 
 %% Momentum Panel
 hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
