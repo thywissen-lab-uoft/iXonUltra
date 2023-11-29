@@ -612,8 +612,7 @@ hbNavRight.Position=[221 2 12 20];
         disp(['     Loading ' filename]);        
         olddata=data;
         try
-            newdata=load(filename);
-            
+            newdata=load(filename);            
             data=newdata.data;
             updateImages;      
         catch ME                   
