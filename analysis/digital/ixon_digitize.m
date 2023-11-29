@@ -28,14 +28,14 @@ for kk=1:length(ixondata)
         Y2=sum(zY.*(y-Yc).^2); % x variance
         Ys=sqrt(Y2); % standard deviation Y               
 
-        LatticeDig.Zdig = Zdig;
-        LatticeDig.Natoms = Natoms;
-        LatticeDig.n1 = x;
-        LatticeDig.n2 = y;
-        LatticeDig.Xc = Xc;
-        LatticeDig.Yc = Yc;
-        LatticeDig.Xs = Xs;
-        LatticeDig.Ys = Ys;   
+        LatticeDig(k).Zdig = Zdig;
+        LatticeDig(k).Natoms = Natoms;
+        LatticeDig(k).n1 = x;
+        LatticeDig(k).n2 = y;
+        LatticeDig(k).Xc = Xc;
+        LatticeDig(k).Yc = Yc;
+        LatticeDig(k).Xs = Xs;
+        LatticeDig(k).Ys = Ys;   
     end
     ixondata(kk).LatticeDig = LatticeDig;
     

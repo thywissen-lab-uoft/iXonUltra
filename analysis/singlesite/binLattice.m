@@ -89,9 +89,16 @@ end
 Zall = Zbin;
 Zall = Zall(:);
 Zbin2 = Zbin;
-Zbin2(Znum<max(Znum,[],'all')*.9)=NaN;
+Zpercent = Znum/max(Znum,[],'all');
+Zbin2(Zpercent<.9)=NaN;
 
 Zbin = Zbin2;
+
+
+% [cc,rr]=meshgrid(1:size(Zbin,1),size(Zbin,2))
+% min(cc(isnan(Zbin)))
+% m
+
 
 
 
