@@ -14,6 +14,7 @@ for n=1:length(data)
 
     if isfield(data(n),'RotationMask')
         m = data(n).RotationMask;
+        m = m(y,x);
         z = z(m);
     end
 
