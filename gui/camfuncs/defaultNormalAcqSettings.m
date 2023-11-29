@@ -31,8 +31,11 @@ acq.HSSpeedIndex=3;     % Speed Index 3: 1 MHz
 % Timings
 % acq.TriggerMode=1;      % External
 acq.TriggerMode=7;      % External Exposure (ie. duration is set by trigger high time)
+acq.TriggerMode=1;
 
 acq.ExposureTime=2;     % 2 seconds (can be ignored)
+acq.ExposureTime=0.0001;     % 2 seconds (can be ignored)
+
 acq.AccCycleTime=0;     % none
 acq.KinCycleTime=0;     % none
 acq.NumAcc=1;           % 1 accumulation
@@ -45,5 +48,7 @@ acq.ystart=1;           % hardware ROI is full 1:512
 acq.yend=512;           % hardware ROI is full 1:512
 
 acq.FrameTransferMode = 0;
+acq.FrameTransferMode = 1;
+
 end
 
