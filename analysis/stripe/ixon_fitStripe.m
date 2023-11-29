@@ -1,4 +1,4 @@
-function stripe=ixon_fitStripe(data,opts)
+function stripe=ixon_fitStripe(x,y,z,opts)
 
 if nargin ==1
     opts = struct;
@@ -10,6 +10,7 @@ if ~isfield(opts,'Theta');
 end
 
 sc = 0.3;
+z = imgaussfilt(z,1);
 
 %% Fitting Function
 % https://en.wikipedia.org/wiki/Gaussian_function
@@ -36,18 +37,11 @@ myfit2=fittype(@(A,xC,yC,s1,s2,B,theta,L,phi,xx,yy) ...
     'coefficients',{'A','xC','yC','s1','s2','B','theta','L','phi'});
 opt2=fitoptions(myfit2);             
 
-%% Grab the Data
-      
-Z=data.Z;
-Z=data.ZNoFilter;
-Z=imgaussfilt(Z,1);
-x=data.X;x=x';
-y =data.Y;y=y'; 
 
 %% Create Initial Guess
     
 tic;
-G=calculateInitialGuess(x,y,Z,opts);
+G=calculateInitialGuess(x,y,z,opts);
 t=toc;
 
 opt2.StartPoint = G;
@@ -58,7 +52,7 @@ opt2.Upper = [G(1)*2 512 512 250 250 1  360 512 inf];
 opt2.Lower = [0        0   0   0   0 0 -360   0 -inf];
 %% Rescale the data
 
-Zsc=imresize(Z,sc);xsc=imresize(x,sc);ysc=imresize(y,sc);
+Zsc=imresize(z,sc);xsc=imresize(x,sc);ysc=imresize(y,sc);
 [xxsc,yysc]=meshgrid(xsc,ysc);
 
 %% Remove signal less than or equal to zero.   

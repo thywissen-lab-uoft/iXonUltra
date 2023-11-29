@@ -2921,6 +2921,10 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
     %% Stripe Analysis
     if hcStripe.Value        
+
+        % data=ixon_fitStripe(data,opts);
+
+
         opts.Theta = [10 190];
         stripe=ixon_fitStripe(data,opts);   
         stranl={'','';
