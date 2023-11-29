@@ -1040,27 +1040,37 @@ tblROI.Position(1:2)=[5 hpAnl.Position(4)-tblROI.Position(4)-20];
 ttstr='Select the analysis ROI.';
 cdata=imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
 uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-    'Backgroundcolor','w','Position',[130 tblROI.Position(2)+2 18 18],...
-    'Callback',{@(src,evt) slctDispCB(tblROI,'X',0)},'ToolTipString',ttstr);
+    'Backgroundcolor','w','Position',[130 tblROI.Position(2)+25 18 18],...
+    'Callback',@slctROICB,'ToolTipString',ttstr);
 
-
-
-% slctDispROI(tblROI
-% Button for maximizing the display limits
-% ttstr='Max analysis ROI to full image size.';
-% cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
-% uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-%     'Backgroundcolor','w','Callback',{@(~,~) chDispROI('max','X');},'ToolTipString',ttstr);
-% hbFullLim_X.Position = [tbl_dROI_X.Position(1)+tbl_dROI_X.Position(3) ...
-%     tbl_dROI_X.Position(2)-12 18 18];
-% 
 % % Button to snap display ROI to the data ROI
-% ttstr='Snap analysis ROI to display ROI.';
-% cdata=imresize(imread(fullfile(mpath,'icons','snapLim.png')),[15 15]);
-% hbSnapLim_X=uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
-%     'Backgroundcolor','w','Position',hbFullLim_X.Position,...
-%     'Callback',{@(~,~) chDispROI('min','X');},'ToolTipString',ttstr);
-% hbSnapLim_X.Position(2) = [hbSnapLim_X.Position(2)+18];
+ttstr='Snap analysis ROI to display ROI.';
+cdata=imresize(imread(fullfile(mpath,'icons','snapLim.png')),[15 15]);
+uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+    'Backgroundcolor','w','Position',[130 tblROI.Position(2)+7 18 18],...
+    'Callback',@snapPosAnalysisROI,'ToolTipString',ttstr);
+
+    function snapPosAnalysisROI(src,evt)
+        ROI = tbl_dROI_X.Data;
+        set(tblROI,'Data',ROI);
+        pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+        set(pROI,'Position',pos);
+    end
+
+% Button for maximizing the display limits
+ttstr='Max analysis ROI to full image size.';
+cdata=imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
+uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
+    'Backgroundcolor','w','Callback',@maxPosAnalysisROI,...
+    'ToolTipString',ttstr,'Position',[130 tblROI.Position(2)-11 18 18]);
+
+    function maxPosAnalysisROI(src,evt)
+        ROI = [1 512 1 512];
+        tblROI.Data = ROI;
+        pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+        set(pROI,'Position',pos);
+    end
+
 
 % Callback for selecting an ROI based upon mouse click input.
     function slctROICB(~,~)
