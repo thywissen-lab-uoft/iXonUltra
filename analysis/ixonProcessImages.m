@@ -48,7 +48,7 @@ for kk=1:length(data)
     if isfield(data.Params,'qgm_MultiExposures') && isfield(data.Params,'qgm_MultiPiezos')
         wipePics = isnan([data.Params.qgm_MultiExposures]);
         Z(:,:,wipePics)=[];      
-    elseif isfield(data(kk).Flags,'lattice_ClearCCD_IxonTrigger')  && ...
+    elseif isfield(data(kk),'Flags') && isfield(data(kk).Flags,'lattice_ClearCCD_IxonTrigger')  && ...
             data(kk).Flags.lattice_ClearCCD_IxonTrigger
             if data(kk).Flags.lattice_ClearCCD_IxonTrigger && size(Z,3)>1
                 Z(:,:,1)=[];    
