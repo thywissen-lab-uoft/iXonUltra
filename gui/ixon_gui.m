@@ -991,7 +991,7 @@ hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
 %% Analysis Panel
 hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','                   alysis');
-hpAnl.Position=[0 hpADV.Position(2)-130 160 130];
+hpAnl.Position=[0 hpADV.Position(2)-130 160 150];
 
 % Table of ROIs
 tblROI=uitable(hpAnl,'units','pixels','ColumnWidth',{30 30 30 30},...
@@ -1084,7 +1084,7 @@ uicontrol(hpAnl,'style','pushbutton','Cdata',cdata,'Fontsize',10,...
 % Checkbox for principal component analysis
 ttstr='Principal component analysis to determine cloud axes..';
 hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsize',7,...
-    'backgroundcolor','w','Position',[5 47 120 15],...
+    'backgroundcolor','w','Position',[5 62 120 15],...
     'ToolTipString',ttstr,'enable','on','callback',@hcpcaCB);
 
     function hcpcaCB(src,~)
@@ -1104,7 +1104,7 @@ hcPCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsiz
 
 
 hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',7,...
-    'backgroundcolor','w','Position',[5 32 100 15],...
+    'backgroundcolor','w','Position',[5 47 100 15],...
     'ToolTipString',ttstr,'enable','on','callback',@hcgaussCB);
 
     function hcgaussCB(src,~)
@@ -1122,7 +1122,7 @@ hcGauss=uicontrol(hpAnl,'style','checkbox','string','2D gauss','fontsize',7,...
     end
 
 hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize',7,...
-    'backgroundcolor','w','Position',[5 17 100 15],'callback',@(~,~) disp('hi'),...
+    'backgroundcolor','w','Position',[5 32 100 15],'callback',@(~,~) disp('hi'),...
     'ToolTipString',ttstr,'enable','off','callback',@hcgaussRotCB);
 
     function hcgaussRotCB(src,~)
@@ -1141,7 +1141,7 @@ hcGaussRot=uicontrol(hpAnl,'style','checkbox','string','2D gauss rot','fontsize'
 
 ttstr='Analyze stripe pattern in image to measure field stability';
 hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize',7,...
-    'backgroundcolor','w','Position',[5 2 100 15],...
+    'backgroundcolor','w','Position',[5 17 100 15],...
     'ToolTipString',ttstr);
 
 % Refit button
@@ -1334,16 +1334,23 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             iy_2 = find(data.Y>=ROI(4),1);
             x = data.X(ix_1:ix_2);
             y = data.Y(iy_1:iy_2);   
-            z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);    
+            z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
+            znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
             tic;
             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
                 ') binning into lattice ...']);    
-            
-            data.LatticeBin(kk) = binLattice(x,y,z,opts);      
-            
+           
+            data.LatticeBin(kk) = binLattice(x,y,z,opts); 
+
+            data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
+
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
-        end        
+        end      
+            
+        data = ixon_SharpnessBinned(data);  
+        
+
         data = ixon_digitize(data,tblDig.Data);
 
         updateBinnedHistogram;
@@ -2129,6 +2136,13 @@ tTopLeft=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight',
     'interpreter','latex',...
     'color','k','backgroundcolor',[1 1 1 .7],'Visible','off');
 
+% Box Count Analysis String
+t_pos_TopRight=text(.99,.99,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
+    'horizontalalignment','right','verticalalignment','top','margin',1,...
+    'interpreter','latex',...
+    'color','k','backgroundcolor',[1 1 1 .7],'Visible','on');
+
+
 % Box for ROI (this will become an array later)
 pROI=rectangle('position',[1 1 512 512],'edgecolor',co(1,:),'linewidth',2,'hittest','off');
 
@@ -2498,8 +2512,25 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
         updateCoM;
+        updateSharpness;
         cCoMCB(cCoMStr_X);        
         set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);        
+    end
+
+    function updateSharpness
+        if ~isfield(data,'SharpnessScore')
+           t_pos_TopRight.Visible='off';
+           return
+        end
+
+        imgnum = menuSelectImg.Value;
+        sh1 = data.SharpnessScore(imgnum); 
+        sh2 = data.SharpnessScoreNoFilter(imgnum); 
+        str = ['sharpness scores $(' num2str(sh1,'%.4e') ',' num2str(sh2,'%.4e') ')$'];
+        set(t_pos_TopRight,'String',str);          
+
+
+
     end
 
     function updateCoM
@@ -2523,10 +2554,18 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
     function updateHistogram
         ROI = tblROI.Data;
-        x = ROI(1):ROI(2);
-        y = ROI(3):ROI(4);
+
+        c1 = find(data.X>=ROI(1),1);
+        c2 = find(data.X>=ROI(2),1);
+        r1 = find(data.Y>=ROI(3),1);
+        r2 = find(data.Y>=ROI(4),1);
+
+        x = c1:c2;
+        y = r1:r2;
         
-        [N,edges] = histcounts(data.Z(y,x,1),1000);
+        % [N,edges] = histcounts(data.Z(y,x,1),1000);
+        [N,edges] = histcounts(data.ZNoFilter(y,x,1),1000);
+
         centers = (edges(1:end-1) + edges(2:end))/2;
         Histogram = struct;
         Histogram.Edges = edges;
@@ -2535,7 +2574,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         data.Histogram(1) = Histogram;              
         xe = data.Histogram(1).Edges;
         
-        for kk=2:size(data.Z,3)            
+        for kk=1:size(data.Z,3)            
             [N,edges] = histcounts(data.Z(y,x,kk),xe);
             centers = (edges(1:end-1) + edges(2:end))/2;
             Histogram = struct;
@@ -2544,6 +2583,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             Histogram.N = N;  
             data.Histogram(kk) = Histogram;            
         end     
+        
                   
         for kk=1:size(data.ZNoFilter,3)            
             [N,edges] = histcounts(data.ZNoFilter(y,x,kk),xe);
@@ -2554,6 +2594,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             Histogram.N = N;  
             data.HistogramNoFilter(kk) = Histogram;            
         end         
+        
         updateHistogramGraphics;
     end
 
@@ -2727,6 +2768,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         if ~isfield(data,'LatticeHistogram')
             return;
         end 
+        
         imgnum = menuSelectImg.Value;
         
         x = data.LatticeHistogram(imgnum).Centers;
@@ -2741,13 +2783,14 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         zall = data.LatticeBin(imgnum).Zbin(:);
         zall(isnan(zall))=[];
         n = numel(zall);      
-        x2 = data.LatticeHistogramKernel(imgnum).Xi;
-        y2 = data.LatticeHistogramKernel(imgnum).f;        
-        y2 = y2/sum(sum(y2));
-        y2 = y2*n*length(x2)/length(x);    
-        set(pKernelB1,'XData',x2,'YData',y2);        
-        set(pKernelB2,'XData',x2,'YData',y2);           
-
+        try
+            x2 = data.LatticeHistogramKernel(imgnum).Xi;
+            y2 = data.LatticeHistogramKernel(imgnum).f;        
+            y2 = y2/sum(sum(y2));
+            y2 = y2*n*length(x2)/length(x);    
+            set(pKernelB1,'XData',x2,'YData',y2);        
+            set(pKernelB2,'XData',x2,'YData',y2);           
+        end
     end
 
     function updateBinnedHistogram
@@ -2766,23 +2809,23 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         LatticeHistogram.N = N;  
         data.LatticeHistogram(1) = LatticeHistogram;      
 
-        [f,xi,bw]=ksdensity(Zall(:));
+        try
+            [f,xi,bw]=ksdensity(Zall(:));
+            LatticeHistogramKernel = struct;
+            LatticeHistogramKernel.Xi = xi;
+            LatticeHistogramKernel.f = f;
+            LatticeHistogramKernel.BandWidth = bw;
+            data.LatticeHistogramKernel(1) = LatticeHistogramKernel;
+        end
 %         [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw);        
         
-        LatticeHistogramKernel = struct;
-        LatticeHistogramKernel.Xi = xi;
-        LatticeHistogramKernel.f = f;
-        LatticeHistogramKernel.BandWidth = bw;
-        data.LatticeHistogramKernel(1) = LatticeHistogramKernel;
+  
 
         for kk=2:length(data.LatticeBin)
             Zall = data.LatticeBin(kk).Zbin;
             Zall = Zall(:);
 %           Zall(Zall==0)=[];
             
-            [f,xi,bw]=ksdensity(Zall(:));
-            [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);     
-        
             [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
             centers = (edges(1:end-1) + edges(2:end))/2;
             LatticeHistogram = struct;
@@ -2790,12 +2833,16 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             LatticeHistogram.Centers = centers;
             LatticeHistogram.N = N;  
             data.LatticeHistogram(kk) = LatticeHistogram;
-
-            LatticeHistogramKernel = struct;
-            LatticeHistogramKernel.Xi = xi;
-            LatticeHistogramKernel.f = f;
-            LatticeHistogramKernel.BandWidth = bw;
-            data.LatticeHistogramKernel(kk) = LatticeHistogramKernel;
+            
+            try
+                [f,xi,bw]=ksdensity(Zall(:));
+                [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);  
+                LatticeHistogramKernel = struct;
+                LatticeHistogramKernel.Xi = xi;
+                LatticeHistogramKernel.f = f;
+                LatticeHistogramKernel.BandWidth = bw;
+                data.LatticeHistogramKernel(kk) = LatticeHistogramKernel;
+            end
         end                  
     end
 
@@ -2831,6 +2878,10 @@ function updateImages
     % Perform Box Count ALWAYS DONE
     data=ixon_boxCount(data);
     bc=data.BoxCount;    
+
+    % Image Sharpness ALWAYS DONE
+    data=ixon_Sharpness(data);
+
     
     % Histogram of data (always done)
     updateHistogram;            
