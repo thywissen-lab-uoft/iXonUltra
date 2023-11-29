@@ -2923,20 +2923,8 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
         end
         data.StripeFit = stripes;
-
-
-%       focus = ixon_focusStripe(data,stripe);
-        % updateFocusPlot(data,focus);
-
-
+        data.StripeFocus = foci;
         updateStripeGraphics;
-
-        % stripe = stripes(1);
-
-      
-        % updateStripePlot(data,stripe);
-        % focus = ixon_focusStripe(data,stripe);
-        % updateFocusPlot(data,focus);
     end  
      
     
@@ -3170,15 +3158,7 @@ function updateDataPlots(data)
     end   
 end
 
-    function updateFocusPlot(data,focus)
-        set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);        
-        tt=linspace(min([focus.y_coms]),max([focus.y_coms]),100);        
-        set(stripe_pFocusFit,'XData',tt,'YData',polyval(focus.poly,tt))        
-        axes(ax_stripe_focus);
-        yyaxis left
-        set(ax_stripe_focus,'YLim',[0 max(focus.scores)*1.1]);
-        set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
-    end
+ 
    
   function updateStripeGraphics
          if ~isfield(data,'StripeFit') 
@@ -3190,6 +3170,7 @@ end
         y = data.Y;
         z = data.ZNoFilter(:,:,imgnum);
         stripe = data.StripeFit(imgnum);
+        focus = data.StripeFocus(imgnum);
 
         [xx,yy] = meshgrid(x,y);        
         Zfit=feval(stripe.Fit,xx,yy);        
@@ -3249,7 +3230,18 @@ end
             ['stripe ' char(952) ' (deg)'],stripe.theta;
             ['stripe ' char(955) ' (px)'],stripe.L;
             ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
-        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];          
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];     
+
+
+        set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);        
+        tt=linspace(min([focus.y_coms]),max([focus.y_coms]),100);        
+        set(stripe_pFocusFit,'XData',tt,'YData',polyval(focus.poly,tt))        
+        axes(ax_stripe_focus);
+        yyaxis left
+        set(ax_stripe_focus,'YLim',[0 max(focus.scores)*1.1]);
+        set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
+   
+
     end
 
 
