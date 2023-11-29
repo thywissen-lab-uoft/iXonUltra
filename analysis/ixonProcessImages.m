@@ -50,8 +50,8 @@ for kk=1:length(data)
     
 %% Remove wipe pics
 
-    if isfield(data.Params,'qgm_MultiExposures') && isfield(data.Params,'qgm_MultiPiezos')
-        wipePics = isnan([data.Params.qgm_MultiExposures]);
+    if isfield(data(kk).Params,'qgm_MultiExposures') && isfield(data(kk).Params,'qgm_MultiPiezos')
+        wipePics = isnan([data(kk).Params.qgm_MultiExposures]);
         Z(:,:,wipePics)=[];      
     elseif isfield(data(kk).Flags,'lattice_ClearCCD_IxonTrigger')  && ...
             data(kk).Flags.lattice_ClearCCD_IxonTrigger
