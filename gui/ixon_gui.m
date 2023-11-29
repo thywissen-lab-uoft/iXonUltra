@@ -1364,7 +1364,7 @@ hpDisp_Select.Position=[160 500 160 80];
 
 menuSelectCMAP=uicontrol('style','popupmenu','string',...
     {'black-purple','black-purple-white','white-purple'},'units','pixels','parent',hpDisp_Select,...
-    'Callback',@updateCMAP,'fontsize',12,'Value',1);
+    'Callback',@updateCMAP,'fontsize',12,'Value',3);
 menuSelectCMAP.Position(3:4)=[150 18];
 menuSelectCMAP.Position(1:2)=[2 45];   
 
