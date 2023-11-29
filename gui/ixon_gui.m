@@ -614,14 +614,14 @@ hbNavRight.Position=[221 2 12 20];
         try
             newdata=load(filename);            
             data=newdata.data;
-            updateImages;      
+            newDataCallback;      
         catch ME                   
             warning(getReport(ME,'extended'));
             errordlg('Unable to load image, reverting to old data');
             beep            
             disp(['FileName : ' filename]);            
             data=olddata;
-            updateImages;      
+            newDataCallback;      
         end
     end
 
@@ -865,7 +865,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
                 if ~cAutoUpdate.Value
                     currDir=defaultDir;
                     data=mydata;   
-                    updateImages;                     
+                    newDataCallback;                     
                 else                    
                     % Just update index
                     updateHistoryInd(data);   
@@ -993,7 +993,7 @@ hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
 hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
     function processCB(~,~)
-        updateImages;
+        newDataCallback;
   end
 
 %% Analysis Panel
@@ -1177,7 +1177,7 @@ hbfit.Position=[hpAnl.Position(3)-45 1 45 15];
 % Callback function for redoing fits button
     function analyze_x(~,~)
         disp('Redoing fits...');
-        updateImages;
+        newDataCallback;
     end
 
 %% Momentum Panel
@@ -2876,7 +2876,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     end
 
 %% New Image
-function updateImages
+    function newDataCallback
     % Grab the ROI
     ROI=tblROI.Data;data.ROI=ROI;       
     x=ROI(1):ROI(2);y=ROI(3):ROI(4);         
@@ -3470,7 +3470,7 @@ end
     end
 
 %% FINISH
-updateImages;
+newDataCallback;
 % Go to most recent image
 chData([],[],0);   
 drawnow;
