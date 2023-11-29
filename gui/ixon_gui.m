@@ -1433,7 +1433,7 @@ menuSelectImg.Position(1:2)=[2 15];
         end
     end
 
-    function updateImageLists
+    function updateImageDataLists
         menuSelectImg.String = {};
         for nn = 1 :size(data.Z,3)
             menuSelectImg.String{nn} = ['image ' num2str(nn) ' of ' num2str(size(data.Z,3))];
@@ -2875,11 +2875,15 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         end                  
     end
 
-%% New Image
+%% New Data
+% What to do when new data is put into the GUI
     function newDataCallback
     % Grab the ROI
     ROI=tblROI.Data;data.ROI=ROI;       
-    x=ROI(1):ROI(2);y=ROI(3):ROI(4);         
+    x=ROI(1):ROI(2);y=ROI(3):ROI(4);       
+
+    %% Image Processing
+    % Grab the RawImages and process them into usable data
     opt = struct;    
     opt.doSubtractBias     = hcSubBias.Value;
     opt.doSubtractBG       = hcSubBG.Value;
@@ -2901,8 +2905,13 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     opt.doFFTFilter        = cKGaussFilter.Value;
     opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
+    % Process the Images
     data = ixonProcessImages(data,opt);  
-    updateImageLists;        
+
+    % Update the record of the process images
+    updateImageDataLists;    
+
+    %% Position Space Analysis
     
     % Perform Box Count ALWAYS DONE
     data=ixon_boxCount(data);
