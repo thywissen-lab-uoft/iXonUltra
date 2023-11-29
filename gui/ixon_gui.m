@@ -2920,13 +2920,18 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         end    
 
     %% Stripe Analysis
-    if hcStripe.Value        
+    if hcStripe.Value
+        opts = struct;
+        opts.Theta = [10 190];
+        for ll = 1:size(data.ZNoFilter,3)            
+            stripes(ll)=ixon_fitStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),opts)
+        end
 
         % data=ixon_fitStripe(data,opts);
 
+        stripe = stripes(1);
 
-        opts.Theta = [10 190];
-        stripe=ixon_fitStripe(data,opts);   
+        % stripe=ixon_fitStripe(data,opts);   
         stranl={'','';
             ['stripe A (amp)'] ,stripe.A;
             ['stripe xC (px)'],stripe.xC;
@@ -3186,7 +3191,7 @@ end
     function updateStripePlot(data,stripe)
         x = data.X;
         y = data.Y;
-        z = data.ZNoFilter;
+        z = data.ZNoFilter(:,:,1);
         [xx,yy] = meshgrid(x,y);        
         Zfit=feval(stripe.Fit,xx,yy);        
         theta=stripe.theta;

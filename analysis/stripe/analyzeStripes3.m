@@ -129,7 +129,7 @@ for kk=1:length(ixondata)
     % Show the raw data and the initial guess       
 
     % Fit the stripes
-    stripes(kk)=ixon_fitStripe(x,y,z,opts);
+    stripes(kk)=ixon_fitStripe(x',y',z,opts);
     theta = stripes(kk).theta;
 
     % Evalulate the fit
