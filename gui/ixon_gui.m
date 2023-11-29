@@ -1465,6 +1465,7 @@ menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Positi
             case 2
                 set(hImg,'XData',data.X,'YData',data.Y,'CData',data.ZNoFilter(:,:,imgnum));
         end
+        if cAutoColor_X.Value;setClim('X');end  
     end
 
 % Table for changing display limits
@@ -1599,7 +1600,7 @@ cAutoColor_K.Position=[climtbl_K.Position(1)+climtbl_K.Position(3)+1 climtbl_K.P
 
 % Button group for deciding what the X/Y plots show
 bgPlot_K = uibuttongroup(hpDisp_K,'units','pixels','backgroundcolor','w','BorderType','None',...
-    'SelectionChangeFcn',@chPlotCB);  
+    'SelectionChangeFcn',@foo);  
 bgPlot_K.Position(3:4)=[125 15];
 bgPlot_K.Position(1:2)=[2 climtbl_K.Position(2)-bgPlot_K.Position(4)-2];
     
@@ -1819,6 +1820,7 @@ cCoMStr_D.Position=[2 2 125 15];
         
         % Attempt to change the display ROI
         try
+            
             switch img_type
                 case 'X'            
                     set(axImg,'XLim',ROI(1:2),'YLim',ROI(3:4));
@@ -1836,7 +1838,7 @@ cCoMStr_D.Position=[2 2 125 15];
             drawnow;
             resizePlots;
         catch ME
-            warning('Unable to change display ROI.');
+            warning('Unable to change display ROI.');            
             err = 1;
         end    
     end
@@ -1938,10 +1940,11 @@ cCoMStr_D.Position=[2 2 125 15];
         % Update Data Plot
         updateDataPlots(data);
 
-        % foo;
+        %   ;
         
         if hc_anlX_Gauss.Value
-           updateGaussPlot(data); 
+           % updateGaussPlot(data); 
+           updateGaussGraphics
         end
     end
 
@@ -2881,7 +2884,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         updateSharpnessGraphics;
         %% Histogram Analysis
         if hc_anlX_Histogram.Value            
-            data = ixon_PositionHistgoram(data);
+            data = ixon_PositionHistogram(data);
         end
         updatePositionHistogramGraphics;
         %%  Update Principal Component Analysis
@@ -2898,24 +2901,10 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             opts.Scale=0.5;
             opts.doRotate=0;
             opts.Mask=ixon_mask;        
-            data = ixon_gaussFit(data,opts);   
-            updateGaussGraphics;
+            data = ixon_gaussFit(data,opts);            
+        end    
+        updateGaussGraphics; 
 
-
-            cGaussRet.Enable='on';        
-        % Gaussian analysis table string
-        stranl={'','';
-            ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
-            ['gauss A (counts)'],data.GaussFit{1}.A;
-            ['gauss x' char(963) ' (px)'],data.GaussFit{1}.s1;
-            ['gauss y' char(963) ' (px)'],data.GaussFit{1}.s2;
-            ['gauss xc (px)'],data.GaussFit{1}.Xc;
-            ['gauss yc (px)'],data.GaussFit{1}.Yc;
-            ['gauss nbg (counts)'],data.GaussFit{1}.nbg;};
-        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
-        updateGaussPlot(data);
-    end    
-    
     %% Stripe Analysis
     if hcStripe.Value        
         opts.Theta = [10 190];
@@ -2935,30 +2924,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         focus = ixon_focusStripe(data,stripe);
         updateFocusPlot(data,focus);
     end  
-
-    %%  Rotated Gaussian Analysis
-    if hc_anlX_GaussRot.Value
-        disp('Fitting data to 2D gaussian...')   
-        opts=struct;
-        opts.doRescale=1;
-        opts.doMask=hcMask.Value;
-        opts.Scale=0.5;
-        opts.doRotate=1;
-        opts.Mask=ixon_mask; 
-        data=ixon_gaussFit(data,opts);   
-        cGaussRet.Enable='on';        
-        stranl={'','';
-            ['gauss N (counts)'] ,2*pi*data.GaussFit{1}.A*data.GaussFit{1}.s1*data.GaussFit{1}.s2;
-            ['gauss A (counts)'],data.GaussFit{1}.A;
-            ['gauss ' char(963) '1 (px)'],data.GaussFit{1}.s1;
-            ['gauss ' char(963) '2 (px)'],data.GaussFit{1}.s2;
-            ['gauss xc (px)'],data.GaussFit{1}.Xc;
-            ['gauss yc (px)'],data.GaussFit{1}.Yc;
-            ['gauss nbg (counts)'],data.GaussFit{1}.nbg;
-            ['gauss ' char(952) ' (deg)'],data.GaussFit{1}.theta*180/pi};
-        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl]; 
-        updateGaussPlot(data);
-    end     
+     
     
     % %% Fit Results    
     % fr=tbl_pos_analysis.Data(:,2)';    
@@ -3010,39 +2976,39 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     % assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults
     % 
     
-    % This should happen only at end
-    if doSaveGUIAnalysis
-        gui_saveData = struct;
-        gui_saveData.Date = data.Date;
-        gui_saveData.FileName = data.Name; 
-        gui_saveData.Params = data.Params;
-        gui_saveData.BoxCount = data.BoxCount;    
-        if hcStripe.Value  
-            gui_saveData.Stripe = stripe;
-        end
+    % % This should happen only at end
+    % if doSaveGUIAnalysis
+    %     gui_saveData = struct;
+    %     gui_saveData.Date = data.Date;
+    %     gui_saveData.FileName = data.Name; 
+    %     gui_saveData.Params = data.Params;
+    %     gui_saveData.BoxCount = data.BoxCount;    
+    %     if hcStripe.Value  
+    %         gui_saveData.Stripe = stripe;
+    %     end
+    % 
+    %    filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
+    %    filenames={filenames.name};
+    %    filenames=sort(filenames);
+    % 
+    %    % Delete old images
+    %    if length(filenames)>200
+    %        f=[GUIAnalysisSaveDir filesep filenames{1}];
+    %        delete(f);
+    %    end               
+    % 
+    %     filename=[data.Name '.mat']; 
+    %     if ~exist(GUIAnalysisSaveDir,'dir')
+    %        mkdir(GUIAnalysisSaveDir);
+    %     end        
+    %     filename=fullfile(GUIAnalysisSaveDir,filename);
+    %     fprintf('%s',[filename ' ...']);
+    %     save(filename,'gui_saveData');
+    %     disp(' done');    
+    % end
         
-       filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
-       filenames={filenames.name};
-       filenames=sort(filenames);
 
-       % Delete old images
-       if length(filenames)>200
-           f=[GUIAnalysisSaveDir filesep filenames{1}];
-           delete(f);
-       end               
-
-        filename=[data.Name '.mat']; 
-        if ~exist(GUIAnalysisSaveDir,'dir')
-           mkdir(GUIAnalysisSaveDir);
-        end        
-        filename=fullfile(GUIAnalysisSaveDir,filename);
-        fprintf('%s',[filename ' ...']);
-        save(filename,'gui_saveData');
-        disp(' done');    
-    end
-        
-
-        updateGraphics; 
+        % updateGraphics; 
 
     end
 
@@ -3051,7 +3017,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     function newDataCallback
     % Grab the ROI
     ROI=tblROI.Data;data.ROI=ROI;       
-    x=ROI(1):ROI(2);y=ROI(3):ROI(4);       
+    x=ROI(1):ROI(2);y=ROI(3):ROI(4);        
 
     %% Image Processing
     % Grab the RawImages and process them into usable data
@@ -3079,8 +3045,13 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     % Process the Images
     data = ixonProcessImages(data,opt);  
 
+    % Update history index
+    updateHistoryInd(data); 
+
     % Update the record of the process images
     updateImageDataLists;    
+
+    updateDispPosImg;
 %% Update Parameter Data
     % Update table parameters (alphebetically)
     [~,inds] = sort(lower(fieldnames(data.Params)));
@@ -3114,69 +3085,71 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         end     
     end
     %% Position Space Analysis
-    
-    % Perform Box Count ALWAYS DONE
-    data=ixon_boxCount(data);
-    bc=data.BoxCount;    
 
-    % Image Sharpness ALWAYS DONE
-    data=ixon_Sharpness(data);
-    
-    % Histogram of data (always done)
-    data = ixon_PositionHistogram(data);
-    updateGraphics; 
-
-    % Create sub image to do center of mass analysis
-    Zsub=data.Z(y,x,1);    
-    imgnum = menuSelectImg.Value;
-
-    % Box counts analysis table string    
-     stranl={'box sum (counts)',bc(imgnum).Nraw;
-        'box peak (counts)',bc(imgnum).Npeak;
-        'box Yc (px)',bc(imgnum).Yc;
-        'box Xc (px)',bc(imgnum).Xc;
-        ['box Y' char(963) ' (px)'],bc(imgnum).Ys;
-        ['box X' char(963) ' (px)'],bc(imgnum).Xs};       
-    tbl_pos_analysis.Data=stranl;        
-    % Update X, Y, and Z objects
-    updateDispPosImg;     
-
-    % Update plots if sum
-    if rbSum_X.Value
-        Zy=sum(Zsub,2);
-        Zx=sum(Zsub,1);          
-        set(pX,'XData',x,'YData',Zx);
-        set(pY,'XData',Zy,'YData',y);
-        drawnow;
-    end    
-    % Update plots if cut
-    if rbCut_X.Value
-        foo;   
-    end   
+    updatePositionAnalysis;
+    % 
+    % % Perform Box Count ALWAYS DONE
+    % data=ixon_boxCount(data);
+    % bc=data.BoxCount;    
+    % 
+    % % Image Sharpness ALWAYS DONE
+    % data=ixon_Sharpness(data);
+    % 
+    % % Histogram of data (always done)
+    % data = ixon_PositionHistogram(data);
+    % updateGraphics; 
+    % 
+    % % Create sub image to do center of mass analysis
+    % Zsub=data.Z(y,x,1);    
+    % imgnum = menuSelectImg.Value;
+    % 
+    % % Box counts analysis table string    
+    %  stranl={'box sum (counts)',bc(imgnum).Nraw;
+    %     'box peak (counts)',bc(imgnum).Npeak;
+    %     'box Yc (px)',bc(imgnum).Yc;
+    %     'box Xc (px)',bc(imgnum).Xc;
+    %     ['box Y' char(963) ' (px)'],bc(imgnum).Ys;
+    %     ['box X' char(963) ' (px)'],bc(imgnum).Xs};       
+    % tbl_pos_analysis.Data=stranl;        
+    % % Update X, Y, and Z objects
+    % updateDispPosImg;     
+    % 
+    % % Update plots if sum
+    % if rbSum_X.Value
+    %     Zy=sum(Zsub,2);
+    %     Zx=sum(Zsub,1);          
+    %     set(pX,'XData',x,'YData',Zx);
+    %     set(pY,'XData',Zy,'YData',y);
+    %     drawnow;
+    % end    
+    % % Update plots if cut
+    % if rbCut_X.Value
+    %     foo;   
+    % end   
         
 %% Update Fit Results (depreciated)
 
-    % Update parameter for fit results
-    frVar=frslct.String{frslct.Value};   % Old fitresults variable
-    frslct.String=fieldnames(params); 
-    ind=find(ismember(frslct.String,frVar));
-    if ~isempty(ind)
-        frslct.Value=ind;
-    else
-        ind=find(ismember(frslct.String,'ExecutionDate'));
-        frslct.Value=ind;
-    end
-    
-    % Update history index
-    updateHistoryInd(data);  
+    % % Update parameter for fit results
+    % frVar=frslct.String{frslct.Value};   % Old fitresults variable
+    % frslct.String=fieldnames(params); 
+    % ind=find(ismember(frslct.String,frVar));
+    % if ~isempty(ind)
+    %     frslct.Value=ind;
+    % else
+    %     ind=find(ismember(frslct.String,'ExecutionDate'));
+    %     frslct.Value=ind;
+    % end
+    % 
     
     drawnow;
     climtbl_X.Data=axImg.CLim;
 
-    disp('')
-    disp('Performing fits and analysis.');
-%% Now do the fits?!?!
-    data=updateAnalysis(data);
+ 
+
+    % disp('')
+    % disp('Performing fits and analysis.');
+% %% Now do the fits?!?!
+%     data=updateAnalysis(data);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3306,52 +3279,143 @@ yyaxis left
       
     end
 
-function updateGaussPlot(data)
-    
-    
-    for n=1:length(data.GaussFit)
-        ROI=data.ROI(n,:);
-        x=ROI(1):ROI(2);
-        y=ROI(3):ROI(4);
+
+
+    function updateGaussGraphics
+        if ~isfield(data,'GaussFit') 
+            return;
+        end
+        imgnum = menuSelectImg.Value;         
         
         % Grab fit data
-        fout=data.GaussFit{n};
-        [xx,yy]=meshgrid(x,y);
-        zF=feval(fout,xx,yy); 
+        fout=data.GaussFit{imgnum};
+ 
+      
+
+        A = fout.A;
+        Xc = fout.Xc;
+        Yc = fout.Yc;
+        nbg = fout.nbg;
+
+        if ismember('theta',coeffnames(fout))
+            theta = fout.theta;
+            s1 = fout.s1;
+            s2 = fout.s2;
+        else
+            s1 = fout.Xs;
+            s2 = fout.Ys;
+            theta = 0;
+        end
 
         % Evaluate and plot 1/e^2 gaussian reticle
-        t=linspace(0,2*pi,100);  
-        
+        t=linspace(0,2*pi,100);          
         if ismember('theta',coeffnames(fout))
-            xR=fout.Xc+fout.s1*cos(fout.theta)*cos(t)-fout.s2*sin(fout.theta)*sin(t);
-            yR=fout.Yc+fout.s1*sin(fout.theta)*cos(t)+fout.s2*cos(fout.theta)*sin(t); 
+            xR=Xc+s1*cos(theta)*cos(t)-s2*sin(theta)*sin(t);
+            yR=Yc+s1*sin(theta)*cos(t)+s2*cos(theta)*sin(t); 
         else
-            xR=fout.Xc+fout.s1*cos(t);
-            yR=fout.Yc+fout.s2*sin(t);    
+            xR=Xc+s1*cos(t);
+            yR=Yc+s2*sin(t);    
         end   
-        set(pGaussRet(n),'XData',xR,'YData',yR,'linewidth',2);  
-                
+        % Might need to differentiate between graphics and plot
+        set(pGaussRet,'XData',xR,'YData',yR,'linewidth',2);  
+        updateGaussLinePlot;
+      
         drawnow;
+        % Gaussian analysis table string
+        stranl={'','';
+            ['gauss N (counts)'] ,2*pi*A*s1*s2;
+            ['gauss A (counts)'],A;
+            ['gauss s1' char(963) ' (px)'],s1;
+            ['gauss s2' char(963) ' (px)'],s2;
+            ['gauss xc (px)'],Xc;
+            ['gauss yc (px)'],Yc;
+            ['gauss nbg (counts)'],nbg;
+            ['gauss theta'],theta;};
+    
+        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
+    end
 
-        if rbCut_X.Value            
+    function updateGaussLinePlot
+        if ~isfield(data,'GaussFit') 
+            return;
+        end
+        imgnum = menuSelectImg.Value;         
+        
+        % Grab fit data
+        fout=data.GaussFit{imgnum};
 
-            indy=find(round(pCrossX.YData(1))==y,1);           % Y center
-            indx=find(round(pCrossY.XData(1))==x,1);           % X center               
+        [xx,yy]=meshgrid(data.X,data.Y);
+        zF=feval(fout,xx,yy); 
 
-            ZyF=zF(:,indx);
-            ZxF=zF(indy,:);
-
-            set(pXF(n),'XData',x,'YData',ZxF,'Visible','on');
-            set(pYF(n),'XData',ZyF,'YData',y,'Visible','on');
+        if rbCut_X.Value
+            [~,iy] = min(abs(pCrossX.YData(1)-data.Y));
+            [~,ix] = min(abs(pCrossY.XData(1)-data.X));
+            ZyF=zF(:,ix);ZxF=zF(iy,:);
+            set(pXF,'XData',data.X,'YData',ZxF,'Visible','on');
+            set(pYF,'XData',ZyF,'YData',data.Y,'Visible','on');
         else    
-            ZyF=sum(zF,2);
-            ZxF=sum(zF,1);   
-
-            set(pXF(n),'XData',x,'YData',ZxF,'Visible','on');
-            set(pYF(n),'XData',ZyF,'YData',y,'Visible','on');
+            % WONT WORK             
+            ROI=tbl_dROI_X.Data;
+            c1 = find(data.X>=ROI(1),1);
+            c2 = find(data.X>=ROI(2),1);
+            r1 = find(data.Y>=ROI(3),1);
+            r2 = find(data.Y>=ROI(4),1);
+            
+            ZyF=sum(zF(:,c1:c2),2);ZxF=sum(zF(r1:r2,:),1);   
+            set(pXF,'XData',data.X,'YData',ZxF,'Visible','on');
+            set(pYF,'XData',ZyF,'YData',data.Y,'Visible','on');
         end  
     end
-end
+
+
+
+    % end
+% function updateGaussPlot(data)
+% 
+% 
+%     for n=1:length(data.GaussFit)
+%         ROI=data.ROI(n,:);
+%         x=ROI(1):ROI(2);
+%         y=ROI(3):ROI(4);
+% 
+%         % Grab fit data
+%         fout=data.GaussFit{n};
+%         [xx,yy]=meshgrid(x,y);
+%         zF=feval(fout,xx,yy); 
+% 
+%         % Evaluate and plot 1/e^2 gaussian reticle
+%         t=linspace(0,2*pi,100);  
+% 
+%         if ismember('theta',coeffnames(fout))
+%             xR=fout.Xc+fout.s1*cos(fout.theta)*cos(t)-fout.s2*sin(fout.theta)*sin(t);
+%             yR=fout.Yc+fout.s1*sin(fout.theta)*cos(t)+fout.s2*cos(fout.theta)*sin(t); 
+%         else
+%             xR=fout.Xc+fout.s1*cos(t);
+%             yR=fout.Yc+fout.s2*sin(t);    
+%         end   
+%         set(pGaussRet(n),'XData',xR,'YData',yR,'linewidth',2);  
+% 
+%         drawnow;
+% 
+%         if rbCut_X.Value            
+% 
+%             indy=find(round(pCrossX.YData(1))==y,1);           % Y center
+%             indx=find(round(pCrossY.XData(1))==x,1);           % X center               
+% 
+%             ZyF=zF(:,indx);
+%             ZxF=zF(indy,:);
+% 
+%             set(pXF(n),'XData',x,'YData',ZxF,'Visible','on');
+%             set(pYF(n),'XData',ZyF,'YData',y,'Visible','on');
+%         else    
+%             ZyF=sum(zF,2);
+%             ZxF=sum(zF,1);   
+% 
+%             set(pXF(n),'XData',x,'YData',ZxF,'Visible','on');
+%             set(pYF(n),'XData',ZyF,'YData',y,'Visible','on');
+%         end  
+%     end
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % updateAnalysis
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3401,7 +3465,8 @@ function data=updateAnalysis(data)
             ['gauss yc (px)'],data.GaussFit{1}.Yc;
             ['gauss nbg (counts)'],data.GaussFit{1}.nbg;};
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];  
-        updateGaussPlot(data);
+        % updateGaussPlot(data);
+        updateGaussGraphics;
     end    
     
     % Update Guassian Analysis
@@ -3445,7 +3510,8 @@ function data=updateAnalysis(data)
             ['gauss nbg (counts)'],data.GaussFit{1}.nbg;
             ['gauss ' char(952) ' (deg)'],data.GaussFit{1}.theta*180/pi};
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl]; 
-        updateGaussPlot(data);
+        % updateGaussPlot(data);
+        updateGaussGraphics
     end     
     
     %% Fit Results    
@@ -3610,8 +3676,8 @@ end
         tNavInd.String=sprintf('%03d',ind); 
         tNavName.String=fullfile(currDir,data.Name);        
     end
-
-%% FINISH
+    
+    %% FINISH
 newDataCallback;
 % Go to most recent image
 chData([],[],0);   
@@ -3651,30 +3717,57 @@ set(hF,'WindowState','maximized');
         end     
     end
 
-    function foo(~,~)      
-     
-        % Update crosshair
-        set(pCrossX,'XData',axImg.XLim,'YData',[1 1]*mean(axImg.YLim));
-        set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*mean(axImg.XLim)); 
-        % Update ROI
-        tbl_dROI_X.Data = round([axImg.XLim axImg.YLim]); 
-        % Update plots if sum
-        
-        % updatePosPlots;
-        if rbSum_X.Value
-            c1 = find(data.X>=tbl_dROI_X(1),1);
-            c2 = find(data.X>=tbl_dROI_X(2),1);
-            r1 = find(data.Y>=tbl_dROI_X(3),1);
-            r2 = find(data.Y>=tbl_dROI_X(4),1);
-            z = hImg.CData(r1:r2,c1:c2);
-            set(pX,'XData',data.X,'YData',sum(z,1));
-            set(pY,'YData',data.Y,'XData',sum(z,2));
+    function foo(~,~)         
+        imgnum = menuSelectImg.Value;
+        switch menuSelectImgType.Value
+            case 1
+                Z = data.Z(:,:,imgnum);
+            case 2
+                Z = data.ZNoFilter(:,:,imgnum);
         end
+    
+        if cAutoColor_X.Value;setClim('X');end 
+        % Find center of update
+        xC = mean(axImg.XLim);yC = mean(axImg.YLim);
+
+        % Update crosshair
+        set(pCrossX,'XData',axImg.XLim,'YData',[1 1]*yC);
+        set(pCrossY,'YData',axImg.YLim,'XData',[1 1]*xC); 
+
+        % Round the table limits
+        tbl_dROI_X.Data = round([axImg.XLim axImg.YLim]); 
+
+        % Get the region of interest
+        ROI =  [axImg.XLim axImg.YLim];
+
+        % Find indeces in which correspond to ROI boundary
+        [~,c1] = min(abs(data.X-ROI(1)));
+        [~,c2] = min(abs(data.X-ROI(2)));
+        [~,r1] = min(abs(data.Y-ROI(3)));
+        [~,r2] = min(abs(data.Y-ROI(4)));
+
+        % Find indeces corresponding to center of displayed image
+        [~,iC] = min(abs(data.X-xC));
+        [~,iR] = min(abs(data.Y-yC));
+
         % Update plots if cut
         if rbCut_X.Value
-            set(pX,'XData',data.X,'YData',hImg.CData(round(pCrossX.YData(1)),:));
-            set(pY,'YData',data.Y,'XData',hImg.CData(:,round(pCrossY.XData(1))));
-        end      
+            set(pX,'XData',data.X,'YData',Z(iR,:));
+            set(pY,'YData',data.Y,'XData',Z(:,iC));
+        end     
+
+        if rbSum_X.Value    
+            zsub = Z(r1:r2,c1:c2);    
+            xsub = data.X(c1:c2);
+            ysub = data.Y(r1:r2);
+            set(pX,'XData',xsub,'YData',sum(zsub,1));
+            set(pY,'YData',ysub,'XData',sum(zsub,2));
+        end 
+
+        if hc_anlX_Gauss.Value
+            updateGaussLinePlot;
+        end
+
     end
 
 axes(axImg);

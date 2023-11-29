@@ -28,6 +28,8 @@ for n=1:length(data)
     end 
 end
 
+disp('done')
+
 
 end
 
