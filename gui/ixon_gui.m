@@ -1335,6 +1335,11 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
     end
 
     function analyze_dig(src,evt)
+
+        if isfield(data,'LatticeBin')
+            data = rmfield(data,'LatticeBin');
+        end
+
         for kk=1:size(data.Z,3)
             opts = struct;
 
@@ -1379,16 +1384,14 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
                 ') binning into lattice ...']);    
            
             data.LatticeBin(kk) = binLattice(x,y,z,opts); 
-
             data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
 
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
-        end      
-            
+        end 
         data = ixon_SharpnessBinned(data);  
+        data = ixon_binnedHistogramFit(data);
         
-
         data = ixon_digitize(data,tblDig.Data);
 
         updateBinnedHistogram;
@@ -2441,6 +2444,7 @@ caxis([0 1]);
 % Binned Histogram 1
 % ax_hB1=subplot(2,1,1,'parent',tabHB);
 ax_hB1 = axes('parent',tabHB);
+co=get(gca,'colororder');
 pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none',...
     'facecolor','k');
 hold on
@@ -2449,7 +2453,10 @@ ylabel('occurences');
 xlabel('counts per lattice site');
 
 % hold on
-% pKernelB1 = plot(1,1,'k-','parent',ax_hB1);
+
+
+pPDF1a = plot(1,1,'-','parent',ax_hB1,'color',co(1,:),'linewidth',3);
+
 set(ax_hB1,'box','on','linewidth',.1,'fontsize',12,'units','normalized',...
     'XAxisLocation','bottom','YDir','normal','UserData','H1');
 yyaxis right
@@ -2457,6 +2464,8 @@ pHistB2 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none',...
     'FaceColor',[0.6 0 0.5]);
 ylabel('occurences');
 ax_hB1.YColor=[0.6 0 0.5];
+pPDF1b = plot(1,1,'k-','parent',ax_hB1,'color',co(1,:),'linewidth',3);
+pPDF2 = plot(1,1,'r-','parent',ax_hB1,'color',co(2,:),'linewidth',3);
 
 % Add a left hand slider to control the relative size of the analog and
 % digital channels
@@ -2832,18 +2841,48 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         x = data.LatticeHistogram(imgnum).Centers;
         xe = data.LatticeHistogram(imgnum).Edges;
         y = data.LatticeHistogram(imgnum).N;        
-        Nthresh = histBtbl.Data(1,1);              
+        Nthresh = histBtbl.Data(1,1);            
+
+        xL = x<=Nthresh;
+        xH = ~xL;
         
-        set(pHistB1,'XData',x,'YData',y.*[x<= Nthresh]);
-        set(pHistB2,'XData',x,'YData',y.*[x> Nthresh]);        
+        set(pHistB1,'XData',x(xL),'YData',y(xL));
+        set(pHistB2,'XData',x(xH),'YData',y(xH));        
         pHistBdivide.Parent.YAxis(1).Limits = [0 max(pHistB1.YData)*1.1];
         pHistBdivide.Parent.YAxis(2).Limits = [0 max(pHistB2.YData)*1.1];
 
         set(pHistBdivide,'Xdata',[1 1]*Nthresh,'Ydata',pHistBdivide.Parent.YAxis(1).Limits);
+            
         
-        zall = data.LatticeBin(imgnum).Zbin(:);
-        zall(isnan(zall))=[];
-        n = numel(zall);      
+        if isfield(data.LatticeBin(imgnum),'PDFFit')
+            foo0 = data.LatticeBin(imgnum).PDFFit.pdf0;
+            n0 = numel(data.LatticeBin(imgnum).PDFFit.pdf0_counts);
+
+            foo1 = data.LatticeBin(imgnum).PDFFit.pdf1;
+            n1 = numel(data.LatticeBin(imgnum).PDFFit.pdf1_counts);
+
+            t = linspace(min(x),max(x),1e3);
+
+            tL = t<=Nthresh;
+            tH = ~tL;
+
+            bw = x(2)-x(1);
+
+            set(pPDF1a,'XData',t(tL),'YData',n0*bw*foo0(t(tL)),'Visible','on');
+            set(pPDF1b,'XData',t(tH),'YData',n0*bw*foo0(t(tH)),'Visible','on');
+            set(pPDF2,'XData',t(tH),'YData',n1*bw*foo1(t(tH)),'Visible','on');
+        else
+            pPDF1a.Visible='off';
+            pPDF1b.Visible='off';
+            pPDF2.Visible='off';
+        end
+        % output.pdf0 = @(x) pdf_gauss_gamma(x,pdf0_c(1),pdf0_c(2),pdf0_c(3),pdf0_c(4),pdf0_c(5));
+
+
+
+        % zall = data.LatticeBin(imgnum).Zbin(:);
+        % zall(isnan(zall))=[];
+        % n = numel(zall);      
         % try
         %     x2 = data.LatticeHistogramKernel(imgnum).Xi;
         %     y2 = data.LatticeHistogramKernel(imgnum).f;        
