@@ -12,11 +12,16 @@ function [output] = bimodalPDFFit(z)
     % tail represents counts from sites filled with atoms leaking into
     % unoccupied sites.
     try 
+          z0 = min(z1);
+        z1 = z1-z0;
+
+
         % Find numerical PDF for n=0 atoms;
         [f,zlist] = ksdensity(z1);
         [~,ip] = max(f);
         zp = zlist(ip);
 
+  
         % Divide the n = 0 into to halves
         z1_left = z1(z1<zp);
         z1_right = z1(z1>=zp);
@@ -30,6 +35,7 @@ function [output] = bimodalPDFFit(z)
 
         % Fit the Right side to a gamma function
         pdg=fitdist(z1_right,'gamma');
+        % z1(z1<=0)=[];
 
         % Create Combined PDF
         warning off
@@ -40,6 +46,9 @@ function [output] = bimodalPDFFit(z)
         warning on
         
     catch ME
+        getReport(ME)
+        pdf0_c=[mu1_left s1_left pdg.a pdg.b 0.5];
+        pdf0_cint=NaN;
 
     end
         
@@ -54,12 +63,13 @@ function [output] = bimodalPDFFit(z)
     output = struct;
 
     % n = 0 probability distribution function
-    output.pdf0 = @(x) pdf_gauss_gamma(x,pdf0_c(1),pdf0_c(2),pdf0_c(3),pdf0_c(4),pdf0_c(5));
+    output.pdf0 = @(x) pdf_gauss_gamma(x-z0,pdf0_c(1),pdf0_c(2),pdf0_c(3),pdf0_c(4),pdf0_c(5));
     output.pdf0_coeffs = pdf0_c;
     output.pdf0_cints  = pdf0_cint;
     output.pdf0_func = @pdf_gauss_gamma;
     output.pdf0_counts = z1;
     output.pdf0_centroid = c(1);
+    output.pdf0_z0 = z0;
 
 
     % n = 1 probability distribution function

@@ -1390,8 +1390,9 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             disp(['done (' num2str(t2,3) ' sec.)']);
         end 
         data = ixon_SharpnessBinned(data);  
+        % try
         data = ixon_binnedHistogramFit(data);
-        
+        % end
         data = ixon_digitize(data,tblDig.Data);
 
         updateBinnedHistogram;
