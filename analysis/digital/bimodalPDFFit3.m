@@ -1,8 +1,12 @@
-function [output] = bimodalPDFFit(z)
+function [output] = bimodalPDFFit3(z)
+
+    if sum(z<0,'all')>0
+        warning on
+        warning('negative counts detected. why is this happening?')
+        z(z<0)=0;
+    end
     z=z(:);
     z(isnan(z))=[];
-    
-
 
     % Divide into 2 clusters (n=0 vs. n=1)
     [idx,c,sumD,D]=kmeans(z,2);
@@ -15,7 +19,9 @@ function [output] = bimodalPDFFit(z)
     % the actual noise of measurement (read + subtraction) while the gamma
     % tail represents counts from sites filled with atoms leaking into
     % unoccupied sites.
-    try 
+
+
+         try 
         z0 = min(z1);
         z1 = z1-z0;
 
@@ -30,36 +36,40 @@ function [output] = bimodalPDFFit(z)
         z1_left = z1(z1<zp);
         z1_right = z1(z1>=zp);
        
+        if numel(z1_left)>20
 
-        % Fit the left side of the distribution to a half gaussian
-        z1_left_flipped = max(z1_left)-z1_left;
-        pd1_left = fitdist(z1_left_flipped,'Half Normal');
-        s1_left = pd1_left.sigma;
-        mu1_left = zp;
-        
-
+            % Fit the left side of the distribution to a half gaussian
+            z1_left_flipped = max(z1_left)-z1_left;
+            pd1_left = fitdist(z1_left_flipped,'Half Normal');
+            s1_left = pd1_left.sigma;
+            mu1_left = zp;
+        else
+            s1_left=.1;
+            mu1_left = 0;
+        end
         % Fit the Right side to a gamma function
-        pdg=fitdist(z1_right,'gamma');
+        pdg=fitdist(z1_right,'Exponential');
         % z1(z1<=0)=[];
 
         % Create Combined PDF
         warning off
-        LB = [mu1_left-s1_left s1_left/2 pdg.a*.1 pdg.b*.1 .3];
-        UB = [mu1_left+s1_left sqrt(2)*s1_left/2 pdg.a*.1 pdg.b*.1 .3];
+        LB = [mu1_left-s1_left 1e-3 pdg.mu*1e-3 0];
 
-        [pdf0_c,pdf0_cint] = mle(z1,'pdf',@pdf_gauss_gamma,...
-            'start',[mu1_left s1_left pdg.a pdg.b 0.5],'alpha',.05,...
+        [pdf0_c,pdf0_cint] = mle(z1,'pdf',@pdf_gauss_exp,...
+            'start',[mu1_left s1_left pdg.mu 0.5],'alpha',.05,...
             'LowerBound',LB);
         warning on
         
     catch ME
-        warning on
-        getReport(ME)
-        pdf0_c=[mu1_left s1_left pdg.a pdg.b 0.5];
-        pdf0_cint=NaN;
+            warning on
+            getReport(ME)
+            
+            pdf0_c=[mu1_left s1_left pdg.mu 0.5];
+            pdf0_cint=NaN;
 
-    end
-        
+      end
+
+
         
     % The n=1 (atom) distribution is fit with a simple gaussian
     % distribution
@@ -67,22 +77,16 @@ function [output] = bimodalPDFFit(z)
     % the same output
     [pdf1_c,pdf1_cint] = mle(z2,'distribution','normal');
 
-
-    % fit everything together
-
-
     % Create output
     output = struct;
 
     % n = 0 probability distribution function
-    output.pdf0 = @(x) pdf_gauss_gamma(x-z0,pdf0_c(1),pdf0_c(2),pdf0_c(3),pdf0_c(4),pdf0_c(5));
+    output.pdf0 = @(x) pdf_gauss_exp(x,pdf0_c(1),pdf0_c(2),pdf0_c(3),pdf0_c(4));
     output.pdf0_coeffs = pdf0_c;
     output.pdf0_cints  = pdf0_cint;
-    output.pdf0_func = @pdf_gauss_gamma;
+    output.pdf0_func = @pdf_gauss_exp;
     output.pdf0_counts = z1;
     output.pdf0_centroid = c(1);
-    output.pdf0_z0 = z0;
-
 
     % n = 1 probability distribution function
     output.pdf1 = @(x) normpdf(x,pdf1_c(1),pdf1_c(2));
@@ -91,11 +95,9 @@ function [output] = bimodalPDFFit(z)
     output.pdf1_func = @normpdf;
     output.pdf1_counts = z2;
     output.pdf1_centroid = c(2);
-
-
 end
 
-function y = pdf_gauss_gamma(x,u1,s1,a,b,alpha)
-    y = (alpha*gampdf(x,a,b)+(1-alpha)*normpdf(x,u1,s1));
+function y = pdf_gauss_exp(x,u1,s1,a,alpha)
+    y = (1-alpha)*normpdf(x,u1,s1).*(x>=0)./(normcdf(u1,s1))+alpha*exppdf(x,a);
 end
 

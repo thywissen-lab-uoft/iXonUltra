@@ -14,9 +14,10 @@ A = [opts.a1 opts.a2];                  % lattice vectors
 %% Image preparation
 
 % Rescale the image to avoid rounding errors when moving pixels
-z2 = imresize(z,opts.ScaleFactor)/(opts.ScaleFactor^2); % scale amplitude to preserve norm
+z2 = imresize(z,opts.ScaleFactor,'method','bilinear')/(opts.ScaleFactor^2); % scale amplitude to preserve norm
 x2 = linspace(x(1),x(end),size(z2,2));
 y2 = linspace(y(1),y(end),size(z2,1));
+
 
 % Create 2xN vectors of all pixels positions
 [X,Y]=meshgrid(x2,y2);                  % matrix of X and Y
@@ -123,6 +124,8 @@ out.n2 = n2;
 out.Zbin = Zbin;
 out.Xn = Xn;
 out.Yn = Yn;
+
+
 % 
 % if isfield(opts, 'DigitizationThreshold')
 %     
