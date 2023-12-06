@@ -2453,6 +2453,7 @@ pHistBdivide = plot([1 1]*50,[0 100],'k-','parent',ax_hB1);
 ylabel('occurences');
 xlabel('counts per lattice site');
 
+
 % hold on
 
 
@@ -2467,6 +2468,10 @@ ylabel('occurences');
 ax_hB1.YColor=[0.6 0 0.5];
 pPDF1b = plot(1,1,'k-','parent',ax_hB1,'color',co(1,:),'linewidth',3);
 pPDF2 = plot(1,1,'r-','parent',ax_hB1,'color',co(2,:),'linewidth',3);
+
+t_B1_top_right = text(.98,.98,'bob','visible','off','fontsize',16,...
+    'verticalalignment','top','interpreter','latex','units','normalized',...
+    'horizontalalignment','right');
 
 % Add a left hand slider to control the relative size of the analog and
 % digital channels
@@ -2851,6 +2856,8 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         set(pHistB2,'XData',x(xH),'YData',y(xH));        
         pHistBdivide.Parent.YAxis(1).Limits = [0 max(pHistB1.YData)*1.1];
         pHistBdivide.Parent.YAxis(2).Limits = [0 max(pHistB2.YData)*1.1];
+        
+        pHistBdivide.Parent.XAxis.Limits = [0 max(x)*1.1];
 
         set(pHistBdivide,'Xdata',[1 1]*Nthresh,'Ydata',pHistBdivide.Parent.YAxis(1).Limits);
             
@@ -2872,10 +2879,16 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             set(pPDF1a,'XData',t(tL),'YData',n0*bw*foo0(t(tL)),'Visible','on');
             set(pPDF1b,'XData',t(tH),'YData',n0*bw*foo0(t(tH)),'Visible','on');
             set(pPDF2,'XData',t(tH),'YData',n1*bw*foo1(t(tH)),'Visible','on');
+            
+            str=['Fidelity $= ' num2str(round(data.LatticeBin(imgnum).PDFFit.Fidelity*100,3)) '\% $'];
+            set(t_B1_top_right,'string',str,'Visible','on');
+            
         else
             pPDF1a.Visible='off';
             pPDF1b.Visible='off';
             pPDF2.Visible='off';
+            t_B1_top_right.Visible='off';
+
         end
         % output.pdf0 = @(x) pdf_gauss_gamma(x,pdf0_c(1),pdf0_c(2),pdf0_c(3),pdf0_c(4),pdf0_c(5));
 

@@ -20,6 +20,8 @@ function [output] = bimodalPDFFit2(z)
     % the actual noise of measurement (read + subtraction) while the gamma
     % tail represents counts from sites filled with atoms leaking into
     % unoccupied sites.
+    
+    
 
     % Fit the Right side to a gamma function
     [pdf0_c,pdf0_cint]=mle(z1,'distribution','Exponential');
@@ -30,9 +32,22 @@ function [output] = bimodalPDFFit2(z)
     % the same output
     [pdf1_c,pdf1_cint] = mle(z2,'distribution','normal');
 
+    
+    % Calculate the fidelity via numerical integration
+    try
+        s1 = integral(@(x) exppdf(x,pdf0_c(1)),0,2*max(z));
+        s2 = integral(@(x) normpdf(x,pdf1_c(1),pdf1_c(2)),0,2*max(z));
+        f = 0.5*integral(@(x) abs(exppdf(x,pdf0_c(1))-normpdf(x,pdf1_c(1),pdf1_c(2))),0,2*max(z));       
+        
+    catch ME
+        f = NaN;
+        
+    end
 
     % Create output
     output = struct;
+    
+    output.Fidelity = f;
 
     % n = 0 probability distribution function
     output.pdf0 = @(x) exppdf(x,pdf0_c(1));

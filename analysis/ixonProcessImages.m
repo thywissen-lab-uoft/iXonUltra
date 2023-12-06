@@ -156,12 +156,10 @@ end
             Zpre = data.Z(:,:,ii);
 
             Zpre(Zpre<=0)=0;
-
-            iPos = [Zpre>0];
+%             iPos = [Zpre>0];
 
             psf2     = fspecial('gaussian',N,3*s);  
-
-            % psf = psf*.75+psf2*.25;
+            psf = psf*.85+psf2*.15;
 
 
             % if isfield(data(kk),'RotationMask')
@@ -175,7 +173,7 @@ end
             % data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),...
                 % psf,Niter,0,1,noise_variance);   
             Zsharp = deconvlucy(Zpre,...
-                psf,Niter,1,1,noise_variance);             
+                psf,Niter,0,1,noise_variance);             
             % Zsharp(~iPos)=Zpre(~iPos);
             data(kk).Z(:,:,ii) =    Zsharp;
 
