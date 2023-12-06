@@ -85,8 +85,9 @@ varType             = 'param'; % always select 'param' for now
 ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
+% ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
-ixon_doSave         = 0;    % Save Analysis?
+ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
@@ -100,10 +101,10 @@ ixon_doPlotProfiles         = 0;
 ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
-ixon_doAnalyzeStripes2D     = 1;    % Stripe Analysis :  for field stability in titled plane selection
+ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-ixon_doQGM                  = 0;
+ixon_doQGM                  = 1;
 
 
 %% Image Processing Options
@@ -361,7 +362,7 @@ if ixon_doAnimate == 1 && ixon_doSave
 ixon_animateOpts.Source = 'ZNoFilter';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-    ixon_animateOpts.CLim=[0 200];   % Color limits
+    ixon_animateOpts.CLim=[0 100];   % Color limits
 %     ixon_animateOpts.CLim=[0 1800];   % Color limits
 
 

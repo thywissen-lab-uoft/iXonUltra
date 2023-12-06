@@ -12,7 +12,7 @@ Y = Y(inds);
 % Performa a basic unwrap to keep jump less than 2*pi
 Y = unwrap(Y);
 
-for kk=4:length(Y)
+for kk=3:length(Y)
     if abs(Y(kk)-Y(kk-1))>.8*pi
         [ux,inds] = unique(X);
         uy = Y(inds);
@@ -29,11 +29,16 @@ for kk=4:length(Y)
 
         dXmesign = sign(x_me-x1);
 
-        Yvec = Y(kk) + [-100:1:100]*2*pi;
+        Yvec = Y(kk) + [-100:1:150]*2*pi;
 
         iLarger = find(Yvec>uy(i_me-1),1);        
         Yplus = Yvec(iLarger);
         Yminus = Yvec(iLarger-1);
+        
+        
+        disp(kk);
+        disp(Y(kk));
+        disp(Yplus);
 
  
 

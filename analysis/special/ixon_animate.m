@@ -35,7 +35,7 @@ for kk=1:length(uxvals) % Iterate over unique x values
     inds=find(uxvals(kk)==xvals);    
     for ii=1:length(inds)
         ind=inds(ii);
-        Z=ixondata(ind).(opts.Source)(:,:,1);
+        Z=ixondata(ind).(opts.Source)(:,:,2);
         Zall(:,:,kk)=Zall(:,:,kk)+Z;        
     end        
     Zall(:,:,kk)=Zall(:,:,kk)/length(inds);   
@@ -84,7 +84,7 @@ filename=fullfile(figDir,[filename '.gif']);
 %% Make Figure
 
 % grab initial data
-Z=ixondata(1).Z(:,:,1);
+Z=ixondata(1).Z(:,:,2);
 Y=ixondata(1).Y;
 X=ixondata(1).X;
 

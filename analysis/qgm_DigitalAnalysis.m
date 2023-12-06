@@ -101,25 +101,53 @@ end
     hf2.Color='w';
     hf2.WindowStyle='docked';
     
-    subplot(321)
-    plot([digdata.X],[digdata.Xc],'ko');
-    ylabel('xc (sites)');
+%             subplot(321)
+%         plot([digdata.X],[digdata.Xc],'ko');
+%         ylabel('xc (sites)');
+% 
+%         subplot(322)
+%         plot([digdata.X],[digdata.Yc],'ko');
+%         ylabel('yc (sites)');
+% 
+%         subplot(323)
+%         plot([digdata.X],[digdata.N],'ko');
+%         ylabel('N (atoms)');
+% 
+%         subplot(324)
+%         plot([digdata.X],[digdata.Xs],'ko');
+%         ylabel('\sigma_x)');
+% 
+%                 subplot(325)
+%         plot([digdata.X],[digdata.Ys],'ko');
+%         ylabel('\sigma_y)');
     
-    subplot(322)
-    plot([digdata.X],[digdata.Yc],'ko');
-    ylabel('yc (sites)');
+    for n = 1:round(size(digdata.Z,3)/size(digdata.X,2))
+        
+        subplot(321)
+        plot([digdata.X],[digdata.Xc(n:2:end)],'o');
+        ylabel('xc (sites)');
+        hold on;
 
-    subplot(323)
-    plot([digdata.X],[digdata.N],'ko');
-    ylabel('N (atoms)');
+        subplot(322)
+        plot([digdata.X],[digdata.Yc(n:2:end)],'o');
+        ylabel('yc (sites)');
+        hold on;
 
-    subplot(324)
-    plot([digdata.X],[digdata.Xs],'ko');
-    ylabel('\sigma_x)');
+        subplot(323)
+        plot([digdata.X],[digdata.N(n:2:end)],'o');
+        ylabel('N (atoms)');
+        hold on;
 
-            subplot(325)
-    plot([digdata.X],[digdata.Ys],'ko');
-    ylabel('\sigma_y)');
+        subplot(324)
+        plot([digdata.X],[digdata.Xs(n:2:end)],'o');
+        ylabel('\sigma_x)');
+        hold on;
+
+                subplot(325)
+        plot([digdata.X],[digdata.Ys(n:2:end)],'o');
+        ylabel('\sigma_y)');
+        hold on;
+    end
 
         %%
 %{
