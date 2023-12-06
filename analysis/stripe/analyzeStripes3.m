@@ -120,25 +120,24 @@ for kk=1:length(ixondata)
     fprintf([num2str(kk) '/' num2str(length(ixondata)) ' ']);
    
     % Grab the data
-    Z = ixondata(kk).Z;
+    z = ixondata(kk).Z;
     x = ixondata(kk).X;
     y = ixondata(kk).Y;
     [xx,yy] = meshgrid(x,y);
 
 
-    % Show the raw data and the initial guess
- 
+    % Show the raw data and the initial guess       
 
     % Fit the stripes
-    stripes(kk)=ixon_fitStripe(ixondata(kk),opts);
+    stripes(kk)=ixon_fitStripe(x',y',z,opts);
     theta = stripes(kk).theta;
 
     % Evalulate the fit
     Zfit=feval(stripes(kk).Fit,xx,yy);
 
     % Overwrite the guess with the fit   
-    set(hImg_raw,'XData',x,'YData',y,'CData',Z);
-    set(hImg_err,'CData',Zfit-Z);
+    set(hImg_raw,'XData',x,'YData',y,'CData',z);
+    set(hImg_err,'CData',Zfit-z);
     set(ax1,'CLim',opts.CLim);
 
     set(pFringe,'XData',255+[0 1]*200*cosd(theta),...
@@ -157,12 +156,12 @@ for kk=1:length(ixondata)
         
     % Show the sum counts along the stripe axis    
     set(pSum1_fit,'XData',x,'YData',sum(imrotate(Zfit,theta,'crop'),1));
-    set(pSum1_data,'XData',x,'YData',sum(imrotate(Z,theta,'crop'),1));
+    set(pSum1_data,'XData',x,'YData',sum(imrotate(z,theta,'crop'),1));
     set(ax4,'XLim',[min(1) max([max(x) max(y)])]);
     
     % Show the sum counts orthogonal to the stripe axis
     set(pSum2_fit,'XData',y,'YData',sum(imrotate(Zfit,theta,'crop'),2));
-    set(pSum2_data,'XData',y,'YData',sum(imrotate(Z,theta,'crop'),2));
+    set(pSum2_data,'XData',y,'YData',sum(imrotate(z,theta,'crop'),2));
 
     set(ax4,'YLim',[0 ax4.YLim(2)]);
 
