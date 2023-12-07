@@ -88,16 +88,20 @@ if opts.doSubtractBG
 
     % Measure the noise of the subtraction
     for n = 1:L/2
-        Zthis = Z(:,:,n);
-        Zneg = Zthis(Zthis<0);
-        [N,edges] = histcounts(Zneg);
-        % iZero = find(edges>=0,1);
-        centers = (edges(1:end-1) + edges(2:end))/2;
+        try
+            Zthis = Z(:,:,n);
+            Zneg = Zthis(Zthis<0);
+            [N,edges] = histcounts(Zneg);
+            % iZero = find(edges>=0,1);
+            centers = (edges(1:end-1) + edges(2:end))/2;
 
-        vals = cumsum(N,'reverse')/sum(N);
-        ind = find(vals<=.5,1);
-        thresh = -centers(ind);
-        data(kk).NoiseEstimation(n) = thresh;      
+            vals = cumsum(N,'reverse')/sum(N);
+            ind = find(vals<=.5,1);
+            thresh = -centers(ind);
+            data(kk).NoiseEstimation(n) = thresh;      
+        catch ME
+            data(kk).NoiseEstimation(n) = 0;
+        end
     end
 end
   
