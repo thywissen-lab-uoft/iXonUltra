@@ -28,98 +28,98 @@ data = [all_data.(fname)];
 pddir = 'X:\LabJackLogs\ODTQPD\2023\2023.10\10.07';
 
 %%
-runs=[
-    2023 10 07 22;
-    2023 10 07 23;
-    2023 10 07 24;
-    2023 10 07 25;
-    2023 10 07 26;
-    2023 10 07 27;
-    2023 10 07 28;
-    2023 10 07 29;
-    2023 10 07 30;
-    2023 10 07 31;
-    2023 10 07 32;
-    ];
-
-% fit_types = {''};
-data_label = '2.5 Er Quench'; 
-dVar = 'Xc';
-varname = 'shake_25Er_2v2v_54Hz_70mW';
-n = 400;
+% runs=[
+%     2023 10 07 22;
+%     2023 10 07 23;
+%     2023 10 07 24;
+%     2023 10 07 25;
+%     2023 10 07 26;
+%     2023 10 07 27;
+%     2023 10 07 28;
+%     2023 10 07 29;
+%     2023 10 07 30;
+%     2023 10 07 31;
+%     2023 10 07 32;
+%     ];
 % 
-% 
-clear data
-fname = 'digdata';
-[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-data = [all_data.(fname)];
-pddir = 'X:\LabJackLogs\ODTQPD\2023\2023.10\10.07';
+% % fit_types = {''};
+% data_label = '2.5 Er Quench'; 
+% dVar = 'Xc';
+% varname = 'shake_25Er_2v2v_54Hz_70mW';
+% n = 400;
+% % 
+% % 
+% clear data
+% fname = 'digdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
+% pddir = 'X:\LabJackLogs\ODTQPD\2023\2023.10\10.07';
 
 %%
 
-runs = [2023 10 07 33;
-    2023 10 07 34;
-    2023 10 07 35;
-    2023 10 07 36;
-    2023 10 07 37;
-    2023 10 07 38;
-    2023 10 07 39;
-    2023 10 07 40;
-    2023 10 07 41;
-    2023 10 07 42;
-    2023 10 07 43;
-    2023 10 07 44;
-    2023 10 07 45;
-    2023 10 07 46;
-    2023 10 07 47;
-    2023 10 07 48;
-    2023 10 07 49;
-    2023 10 07 50;
-    2023 10 07 51;
-    2023 10 07 52;
-    ];
-
-% fit_types = {''};
-data_label = '2.5 Er Quench'; 
-dVar = 'Xc';
-varname = 'shake_25Er_2v2v_54Hz_80mW';
-n = 400;
+% runs = [2023 10 07 33;
+%     2023 10 07 34;
+%     2023 10 07 35;
+%     2023 10 07 36;
+%     2023 10 07 37;
+%     2023 10 07 38;
+%     2023 10 07 39;
+%     2023 10 07 40;
+%     2023 10 07 41;
+%     2023 10 07 42;
+%     2023 10 07 43;
+%     2023 10 07 44;
+%     2023 10 07 45;
+%     2023 10 07 46;
+%     2023 10 07 47;
+%     2023 10 07 48;
+%     2023 10 07 49;
+%     2023 10 07 50;
+%     2023 10 07 51;
+%     2023 10 07 52;
+%     ];
 % 
-% 
-clear data
-fname = 'digdata';
-[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-data = [all_data.(fname)];
+% % fit_types = {''};
+% data_label = '2.5 Er Quench'; 
+% dVar = 'Xc';
+% varname = 'shake_25Er_2v2v_54Hz_80mW';
+% n = 400;
+% % 
+% % 
+% clear data
+% fname = 'digdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
 
 %%
 
-runs = [2023 10 09 03;
-    2023 10 09 04;
-2023 10 09 05;
-2023 10 09 06;
-2023 10 09 07;
-2023 10 09 08;
-2023 10 09 09;
-2023 10 09 10;
-2023 10 09 11;
-2023 10 09 12;
-2023 10 09 13;
-2023 10 09 14;
-2023 10 09 15;
-    ];
-
-% fit_types = {''};
-dVar = 'Xc';
-varname = 'shake_25Er_2v2v_54Hz_80mW';
-data_label = varname; 
-
-n = 400;
+% runs = [2023 10 09 03;
+%     2023 10 09 04;
+% 2023 10 09 05;
+% 2023 10 09 06;
+% 2023 10 09 07;
+% 2023 10 09 08;
+% 2023 10 09 09;
+% 2023 10 09 10;
+% 2023 10 09 11;
+% 2023 10 09 12;
+% 2023 10 09 13;
+% 2023 10 09 14;
+% 2023 10 09 15;
+%     ];
 % 
+% % fit_types = {''};
+% dVar = 'Xc';
+% varname = 'shake_25Er_2v2v_170G_75mW';
+% data_label = varname; 
 % 
-clear data
-fname = 'digdata';
-[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-data = [all_data.(fname)];
+% n = 400;
+% % 
+% % 
+% clear data
+% fname = 'digdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
 %% 
 B2a = @(Bfield) 167*(1-(6.910)./(Bfield-202.15));
 clear hFs
@@ -140,7 +140,7 @@ clear gamma
 clear gamma_err
 clear myamp
 clear myamp_err
-
+clear lvls
 clear phi
 clear phi_err
 
@@ -264,8 +264,10 @@ for nn=1:length(data)
      opt.Upper  = [Ag*5 +10*pi Cg+20];
 
     fout_dig = fit(X',Y',myfit,opt);
-    c=confint(fout_dig,0.667);   
-    
+    lvl = 0.95;
+%     c=confint(fout_dig,0.667);   
+        c=confint(fout_dig,lvl);   
+
 
          
     % Make Axis and Plot Data
@@ -344,7 +346,7 @@ for nn=1:length(data)
     phi(nn) = mod(fout_dig.B-fout_pd.B,2*pi)-1.5*pi;
     %phi(nn) = mod(fout_dig.B-Bgp,2*pi)-pi/2;
     phi_err(nn) = (c(2,2)-c(1,2))/2;
-
+    lvls(nn) = lvl;
 end
 %%
 
@@ -427,4 +429,10 @@ ylabel('N atoms');
 xlabel('a^2 (a_0^2)');
 grid on
 %%
+
+a = B2a(B);
+asquare = B2a(B).^2;
+save(varname,'Nbar','N_err','phi','phi_err',...
+    'myamp','myamp_err','B','a','asquare','f','lvls');
+
 
