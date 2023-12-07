@@ -108,7 +108,7 @@ z0 = sum(stripe_sum,'all');
 
 %% Compute Focusing Score for each stripe
 scores = zeros(length(z_stripes),1);
-figure(2000);
+% figure(2000);
 
 for n=1:length(z_stripes)
     z_to_analyze = z_stripes{n};  
@@ -134,12 +134,12 @@ for n=1:length(z_stripes)
 
     [sharpnessScore, map]=MLVSharpnessMeasure(zeff);  
 
-     subplot(length(z_stripes),2,n*2-1)
-    imagesc(x,y,map); axis equal tight
-
-
-     subplot(length(z_stripes),2,n*2)
-    imagesc(x,y,z_to_analyze); axis equal tight
+%     subplot(length(z_stripes),2,n*2-1)
+%     imagesc(x,y,map); axis equal tight
+% 
+% 
+%      subplot(length(z_stripes),2,n*2)
+%     imagesc(x,y,z_to_analyze); axis equal tight
     % [sharpnessScore, map]=MLVSharpnessMeasure(z_to_analyze);  
     scores(n) = sharpnessScore;
     if stripe_sum(n)<(z0*0.08)

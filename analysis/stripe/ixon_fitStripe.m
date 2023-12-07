@@ -117,7 +117,7 @@ stripe.gof = gof;
 stripe.rsquare = gof.rsquare;
 stripe.sse = gof.sse;
 
-stripe.PhaseMapFunc = phase_map;
+stripe.PhaseMapFunc =phase_map;
 stripe.EnvelopeFunc = rot_gauss;
 
 ci=confint(fout);

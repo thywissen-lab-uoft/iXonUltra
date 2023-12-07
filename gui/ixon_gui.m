@@ -33,7 +33,7 @@ cmap=purplemap;                                 % default colormap
 guiname='iXon GUI';                             % Figure Name
 defaultDir=['C:' filesep 'IxonImageHistory'];   % Temporary save directory
 
-doSaveGUIAnalysis = 0;
+doSaveGUIAnalysis = 1;
 GUIAnalysisSaveDir = 'X:\IxonGUIAnalysisHistory';
 
 currDir=defaultDir;                             % Current directory of navigator is the default one
@@ -3090,6 +3090,50 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     %     disp(' done');    
     % end       
         % updateGraphics; 
+        
+        if doSaveGUIAnalysis
+            gui_saveData = struct;
+            
+            
+            gui_saveData.Date = data.Date;
+            gui_saveData.FileName = data.Name;
+            gui_saveData.Params = data.Params;
+            
+            if isfield(data,'BoxCount')
+                BoxCount = data.BoxCount;
+               gui_saveData.BoxCount = data.BoxCount; 
+            end
+            
+            if isfield(data,'GaussFit')
+               gui_saveData.GaussFit = data.GaussFit; 
+            end
+            
+           if isfield(data,'StripeFit')
+               gui_saveData.StripeFit = data.StripeFit; 
+           end
+            
+           
+            filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
+            filenames={filenames.name};
+            filenames=sort(filenames);
+
+            % Delete old images
+            if length(filenames)>200
+               f=[GUIAnalysisSaveDir filesep filenames{1}];
+               delete(f);
+            end               
+
+            filename=[data.Name '.mat']; 
+            if ~exist(GUIAnalysisSaveDir,'dir')
+               mkdir(GUIAnalysisSaveDir);
+            end     
+            
+            filename=fullfile(GUIAnalysisSaveDir,filename);
+            fprintf('%s',[filename ' ...']);
+            save(filename,"-struct",'gui_saveData');
+            disp(' done');       
+        end
+
 
         updatePositionAnalysisGraphics;
     end
