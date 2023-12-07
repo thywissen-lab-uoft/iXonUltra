@@ -151,25 +151,34 @@ end
 %% Fit Focus to ycom
 inds = ~isnan(scores);
 
-yyy = scores(inds);
-xxx = y_coms(inds)';
-nnn = stripe_sum(inds)';
-pp = polyfit(xxx,yyy,2);
+if sum(inds)>3
 
-myfit=fittype('a*x.^2+b*x+c','independent','x',...
-    'coefficients',{'a','b','c'});
-fitopt = fitoptions(myfit);
-fitopt.StartPoint = [pp(1) pp(2) pp(3)];
-fitopt.Weights = nnn;
+    yyy = scores(inds);
+    xxx = y_coms(inds)';
+    nnn = stripe_sum(inds)';
+    pp = polyfit(xxx,yyy,2);
 
-fout = fit(xxx,yyy,myfit,fitopt);
+    myfit=fittype('a*x.^2+b*x+c','independent','x',...
+        'coefficients',{'a','b','c'});
+    fitopt = fitoptions(myfit);
+    fitopt.StartPoint = [pp(1) pp(2) pp(3)];
+    fitopt.Weights = nnn;
 
-pp = [fout.a fout.b fout.c];
+    fout = fit(xxx,yyy,myfit,fitopt);
+
+    pp = [fout.a fout.b fout.c];
+    y0 = -pp(2)/(2*pp(1));
+
+else
+    yyy = scores(inds);
+
+    y0 = mean(yyy);   
+    pp = [0 0 y0];
+end
 % 
 % y_coms
 % scores
 
-y0 = -pp(2)/(2*pp(1));
 %%
 focus = struct;
 focus.scores = scores;
