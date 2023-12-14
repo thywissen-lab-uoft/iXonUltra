@@ -106,6 +106,26 @@ if ixon_doFocusStripes
     ylabel('focus position (px)');  
 end
 
+%% Stripe COM
+ixon_doStripeCOM = 1;
+if ixon_doStripeCOM
+    clear COM
+    COM_opts = struct;
+    COM_opts.stripe_ind = [2 3];
+
+    [ixondata,stripes,qgmdata_stripes] = ixon_stripeCOM(ixondata,stripes);
+
+%     stripe_num = 3;
+%     stripe_COM = stripes.xCOM;
+%     
+%     
+%     hFme = figure;
+%     hFme.Color='w';
+%     plot(xvals,stripe_COM(3),'ko');
+%     xlabel('xVar')
+%     ylabel('COM (px)');  
+end
+
 %% Stability
 
 ixon_doStripeStability = 1;

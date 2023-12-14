@@ -82,7 +82,7 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 0;      % Auto detect changing variable?
+ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
@@ -103,7 +103,7 @@ ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 1;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-ixon_doQGM                  = 0;
+ixon_doQGM                  = 1;
 
 
 %% Image Processing Options
@@ -119,7 +119,7 @@ img_opt.doSubtractBG        = 1;
 img_opt.doScale             = 1;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
-img_opt.Theta               = 60.2077;  % Rotation amount (deg.)
+% img_opt.Theta               = 60.2077;  % Rotation amount (deg.)
 img_opt.Theta               = 59.64;  % Rotation amount (deg.)
 % img_opt.Theta               = 59.81;  % Rotation amount (deg.)
 
@@ -127,7 +127,7 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 0;        % Deconvolve with PSF
+img_opt.doPSF               = 1;        % Deconvolve with PSF
 img_opt.PSF                 = [1.3163 51 12]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
@@ -374,7 +374,7 @@ if ixon_doStandardAnalysis;ixon_StandardAnalysis;end
 if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis
 if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
-%% Stripe Analysis
-if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 %% Quantum Gas Micrscopy
 if ixon_doQGM; ixon_QGM;end
+%% Stripe Analysis
+if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
