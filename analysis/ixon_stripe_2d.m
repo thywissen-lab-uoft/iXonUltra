@@ -77,9 +77,9 @@ end
     %%
 if ixon_doAnalyzeStripes2D
     stripes_modify = stripes;
-    phi_unwrap = unwrapPhase(xvals,[stripes_modify.phi]);
+%     phi_unwrap = unwrapPhase(xvals,[stripes_modify.phi]);
      for kk=1:length(stripes_modify)
-         stripes_modify(kk).phi = phi_unwrap(kk);
+%          stripes_modify(kk).phi = phi_unwrap(kk);
 %         stripes(kk).phi = mod(stripes(kk).phi+pi/2,(2*pi))-pi/2;
      end
 
@@ -115,12 +115,15 @@ end
 
 ixon_doStripeStability = 1;
 
-if ixon_doStripeStability && isequal(ixon_xVar,'ExecutionDate')
+if ixon_doStripeStability 
    hFme = figure;
    hFme.Color='w';
    hFme.Position=[100 500 1400 300];
    
-   phi0 = 0.9*2*pi;
+   P = [ixondata.Params];
+   xvals = [P.ExecutionDate];
+   
+   phi0 = 0.6*2*pi;
    
    phi_err = [stripes.phi_err];
    phi = [stripes.phi];

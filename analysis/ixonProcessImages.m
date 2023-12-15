@@ -157,7 +157,7 @@ end
             % data(kk).Z(:,:,ii)=data(kk).Z(:,:,ii)+Nnoise;
             % noise_variance=noise_variance*2;
 
-            Zpre = data.Z(:,:,ii);
+            Zpre = data(kk).Z(:,:,ii);
 
             Zpre(Zpre<=0)=0;
 %             iPos = [Zpre>0];

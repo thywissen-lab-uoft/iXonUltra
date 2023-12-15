@@ -82,9 +82,9 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'ExecutionDate'; % Variable Name
+ixon_xVar           = 'conductivity_mod_time'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -101,10 +101,10 @@ ixon_doPlotProfiles         = 0;
 ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
-ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
+ixon_doAnalyzeStripes2D     = 1;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-ixon_doQGM                  = 0;
+ixon_doQGM                  = 1;
 
 
 %% Image Processing Options
@@ -128,8 +128,8 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 0;        % Deconvolve with PSF
-img_opt.PSF                 = [1.3163 51 12]; % PSF parameters [sigma, N, Niter]
+img_opt.doPSF               = 1;        % Deconvolve with PSF
+img_opt.PSF                 = [1.3163 51 21]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
 img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
