@@ -111,6 +111,18 @@ if ixon_doFocusStripes
     ylabel('focus position (px)');  
 end
 
+%% Stripe COM
+ixon_doStripeCOM = 1;
+if ixon_doStripeCOM
+
+    [ixondata,stripes,qgmdata_stripes] = ixon_stripeCOM(ixondata,stripes);
+    
+    % Save the output data
+    filename=fullfile(ixon_imgdir,'figures','qgmdata_stripes.mat');
+    save(filename,'qgmdata_stripes');
+
+end
+
 %% Stability
 
 ixon_doStripeStability = 1;
