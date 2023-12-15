@@ -115,15 +115,6 @@ if ixon_doStripeCOM
 
     [ixondata,stripes,qgmdata_stripes] = ixon_stripeCOM(ixondata,stripes);
 
-%     stripe_num = 3;
-%     stripe_COM = stripes.xCOM;
-%     
-%     
-%     hFme = figure;
-%     hFme.Color='w';
-%     plot(xvals,stripe_COM(3),'ko');
-%     xlabel('xVar')
-%     ylabel('COM (px)');  
 end
 
 %% Stability

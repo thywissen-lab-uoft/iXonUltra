@@ -1,5 +1,5 @@
 function [ixondata,stripes,qgmdata_stripe] = ixon_stripeCOM(ixondata,stripes,opts)
-threshhold = 0.1;
+threshhold = 0.2;
 
 for jj=1:length(ixondata)
 
@@ -65,6 +65,7 @@ for jj=1:length(ixondata)
     pL_N = floor(min(min(phiMap))/(2*pi))+1;
     pH_N = floor(max(max(phiMap))/(2*pi))-1;
     nVec = pL_N:pH_N;
+
     stripe_boundary_lines = {};
     
     
@@ -162,7 +163,7 @@ for jj=1:length(ixondata)
        title('Stripe '+string(kk)); 
       
     end
-    
+
 
 end
 
@@ -170,14 +171,15 @@ end
 % Having calculated the lattice spacing and phase. Bin all counts into a
 % lattice site.
 
-    
-
 qgm_doBinLattice = 1;
 
 if qgm_doBinLattice
     for n=1:length(ixondata)
 
-        for ii=1:length(nVec)
+        nStripes = length(stripes(n).xCOM);
+
+
+        for ii=1:nStripes
             for kk=1:1
                 opts = struct;
                 a1 = ixondata(n).LatticePhase(kk).a1;
@@ -202,8 +204,8 @@ if qgm_doBinLattice
                 y = ixondata(n).Y(iy_1:iy_2);   
                 z = ixondata(n).Z(iy_1:iy_2,ix_1:ix_2,kk);    
                 tic;
-                fprintf(['(' num2str(kk) '/' num2str(size(ixondata(n).Zf,3)) ...
-                    ') binning into lattice ...']);   
+                fprintf(['(' num2str(ii) '/' num2str(nStripes) ...
+                    ') binning stripe into lattice ...']);   
                 qgmdata_stripe(n).LatticeBin(ii) = binLattice(x,y,z,opts); 
                 t2=toc;
                 disp(['done (' num2str(t2,3) ' sec.)']);   
@@ -219,7 +221,9 @@ threshold = 1500;
 
 for kk=1:length(ixondata)
 
-    for ii = 1:length(nVec)
+    nStripes = length(stripes(kk).xCOM);
+
+    for ii = 1:nStripes
 
         LatticeDig = struct;
   
@@ -258,7 +262,6 @@ for kk=1:length(ixondata)
     end
 
     
-end    
-   
+end   
 
 end
