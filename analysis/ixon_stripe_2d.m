@@ -109,11 +109,12 @@ end
 %% Stripe COM
 ixon_doStripeCOM = 1;
 if ixon_doStripeCOM
-    clear COM
-    COM_opts = struct;
-    COM_opts.stripe_ind = [2 3];
 
     [ixondata,stripes,qgmdata_stripes] = ixon_stripeCOM(ixondata,stripes);
+    
+    % Save the output data
+    filename=fullfile(ixon_imgdir,'figures','qgmdata_stripes.mat');
+    save(filename,'qgmdata_stripes');
 
 end
 
