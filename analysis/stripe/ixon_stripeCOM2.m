@@ -1,8 +1,10 @@
-function [ixondata,stripes,qgmdata_stripe] = ixon_stripeCOM(ixondata,stripes,opts)
-threshhold = 0.1;
+function [ixondata,stripes,qgmdata_stripe] = ixon_stripeCOM2(ixondata,stripes,opts)
+threshold_stripeROI = 0.1;
 
 for jj=1:length(ixondata)
 
+
+    %% Find stripe ROIs %%
     data = ixondata(jj);
     stripe = stripes(jj);
 
@@ -59,7 +61,7 @@ for jj=1:length(ixondata)
     
     % Create a threshholding map to only look at statisfically significant
     % regions
-    threshholdMap = ampMap>threshhold;
+    threshholdMap = ampMap>threshold_stripeROI;
     
     
     pL_N = floor(min(min(phiMap))/(2*pi))+1;
@@ -81,7 +83,9 @@ for jj=1:length(ixondata)
     x_stripes ={};
     y_stripes = {};
 
-    ROI = zeros(1,4,length(nVec));
+%     ROI = zeros(1,4,length(nVec));
+
+    ROI = [];
 
     for n=1:length(nVec)
         nn=nVec(n);
@@ -95,6 +99,8 @@ for jj=1:length(ixondata)
         this_map=logical(stripe_map.*threshholdMap);    
         
         if sum(this_map,'all')==0
+
+%             ROI(:,:,n) = [];
             continue;
         end
         
@@ -116,6 +122,7 @@ for jj=1:length(ixondata)
         zThis = z(r1:r2,c1:c2);
         
         if size(zThis,1)<50 || size(zThis,2)<50 
+
            continue 
         end
         
@@ -137,10 +144,11 @@ for jj=1:length(ixondata)
         x_coms(end+1) = sum(xx2.*zThis,'all')/sum(zThis,'all');
         y_coms(end+1) = sum(yy2.*zThis,'all')/sum(zThis,'all');
 
-        
-
-        ROI(1,:,n) = round([xThis(1) xThis(end) yThis(1) yThis(end)]);
-       
+        if isempty(ROI)
+            ROI(1,:,1) = round([xThis(1) xThis(end) yThis(1) yThis(end)]);
+        else
+            ROI(1,:,end+1) = round([xThis(1) xThis(end) yThis(1) yThis(end)]);
+        end
         
     
     end
@@ -151,90 +159,71 @@ for jj=1:length(ixondata)
     stripes(jj).yCOM = y_coms;
     
     z0 = sum(stripe_sum,'all');
-    
-    %% Show all Stripes
-    
-    hFme = figure(2001);
-    clf
-    
-    for kk=1:length(z_stripes)
-       subplot(length(z_stripes),1,kk);
-       imagesc(x_stripes{kk},y_stripes{kk},z_stripes{kk}); 
-       axis equal tight
-       title('Stripe '+string(kk)); 
-      
-    end
 
-%     if length(z_stripes)>4
-%         keyboard
-%     end
-
-end
-
-    %% Bin into Lattice Sites
+        %% Bin into Lattice Sites
 % Having calculated the lattice spacing and phase. Bin all counts into a
 % lattice site.
 
-qgm_doBinLattice = 1;
 
-if qgm_doBinLattice
-    for n=1:length(ixondata)
-
-        nStripes = length(stripes(n).xCOM);
+    nStripes = length(stripes(jj).xCOM);
 
 
-        for ii=1:nStripes
-            for kk=1:1
-                opts = struct;
-                a1 = ixondata(n).LatticePhase(kk).a1;
-                a2 = ixondata(n).LatticePhase(kk).a2;                        
-                p1 = ixondata(n).LatticePhase(kk).p1;
-                p2 = ixondata(n).LatticePhase(kk).p2;        
-                opts.ScaleFactor = 3;    
-                opts.a1 = a1;
-                opts.a2 = a2;
-                opts.p1 = p1;
-                opts.p2 = p2;     
-                if isfield(ixondata(n),'RotationMask')
-                   opts.Mask =  ixondata(n).RotationMask;
-                end
-                ROI=stripes(n).ROI(:,:,ii);
+    for ii=1:nStripes
+        for kk=1:1
+            opts = struct;
+            a1 = ixondata(jj).LatticePhase(kk).a1;
+            a2 = ixondata(jj).LatticePhase(kk).a2;                        
+            p1 = ixondata(jj).LatticePhase(kk).p1;
+            p2 = ixondata(jj).LatticePhase(kk).p2;        
+            opts.ScaleFactor = 3;    
+            opts.a1 = a1;
+            opts.a2 = a2;
+            opts.p1 = p1;
+            opts.p2 = p2;  
 
-                ix_1 = find(ixondata(n).X>=ROI(1),1);
-                ix_2 = find(ixondata(n).X>=ROI(2),1);
-                iy_1 = find(ixondata(n).Y>=ROI(3),1);
-                iy_2 = find(ixondata(n).Y>=ROI(4),1);
-                x = ixondata(n).X(ix_1:ix_2);
-                y = ixondata(n).Y(iy_1:iy_2);   
-                z = ixondata(n).Z(iy_1:iy_2,ix_1:ix_2,kk);    
-                tic;
-                fprintf(['(' num2str(ii) '/' num2str(nStripes) ...
-                    ') binning stripe into lattice ...']);   
-                qgmdata_stripe(n).LatticeBin(ii) = binLattice(x,y,z,opts); 
-                t2=toc;
-                disp(['done (' num2str(t2,3) ' sec.)']);   
+            if isfield(ixondata(jj),'RotationMask')
+               opts.Mask =  ixondata(jj).RotationMask;
+            end
 
-            end    
-        end
+            ROI=stripes(jj).ROI(:,:,ii);
+
+            ix_1 = find(ixondata(jj).X>=ROI(1),1);
+            ix_2 = find(ixondata(jj).X>=ROI(2),1);
+            iy_1 = find(ixondata(jj).Y>=ROI(3),1);
+            iy_2 = find(ixondata(n).Y>=ROI(4),1);
+            x = ixondata(jj).X(ix_1:ix_2);
+            y = ixondata(jj).Y(iy_1:iy_2);   
+            z = ixondata(jj).Z(iy_1:iy_2,ix_1:ix_2,kk);    
+            tic;
+            fprintf(['(' num2str(ii) '/' num2str(nStripes) ...
+                ') binning stripe into lattice ...']);   
+            qgmdata_stripe(jj).LatticeBin(ii) = binLattice(x,y,z,opts); 
+            t2=toc;
+            disp(['done (' num2str(t2,3) ' sec.)']);   
+
+       
+
+        end    
     end
-end
+    
 
-threshold = 1500;
+%%  Digitize into lattice sites
 
 
+    threshold_dig = 1500;
 
-for kk=1:length(ixondata)
 
-    nStripes = length(stripes(kk).xCOM);
-    igood = 0;
+    nStripes = length(stripes(jj).xCOM);
+
+    track_good = zeros(1,nStripes);
 
     for ii = 1:nStripes
 
         LatticeDig = struct;
   
-        x = qgmdata_stripe(kk).LatticeBin(ii).n1;
-        y = qgmdata_stripe(kk).LatticeBin(ii).n2;
-        Zdig = qgmdata_stripe(kk).LatticeBin(ii).Zbin>=threshold; 
+        x = qgmdata_stripe(jj).LatticeBin(ii).n1;
+        y = qgmdata_stripe(jj).LatticeBin(ii).n2;
+        Zdig = qgmdata_stripe(jj).LatticeBin(ii).Zbin>=threshold_dig; 
         Natoms = sum(sum(Zdig));        % Total number of atoms
 
 
@@ -262,23 +251,54 @@ for kk=1:length(ixondata)
         LatticeDig.Yc = Yc;
         LatticeDig.Xs = Xs;
         LatticeDig.Ys = Ys;  
+
+
         
-%         if (isnan(LatticeDig.Yc)==0)
-            igood = igood+1;
-            qgmdata_stripe(kk).LatticeDig(igood) = LatticeDig;
+        if Natoms>5
+
+            track_good(ii) = 1;
+            qgmdata_stripe(jj).LatticeDig(sum(track_good)) = LatticeDig;
+
+        end
+
             
-
-%         else
-
-%             fprintf('Throwing out stripe %.0f for run %.0f \n',[ii kk]);
-               
-%         end
 
     end
 
-    fprintf('%.0f good stripes in run %.0f  \n',[igood kk]);
+    fprintf('%.0f good stripes in run %.0f  \n',[sum(track_good) jj]);
     
+    %clear info of bad stripes
+    stripes(jj).ROI = stripes(jj).ROI(:,:,find(track_good));
+    stripes(jj).xCOM = stripes(jj).xCOM(find(track_good));
+    stripes(jj).yCOM = stripes(jj).yCOM(find(track_good));
+
+    x_stripes = x_stripes(find(track_good));
+    y_stripes = y_stripes(find(track_good));
+    z_stripes = z_stripes(find(track_good));
+
+        %% Show all Stripes
     
+    hFme = figure(2001);
+    clf
+    
+    for kk=1:length(stripes(jj).xCOM)
+
+       ld = qgmdata_stripe(jj).LatticeDig(kk);
+
+       subplot(length(z_stripes),2,2*kk-1);
+       imagesc(x_stripes{kk},y_stripes{kk},z_stripes{kk}); 
+       axis equal tight
+       title('Stripe '+string(kk)); 
+
+       subplot(length(z_stripes),2,2*kk);
+       imagesc(ld.n1,ld.n2,ld.Zdig); 
+       axis equal tight
+       title('Stripe '+string(kk));
+
+
+      
+    end
+
 end   
-keyboard
+
 end

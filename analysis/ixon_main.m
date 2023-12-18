@@ -375,7 +375,7 @@ if ixon_doStandardAnalysis;ixon_StandardAnalysis;end
 if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis
 if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
-%% Stripe Analysis
-if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 %% Quantum Gas Micrscopy
 if ixon_doQGM; ixon_QGM;end
+%% Stripe Analysis
+if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end

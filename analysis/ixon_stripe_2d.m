@@ -115,7 +115,7 @@ end
 ixon_doStripeCOM = 1;
 if ixon_doStripeCOM
 
-    [ixondata,stripes,qgmdata_stripes] = ixon_stripeCOM(ixondata,stripes);
+    [ixondata,stripes,qgmdata_stripes] = ixon_stripeCOM2(ixondata,stripes);
     
     % Save the output data
     filename=fullfile(ixon_imgdir,'figures','qgmdata_stripes.mat');
