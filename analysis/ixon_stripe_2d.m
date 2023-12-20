@@ -78,12 +78,13 @@ end
 if ixon_doAnalyzeStripes2D
     stripes_modify = stripes;
 %     phi_unwrap = unwrapPhase(xvals,[stripes_modify.phi]);
-    
+
     phi0=0.3*pi;
-       phi_unwrap = ([stripes_modify.phi]/(2*pi)-round(([stripes_modify.phi]-phi0)/(2*pi)))*2*pi;
+    phi_unwrap = ([stripes_modify.phi]/(2*pi)-round(([stripes_modify.phi]-phi0)/(2*pi)))*2*pi;
+
 
      for kk=1:length(stripes_modify)
-         stripes_modify(kk).phi = phi_unwrap(kk);
+%          stripes_modify(kk).phi = phi_unwrap(kk);
 %         stripes(kk).phi = mod(stripes(kk).phi+pi/2,(2*pi))-pi/2;
      end
 
@@ -115,16 +116,31 @@ if ixon_doFocusStripes
     ylabel('focus position (px)');  
 end
 
+%% Stripe COM
+ixon_doStripeCOM = 1;
+if ixon_doStripeCOM
+
+    [ixondata,stripes,qgmdata_stripes] = ixon_stripeCOM2(ixondata,stripes);
+    
+    % Save the output data
+    filename=fullfile(ixon_imgdir,'figures','qgmdata_stripes.mat');
+    save(filename,'qgmdata_stripes');
+
+end
+
 %% Stability
 
 ixon_doStripeStability = 1;
 
-if ixon_doStripeStability && isequal(ixon_xVar,'ExecutionDate')
+if ixon_doStripeStability 
    hFme = figure;
    hFme.Color='w';
    hFme.Position=[100 500 1400 300];
    
-   phi0 = 0.3*2*pi;
+   P = [ixondata.Params];
+   xvals = [P.ExecutionDate];
+   
+   phi0 = 0.6*2*pi;
    
    phi_err = [stripes.phi_err];
    phi = [stripes.phi];

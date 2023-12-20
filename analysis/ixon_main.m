@@ -84,7 +84,7 @@ end
 varType             = 'param'; % always select 'param' for now 
 ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'ExecutionDate'; % Variable Name
+ixon_xVar           = 'conductivity_mod_time'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -128,8 +128,8 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 0;        % Deconvolve with PSF
-img_opt.PSF                 = [1.3163 51 12]; % PSF parameters [sigma, N, Niter]
+img_opt.doPSF               = 1;        % Deconvolve with PSF
+img_opt.PSF                 = [1.3163 51 21]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
 img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
@@ -375,7 +375,7 @@ if ixon_doStandardAnalysis;ixon_StandardAnalysis;end
 if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis
 if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
-%% Stripe Analysis
-if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 %% Quantum Gas Micrscopy
 if ixon_doQGM; ixon_QGM;end
+%% Stripe Analysis
+if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
