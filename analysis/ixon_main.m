@@ -96,15 +96,15 @@ ixon_doBoxCount             = 1;
 ixon_doGaussFit             = 0;
 
 % Analysis to run
-ixon_doStandardAnalysis     = 1;
+ixon_doStandardAnalysis     = 0;
 ixon_doPlotProfiles         = 0;
-ixon_doAnimate              = 1;    % Animate in position domain
+ixon_doAnimate              = 0;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
-ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
+ixon_doAnalyzeStripes2D     = 1;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-ixon_doQGM                  = 1;
+ixon_doQGM                  = 0;
 
 
 %% Image Processing Options

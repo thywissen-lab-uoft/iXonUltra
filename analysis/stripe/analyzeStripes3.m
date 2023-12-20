@@ -10,6 +10,8 @@ if nargin==2
    opts.EndDelay=1;
 end
 
+ind = 1;
+
 %% Sort the data by the parameter given
 % Sort the data by the xVar and grab it.
 
@@ -41,7 +43,7 @@ colormap(purplemap);
 
 % Image Plot
 ax1=subplot(4,4,[1 2 5 6 9 10 13 14]);    
-hImg_raw=imagesc(ixondata(1).X,ixondata(1).Y,ixondata(1).Z);
+hImg_raw=imagesc(ixondata(1).X,ixondata(1).Y,ixondata(1).Z(:,:,ind));
 set(gca,'ydir','normal');
 axis equal tight  
 hold on
@@ -52,7 +54,7 @@ pCirc=plot(0,0,'-','color',co(1,:),'linewidth',2);
 
 % Residue plot
 ax3=subplot(4,4,[11 15]);    
-hImg_err=imagesc(ixondata(1).X,ixondata(1).Y,ixondata(1).Z);
+hImg_err=imagesc(ixondata(1).X,ixondata(1).Y,ixondata(1).Z(:,:,ind));
 set(gca,'ydir','normal');
 axis equal tight
 % colorbar
@@ -120,7 +122,7 @@ for kk=1:length(ixondata)
     fprintf([num2str(kk) '/' num2str(length(ixondata)) ' ']);
    
     % Grab the data
-    z = ixondata(kk).Z;
+    z = ixondata(kk).Z(:,:,ind);
     x = ixondata(kk).X;
     y = ixondata(kk).Y;
     [xx,yy] = meshgrid(x,y);

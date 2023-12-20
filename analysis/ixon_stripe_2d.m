@@ -77,7 +77,11 @@ end
     %%
 if ixon_doAnalyzeStripes2D
     stripes_modify = stripes;
-    phi_unwrap = unwrapPhase(xvals,[stripes_modify.phi]);
+%     phi_unwrap = unwrapPhase(xvals,[stripes_modify.phi]);
+    
+    phi0=0.3*pi;
+       phi_unwrap = ([stripes_modify.phi]/(2*pi)-round(([stripes_modify.phi]-phi0)/(2*pi)))*2*pi;
+
      for kk=1:length(stripes_modify)
          stripes_modify(kk).phi = phi_unwrap(kk);
 %         stripes(kk).phi = mod(stripes(kk).phi+pi/2,(2*pi))-pi/2;
@@ -120,7 +124,7 @@ if ixon_doStripeStability && isequal(ixon_xVar,'ExecutionDate')
    hFme.Color='w';
    hFme.Position=[100 500 1400 300];
    
-   phi0 = 0.9*2*pi;
+   phi0 = 0.3*2*pi;
    
    phi_err = [stripes.phi_err];
    phi = [stripes.phi];
@@ -157,7 +161,22 @@ if ixon_doStripeStability && isequal(ixon_xVar,'ExecutionDate')
     ax2.Position = [ax1.Position(1)+ax1.Position(3)+.05 ...
         ax1.Position(2) .17 ax1.Position(4)];
 
-    histogram(phi_unwrap/(2*pi),20);
+   h = histogram(phi_unwrap/(2*pi),20);
+   bw = h.BinWidth;
+   
+   pdg = fitdist(phi_unwrap'/(2*pi),'normal');
+   hold on
+   
+   tt=linspace(-5,5,1e3)+phi0/(2*pi);
+   plot(tt,normpdf(tt,pdg.mu,pdg.sigma)*bw*numel(phi_unwrap),'r-','linewidth',2);
+   
+   str = ['$' num2str(round(pdg.mu,3)) '\pm' num2str(round(pdg.sigma,3)) '$'];
+   
+   text(.01,.99,str,'units','normalized','fontsize',12,'interpreter','latex',...
+       'verticalalignment','top');
+    
+    
+    
      set(gca,'yaxislocation','right');
      xlabel('phase (2\pi)');
      ylabel('occurences','fontsize',8);
