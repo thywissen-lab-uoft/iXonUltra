@@ -628,15 +628,19 @@ f_fit = f(cond_real>0);
 cond_real_fit = cond_real(cond_real>0);
 
 %Drude Model Fit
-myfunc_real = @(A,B,C,w) A*(B./(1+((w-C)*B).^2));
-myfunc_imag = @(A,B,C,w) A*((w-C)*B.^2./(1+((w-C)*B).^2));
+% myfunc_real = @(A,B,C,w) A*(B./(1+((w-C)*B).^2));
+% myfunc_imag = @(A,B,C,w) A*((w-C)*B.^2./(1+((w-C)*B).^2));
+
+%LRC Model Fit
+myfunc_real = @(A,B,C,w) A*((B.*w.^2)./((w.^2-C.^2).^2+(w.*B).^2));
+myfunc_imag = @(A,B,C,w) A*((w.^2-C.^2).*w./((w.^2-C.^2).^2+(w*B).^2));
 
 myfit_real = fittype(@(A,B,C,w) myfunc_real(A,B,C,w),'independent',{'w'},...
         'coefficients',{'A','B','C'});
 myfit_imag = fittype(@(A,B,C,w) myfunc_imag(A,B,C,w),'independent',{'w'},...
         'coefficients',{'A','B','C'});
 opt_real = fitoptions(myfit_real);
-opt_real.StartPoint = [1900 0.01 2*pi*50];
+% opt_real.StartPoint = [1900 0.01 2*pi*50];
 fout_real = fit((2*pi*f)',cond_real',myfit_real,opt_real);
 
 opt_imag = fitoptions(myfit_imag);
@@ -645,10 +649,10 @@ fout_imag = fit((2*pi*f)',cond_imag',myfit_imag,opt_imag);
 
 
 m_real = hbar/(fout_real.A*aL^2);
-Gamma_real = 1/fout_real.B;
+Gamma_real = fout_real.B;
 
 m_imag = hbar/(fout_imag.A*aL^2);
-Gamma_imag = 1/fout_imag.B;
+Gamma_imag = fout_imag.B;
 
 ff = 0:0.001:150;
 f4 = figure(3216)
@@ -661,8 +665,8 @@ hold on
 plot(ff,myfunc_real(fout_real.A,fout_real.B,fout_real.C,2*pi*ff))
 plot(ff,myfunc_real(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff),'--')
 hold on
-text(1,3.3*2*pi,'$y = A\frac{B}{1+(\omega-C)^2B^2}$', 'Interpreter','latex')
-text(1,3*2*pi,['$\Gamma = 1/B = 2\pi\times$' num2str(round(Gamma_real/(2*pi),2)) ' Hz'], 'Interpreter','latex')
+text(1,3.3*2*pi,'$y = A\frac{\omega^2B}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex')
+text(1,3*2*pi,['$\Gamma = B = 2\pi\times$' num2str(round(Gamma_real/(2*pi),2)) ' Hz'], 'Interpreter','latex')
 text(1,2.7*2*pi,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_real/amu,2)) ' amu'], 'Interpreter','latex')
 text(1,2.4*2*pi,['$C = 2\pi\times$' num2str(round(fout_real.C/(2*pi),2)) ' Hz'], 'Interpreter','latex')
 xlabel('frequency (Hz)')
@@ -677,8 +681,8 @@ hold on;
 plot(ff,myfunc_imag(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff))
 plot(ff,myfunc_imag(fout_real.A,fout_real.B,fout_real.C,2*pi*ff),'--')
 hold on;
-text(1,24,'$y = A\frac{(\omega-C)B^2}{1+(\omega-C)^2B^2}$', 'Interpreter','latex')
-text(1,22,['$\Gamma = 1/B = 2\pi\times$' num2str(round(Gamma_imag/(2*pi),2)) ' Hz'], 'Interpreter','latex')
+text(1,24,'$y = A\frac{\omega(\omega^2-C^2)}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex')
+text(1,22,['$\Gamma = B = 2\pi\times$' num2str(round(Gamma_imag/(2*pi),2)) ' Hz'], 'Interpreter','latex')
 text(1,20,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_imag/amu,2)) ' amu'], 'Interpreter','latex')
 text(1,18,['$C = 2\pi\times$ ' num2str(round(fout_imag.C/(2*pi),2)) ' Hz'], 'Interpreter','latex')
 
