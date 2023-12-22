@@ -41,6 +41,12 @@ qgm_AssessLattice = 1;
 
 qgm_doDigitalAnalysis = 1;
 
+qgm_doCOM = 0;
+
+if ixon_doAnalyzeStripes2D
+    qgm_doCOM = 1;
+end
+
 %% Using the FFT find the k vectors of the lattice and the phase
 % Using the FFT, find the kvectors of the lattice and fit them.  The
 % k-vectors give the lattice spacing.
@@ -226,4 +232,10 @@ end
 %% 
 if qgm_doDigitalAnalysis
    qgm_DigitalAnalysis; 
+end
+
+%% 
+if qgm_doCOM
+
+    qgm_COM2;
 end

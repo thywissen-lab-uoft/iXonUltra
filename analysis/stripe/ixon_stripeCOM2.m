@@ -153,12 +153,21 @@ for jj=1:length(ixondata)
     
     end
 
-    stripes(jj).ROI = ROI;
+%     [y_sort,sort_i] = sort(abs(y_coms-yC));
+% 
+%     x_coms = x_coms(sort_i);
+%     y_coms = y_coms(sort_i);
+%     ROI = ROI(:,:,sort_i);
+%     stripes(jj).ind  = sort_i;
 
+    stripes(jj).ROI = ROI;
     stripes(jj).xCOM = x_coms;
     stripes(jj).yCOM = y_coms;
+
+   
     
     z0 = sum(stripe_sum,'all');
+
 
         %% Bin into Lattice Sites
 % Having calculated the lattice spacing and phase. Bin all counts into a
@@ -254,7 +263,7 @@ for jj=1:length(ixondata)
 
 
         
-        if Natoms>5
+        if Natoms>2
 
             track_good(ii) = 1;
             qgmdata_stripe(jj).LatticeDig(sum(track_good)) = LatticeDig;
@@ -298,6 +307,8 @@ for jj=1:length(ixondata)
 
       
     end
+
+    keyboard;
 
 end   
 
