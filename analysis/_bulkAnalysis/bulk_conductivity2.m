@@ -111,66 +111,167 @@
 % data = [all_data.(fname)];
 % pddir = 'X:\LabJackLogs\ODTQPD\2023\2023.12\12.19';
 
-%% 
+% %% DEC 7TH + 19TH RUN
+% 
+% runs=[
+%     2023 12 07 05;
+%     2023 12 07 06;
+%     2023 12 07 07;
+%     2023 12 07 08;
+%     2023 12 07 09;
+%     2023 12 07 10;
+%     2023 12 07 11;
+%     2023 12 07 12;
+%     2023 12 07 13;
+%     2023 12 07 14;
+%     2023 12 07 15;
+%     2023 12 07 16;
+%     2023 12 07 17;
+%     2023 12 07 18;
+%     2023 12 07 19;
+%     2023 12 07 20;
+%     2023 12 07 21;
+%     2023 12 07 22;
+%     2023 12 07 23;
+%     2023 12 07 24;
+%     2023 12 07 25;
+%     2023 12 07 26;
+%     2023 12 07 27;
+%     2023 12 07 28;
+%     2023 12 07 29;
+%     2023 12 07 30;
+%     2023 12 07 31;
+%     2023 12 07 32;
+%     2023 12 07 33;
+%     2023 12 07 34;
+%     2023 12 07 35;
+%     2023 12 19 07;
+%     2023 12 19 08;
+%     2023 12 19 09;
+%     2023 12 19 10;
+%     2023 12 19 11;
+%     2023 12 19 12;
+%     2023 12 19 13;
+%     2023 12 19 14;
+%     2023 12 19 15;
+%     2023 12 19 16;
+%     2023 12 19 17;
+%     ];
+% 
+% % fit_types = {''};
+% data_label = '2.5 Er'; 
+% dVar = 'Xc';
+% varname = 'combined_shake_stripe_25Er_2v2v_190G_75mW';
+% n = 600;
+% 
+% clear data
+% fname = 'digdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
+% 
+
+ %% JAN 3RD RUN
+% % %
+% 
+% 
+% runs=[
+%     2024 01 03 03;
+%     2024 01 03 04;
+%     2024 01 03 05;
+%     2024 01 03 06;
+%     2024 01 03 07;
+%     2024 01 03 08;
+%     2024 01 03 09;
+%     2024 01 03 10;
+%     2024 01 03 11;
+%     2024 01 03 12;
+%     2024 01 03 13;
+% 
+%     ];
+% 
+% % fit_types = {''};
+% data_label = '2.5 Er'; 
+% dVar = 'Xc';
+% varname = 'shake_stripe_25Er_1_5v1_5v_190G_80mW';
+% n = 500;
+% % 
+% % %
+% clear data
+% fname = 'digdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
+
+%% JAN 4th RUN
 
 runs=[
-    2023 12 07 05;
-    2023 12 07 06;
-    2023 12 07 07;
-    2023 12 07 08;
-    2023 12 07 09;
-    2023 12 07 10;
-    2023 12 07 11;
-    2023 12 07 12;
-    2023 12 07 13;
-    2023 12 07 14;
-    2023 12 07 15;
-    2023 12 07 16;
-    2023 12 07 17;
-    2023 12 07 18;
-    2023 12 07 19;
-    2023 12 07 20;
-    2023 12 07 21;
-    2023 12 07 22;
-    2023 12 07 23;
-    2023 12 07 24;
-    2023 12 07 25;
-    2023 12 07 26;
-    2023 12 07 27;
-    2023 12 07 28;
-    2023 12 07 29;
-    2023 12 07 30;
-    2023 12 07 31;
-    2023 12 07 32;
-    2023 12 07 33;
-    2023 12 07 34;
-    2023 12 07 35;
-    2023 12 19 07;
-    2023 12 19 08;
-    2023 12 19 09;
-    2023 12 19 10;
-    2023 12 19 11;
-    2023 12 19 12;
-    2023 12 19 13;
-    2023 12 19 14;
-    2023 12 19 15;
-    2023 12 19 16;
-    2023 12 19 17;
+    2024 01 04 03;
+    2024 01 04 04;
+    2024 01 04 05;
+    2024 01 04 06;
+    2024 01 04 07;
+    2024 01 04 08;
+    2024 01 04 09;
+    2024 01 04 10;
+    2024 01 04 11;
+    2024 01 04 12;
+    2024 01 04 13;
+
     ];
 
 % fit_types = {''};
 data_label = '2.5 Er'; 
 dVar = 'Xc';
-varname = 'combined_shake_stripe_25Er_2v2v_190G_75mW';
-n = 400;
+varname = 'shake_stripe_25Er_2v2v_195G_80mW';
+n = 500;
 % 
 % %
 clear data
 fname = 'digdata';
 [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
 data = [all_data.(fname)];
+%% JAN 4th RUN
 
+runs=[
+    2024 01 16 04;
+    2024 01 16 05;
+    2024 01 16 06;
+    2024 01 16 07;
+    2024 01 16 08;
+    2024 01 16 09;
+    2024 01 16 10;
+    2024 01 16 11;
+    2024 01 16 12;
+    2024 01 16 13;
+    2024 01 16 14;
+    2024 01 16 15;
+    2024 01 16 16;
+    2024 01 16 17;
+    2024 01 16 18;
+    2024 01 16 19;
+    2024 01 16 20;
+    2024 01 16 21;
+    2024 01 16 22;
+    2024 01 16 23;
+    2024 01 16 24;
+    2024 01 16 25;
+    2024 01 16 26;
+    2024 01 16 27;
+    2024 01 16 28;
+    2024 01 16 29;
 
+    ];
+
+% fit_types = {''};
+data_label = '2.5 Er'; 
+dVar = 'Xc';
+varname = 'shake_stripe_25Er_4v4v_198G_85mW';
+n = 500;
+% 
+% %
+clear data
+fname = 'digdata';
+[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+data = [all_data.(fname)];
 %%
 % runs=[
 %     2023 10 07 02;
@@ -330,7 +431,8 @@ for nn=1:length(data)
     
     fname = ['ODTQPD_' fme '.mat'];
     qpdfile = fullfile(pddir,fname);
-       
+%     keyboard
+    %This seems like a very wrong thing to do
     if ~exist(qpdfile)
         warning('cant find pd file');
         qpdfile = fullfile(pddir,'ODTQPD_2023-10-07_19-41-04.mat');
@@ -533,7 +635,7 @@ for nn=1:length(data)
 end
 
 
-f1=figure(3213)
+f1=figure(5213)
 clf
 f1.WindowStyle='docked';
 subplot(131);
@@ -558,7 +660,7 @@ grid on
 %%
 
 %%
-f2=figure(3214)
+f2=figure(5214)
 clf
 f2.WindowStyle='docked';
 
@@ -581,7 +683,7 @@ ylabel('N atoms');
 xlabel('Bfield (G)');
 grid on
 %%
-f3=figure(125)
+f3=figure(5126)
 clf
 f3.WindowStyle='docked';
 
@@ -655,7 +757,7 @@ m_imag = hbar/(fout_imag.A*aL^2);
 Gamma_imag = fout_imag.B;
 
 ff = 0:0.001:150;
-f4 = figure(3216)
+f4 = figure(5216)
 clf
 f4.WindowStyle ='docked';
 
