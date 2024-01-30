@@ -63,7 +63,7 @@ if ixon_doAnalyzeStripes2D
     stripe_2d_opts.Theta=[10 190]; % Specify the domain (MUST BE 180 DEGREES)
     stripe_2d_opts.saveAnimation=1;        % save the animation?
     stripe_2d_opts.StartDelay=1;
-    stripe_2d_opts.MidDelay=.25;
+    stripe_2d_opts.MidDelay=.1;
     stripe_2d_opts.EndDelay=1;
     stripe_2d_opts.CLim = [0 100];
     
@@ -76,13 +76,19 @@ if ixon_doAnalyzeStripes2D
 end
     %%
 if ixon_doAnalyzeStripes2D
-    stripes_modify = stripes;
-%     phi_unwrap = unwrapPhase(xvals,[stripes_modify.phi]);
-     for kk=1:length(stripes_modify)
+%     stripes_modify = stripes;
+%      phi_unwrap = unwrapPhase(xvals,[stripes_modify.phi]);
+%      for kk=1:length(stripes_modify)
 %          stripes_modify(kk).phi = phi_unwrap(kk);
 %         stripes(kk).phi = mod(stripes(kk).phi+pi/2,(2*pi))-pi/2;
-     end
+%      end
 
+stripes_modify = stripes;
+phi_unwrap = unwrapPhaseTime(xvals,[stripes_modify.phi]);
+     for kk=1:length(stripes_modify)
+         stripes_modify(kk).phi = phi_unwrap(kk);
+        stripes(kk).phi = mod(stripes(kk).phi+pi/2,(2*pi))-pi/2;
+     end
 
     hF_stripe_summary = ixon_stripeSummary(stripes_modify,xvals,stripe_2d_opts);
 
@@ -112,7 +118,7 @@ if ixon_doFocusStripes
 end
 
 %% Stripe COM
-ixon_doStripeCOM = 1;
+ixon_doStripeCOM = 0;
 if ixon_doStripeCOM
 
     [ixondata,stripes,qgmdata_stripes] = ixon_stripeCOM2(ixondata,stripes);

@@ -3098,6 +3098,8 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             gui_saveData.Date = data.Date;
             gui_saveData.FileName = data.Name;
             gui_saveData.Params = data.Params;
+            gui_saveData.Flags = data.Flags;
+            
             
             if isfield(data,'BoxCount')
                 BoxCount = data.BoxCount;
@@ -3110,6 +3112,10 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             
            if isfield(data,'StripeFit')
                gui_saveData.StripeFit = data.StripeFit; 
+           end
+           
+            if isfield(data,'StripeFocus')
+               gui_saveData.StripeFocus = data.StripeFocus; 
            end
             
            
