@@ -143,7 +143,7 @@ for nn=1:length(data)
 %     gC=0;
     
 %     gB=21-1*nn;
-%     gC=-2;
+     gC=-2;
     gB = Tguess(nn);
     gE = range(X);
 
