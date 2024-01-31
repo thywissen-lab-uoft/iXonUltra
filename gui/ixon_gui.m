@@ -2651,10 +2651,6 @@ pHistBdivide = plot([1 1]*50,[0 100],'k-','parent',ax_hB1);
 ylabel('occurences');
 xlabel('counts per lattice site');
 
-
-% hold on
-
-
 pPDF1a = plot(1,1,'-','parent',ax_hB1,'color',co(1,:),'linewidth',3);
 
 set(ax_hB1,'box','on','linewidth',.1,'fontsize',12,'units','normalized',...
@@ -3035,12 +3031,10 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
 %% Binned Histgoram Callbacks
 
-    function updateBinnedHistogramGraphics
-        
+    function updateBinnedHistogramGraphics        
         if ~isfield(data,'LatticeHistogram')
             return;
-        end         
-        
+        end                 
         
         imgnum = menuSelectImg.Value;        
         x = data.LatticeHistogram(imgnum).Centers;
@@ -3255,17 +3249,19 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     %     save(filename,'gui_saveData');
     %     disp(' done');    
     % end       
-        % updateGraphics; 
-        
+        % updateGraphics;        
+
+
+        updatePositionAnalysisGraphics;
+    end
+
+    function saveGUIData       
         if doSaveGUIAnalysis
-            gui_saveData = struct;
-            
-            
+            gui_saveData = struct;     
             gui_saveData.Date = data.Date;
             gui_saveData.FileName = data.Name;
             gui_saveData.Params = data.Params;
-            gui_saveData.Flags = data.Flags;
-            
+            gui_saveData.Flags = data.Flags;            
             
             if isfield(data,'BoxCount')
                 BoxCount = data.BoxCount;
@@ -3282,8 +3278,11 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
            
             if isfield(data,'StripeFocus')
                gui_saveData.StripeFocus = data.StripeFocus; 
-           end
+            end
             
+            if isfield(data,'BinStripe')
+               gui_saveData.BinStripe = data.BinStripe; 
+            end
            
             filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
             filenames={filenames.name};
@@ -3304,10 +3303,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             fprintf('%s',[filename ' ...']);
             save(filename,"-struct",'gui_saveData');
             disp(' done');       
-        end
-
-
-        updatePositionAnalysisGraphics;
+        end 
     end
 
     function updatePositionAnalysisGraphics
@@ -3396,7 +3392,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     
     %% Momentum Space Analysis
     if hc_anlK_auto.Value
-       analyze_k        
+       analyze_k       
     end
     
     if hc_anlB_auto.Value
@@ -3424,7 +3420,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     drawnow;
     climtbl_X.Data=axImg.CLim;
 
- 
+    saveGUIData
 
     % disp('')
     % disp('Performing fits and analysis.');
