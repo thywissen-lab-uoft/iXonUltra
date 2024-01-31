@@ -8,7 +8,7 @@ if ~isfield(opts,'SumIndex')
     opts.SumIndex = 2;
 end
 
-ColorThreshold = [500 3000];
+ColorThreshold = [700 3000];
 %% Fit Functions
 
 fit_exp = fittype(@(A,n0,s,n) A.*exp(-(n-n0).^2/(2*s^2)),...
@@ -88,7 +88,7 @@ Pvec = Pvec(2:end);
 
 [~,ind]=max(Pvec);
 
-L=mean(nA);
+L = mean(nA);
 L = nA(ind);
 
 

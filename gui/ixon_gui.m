@@ -1473,9 +1473,12 @@ menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Positi
         imgnum = menuSelectImg.Value;
         switch menuSelectImgType.Value
             case 1
-                set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,imgnum));
+                set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,imgnum));                
+                set(hImg_K,'XData',data.f,'YData',data.f,'CData',data.ZfNorm(:,:,imgnum));
             case 2
                 set(hImg,'XData',data.X,'YData',data.Y,'CData',data.ZNoFilter(:,:,imgnum));
+                set(hImg_K,'XData',data.f,'YData',data.f,'CData',data.ZfNorm(:,:,imgnum));
+
         end
         if cAutoColor_X.Value;setClim('X');end  
         foo;
@@ -3227,6 +3230,13 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     end
     %% Position Space Analysis
     updatePositionAnalysis;
+    
+    %% Momentum Space Analysis
+    if hc_anlK_auto.Value
+       analyze_k
+    else
+        
+    end
   
 %% Update Fit Results (depreciated)
 
