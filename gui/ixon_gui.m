@@ -157,7 +157,8 @@ function SizeChangedFcn(~,~)
         hpADV.Position(2)       = hpAcq.Position(2)-hpADV.Position(4);
         hpAnl.Position(2)       = hpADV.Position(2)-hpAnl.Position(4);        
         hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
-        hpDig.Position(2)       = hpKspace.Position(2) - hpDig.Position(4);   
+        hpBin.Position(2)       = hpKspace.Position(2) - hpBin.Position(4);   
+        hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
         hpDisp_Select.Position(2) =hpNav.Position(2) - hpDisp_Select.Position(4);
         hpDisp_X.Position(2)    = hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
         hpDisp_K.Position(2)    = hpDisp_X.Position(2) - hpDisp_K.Position(4);     
@@ -1279,15 +1280,16 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
         end         
     end
 
-%% Digitization Panel
-hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
-hpDig.Position=[0 hpKspace.Position(2)-160 160 185];
+%% Binning Panel
+hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
+hpBin.Position=[0 hpKspace.Position(2)-150 160 150];
+
 
 % Button group for lattice basis
-bgBasis = uibuttongroup(hpDig,'units','pixels','backgroundcolor','w',...
+bgBasis = uibuttongroup(hpBin,'units','pixels','backgroundcolor','w',...
     'title','lattice basis (px)','fontsize',7);  
 bgBasis.Position(3:4)=[155 100];
-bgBasis.Position(1:2)=[1 hpDig.Position(4)-bgBasis.Position(4)-20];    
+bgBasis.Position(1:2)=[1 hpBin.Position(4)-bgBasis.Position(4)-20];    
 
 % Lattice Basis from FFT or manual specification
 uicontrol(bgBasis,'Style','radiobutton','String','from fft',...
@@ -1303,6 +1305,26 @@ tblBasis=uitable(bgBasis,'units','pixels','ColumnWidth',{30 30 50},...
     'CellEditCallback',@chBasis,'RowName',{'a1','a2'});
 tblBasis.Position(3:4)=tblBasis.Extent(3:4)+0*[18 0];
 tblBasis.Position(1:2)=[5 3];
+
+
+ttstr='auto do bin analysis';
+hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hpBin.Position(4)-35 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
+
+ttstr='bin stripe focus';
+hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe and focus','fontsize',7,...
+    'backgroundcolor','w','Position',[1 bgBasis.Position(2)-20 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
+
+% Refit button
+hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','analyze',...
+    'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor','w');
+hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
+
+%% Digitization Panel
+hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
+hpDig.Position=[0 hpBin.Position(2)-80 160 80];
 
 % Digitization Threshold Text
 hcDigThreshold=uicontrol(hpDig,'style','text','string','digitization threshold','fontsize',7,...
@@ -1323,7 +1345,6 @@ tblDigPixel=uitable('parent',hpDig,'units','pixels',...
     'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
 tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
-
 
 % Refit button
 hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
