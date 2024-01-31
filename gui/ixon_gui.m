@@ -1244,7 +1244,7 @@ tblROIK.Position(1:2)=[5 hc_anlK_auto.Position(2)-tblROIK.Position(4)];
 % Mask IR Checkbox
 hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','lattice basis and phase','fontsize',7,...
     'backgroundcolor','w','Position',[5 5 120 15],...
-    'ToolTipString',ttstr,'enable','on');
+    'ToolTipString',ttstr,'enable','on','value',1);
 hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 
 % Refit button
@@ -1390,14 +1390,18 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
         data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
         data = ixon_SharpnessBinned(data);  
         data = ixon_binnedHistogramFit(data);
-%         keyboard
-%         updateBinnedHistogram;
+        
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
     end
 %% Digitization Panel
 hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
-hpDig.Position=[0 hpBin.Position(2)-80 160 80];
+hpDig.Position=[0 hpBin.Position(2)-80 160 100];
+
+ttstr='auto do digital analysis';
+hc_anlD_auto=uicontrol(hpDig,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hpDig.Position(4)-35 hpDig.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
 
 % Digitization Threshold Text
 hcDigThreshold=uicontrol(hpDig,'style','text','string','digitization threshold','fontsize',7,...
@@ -2196,6 +2200,8 @@ tabStripe=uitab(hp,'Title','stripe','units','pixels','backgroundcolor','w');
 tabH=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
 tabK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
 tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
+tabBStripe=uitab(hp,'Title','binned stripe','units','pixels','backgroundcolor','w');
+
 tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
 tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
 tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
@@ -2935,48 +2941,40 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 %% Binned Histgoram Callbacks
 
     function updateBinnedHistogramGraphics
+        
         if ~isfield(data,'LatticeHistogram')
             return;
-        end 
+        end         
         
-        imgnum = menuSelectImg.Value;
         
+        imgnum = menuSelectImg.Value;        
         x = data.LatticeHistogram(imgnum).Centers;
         xe = data.LatticeHistogram(imgnum).Edges;
         y = data.LatticeHistogram(imgnum).N;        
-        Nthresh = histBtbl.Data(1,1);            
+        Nthresh = histBtbl.Data(1,1);           
 
         xL = x<=Nthresh;
-        xH = ~xL;
-        
+        xH = ~xL;        
         set(pHistB1,'XData',x(xL),'YData',y(xL));
         set(pHistB2,'XData',x(xH),'YData',y(xH));        
         pHistBdivide.Parent.YAxis(1).Limits = [0 max(pHistB1.YData)*1.1];
-        pHistBdivide.Parent.YAxis(2).Limits = [0 max(pHistB2.YData)*1.1];
-        
+        pHistBdivide.Parent.YAxis(2).Limits = [0 max(pHistB2.YData)*1.1];        
         pHistBdivide.Parent.XAxis.Limits = [0 max(x)*1.1];
-
         set(pHistBdivide,'Xdata',[1 1]*Nthresh,'Ydata',pHistBdivide.Parent.YAxis(1).Limits);
             
         
         if isfield(data.LatticeBin(imgnum),'PDFFit')
             foo0 = data.LatticeBin(imgnum).PDFFit.pdf0;
             n0 = numel(data.LatticeBin(imgnum).PDFFit.pdf0_counts);
-
             foo1 = data.LatticeBin(imgnum).PDFFit.pdf1;
             n1 = numel(data.LatticeBin(imgnum).PDFFit.pdf1_counts);
-
             t = linspace(min(x),max(x),1e3);
-
             tL = t<=Nthresh;
             tH = ~tL;
-
             bw = x(2)-x(1);
-
             set(pPDF1a,'XData',t(tL),'YData',n0*bw*foo0(t(tL)),'Visible','on');
             set(pPDF1b,'XData',t(tH),'YData',n0*bw*foo0(t(tH)),'Visible','on');
-            set(pPDF2,'XData',t(tH),'YData',n1*bw*foo1(t(tH)),'Visible','on');
-            
+            set(pPDF2,'XData',t(tH),'YData',n1*bw*foo1(t(tH)),'Visible','on');            
             str=['Fidelity $= ' num2str(round(data.LatticeBin(imgnum).PDFFit.Fidelity*100,3)) '\% $'];
             set(t_B1_top_right,'string',str,'Visible','on');
             
@@ -3303,9 +3301,15 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     
     %% Momentum Space Analysis
     if hc_anlK_auto.Value
-       analyze_k
-    else
-        
+       analyze_k        
+    end
+    
+    if hc_anlB_auto.Value
+        analyze_bin
+    end
+    
+    if hc_anlD_auto.Value
+        analyze_dig
     end
   
 %% Update Fit Results (depreciated)

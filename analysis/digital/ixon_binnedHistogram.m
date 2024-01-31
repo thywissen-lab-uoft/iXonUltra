@@ -1,5 +1,5 @@
 function data = ixon_binnedHistogram(data,Nbins)
-        if ~isfield(data,'LatticeDig')
+        if ~isfield(data,'LatticeBin')
            return;
         end      
        
@@ -30,6 +30,5 @@ function data = ixon_binnedHistogram(data,Nbins)
             LatticeHistogram.N = N;  
             data.LatticeHistogram(kk) = LatticeHistogram;            
         end  
-        
 end
 
