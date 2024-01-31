@@ -1284,20 +1284,162 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 %% Binning Panel
 hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
-hpBin.Position=[0 hpKspace.Position(2)-180 160 180];
+hpBin.Position=[0 hpKspace.Position(2)-180 160 200];
+
+
+ttstr='auto do bin analysis';
+hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hpBin.Position(4)-35 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
+
+% Table of ROIs
+tblROIB=uitable(hpBin,'units','pixels','ColumnWidth',{30 30 30 30},...
+    'ColumnEditable',true(ones(1,4)),'ColumnName',{'n1','n2','n1','n2'},...
+    'Data',[1 50 1 50],'FontSize',8,...
+    'CellEditCallback',@chROIB,'RowName',{});
+tblROIB.Position(3:4)=tblROIB.Extent(3:4)+0*[18 0];
+tblROIB.Position(1:2)=[5 hc_anlB_auto.Position(2)-tblROIB.Position(4)];
+
+% Callback function for changing ROI via table
+    function chROIB(src,evt)
+        if ~isfield(data,'LatticeBin')
+           return; 
+        end
+        
+        RL = [data.LatticeBin.n1(1) data.LatticeBin.n1(end) ...
+           data.LatticeBin.n2(1) data.LatticeBin.n2(end)];
+        
+        m=evt.Indices(1); n=evt.Indices(2);
+        
+        ROI=src.Data(m,:);
+        % Check that the data is numeric
+        if sum(~isnumeric(ROI)) || sum(isinf(ROI)) || sum(isnan(ROI))
+            warning('Incorrect data type provided for ROI.');
+            src.Data(m,n)=evt.PreviousData;
+            return;
+        end
+        
+        ROI=round(ROI);      % Make sure this ROI are integers   
+        % Check that limits go from low to high
+        if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
+           warning('Bad ROI specification given.');
+           ROI(evt.Indices(2))=evt.PreviousData;
+        end               
+        % Check that ROI is within image bounds
+        if ROI(1)<RL(1); ROI(1)=RL(1); end       
+        if ROI(3)<RL(3); ROI(3)=RL(3); end   
+        if ROI(4)>RL(4); ROI(4)=RL(4); end       
+        if ROI(2)>RL(2); ROI(2)=RL(2); end         
+        % Reassign the ROI
+        src.Data(m,:)=ROI;      
+        % Try to update ROI graphics
+        try
+            pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+            set(pROIB(m),'Position',pos);
+        catch
+           warning('Unable to change display ROI.');
+           src.Data(m,n)=evt.PreviousData;
+        end
+    end
+
+% Button to enable GUI selection of analysis ROI
+ttstr='Select the analysis ROI.';
+uicontrol(hpBin,'style','pushbutton','Cdata',img_Select,'Fontsize',10,...
+    'Backgroundcolor','w','Position',[130 tblROIB.Position(2)+25 18 18],...
+    'Callback',@slctROICBB,'ToolTipString',ttstr);
+
+% % Button to snap display ROI to the data ROI
+ttstr='Snap analysis ROI to display ROI.';
+uicontrol(hpBin,'style','pushbutton','Cdata',img_Snap,'Fontsize',10,...
+    'Backgroundcolor','w','Position',[130 tblROIB.Position(2)+7 18 18],...
+    'Callback',@snapPosAnalysisROIB,'ToolTipString',ttstr);
+
+    function snapPosAnalysisROIB(src,evt)        
+        if ~isfield(data,'LatticeBin')
+           return; 
+        end
+        
+        ROI = tbl_dROI_B.Data;
+        set(tblROIB,'Data',ROI);
+        pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+        set(pROIB,'Position',pos);
+    end
+
+% Button for maximizing the display limits
+ttstr='Max analysis ROI to full image size.';
+uicontrol(hpBin,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
+    'Backgroundcolor','w','Callback',@maxPosAnalysisROIB,...
+    'ToolTipString',ttstr,'Position',[130 tblROIB.Position(2)-11 18 18]);
+
+    function maxPosAnalysisROIB(~,evt)
+        if ~isfield(data,'LatticeBin')
+           return; 
+        end
+        ROI = [min(data.LatticeBin.n1) max(data.LatticeBin.n1) ...
+            min(data.LatticeBin.n2) max(data.LatticeBin.n2)];
+        tblROIB.Data = ROI;
+        pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+        set(pROIB,'Position',pos);
+    end
+
+
+% Callback for selecting an ROI based upon mouse click input.
+    function slctROICBB(~,~)
+        if ~isfield(data,'LatticeBin')
+           return; 
+        end
+        RL = [data.LatticeBin.n1(1) data.LatticeBin.n1(end) ...
+           data.LatticeBin.n2(1) data.LatticeBin.n2(end)];
+        
+        disp(['Selecting display ROI .' ...
+            ' Click two points that form the rectangle ROI.']);
+        set(hp,'SelectedTab',tabB);
+        [x1,y1]=ginputMe(1);          % Get a mouse click
+        x1=round(x1);y1=round(y1);  % Round to interger       
+        p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it        
+        [x2,y2]=ginputMe(1);          % Get a mouse click
+        x2=round(x2);y2=round(y2);  % Round it        
+        p2=plot(x2,y2,'+','color','r','linewidth',1,'markersize',10,'hittest','off');  % Plot it
+        % Create the ROI
+        ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
+        % Constrain ROI to image
+        if ROI(1)<RL(1); ROI(1)=RL(1); end       
+        if ROI(3)<RL(3); ROI(3)=RL(3); end   
+        if ROI(4)>RL(4); ROI(4)=RL(4); end       
+        if ROI(2)>RL(2); ROI(2)=RL(2); end           
+        % Try to update ROI graphics
+        tblROIB.Data=ROI;           
+        try
+            pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+            set(pROIB(1),'Position',pos);
+            drawnow;        
+        catch
+           warning('Unable to change ROI.');
+        end
+        delete(p1);delete(p2);                   % Delete markers
+    end
+
+
+
+
+
+
+
+
+
 
 % Button group for lattice basis
 bgBasis = uibuttongroup(hpBin,'units','pixels','backgroundcolor','w',...
     'title','lattice basis (px)','fontsize',7);  
-bgBasis.Position(3:4)=[155 100];
-bgBasis.Position(1:2)=[1 hpBin.Position(4)-bgBasis.Position(4)-20];    
+bgBasis.Position(3:4)=[155 90];
+bgBasis.Position(1:2)=[1 tblROIB.Position(2)-bgBasis.Position(4)];    
 
 % Lattice Basis from FFT or manual specification
 uicontrol(bgBasis,'Style','radiobutton','String','from fft',...
-    'Position',[5 65 65 20],'units','pixels','backgroundcolor','w','Value',1,'fontsize',7,...
+    'Position',[5 60 65 20],'units','pixels','backgroundcolor','w','Value',1,'fontsize',7,...
     'UserData','fft');
 uicontrol(bgBasis,'Style','radiobutton','String','manual',...
-    'Position',[65 65 65 20],'units','pixels','backgroundcolor','w','fontsize',7,...
+    'Position',[65 60 65 20],'units','pixels','backgroundcolor','w','fontsize',7,...
     'UserData','manual');
 
 tblBasis=uitable(bgBasis,'units','pixels','ColumnWidth',{30 30 50},...
@@ -1308,21 +1450,15 @@ tblBasis.Position(3:4)=tblBasis.Extent(3:4)+0*[18 0];
 tblBasis.Position(1:2)=[5 3];
 
 
-ttstr='auto do bin analysis';
-hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
-    'backgroundcolor','w','Position',[1 hpBin.Position(4)-35 hpBin.Position(3)-1 15],...
-    'ToolTipString',ttstr,'enable','on','Value',0);
-
-
 % Checkbox for image sharpness
 ttstr='Calculate histgoram';
 hc_anlB_Histogram=uicontrol(hpBin,'style','checkbox','string','histogram','fontsize',7,...
-    'backgroundcolor','w','Position',[1 bgBasis.Position(2)-20 hpBin.Position(3)-1 15],...
+    'backgroundcolor','w','Position',[1 bgBasis.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
 ttstr='bin stripe focus';
 hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe and focus','fontsize',7,...
-    'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-20 hpBin.Position(3)-1 15],...
+    'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
 % Refit button
@@ -1393,10 +1529,25 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
         
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
+        
+        if hc_anlB_stripe.Value
+            opts = struct;
+%             opts.Theta = [10 190];
+            
+            for ll = 1:length(data.LatticeBin)
+                n1 = data.LatticeBin(ll).n1;
+                n2 = data.LatticeBin(ll).n2;
+                Zb = data.LatticeBin(ll).Zbin;        
+                [out(ll),hF_bin_stripe] = ixon_fitStripe_dig(n1,n2,Zb,opts);
+            end
+            data.BinStripe = out;            
+        end  
+    
+    
     end
 %% Digitization Panel
 hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
-hpDig.Position=[0 hpBin.Position(2)-80 160 100];
+hpDig.Position=[0 hpBin.Position(2)-80 160 80];
 
 ttstr='auto do digital analysis';
 hc_anlD_auto=uicontrol(hpDig,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
@@ -1702,7 +1853,7 @@ hpDisp_B.Position=[160 hpDisp_K.Position(2)-120 160 120];
 tbl_dROI_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},...
     'columnname',{'n1i','n1f','n2i','n2f'},'UserData','B',...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
-    'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
+    'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 100 1 100]);
 tbl_dROI_B.Position(3:4)=tbl_dROI_B.Extent(3:4);
 tbl_dROI_B.Position(1:2)=[2 hpDisp_B.Position(4)-tbl_dROI_X.Position(4)-20];
 
@@ -2142,7 +2293,6 @@ tabStripe=uitab(hp,'Title','stripe','units','pixels','backgroundcolor','w');
 tabH=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
 tabK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
 tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
-tabBStripe=uitab(hp,'Title','binned stripe','units','pixels','backgroundcolor','w');
 
 tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
 tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
@@ -2484,6 +2634,9 @@ axis equal tight
 xlabel('lattice site (a_1)','fontsize',8);
 ylabel('lattice site (a_2)','fontsize',8);
 caxis([0 1]);
+
+% Box for ROI (this will become an array later)
+pROIB=rectangle('position',[1 1 500 500],'edgecolor',co(1,:),'linewidth',2,'hittest','off');
 
 %% Binned Histgoram
 

@@ -1,4 +1,4 @@
-function [out,hF] = ixon_fitStripe_dig(n1,n2,Zb,opts)
+function [out,hF1] = ixon_fitStripe_dig(n1,n2,Zb,opts)
 out = struct;
 if nargin~=4
     opts = struct;
@@ -161,17 +161,20 @@ ca = [0 0 0];
         linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
 
 
-hF=figure(2);
-hF.Color='w';
-hF.Position = [100 100 770 720];
+hF1=figure(901);
+hF1.Color='w';
+hF1.Position = [100 100 770 720];
 clf
 co=get(gca,'colororder');
 myc = [255,140,0]/255;
 subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19]);
 imagesc(n1,n2,Zb);
 axis equal tight
-colormap bone
+colormap([[0 0 0];winter; [1 0 0]]);
 % colormap(cc);
+c=colorbar('location','north','fontsize',6,'color',myc,...
+    'fontname','arial');
+c.Label.Color='b';
 
 xlabel('$n_1$ (site)','interpreter','latex');
 ylabel('$n_2$ (site)','interpreter','latex');
@@ -215,7 +218,8 @@ plot(Zs,ns,'k-','linewidth',1,'color','k');
 hold on
 nsFit = linspace(min(ns),max(ns),1e3);
 plot(feval(fout_s,nsFit),nsFit,'-','color',co(1,:),'linewidth',2);
-set(gca,'fontsize',14,'YAxisLocation','right','YColor',co(1,:),'fontname','times')
+set(gca,'fontsize',14,'YAxisLocation','right','YColor',co(1,:),'fontname','times',...
+    'Xaxislocation','top')
 ylabel('$n_2$ (site)','interpreter','latex');
 ylim([min(ns) max(ns)])
 plot(foo_env(nsFit),nsFit,'--','color',co(1,:),'linewidth',1)
@@ -234,6 +238,15 @@ set(gca,'ydir','normal','fontsize',14,'Xcolor',co(2,:),'fontname','times')
 xlabel('$n_1$ (site)','interpreter','latex');
 xlim([min(nt) max(nt)])
 
+
+subplot(5,5,25);
+plot(centers,scores,'ko','markerfacecolor',[.5 .5 .5]);
+xlabel('fringe position (site)');
+ylabel('score');
+set(gca,'fontsize',8);
+yL =get(gca,'YLim');
+ylim([0 yL(2)]);
+grid on
 end
 
 function y = erf_pulse(center,smooth_width,FWHM,xx) 
