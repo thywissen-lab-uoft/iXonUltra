@@ -1433,69 +1433,11 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
     end
 
     function analyze_dig(src,evt)
-% 
-%         if isfield(data,'LatticeBin')
-%             data = rmfield(data,'LatticeBin');
-%         end
-% 
-%         for kk=1:size(data.Z,3)
-%             opts = struct;
-% 
-%             switch bgBasis.SelectedObject.UserData
-%                 case 'fft'
-%                     if isfield(data,'LatticePhase')
-%                         a1 = data.LatticePhase(kk).a1;
-%                         a2 = data.LatticePhase(kk).a2;                        
-%                         p1 = data.LatticePhase(kk).p1;
-%                         p2 = data.LatticePhase(kk).p2;    
-%                     else
-%                         errordlg('Lattice phase not calculated yet.');
-%                         beep
-%                         return;                        
-%                     end
-%                 case 'manual'
-%                     a1 = tblBasis.Data(1,(1:2))';
-%                     a2 = tblBasis.Data(2,(1:2))';
-%                     p1 = tblBasis.Data(1,3);
-%                     p2 = tblBasis.data(2,3);
-%             end
-%             opts.ScaleFactor = 4;    
-%             opts.a1 = a1;
-%             opts.a2 = a2;
-%             opts.p1 = p1;
-%             opts.p2 = p2;     
-%             if isfield(data,'RotationMask')
-%                opts.Mask =  data.RotationMask;
-%             end
-%             ROI=tblROI.Data;
-%             data.ROI=ROI;               
-%             ix_1 = find(data.X>=ROI(1),1);
-%             ix_2 = find(data.X>=ROI(2),1);
-%             iy_1 = find(data.Y>=ROI(3),1);
-%             iy_2 = find(data.Y>=ROI(4),1);
-%             x = data.X(ix_1:ix_2);
-%             y = data.Y(iy_1:iy_2);   
-%             z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
-%             znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
-%             tic;
-%             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
-%                 ') binning into lattice ...']);    
-%            
-%             data.LatticeBin(kk) = binLattice(x,y,z,opts); 
-%             data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
-% 
-%             t2=toc;
-%             disp(['done (' num2str(t2,3) ' sec.)']);
-%         end 
-%         data = ixon_SharpnessBinned(data);  
-%         % try
-%         data = ixon_binnedHistogramFit(data);
-%         % end
         data = ixon_digitize(data,tblDig.Data);
-
-        updateBinnedHistogram;
-        updateBinnedGraphics;     
-        updateBinnedHistogramGraphics;                 
+                set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
+            'YData',data.LatticeDig(imgnum).n2,...
+            'CData',data.LatticeDig(imgnum).Zdig);                
+        updateCoM_D;            
     end
 
 %% Image Number Selector
