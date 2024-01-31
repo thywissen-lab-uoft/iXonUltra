@@ -1277,13 +1277,14 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
             
             updateReciprocalTextGraphics;
             reciprocalLatticeTextCB(cLat_K_text);
+            
+        
         end         
     end
 
 %% Binning Panel
 hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
-hpBin.Position=[0 hpKspace.Position(2)-150 160 150];
-
+hpBin.Position=[0 hpKspace.Position(2)-180 160 180];
 
 % Button group for lattice basis
 bgBasis = uibuttongroup(hpBin,'units','pixels','backgroundcolor','w',...
@@ -1312,9 +1313,16 @@ hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new im
     'backgroundcolor','w','Position',[1 hpBin.Position(4)-35 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
+
+% Checkbox for image sharpness
+ttstr='Calculate histgoram';
+hc_anlB_Histogram=uicontrol(hpBin,'style','checkbox','string','histogram','fontsize',7,...
+    'backgroundcolor','w','Position',[1 bgBasis.Position(2)-20 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','off','Value',1);
+
 ttstr='bin stripe focus';
 hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe and focus','fontsize',7,...
-    'backgroundcolor','w','Position',[1 bgBasis.Position(2)-20 hpBin.Position(3)-1 15],...
+    'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-20 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
 % Refit button
@@ -1322,6 +1330,71 @@ hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','analyze',...
     'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor','w');
 hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
 
+    function [a1, a2, p1, p2] = getLattice        
+        switch bgBasis.SelectedObject.UserData
+            case 'fft'
+                if isfield(data,'LatticePhase')
+                    a1 = data.LatticePhase(kk).a1;
+                    a2 = data.LatticePhase(kk).a2;                        
+                    p1 = data.LatticePhase(kk).p1;
+                    p2 = data.LatticePhase(kk).p2;    
+                else
+                    errordlg('Lattice phase not calculated yet.');
+                    beep
+                    return;                        
+                end
+            case 'manual'
+                a1 = tblBasis.Data(1,(1:2))';
+                a2 = tblBasis.Data(2,(1:2))';
+                p1 = tblBasis.Data(1,3);
+                p2 = tblBasis.data(2,3);
+        end
+    end
+
+    function analyze_bin(src,evt)
+         if isfield(data,'LatticeBin')
+            data = rmfield(data,'LatticeBin');
+        end
+
+        for kk=1:size(data.Z,3)
+            opts = struct;
+            [a1, a2, p1, p2] = getLattice;
+            opts.ScaleFactor = 4;    
+            opts.a1 = a1;
+            opts.a2 = a2;
+            opts.p1 = p1;
+            opts.p2 = p2;     
+            if isfield(data,'RotationMask')
+               opts.Mask =  data.RotationMask;
+            end
+            ROI=tblROI.Data;
+            data.ROI=ROI;               
+            ix_1 = find(data.X>=ROI(1),1);
+            ix_2 = find(data.X>=ROI(2),1);
+            iy_1 = find(data.Y>=ROI(3),1);
+            iy_2 = find(data.Y>=ROI(4),1);
+            x = data.X(ix_1:ix_2);
+            y = data.Y(iy_1:iy_2);   
+            z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
+            znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
+            tic;
+            fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
+                ') binning into lattice ...']);    
+           
+            data.LatticeBin(kk) = binLattice(x,y,z,opts); 
+            data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
+            t2=toc;
+            disp(['done (' num2str(t2,3) ' sec.)']);
+        end 
+
+        data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
+        data = ixon_SharpnessBinned(data);  
+        data = ixon_binnedHistogramFit(data);
+%         keyboard
+%         updateBinnedHistogram;
+        updateBinnedGraphics;     
+        updateBinnedHistogramGraphics;    
+    end
 %% Digitization Panel
 hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
 hpDig.Position=[0 hpBin.Position(2)-80 160 80];
@@ -1356,64 +1429,64 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
     end
 
     function analyze_dig(src,evt)
-
-        if isfield(data,'LatticeBin')
-            data = rmfield(data,'LatticeBin');
-        end
-
-        for kk=1:size(data.Z,3)
-            opts = struct;
-
-            switch bgBasis.SelectedObject.UserData
-                case 'fft'
-                    if isfield(data,'LatticePhase')
-                        a1 = data.LatticePhase(kk).a1;
-                        a2 = data.LatticePhase(kk).a2;                        
-                        p1 = data.LatticePhase(kk).p1;
-                        p2 = data.LatticePhase(kk).p2;    
-                    else
-                        errordlg('Lattice phase not calculated yet.');
-                        beep
-                        return;                        
-                    end
-                case 'manual'
-                    a1 = tblBasis.Data(1,(1:2))';
-                    a2 = tblBasis.Data(2,(1:2))';
-                    p1 = tblBasis.Data(1,3);
-                    p2 = tblBasis.data(2,3);
-            end
-            opts.ScaleFactor = 4;    
-            opts.a1 = a1;
-            opts.a2 = a2;
-            opts.p1 = p1;
-            opts.p2 = p2;     
-            if isfield(data,'RotationMask')
-               opts.Mask =  data.RotationMask;
-            end
-            ROI=tblROI.Data;
-            data.ROI=ROI;               
-            ix_1 = find(data.X>=ROI(1),1);
-            ix_2 = find(data.X>=ROI(2),1);
-            iy_1 = find(data.Y>=ROI(3),1);
-            iy_2 = find(data.Y>=ROI(4),1);
-            x = data.X(ix_1:ix_2);
-            y = data.Y(iy_1:iy_2);   
-            z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
-            znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
-            tic;
-            fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
-                ') binning into lattice ...']);    
-           
-            data.LatticeBin(kk) = binLattice(x,y,z,opts); 
-            data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
-
-            t2=toc;
-            disp(['done (' num2str(t2,3) ' sec.)']);
-        end 
-        data = ixon_SharpnessBinned(data);  
-        % try
-        data = ixon_binnedHistogramFit(data);
-        % end
+% 
+%         if isfield(data,'LatticeBin')
+%             data = rmfield(data,'LatticeBin');
+%         end
+% 
+%         for kk=1:size(data.Z,3)
+%             opts = struct;
+% 
+%             switch bgBasis.SelectedObject.UserData
+%                 case 'fft'
+%                     if isfield(data,'LatticePhase')
+%                         a1 = data.LatticePhase(kk).a1;
+%                         a2 = data.LatticePhase(kk).a2;                        
+%                         p1 = data.LatticePhase(kk).p1;
+%                         p2 = data.LatticePhase(kk).p2;    
+%                     else
+%                         errordlg('Lattice phase not calculated yet.');
+%                         beep
+%                         return;                        
+%                     end
+%                 case 'manual'
+%                     a1 = tblBasis.Data(1,(1:2))';
+%                     a2 = tblBasis.Data(2,(1:2))';
+%                     p1 = tblBasis.Data(1,3);
+%                     p2 = tblBasis.data(2,3);
+%             end
+%             opts.ScaleFactor = 4;    
+%             opts.a1 = a1;
+%             opts.a2 = a2;
+%             opts.p1 = p1;
+%             opts.p2 = p2;     
+%             if isfield(data,'RotationMask')
+%                opts.Mask =  data.RotationMask;
+%             end
+%             ROI=tblROI.Data;
+%             data.ROI=ROI;               
+%             ix_1 = find(data.X>=ROI(1),1);
+%             ix_2 = find(data.X>=ROI(2),1);
+%             iy_1 = find(data.Y>=ROI(3),1);
+%             iy_2 = find(data.Y>=ROI(4),1);
+%             x = data.X(ix_1:ix_2);
+%             y = data.Y(iy_1:iy_2);   
+%             z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
+%             znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
+%             tic;
+%             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
+%                 ') binning into lattice ...']);    
+%            
+%             data.LatticeBin(kk) = binLattice(x,y,z,opts); 
+%             data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
+% 
+%             t2=toc;
+%             disp(['done (' num2str(t2,3) ' sec.)']);
+%         end 
+%         data = ixon_SharpnessBinned(data);  
+%         % try
+%         data = ixon_binnedHistogramFit(data);
+%         % end
         data = ixon_digitize(data,tblDig.Data);
 
         updateBinnedHistogram;
@@ -2828,17 +2901,17 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         imgnum = menuSelectImg.Value;        
         set(hImg_B,'XData',data.LatticeBin(imgnum).n1,...
             'YData',data.LatticeBin(imgnum).n2,...
-            'CData',data.LatticeBin(imgnum).Zbin);
-        
-        set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
-            'YData',data.LatticeDig(imgnum).n2,...
-            'CData',data.LatticeDig(imgnum).Zdig);                
-        updateCoM_D;        
-        if cAutoColor_B.Value;setClim('B');end          
+            'CData',data.LatticeBin(imgnum).Zbin);  
+        if cAutoColor_B.Value;setClim('B');end     
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
-
+   
+        
+        %         set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
+%             'YData',data.LatticeDig(imgnum).n2,...
+%             'CData',data.LatticeDig(imgnum).Zdig);                
+%         updateCoM_D;   
     end
 
 
@@ -2930,59 +3003,35 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         %     set(pKernelB2,'XData',x2,'YData',y2);           
         % end
     end
-
-    function updateBinnedHistogram
-       if ~isfield(data,'LatticeDig')
-           return;
-       end      
-        Nbins = histBtbl.Data(1,2);                
-        Zall = data.LatticeBin(1).Zbin;
-        Zall = Zall(:);
-        Zall(Zall==0) = NaN;                     
-        [N,edges] = histcounts(Zall,Nbins);        
-        centers = (edges(1:end-1) + edges(2:end))/2;
-        LatticeHistogram = struct;
-        LatticeHistogram.Edges = edges;
-        LatticeHistogram.Centers = centers;
-        LatticeHistogram.N = N;  
-        data.LatticeHistogram(1) = LatticeHistogram;      
-
-        % try
-        %     [f,xi,bw]=ksdensity(Zall(:));
-        %     LatticeHistogramKernel = struct;
-        %     LatticeHistogramKernel.Xi = xi;
-        %     LatticeHistogramKernel.f = f;
-        %     LatticeHistogramKernel.BandWidth = bw;
-        %     data.LatticeHistogramKernel(1) = LatticeHistogramKernel;
-        % end
-%         [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw);        
-        
-  
-
-        for kk=2:length(data.LatticeBin)
-            Zall = data.LatticeBin(kk).Zbin;
-            Zall = Zall(:);
-%           Zall(Zall==0)=[];
-            
-            [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
-            centers = (edges(1:end-1) + edges(2:end))/2;
-            LatticeHistogram = struct;
-            LatticeHistogram.Edges = edges;
-            LatticeHistogram.Centers = centers;
-            LatticeHistogram.N = N;  
-            data.LatticeHistogram(kk) = LatticeHistogram;
-            
-            % try
-            %     [f,xi,bw]=ksdensity(Zall(:));
-            %     [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);  
-            %     LatticeHistogramKernel = struct;
-            %     LatticeHistogramKernel.Xi = xi;
-            %     LatticeHistogramKernel.f = f;
-            %     LatticeHistogramKernel.BandWidth = bw;
-            %     data.LatticeHistogramKernel(kk) = LatticeHistogramKernel;
-            % end
-        end                  
-    end
+% 
+%     function updateBinnedHistogram
+%        if ~isfield(data,'LatticeDig')
+%            return;
+%        end      
+%         Nbins = histBtbl.Data(1,2);                
+%         Zall = data.LatticeBin(1).Zbin;
+%         Zall = Zall(:);
+%         Zall(Zall==0) = NaN;                     
+%         [N,edges] = histcounts(Zall,Nbins);        
+%         centers = (edges(1:end-1) + edges(2:end))/2;
+%         LatticeHistogram = struct;
+%         LatticeHistogram.Edges = edges;
+%         LatticeHistogram.Centers = centers;
+%         LatticeHistogram.N = N;  
+%         data.LatticeHistogram(1) = LatticeHistogram; 
+%         for kk=2:length(data.LatticeBin)
+%             Zall = data.LatticeBin(kk).Zbin;
+%             Zall = Zall(:);
+% %           Zall(Zall==0)=[];            
+%             [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
+%             centers = (edges(1:end-1) + edges(2:end))/2;
+%             LatticeHistogram = struct;
+%             LatticeHistogram.Edges = edges;
+%             LatticeHistogram.Centers = centers;
+%             LatticeHistogram.N = N;  
+%             data.LatticeHistogram(kk) = LatticeHistogram;            
+%         end                  
+%     end
 
 %% 
     function updatePositionAnalysis
