@@ -7,8 +7,15 @@ end
 if ~isfield(opts,'SumIndex')
     opts.SumIndex = 2;
 end
+if ~isfield(opts,'FigNum')
+    opts.FigNum = 901;
+end
 
-ColorThreshold = [700 3000];
+if ~isfield(opts,'LGuess')
+   opts.LGuess = []; 
+end
+
+ColorThreshold = [1000 3000];
 %% Fit Functions
 
 fit_exp = fittype(@(A,n0,s,n) A.*exp(-(n-n0).^2/(2*s^2)),...
@@ -23,7 +30,7 @@ fit_opts_s = fitoptions(fit_exp_stripe);
 %% Data Processing
 
 Zb(isnan(Zb))=0;Zb(isinf(Zb))=0;
-
+Zb(Zb<ColorThreshold(1)) = 0;
 Zs1 = sum(Zb,1);
 Zs1 = Zs1(:);
 n1 = n1(:);
@@ -61,8 +68,8 @@ else
     ss = s2g;
 end
 
-At = prctile(Zt,90);
-As = prctile(Zs,90);
+At = prctile(Zt,95);
+As = prctile(Zs,95);
 
 
 %% Construct Tranverse Guess
@@ -75,21 +82,26 @@ out.FitTransverse = fout_t;
 %% Construct Stripe Guess
 
 % Wavelength Guess
-ZsumSmooth=smooth(Zs,5);
-% [yA,P]=islocalmax(ZsumSmooth,'MinSeparation',10,...
-    % 'MaxNumExtrema',4,'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
+if isempty(opts.LGuess) || isnan(opts.LGuess)
 
-[yA,P]=islocalmin(ZsumSmooth,'MinSeparation',10,...
-    'MaxNumExtrema',4,'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
+    ZsumSmooth=smooth(Zs,5);
+    % [yA,P]=islocalmax(ZsumSmooth,'MinSeparation',10,...
+        % 'MaxNumExtrema',4,'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
 
-nA=diff(ns(yA));
-Pvec = movsum(P(yA),2);
-Pvec = Pvec(2:end);
+    [yA,P]=islocalmin(ZsumSmooth,'MinSeparation',10,...
+        'MaxNumExtrema',4,'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
 
-[~,ind]=max(Pvec);
+    nA=diff(ns(yA));
+    Pvec = movsum(P(yA),2);
+    Pvec = Pvec(2:end);
 
-L = mean(nA);
-L = nA(ind);
+    [~,ind]=max(Pvec);
+
+    L = mean(nA);
+    L = nA(ind);
+else
+   L =opts.LGuess; 
+end
 
 
 % Phase Guess
@@ -113,20 +125,25 @@ phi=phiVec(ind);
 % keyboard
 B = 0.5;
 
-fit_opts_s.StartPoint = [As ns0 ss B L phi];
-fit_opts_s.StartPoint = [As ns0 ss B L 0.5 0.05 phi];
+As = max(Zs);
+
+fit_opts_s.MaxIter = 1200;
+fit_opts_s.MaxFunEvals = 1e3;
+% fit_opts_s.StartPoint = [As ns0 ss B L phi];
+fit_opts_s.StartPoint = [As ns0 ss B L 0.5 0.1 phi];
 
 % {'A','n0','s','B','L','duty','R','phi'}
 
-fit_opts_s.Upper = [As*1.5 ns0+10 ss*1.5 0.9 L*1.1 0.9 0.15 phi+pi];
-fit_opts_s.Lower = [As/1.5 ns0-10 ss/1.5 0.1 L/1.1 0.1 0.01 phi-pi];
+
+fit_opts_s.Upper = [As*1.1 ns0+10 ss*1.5 1 L*1.1 0.9 0.15 phi+pi];
+fit_opts_s.Lower = [As*.8 ns0-10 ss/1.5 0.1 L/1.1 0.1 0.01 phi-pi];
 
 fit_opts_s.Robust='bisquare';
 % fit_opts_s.TolFun=1e-12;
 % fit_opts_s.TolX=1e-9;
 
+fout_s = fit(ns,Zs,fit_exp_stripe,fit_opts_s);
 
-fout_s = fit(ns,Zs,fit_exp_stripe,fit_opts_s)
 
 nL = floor(min(ns)/fout_s.L-1);
 nH = ceil(max(ns)/fout_s.L+1);
@@ -161,9 +178,18 @@ ca = [0 0 0];
         linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
 
 
-hF1=figure(901);
+hF1=figure(opts.FigNum);
 hF1.Color='w';
-hF1.Position = [100 100 770 720];
+hF1.Position(3:4) = [770 720];
+
+if hF1.Position(2)+hF1.Position(4) > 1000
+    hF1.Position(2) = 100;
+end
+
+% if hF1.Position(1)+hF1.Position(4) > 1000
+%     hF1.Position(2) = 100;
+% end
+
 clf
 co=get(gca,'colororder');
 myc = [255,140,0]/255;
@@ -193,7 +219,7 @@ for kk=1:length(centers)
         'color',myc)
 end
 
-str = ['$\lambda=' num2str(round(fout_s.L,1)) ',' ...
+str = ['$\lambda=' num2str(fout_s.L,'%.2f') ',' ...
     '\phi=2\pi\cdot' num2str(round(mod(fout_s.phi,2*pi)/(2*pi),2),'%.2f') ',' ...
     '\alpha = ' num2str(round(fout_s.B,2),'%.2f') '$'];
 
