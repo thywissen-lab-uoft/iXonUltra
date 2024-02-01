@@ -157,7 +157,8 @@ function SizeChangedFcn(~,~)
         hpADV.Position(2)       = hpAcq.Position(2)-hpADV.Position(4);
         hpAnl.Position(2)       = hpADV.Position(2)-hpAnl.Position(4);        
         hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
-        hpDig.Position(2)       = hpKspace.Position(2) - hpDig.Position(4);   
+        hpBin.Position(2)       = hpKspace.Position(2) - hpBin.Position(4);   
+        hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
         hpDisp_Select.Position(2) =hpNav.Position(2) - hpDisp_Select.Position(4);
         hpDisp_X.Position(2)    = hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
         hpDisp_K.Position(2)    = hpDisp_X.Position(2) - hpDisp_K.Position(4);     
@@ -1243,7 +1244,7 @@ tblROIK.Position(1:2)=[5 hc_anlK_auto.Position(2)-tblROIK.Position(4)];
 % Mask IR Checkbox
 hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','lattice basis and phase','fontsize',7,...
     'backgroundcolor','w','Position',[5 5 120 15],...
-    'ToolTipString',ttstr,'enable','on');
+    'ToolTipString',ttstr,'enable','on','value',1);
 hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 
 % Refit button
@@ -1276,25 +1277,169 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
             
             updateReciprocalTextGraphics;
             reciprocalLatticeTextCB(cLat_K_text);
+            
+        
         end         
     end
 
-%% Digitization Panel
-hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
-hpDig.Position=[0 hpKspace.Position(2)-160 160 185];
+%% Binning Panel
+hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
+hpBin.Position=[0 hpKspace.Position(2)-180 160 200];
+
+
+ttstr='auto do bin analysis';
+hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hpBin.Position(4)-35 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
+
+% Table of ROIs
+tblROIB=uitable(hpBin,'units','pixels','ColumnWidth',{30 30 30 30},...
+    'ColumnEditable',true(ones(1,4)),'ColumnName',{'n1','n2','n1','n2'},...
+    'Data',[1 50 1 50],'FontSize',8,...
+    'CellEditCallback',@chROIB,'RowName',{});
+tblROIB.Position(3:4)=tblROIB.Extent(3:4)+0*[18 0];
+tblROIB.Position(1:2)=[5 hc_anlB_auto.Position(2)-tblROIB.Position(4)];
+
+% Callback function for changing ROI via table
+    function chROIB(src,evt)
+        if ~isfield(data,'LatticeBin')
+           return; 
+        end
+        
+        RL = [data.LatticeBin.n1(1) data.LatticeBin.n1(end) ...
+           data.LatticeBin.n2(1) data.LatticeBin.n2(end)];
+        
+        m=evt.Indices(1); n=evt.Indices(2);
+        
+        ROI=src.Data(m,:);
+        % Check that the data is numeric
+        if sum(~isnumeric(ROI)) || sum(isinf(ROI)) || sum(isnan(ROI))
+            warning('Incorrect data type provided for ROI.');
+            src.Data(m,n)=evt.PreviousData;
+            return;
+        end
+        
+        ROI=round(ROI);      % Make sure this ROI are integers   
+        % Check that limits go from low to high
+        if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
+           warning('Bad ROI specification given.');
+           ROI(evt.Indices(2))=evt.PreviousData;
+        end               
+        % Check that ROI is within image bounds
+        if ROI(1)<RL(1); ROI(1)=RL(1); end       
+        if ROI(3)<RL(3); ROI(3)=RL(3); end   
+        if ROI(4)>RL(4); ROI(4)=RL(4); end       
+        if ROI(2)>RL(2); ROI(2)=RL(2); end         
+        % Reassign the ROI
+        src.Data(m,:)=ROI;      
+        % Try to update ROI graphics
+        try
+            pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+            set(pROIB(m),'Position',pos);
+        catch
+           warning('Unable to change display ROI.');
+           src.Data(m,n)=evt.PreviousData;
+        end
+    end
+
+% Button to enable GUI selection of analysis ROI
+ttstr='Select the analysis ROI.';
+uicontrol(hpBin,'style','pushbutton','Cdata',img_Select,'Fontsize',10,...
+    'Backgroundcolor','w','Position',[130 tblROIB.Position(2)+25 18 18],...
+    'Callback',@slctROICBB,'ToolTipString',ttstr);
+
+% % Button to snap display ROI to the data ROI
+ttstr='Snap analysis ROI to display ROI.';
+uicontrol(hpBin,'style','pushbutton','Cdata',img_Snap,'Fontsize',10,...
+    'Backgroundcolor','w','Position',[130 tblROIB.Position(2)+7 18 18],...
+    'Callback',@snapPosAnalysisROIB,'ToolTipString',ttstr);
+
+    function snapPosAnalysisROIB(src,evt)        
+        if ~isfield(data,'LatticeBin')
+           return; 
+        end
+        
+        ROI = tbl_dROI_B.Data;
+        set(tblROIB,'Data',ROI);
+        pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+        set(pROIB,'Position',pos);
+    end
+
+% Button for maximizing the display limits
+ttstr='Max analysis ROI to full image size.';
+uicontrol(hpBin,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
+    'Backgroundcolor','w','Callback',@maxPosAnalysisROIB,...
+    'ToolTipString',ttstr,'Position',[130 tblROIB.Position(2)-11 18 18]);
+
+    function maxPosAnalysisROIB(~,evt)
+        if ~isfield(data,'LatticeBin')
+           return; 
+        end
+        ROI = [min(data.LatticeBin.n1) max(data.LatticeBin.n1) ...
+            min(data.LatticeBin.n2) max(data.LatticeBin.n2)];
+        tblROIB.Data = ROI;
+        pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+        set(pROIB,'Position',pos);
+    end
+
+
+% Callback for selecting an ROI based upon mouse click input.
+    function slctROICBB(~,~)
+        if ~isfield(data,'LatticeBin')
+           return; 
+        end
+        RL = [data.LatticeBin.n1(1) data.LatticeBin.n1(end) ...
+           data.LatticeBin.n2(1) data.LatticeBin.n2(end)];
+        
+        disp(['Selecting display ROI .' ...
+            ' Click two points that form the rectangle ROI.']);
+        set(hp,'SelectedTab',tabB);
+        [x1,y1]=ginputMe(1);          % Get a mouse click
+        x1=round(x1);y1=round(y1);  % Round to interger       
+        p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it        
+        [x2,y2]=ginputMe(1);          % Get a mouse click
+        x2=round(x2);y2=round(y2);  % Round it        
+        p2=plot(x2,y2,'+','color','r','linewidth',1,'markersize',10,'hittest','off');  % Plot it
+        % Create the ROI
+        ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
+        % Constrain ROI to image
+        if ROI(1)<RL(1); ROI(1)=RL(1); end       
+        if ROI(3)<RL(3); ROI(3)=RL(3); end   
+        if ROI(4)>RL(4); ROI(4)=RL(4); end       
+        if ROI(2)>RL(2); ROI(2)=RL(2); end           
+        % Try to update ROI graphics
+        tblROIB.Data=ROI;           
+        try
+            pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+            set(pROIB(1),'Position',pos);
+            drawnow;        
+        catch
+           warning('Unable to change ROI.');
+        end
+        delete(p1);delete(p2);                   % Delete markers
+    end
+
+
+
+
+
+
+
+
+
 
 % Button group for lattice basis
-bgBasis = uibuttongroup(hpDig,'units','pixels','backgroundcolor','w',...
+bgBasis = uibuttongroup(hpBin,'units','pixels','backgroundcolor','w',...
     'title','lattice basis (px)','fontsize',7);  
-bgBasis.Position(3:4)=[155 100];
-bgBasis.Position(1:2)=[1 hpDig.Position(4)-bgBasis.Position(4)-20];    
+bgBasis.Position(3:4)=[155 90];
+bgBasis.Position(1:2)=[1 tblROIB.Position(2)-bgBasis.Position(4)];    
 
 % Lattice Basis from FFT or manual specification
 uicontrol(bgBasis,'Style','radiobutton','String','from fft',...
-    'Position',[5 65 65 20],'units','pixels','backgroundcolor','w','Value',1,'fontsize',7,...
+    'Position',[5 60 65 20],'units','pixels','backgroundcolor','w','Value',1,'fontsize',7,...
     'UserData','fft');
 uicontrol(bgBasis,'Style','radiobutton','String','manual',...
-    'Position',[65 65 65 20],'units','pixels','backgroundcolor','w','fontsize',7,...
+    'Position',[65 60 65 20],'units','pixels','backgroundcolor','w','fontsize',7,...
     'UserData','manual');
 
 tblBasis=uitable(bgBasis,'units','pixels','ColumnWidth',{30 30 50},...
@@ -1304,63 +1449,52 @@ tblBasis=uitable(bgBasis,'units','pixels','ColumnWidth',{30 30 50},...
 tblBasis.Position(3:4)=tblBasis.Extent(3:4)+0*[18 0];
 tblBasis.Position(1:2)=[5 3];
 
-% Digitization Threshold Text
-hcDigThreshold=uicontrol(hpDig,'style','text','string','digitization threshold','fontsize',7,...
-    'backgroundcolor','w','Position',[5 40 100 15],'horizontalalignment','left');
 
-% Digitization Threshold
-tblDig=uitable('parent',hpDig,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',3000,'columneditable',[true],...
-    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-tblDig.Position=[hpDig.Position(3)-55 hcDigThreshold.Position(2)+1 50 20];
+% Checkbox for image sharpness
+ttstr='Calculate histgoram';
+hc_anlB_Histogram=uicontrol(hpBin,'style','checkbox','string','histogram','fontsize',7,...
+    'backgroundcolor','w','Position',[1 bgBasis.Position(2)-15 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','off','Value',1);
 
-% Digitization Threshold Text
-hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
-    'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
-
-% Digitization Threshold
-tblDigPixel=uitable('parent',hpDig,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
-    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
-
+ttstr='bin stripe focus';
+hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe and focus','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-15 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
 
 % Refit button
-hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor','w');
-hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
+hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','analyze',...
+    'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor','w');
+hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
 
-    function chBasis(src,evt)
-       defaultBasis = src.Data;
+    function [a1, a2, p1, p2] = getLattice        
+        switch bgBasis.SelectedObject.UserData
+            case 'fft'
+                if isfield(data,'LatticePhase')
+                    a1 = data.LatticePhase(kk).a1;
+                    a2 = data.LatticePhase(kk).a2;                        
+                    p1 = data.LatticePhase(kk).p1;
+                    p2 = data.LatticePhase(kk).p2;    
+                else
+                    errordlg('Lattice phase not calculated yet.');
+                    beep
+                    return;                        
+                end
+            case 'manual'
+                a1 = tblBasis.Data(1,(1:2))';
+                a2 = tblBasis.Data(2,(1:2))';
+                p1 = tblBasis.Data(1,3);
+                p2 = tblBasis.data(2,3);
+        end
     end
 
-    function analyze_dig(src,evt)
-
-        if isfield(data,'LatticeBin')
+    function analyze_bin(src,evt)
+         if isfield(data,'LatticeBin')
             data = rmfield(data,'LatticeBin');
         end
 
         for kk=1:size(data.Z,3)
             opts = struct;
-
-            switch bgBasis.SelectedObject.UserData
-                case 'fft'
-                    if isfield(data,'LatticePhase')
-                        a1 = data.LatticePhase(kk).a1;
-                        a2 = data.LatticePhase(kk).a2;                        
-                        p1 = data.LatticePhase(kk).p1;
-                        p2 = data.LatticePhase(kk).p2;    
-                    else
-                        errordlg('Lattice phase not calculated yet.');
-                        beep
-                        return;                        
-                    end
-                case 'manual'
-                    a1 = tblBasis.Data(1,(1:2))';
-                    a2 = tblBasis.Data(2,(1:2))';
-                    p1 = tblBasis.Data(1,3);
-                    p2 = tblBasis.data(2,3);
-            end
+            [a1, a2, p1, p2] = getLattice;
             opts.ScaleFactor = 4;    
             opts.a1 = a1;
             opts.a2 = a2;
@@ -1385,19 +1519,76 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
            
             data.LatticeBin(kk) = binLattice(x,y,z,opts); 
             data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
-
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
         end 
-        data = ixon_SharpnessBinned(data);  
-        % try
-        data = ixon_binnedHistogramFit(data);
-        % end
-        data = ixon_digitize(data,tblDig.Data);
 
-        updateBinnedHistogram;
+        data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
+        data = ixon_SharpnessBinned(data);  
+        data = ixon_binnedHistogramFit(data);
+        
         updateBinnedGraphics;     
-        updateBinnedHistogramGraphics;                 
+        updateBinnedHistogramGraphics;    
+        
+        if hc_anlB_stripe.Value
+            opts = struct;
+%             opts.Theta = [10 190];
+            
+            for ll = 1:length(data.LatticeBin)
+                n1 = data.LatticeBin(ll).n1;
+                n2 = data.LatticeBin(ll).n2;
+                Zb = data.LatticeBin(ll).Zbin;        
+                [out(ll),hF_bin_stripe] = ixon_fitStripe_dig(n1,n2,Zb,opts);
+            end
+            data.BinStripe = out;            
+        end  
+    
+    
+    end
+%% Digitization Panel
+hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
+hpDig.Position=[0 hpBin.Position(2)-80 160 80];
+
+ttstr='auto do digital analysis';
+hc_anlD_auto=uicontrol(hpDig,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hpDig.Position(4)-35 hpDig.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
+
+% Digitization Threshold Text
+hcDigThreshold=uicontrol(hpDig,'style','text','string','digitization threshold','fontsize',7,...
+    'backgroundcolor','w','Position',[5 40 100 15],'horizontalalignment','left');
+
+% Digitization Threshold
+tblDig=uitable('parent',hpDig,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',3000,'columneditable',[true],...
+    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+tblDig.Position=[hpDig.Position(3)-55 hcDigThreshold.Position(2)+1 50 20];
+
+% Digitization Threshold Text
+hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
+    'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
+
+% Digitization Threshold
+tblDigPixel=uitable('parent',hpDig,'units','pixels',...
+    'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
+    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
+
+% Refit button
+hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
+    'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor','w');
+hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
+
+    function chBasis(src,evt)
+       defaultBasis = src.Data;
+    end
+
+    function analyze_dig(src,evt)
+        data = ixon_digitize(data,tblDig.Data);
+                set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
+            'YData',data.LatticeDig(imgnum).n2,...
+            'CData',data.LatticeDig(imgnum).Zdig);                
+        updateCoM_D;            
     end
 
 %% Image Number Selector
@@ -1473,9 +1664,12 @@ menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Positi
         imgnum = menuSelectImg.Value;
         switch menuSelectImgType.Value
             case 1
-                set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,imgnum));
+                set(hImg,'XData',data.X,'YData',data.Y,'CData',data.Z(:,:,imgnum));                
+                set(hImg_K,'XData',data.f,'YData',data.f,'CData',data.ZfNorm(:,:,imgnum));
             case 2
                 set(hImg,'XData',data.X,'YData',data.Y,'CData',data.ZNoFilter(:,:,imgnum));
+                set(hImg_K,'XData',data.f,'YData',data.f,'CData',data.ZfNorm(:,:,imgnum));
+
         end
         if cAutoColor_X.Value;setClim('X');end  
         foo;
@@ -1659,7 +1853,7 @@ hpDisp_B.Position=[160 hpDisp_K.Position(2)-120 160 120];
 tbl_dROI_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},...
     'columnname',{'n1i','n1f','n2i','n2f'},'UserData','B',...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
-    'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 size(Z,2) 1 size(Z,1)]);
+    'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 100 1 100]);
 tbl_dROI_B.Position(3:4)=tbl_dROI_B.Extent(3:4);
 tbl_dROI_B.Position(1:2)=[2 hpDisp_B.Position(4)-tbl_dROI_X.Position(4)-20];
 
@@ -2099,6 +2293,7 @@ tabStripe=uitab(hp,'Title','stripe','units','pixels','backgroundcolor','w');
 tabH=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
 tabK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
 tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
+
 tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
 tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
 tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
@@ -2440,6 +2635,9 @@ xlabel('lattice site (a_1)','fontsize',8);
 ylabel('lattice site (a_2)','fontsize',8);
 caxis([0 1]);
 
+% Box for ROI (this will become an array later)
+pROIB=rectangle('position',[1 1 500 500],'edgecolor',co(1,:),'linewidth',2,'hittest','off');
+
 %% Binned Histgoram
 
 % Binned Histogram 1
@@ -2452,10 +2650,6 @@ hold on
 pHistBdivide = plot([1 1]*50,[0 100],'k-','parent',ax_hB1);
 ylabel('occurences');
 xlabel('counts per lattice site');
-
-
-% hold on
-
 
 pPDF1a = plot(1,1,'-','parent',ax_hB1,'color',co(1,:),'linewidth',3);
 
@@ -2804,17 +2998,17 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         imgnum = menuSelectImg.Value;        
         set(hImg_B,'XData',data.LatticeBin(imgnum).n1,...
             'YData',data.LatticeBin(imgnum).n2,...
-            'CData',data.LatticeBin(imgnum).Zbin);
-        
-        set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
-            'YData',data.LatticeDig(imgnum).n2,...
-            'CData',data.LatticeDig(imgnum).Zdig);                
-        updateCoM_D;        
-        if cAutoColor_B.Value;setClim('B');end          
+            'CData',data.LatticeBin(imgnum).Zbin);  
+        if cAutoColor_B.Value;setClim('B');end     
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);
-
+   
+        
+        %         set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
+%             'YData',data.LatticeDig(imgnum).n2,...
+%             'CData',data.LatticeDig(imgnum).Zdig);                
+%         updateCoM_D;   
     end
 
 
@@ -2837,49 +3031,39 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
 %% Binned Histgoram Callbacks
 
-    function updateBinnedHistogramGraphics
+    function updateBinnedHistogramGraphics        
         if ~isfield(data,'LatticeHistogram')
             return;
-        end 
+        end                 
         
-        imgnum = menuSelectImg.Value;
-        
+        imgnum = menuSelectImg.Value;        
         x = data.LatticeHistogram(imgnum).Centers;
         xe = data.LatticeHistogram(imgnum).Edges;
         y = data.LatticeHistogram(imgnum).N;        
-        Nthresh = histBtbl.Data(1,1);            
+        Nthresh = histBtbl.Data(1,1);           
 
         xL = x<=Nthresh;
-        xH = ~xL;
-        
+        xH = ~xL;        
         set(pHistB1,'XData',x(xL),'YData',y(xL));
         set(pHistB2,'XData',x(xH),'YData',y(xH));        
         pHistBdivide.Parent.YAxis(1).Limits = [0 max(pHistB1.YData)*1.1];
-        pHistBdivide.Parent.YAxis(2).Limits = [0 max(pHistB2.YData)*1.1];
-        
+        pHistBdivide.Parent.YAxis(2).Limits = [0 max(pHistB2.YData)*1.1];        
         pHistBdivide.Parent.XAxis.Limits = [0 max(x)*1.1];
-
         set(pHistBdivide,'Xdata',[1 1]*Nthresh,'Ydata',pHistBdivide.Parent.YAxis(1).Limits);
             
         
         if isfield(data.LatticeBin(imgnum),'PDFFit')
             foo0 = data.LatticeBin(imgnum).PDFFit.pdf0;
             n0 = numel(data.LatticeBin(imgnum).PDFFit.pdf0_counts);
-
             foo1 = data.LatticeBin(imgnum).PDFFit.pdf1;
             n1 = numel(data.LatticeBin(imgnum).PDFFit.pdf1_counts);
-
             t = linspace(min(x),max(x),1e3);
-
             tL = t<=Nthresh;
             tH = ~tL;
-
             bw = x(2)-x(1);
-
             set(pPDF1a,'XData',t(tL),'YData',n0*bw*foo0(t(tL)),'Visible','on');
             set(pPDF1b,'XData',t(tH),'YData',n0*bw*foo0(t(tH)),'Visible','on');
-            set(pPDF2,'XData',t(tH),'YData',n1*bw*foo1(t(tH)),'Visible','on');
-            
+            set(pPDF2,'XData',t(tH),'YData',n1*bw*foo1(t(tH)),'Visible','on');            
             str=['Fidelity $= ' num2str(round(data.LatticeBin(imgnum).PDFFit.Fidelity*100,3)) '\% $'];
             set(t_B1_top_right,'string',str,'Visible','on');
             
@@ -2906,59 +3090,35 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         %     set(pKernelB2,'XData',x2,'YData',y2);           
         % end
     end
-
-    function updateBinnedHistogram
-       if ~isfield(data,'LatticeDig')
-           return;
-       end      
-        Nbins = histBtbl.Data(1,2);                
-        Zall = data.LatticeBin(1).Zbin;
-        Zall = Zall(:);
-        Zall(Zall==0) = NaN;                     
-        [N,edges] = histcounts(Zall,Nbins);        
-        centers = (edges(1:end-1) + edges(2:end))/2;
-        LatticeHistogram = struct;
-        LatticeHistogram.Edges = edges;
-        LatticeHistogram.Centers = centers;
-        LatticeHistogram.N = N;  
-        data.LatticeHistogram(1) = LatticeHistogram;      
-
-        % try
-        %     [f,xi,bw]=ksdensity(Zall(:));
-        %     LatticeHistogramKernel = struct;
-        %     LatticeHistogramKernel.Xi = xi;
-        %     LatticeHistogramKernel.f = f;
-        %     LatticeHistogramKernel.BandWidth = bw;
-        %     data.LatticeHistogramKernel(1) = LatticeHistogramKernel;
-        % end
-%         [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw);        
-        
-  
-
-        for kk=2:length(data.LatticeBin)
-            Zall = data.LatticeBin(kk).Zbin;
-            Zall = Zall(:);
-%           Zall(Zall==0)=[];
-            
-            [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
-            centers = (edges(1:end-1) + edges(2:end))/2;
-            LatticeHistogram = struct;
-            LatticeHistogram.Edges = edges;
-            LatticeHistogram.Centers = centers;
-            LatticeHistogram.N = N;  
-            data.LatticeHistogram(kk) = LatticeHistogram;
-            
-            % try
-            %     [f,xi,bw]=ksdensity(Zall(:));
-            %     [f,xi,bw]=ksdensity(Zall(:),'Bandwidth',bw*0.5);  
-            %     LatticeHistogramKernel = struct;
-            %     LatticeHistogramKernel.Xi = xi;
-            %     LatticeHistogramKernel.f = f;
-            %     LatticeHistogramKernel.BandWidth = bw;
-            %     data.LatticeHistogramKernel(kk) = LatticeHistogramKernel;
-            % end
-        end                  
-    end
+% 
+%     function updateBinnedHistogram
+%        if ~isfield(data,'LatticeDig')
+%            return;
+%        end      
+%         Nbins = histBtbl.Data(1,2);                
+%         Zall = data.LatticeBin(1).Zbin;
+%         Zall = Zall(:);
+%         Zall(Zall==0) = NaN;                     
+%         [N,edges] = histcounts(Zall,Nbins);        
+%         centers = (edges(1:end-1) + edges(2:end))/2;
+%         LatticeHistogram = struct;
+%         LatticeHistogram.Edges = edges;
+%         LatticeHistogram.Centers = centers;
+%         LatticeHistogram.N = N;  
+%         data.LatticeHistogram(1) = LatticeHistogram; 
+%         for kk=2:length(data.LatticeBin)
+%             Zall = data.LatticeBin(kk).Zbin;
+%             Zall = Zall(:);
+% %           Zall(Zall==0)=[];            
+%             [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
+%             centers = (edges(1:end-1) + edges(2:end))/2;
+%             LatticeHistogram = struct;
+%             LatticeHistogram.Edges = edges;
+%             LatticeHistogram.Centers = centers;
+%             LatticeHistogram.N = N;  
+%             data.LatticeHistogram(kk) = LatticeHistogram;            
+%         end                  
+%     end
 
 %% 
     function updatePositionAnalysis
@@ -3089,17 +3249,19 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     %     save(filename,'gui_saveData');
     %     disp(' done');    
     % end       
-        % updateGraphics; 
-        
+        % updateGraphics;        
+
+
+        updatePositionAnalysisGraphics;
+    end
+
+    function saveGUIData       
         if doSaveGUIAnalysis
-            gui_saveData = struct;
-            
-            
+            gui_saveData = struct;     
             gui_saveData.Date = data.Date;
             gui_saveData.FileName = data.Name;
             gui_saveData.Params = data.Params;
-            gui_saveData.Flags = data.Flags;
-            
+            gui_saveData.Flags = data.Flags;            
             
             if isfield(data,'BoxCount')
                 BoxCount = data.BoxCount;
@@ -3116,8 +3278,11 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
            
             if isfield(data,'StripeFocus')
                gui_saveData.StripeFocus = data.StripeFocus; 
-           end
+            end
             
+            if isfield(data,'BinStripe')
+               gui_saveData.BinStripe = data.BinStripe; 
+            end
            
             filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
             filenames={filenames.name};
@@ -3138,10 +3303,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             fprintf('%s',[filename ' ...']);
             save(filename,"-struct",'gui_saveData');
             disp(' done');       
-        end
-
-
-        updatePositionAnalysisGraphics;
+        end 
     end
 
     function updatePositionAnalysisGraphics
@@ -3227,6 +3389,19 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     end
     %% Position Space Analysis
     updatePositionAnalysis;
+    
+    %% Momentum Space Analysis
+    if hc_anlK_auto.Value
+       analyze_k       
+    end
+    
+    if hc_anlB_auto.Value
+        analyze_bin
+    end
+    
+    if hc_anlD_auto.Value
+        analyze_dig
+    end
   
 %% Update Fit Results (depreciated)
 
@@ -3245,7 +3420,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     drawnow;
     climtbl_X.Data=axImg.CLim;
 
- 
+    saveGUIData
 
     % disp('')
     % disp('Performing fits and analysis.');
