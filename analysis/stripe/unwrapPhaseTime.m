@@ -1,10 +1,14 @@
 
-function Y=unwrapPhaseTime(X,Y)
+function Y=unwrapPhaseTime(X,Y,Navg)
 % CF: I think this will be buggy if you have repititions whose noise is
 % larger than a phase, but if that happens you're data is too noisy anyway.
 
 % Unwrap the phase with a given X and Y.  Here we shall try to minimize the
 % change in slope of the 
+
+if nargin ==2
+   Navg = 4; 
+end
 
 [X,inds] = sort(X);
 Y = Y(inds);
@@ -22,7 +26,7 @@ foo = @(Y,Y0) (Y/(2*pi)-round((Y-Y0)/(2*pi)))*2*pi;
 Y=foo(Y,Y0);
 
 
-Navg = 4;
+% Navg = 4;
 for kk=(1+Navg):length(Y)
 %     keyboard
     Y0 = median(Y(kk-Navg:kk-1));

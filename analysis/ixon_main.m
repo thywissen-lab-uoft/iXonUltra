@@ -96,7 +96,7 @@ ixon_doBoxCount             = 1;
 ixon_doGaussFit             = 0;
 
 % Analysis to run
-ixon_doStandardAnalysis     = 0;
+ixon_doStandardAnalysis     = 1;
 ixon_doPlotProfiles         = 0;
 ixon_doAnimate              = 0;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
@@ -128,7 +128,7 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 1;        % Deconvolve with PSF
+img_opt.doPSF               = 0;        % Deconvolve with PSF
 img_opt.PSF                 = [1.3163 51 21]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)

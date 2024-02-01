@@ -77,7 +77,8 @@ end
     %%
 if ixon_doAnalyzeStripes2D
 stripes_modify = stripes;
-phi_unwrap = unwrapPhaseTime(xvals,[stripes_modify.phi]);
+Navg = 1;
+phi_unwrap = unwrapPhaseTime(xvals,[stripes_modify.phi],Navg);
      for kk=1:length(stripes_modify)
          stripes_modify(kk).phi = phi_unwrap(kk);
         stripes(kk).phi = mod(stripes(kk).phi+pi/2,(2*pi))-pi/2;
@@ -124,7 +125,7 @@ end
 
 %% Stability
 
-ixon_doStripeStability = 1;
+ixon_doStripeStability = 0;
 
 if ixon_doStripeStability 
    hFme = figure;

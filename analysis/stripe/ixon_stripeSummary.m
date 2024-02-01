@@ -57,10 +57,26 @@ end
 xlim([min(xvals) max(xvals)]);
 
 % Phase
+fitPhase=1;
+if fitPhase
+    
+    PhiFit = polyfit(xvals,[stripes.phi]/(2*pi),1);
+
+    phi_fit = PhiFit(1)*xvals+PhiFit(2);
+    
+    phi_text = sprintf('\\phi =%.5f x + %.2f',PhiFit(1),PhiFit(2));
+
+    end
+     
 subplot(223);
 errorbar(xvals,[stripes.phi]/(2*pi),[stripes.phi_err]/(2*pi),'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
+if fitPhase
+    hold on;
+    pfit=plot(xvals,phi_fit);
+    legend(pfit,phi_text,'interpeter','latex')
+end
 xlabel([opts.xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('unwrapped phase (2\pi)');
 grid on
