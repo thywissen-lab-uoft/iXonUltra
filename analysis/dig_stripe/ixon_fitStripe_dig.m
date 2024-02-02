@@ -126,16 +126,16 @@ end
 [~,ind]=min(Sphi);
 phi=phiVec(ind);
 
-% Duty Cycle Guess
-B = 0.5;
+% Modulation depth Guess
+B = 0.8;
 
 % Amplitude Guess
 As = max(Zs);
 
 % Initial Guess and bounds
-fit_opts_s.StartPoint = [As ns0 ss B L 0.5 0.1 phi];
-fit_opts_s.Upper = [As*1.1 ns0+10 ss*1.5 1 L*1.1 0.9 0.15 phi+pi];
-fit_opts_s.Lower = [As*.8 ns0-10 ss/1.5 0.1 L/1.1 0.1 0.01 phi-pi];
+fit_opts_s.StartPoint = [As ns0 ss B L 0.4 0.05 phi];
+fit_opts_s.Upper = [As*1.1 ns0+10 ss*1.5 1 L*1.1 0.9 0.15 phi+pi/2];
+fit_opts_s.Lower = [As*.8 ns0-10 ss/1.5 0.25 L/1.1 0.1 0.01 phi-pi/2];
 
 % Perform the fit
 [fout_s ,gof_s] = fit(ns,Zs,fit_exp_stripe,fit_opts_s);

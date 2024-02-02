@@ -104,11 +104,15 @@ ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-doPSF                       = 1;
-ixon_doQGM_Lattice          = 0;
-ixon_doQGM_Bin              = 0;
-ixon_doQGM_Digitize         = 0;
-ixon_doQGM_DigitalAnalysis  = 0;
+doPSF                               = 1;
+ixon_doQGM                          = 1;
+ixon_doQGM_FindLattice              = 1;
+ixon_doQGM_Bin                      = 1;
+ixon_doQGM_BinStripe                = 1;
+
+ixon_doQGM_BinStandardAnalysis      = 0;
+ixon_doQGM_Digitize                 = 0;
+ixon_doQGM_DigitalStandardAnalysis  = 0;
 
 
 %% Image Processing Options
@@ -120,7 +124,7 @@ ixon_mask=ixon_mask.BW;
 
 img_opt = struct;
 img_opt.doSubtractBias      = 1;        % Subtract 200 count electronic offset
-img_opt.doSubtractBG        = 0;
+img_opt.doSubtractBG        = 1;
 img_opt.doScale             = 1;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
@@ -380,6 +384,9 @@ if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis
 if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
 %% Quantum Gas Micrscopy
-if ixon_doQGM; ixon_QGM;end
+if ixon_doQGM
+%     ixon_QGM
+    ixon_qgm2;
+end
 %% Stripe Analysis
 if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
