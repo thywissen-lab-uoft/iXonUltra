@@ -1,4 +1,19 @@
 function [out,hF1] = ixon_fitStripe_dig(n1,n2,Zb,opts)
+%ixon_fitStripe_dig Fit a binned fluorescence image to a stripe pattern.
+%   When taking fluoresence images of a 2D slice of the 3D cloud,
+%   application of a transverse magnetic field induces a stripe pattern to
+%  form which is a sample of each plane.  This code fits this distribution
+%  and also uses the fluoresence per site to describe the relative focusing
+%  between each stripe.
+%
+%   n1   : lattice site vector which describes the columns of Zb
+%   n2   : lattice site vector which describes the rows of Zb
+%   Zb   : matrix of size n2xn1 which has fluoresence counts per site
+%   opts : options structure
+%           - SumIndex 
+%           - LGuess
+%           - FigNum
+%           - ColorThreshold
 out = struct;
 if nargin~=4
     opts = struct;
@@ -15,22 +30,29 @@ if ~isfield(opts,'LGuess')
    opts.LGuess = []; 
 end
 
-ColorThreshold = [1000 3000];
+if ~isfield(opts,'ColorThreshold')
+    opts.ColorThreshold = [1000 3000];
+end
+
+disp('Stripe bin fitting ... ')
+
 %% Fit Functions
 
+% Transverse Fit Function
 fit_exp = fittype(@(A,n0,s,n) A.*exp(-(n-n0).^2/(2*s^2)),...
     'independent','n','coefficients',{'A','n0','s'});
 fit_opts_t = fitoptions(fit_exp);
 
+% Stripe Fit Function
 fit_exp_stripe = fittype(@(A,n0,s,B,L,duty,R,phi,n) ...
     A.*exp(-(n-n0).^2/(2*s^2)).*(1-B*erf_pulse_wave(L,duty,phi,R,n)),...
-    'independent','n','coefficients',{'A','n0','s','B','L','duty','R','phi'});
-
+    'independent','n','coefficients',...
+    {'A','n0','s','B','L','duty','R','phi'});
 fit_opts_s = fitoptions(fit_exp_stripe);
 %% Data Processing
+Zb(isnan(Zb))=0;Zb(isinf(Zb))=0;        % Remove non number sites
+Zb(Zb<ColorThreshold(1)) = 0;           % Threshold low sites
 
-Zb(isnan(Zb))=0;Zb(isinf(Zb))=0;
-Zb(Zb<ColorThreshold(1)) = 0;
 Zs1 = sum(Zb,1);
 Zs1 = Zs1(:);
 n1 = n1(:);
@@ -69,7 +91,6 @@ else
 end
 
 At = prctile(Zt,95);
-As = prctile(Zs,95);
 
 
 %% Construct Tranverse Guess
@@ -173,31 +194,22 @@ out.FocusCenter = centers(ind);
 
 %%
 ca = [0 0 0];       
-    cb = [0.7 .1 .6];
-    cc = [linspace(ca(1),cb(1),1000)' ...
-        linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
-
+cb = [0.7 .1 .6];
+cc = [linspace(ca(1),cb(1),1000)' ...
+    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
 
 hF1=figure(opts.FigNum);
 hF1.Color='w';
 hF1.Position(3:4) = [770 720];
-
-if hF1.Position(2)+hF1.Position(4) > 1000
-    hF1.Position(2) = 100;
-end
-
-% if hF1.Position(1)+hF1.Position(4) > 1000
-%     hF1.Position(2) = 100;
-% end
-
+if (hF1.Position(2)+hF1.Position(4))>1000;hF1.Position(2) = 100;end
 clf
+
 co=get(gca,'colororder');
 myc = [255,140,0]/255;
 subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19]);
 imagesc(n1,n2,Zb);
 axis equal tight
 colormap([[0 0 0];winter; [1 0 0]]);
-% colormap(cc);
 c=colorbar('location','north','fontsize',6,'color',myc,...
     'fontname','arial');
 c.Label.Color='b';
@@ -275,27 +287,18 @@ ylim([0 yL(2)]);
 grid on
 end
 
+% rectangular pulse via erf functions
 function y = erf_pulse(center,smooth_width,FWHM,xx) 
     y = 0.5.*(erf((xx+FWHM*0.5-center)./smooth_width)+erf((-xx+FWHM*0.5+center)./smooth_width));
     y = y/erf_pulse_ampl(smooth_width,FWHM);
 end
 
+% Amplitude of rectangular pulse via erf function
 function y = erf_pulse_ampl(smooth_width,FWHM)
     y = 0.5.*(erf((FWHM*0.5)./smooth_width)+erf((FWHM*0.5)./smooth_width));
-
 end
 
-% function y = erf_pulse_wave(smooth_width,HWHM,separation,xx)
-%     x1 = min(xx);
-%     x2 = max(xx);
-%     n1 = floor(x1/separation-3);
-%     n2 = ceil(x2/separation+3);
-%     y = xx*0;
-%     for n = n1:n2 
-%         y = y + erf_pulse(n*separation,smooth_width,HWHM,xx);
-%     end
-% end
-
+% rectangular pulse wave
 function y = erf_pulse_wave(L,duty,phi,R,xx)
     x1 = min(xx);
     x2 = max(xx);
