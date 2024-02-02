@@ -99,7 +99,7 @@ end
 
 %% Fit Transverse Distribution
 fit_opts_t.StartPoint = [max(Zt) nt0 st];
-fout_t = fit(nt,Zt,fit_exp,fit_opts_t);
+[fout_t,gof_t] = fit(nt,Zt,fit_exp,fit_opts_t);
 
 %% Fit Stripe Distribution
 
@@ -138,7 +138,7 @@ fit_opts_s.Upper = [As*1.1 ns0+10 ss*1.5 1 L*1.1 0.9 0.15 phi+pi];
 fit_opts_s.Lower = [As*.8 ns0-10 ss/1.5 0.1 L/1.1 0.1 0.01 phi-pi];
 
 % Perform the fit
-fout_s = fit(ns,Zs,fit_exp_stripe,fit_opts_s);
+[fout_s ,gof_s] = fit(ns,Zs,fit_exp_stripe,fit_opts_s);
 
 % Stripe envelope function
 stripe_envelope = @(n) fout_s.A*exp(-(n-fout_s.n0).^2/(2*fout_s.s^2));
@@ -158,15 +158,18 @@ seps(seps>max(ns))=[];
 focus_center = centers(ind);
 %% Create Output Data
 out = struct;
-out.FitTransverse   = fout_t;
-out.FitStripe       = fout_s;
-out.Centers         = centers;
-out.Scores          = scores;
-out.Lambda          = fout_s.L;
-out.Phase           = fout_s.phi;
-out.Duty            = fout_s.duty;
-out.ModDepth        = fout_s.B;
-out.FocusCenter     = focus_center;
+out.FitTransverse       = fout_t;
+out.FitStripe           = fout_s;
+out.RSquareStripe       = gof_s.rsquare;
+out.RSquareTransverse   = gof_t.rsquare;
+out.Centers             = centers;
+out.Scores              = scores;
+out.Lambda              = fout_s.L;
+out.Phase               = fout_s.phi;
+out.Duty                = fout_s.duty;
+out.ModDepth            = fout_s.B;
+out.FocusCenter         = focus_center;
+
 
 t = toc;
 disp(['(' num2str(t,2) 's)']);
@@ -239,6 +242,9 @@ for kk=1:length(seps)
     plot(get(gca,'XLim'),[1 1]*seps(kk),'--','color',myc)
 end
 grid on
+strR = ['$R^2 = ' num2str(gof_t.rsquare,'%.3f') '$'];
+text(4,2,strR,'fontsize',10,'interpreter','latex','verticalalignment','bottom',...
+    'units','pixels');
 
 ax3=subplot(5,5,[21 22 23 24]);
 plot(nt,Zt,'k-','linewidth',1);
@@ -249,6 +255,9 @@ set(gca,'ydir','normal','fontsize',12,'Xcolor',co(2,:),'fontname','times')
 xlabel('$n_1$ (site)','interpreter','latex');
 xlim([min(nt) max(nt)])
 grid on
+strR = ['$R^2 = ' num2str(gof_s.rsquare,'%.3f') '$'];
+text(4,2,strR,'fontsize',10,'interpreter','latex','verticalalignment','bottom',...
+    'units','pixels')
 
 linkaxes([ax1 ax2],'y');
 linkaxes([ax1 ax3],'x');
