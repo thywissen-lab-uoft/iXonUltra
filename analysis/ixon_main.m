@@ -104,7 +104,11 @@ ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-ixon_doQGM                  = 0;
+doPSF                       = 1;
+ixon_doQGM_Lattice          = 0;
+ixon_doQGM_Bin              = 0;
+ixon_doQGM_Digitize         = 0;
+ixon_doQGM_DigitalAnalysis  = 0;
 
 
 %% Image Processing Options
@@ -128,7 +132,7 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 0;        % Deconvolve with PSF
+img_opt.doPSF               = doPSF;    % Deconvolve with PSF
 img_opt.PSF                 = [1.3163 51 21]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
