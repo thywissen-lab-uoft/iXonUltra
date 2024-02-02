@@ -10,11 +10,10 @@ function [out,hF1] = ixon_fitStripe_dig(n1,n2,Zb,opts)
 %   n2   : lattice site vector which describes the rows of Zb
 %   Zb   : matrix of size n2xn1 which has fluoresence counts per site
 %   opts : options structure
-%           - SumIndex 
-%           - LGuess
-%           - FigNum
+%           - SumIndex : which index are the stripes (NOT WORKING)
+%           - LGuess :  wavelength guess
+%           - FigNum :  figure number to assign output 
 %           - ColorThreshold
-out = struct;
 if nargin~=4
     opts = struct;
 end
@@ -34,8 +33,8 @@ if ~isfield(opts,'ColorThreshold')
     opts.ColorThreshold = [1000 3000];
 end
 
-disp('Stripe bin fitting ... ')
-
+fprintf('Stripe bin fitting...')
+tic
 %% Fit Functions
 
 % Transverse Fit Function
@@ -49,9 +48,12 @@ fit_exp_stripe = fittype(@(A,n0,s,B,L,duty,R,phi,n) ...
     'independent','n','coefficients',...
     {'A','n0','s','B','L','duty','R','phi'});
 fit_opts_s = fitoptions(fit_exp_stripe);
+fit_opts_s.MaxIter = 1200;
+fit_opts_s.MaxFunEvals = 1e3;
+fit_opts_s.Robust='bisquare';
 %% Data Processing
 Zb(isnan(Zb))=0;Zb(isinf(Zb))=0;        % Remove non number sites
-Zb(Zb<ColorThreshold(1)) = 0;           % Threshold low sites
+Zb(Zb<opts.ColorThreshold(1)) = 0;           % Threshold low sites
 
 Zs1 = sum(Zb,1);
 Zs1 = Zs1(:);
@@ -90,41 +92,25 @@ else
     ss = s2g;
 end
 
-At = prctile(Zt,95);
-
-
-%% Construct Tranverse Guess
-
-fit_opts_t.StartPoint = [At nt0 st];
+%% Fit Transverse Distribution
+fit_opts_t.StartPoint = [max(Zt) nt0 st];
 fout_t = fit(nt,Zt,fit_exp,fit_opts_t);
 
-out.FitTransverse = fout_t;
-
-%% Construct Stripe Guess
+%% Fit Stripe Distribution
 
 % Wavelength Guess
 if isempty(opts.LGuess) || isnan(opts.LGuess)
-
     ZsumSmooth=smooth(Zs,5);
-    % [yA,P]=islocalmax(ZsumSmooth,'MinSeparation',10,...
-        % 'MaxNumExtrema',4,'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
-
-    [yA,P]=islocalmin(ZsumSmooth,'MinSeparation',10,...
-        'MaxNumExtrema',4,'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
-
+    [yA,P]=islocalmin(ZsumSmooth,'MinSeparation',10,'MaxNumExtrema',4,...
+        'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
     nA=diff(ns(yA));
     Pvec = movsum(P(yA),2);
     Pvec = Pvec(2:end);
-
     [~,ind]=max(Pvec);
-
-    L = mean(nA);
     L = nA(ind);
 else
-   L =opts.LGuess; 
+    L =opts.LGuess; 
 end
-
-
 % Phase Guess
 phiVec=linspace(0,2*pi,50);
 Sphi = zeros(length(phiVec),1);
@@ -135,37 +121,21 @@ end
 [~,ind]=min(Sphi);
 phi=phiVec(ind);
 
-% % Duty Cycle
-% dutyVec = linspace(10,90,100);
-% D = zeros(length(phiVec),1);
-% 
-% for nn = 1:length(dutyVec)
-%     D(nn) = sum(foo(ns,phi,dutyVec(nn),L,5).*Zs,'all')/sum(Zs,'all');
-% end
-
-% keyboard
+% Duty Cycle Guess
 B = 0.5;
 
+% Amplitude Guess
 As = max(Zs);
 
-fit_opts_s.MaxIter = 1200;
-fit_opts_s.MaxFunEvals = 1e3;
-% fit_opts_s.StartPoint = [As ns0 ss B L phi];
+% Initial Guess and bounds
 fit_opts_s.StartPoint = [As ns0 ss B L 0.5 0.1 phi];
-
-% {'A','n0','s','B','L','duty','R','phi'}
-
-
 fit_opts_s.Upper = [As*1.1 ns0+10 ss*1.5 1 L*1.1 0.9 0.15 phi+pi];
 fit_opts_s.Lower = [As*.8 ns0-10 ss/1.5 0.1 L/1.1 0.1 0.01 phi-pi];
 
-fit_opts_s.Robust='bisquare';
-% fit_opts_s.TolFun=1e-12;
-% fit_opts_s.TolX=1e-9;
-
+% Perform the fit
 fout_s = fit(ns,Zs,fit_exp_stripe,fit_opts_s);
 
-
+%% Score the focusing
 nL = floor(min(ns)/fout_s.L-1);
 nH = ceil(max(ns)/fout_s.L+1);
 
@@ -175,28 +145,24 @@ seps = round(seps);
 seps(seps<min(ns))=[];
 seps(seps>max(ns))=[];
 
-[scores,centers] = ixon_stripe_dig_contrast(ns,Zb,seps,ColorThreshold);
-
-foo_env = @(n) fout_s.A*exp(-(n-fout_s.n0).^2/(2*fout_s.s^2));
-
-out.FitStripe = fout_s;
-out.Centers = centers;
-out.Scores = scores;
-
-out.Lambda = fout_s.L;
-out.Phase = fout_s.phi;
-out.Duty = fout_s.duty;
-out.ModDepth = fout_s.B;
-
+[scores,centers] = ixon_stripe_dig_contrast(ns,Zb,seps,opts.ColorThreshold);
 [~,ind] = max(scores);
-out.FocusCenter = centers(ind);
+focus_center = centers(ind);
+%% Create Output Data
+out = struct;
+out.FitTransverse   = fout_t;
+out.FitStripe       = fout_s;
+out.Centers         = centers;
+out.Scores          = scores;
+out.Lambda          = fout_s.L;
+out.Phase           = fout_s.phi;
+out.Duty            = fout_s.duty;
+out.ModDepth        = fout_s.B;
+out.FocusCenter     = focus_center;
 
-
-%%
-ca = [0 0 0];       
-cb = [0.7 .1 .6];
-cc = [linspace(ca(1),cb(1),1000)' ...
-    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+t = toc;
+disp(['(' num2str(t,2) 's)']);
+%% Plot the Results
 
 hF1=figure(opts.FigNum);
 hF1.Color='w';
@@ -206,7 +172,7 @@ clf
 
 co=get(gca,'colororder');
 myc = [255,140,0]/255;
-subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19]);
+ax1=subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19]);
 imagesc(n1,n2,Zb);
 axis equal tight
 colormap([[0 0 0];winter; [1 0 0]]);
@@ -218,7 +184,7 @@ xlabel('$n_1$ (site)','interpreter','latex');
 ylabel('$n_2$ (site)','interpreter','latex');
 set(gca,'ydir','normal','fontsize',14,'XAxisLocation','Top','YColor',co(1,:),...
     'XColor',co(2,:),'fontname','times')
-caxis(ColorThreshold)
+caxis(opts.ColorThreshold)
 hold on
 for kk=1:length(seps)
     plot(get(gca,'XLim'),[1 1]*seps(kk),'--','color',myc)
@@ -249,8 +215,9 @@ for nn=1:length(scores)
     end
 end
 
+stripe_envelope = @(n) fout_s.A*exp(-(n-fout_s.n0).^2/(2*fout_s.s^2));
 
-subplot(5,5,[5 10 15 20]);
+ax2=subplot(5,5,[5 10 15 20]);
 cla
 plot(Zs,ns,'k-','linewidth',1,'color','k');
 hold on
@@ -260,14 +227,14 @@ set(gca,'fontsize',14,'YAxisLocation','right','YColor',co(1,:),'fontname','times
     'Xaxislocation','top')
 ylabel('$n_2$ (site)','interpreter','latex');
 ylim([min(ns) max(ns)])
-plot(foo_env(nsFit),nsFit,'--','color',co(1,:),'linewidth',1)
+plot(stripe_envelope(nsFit),nsFit,'--','color',co(1,:),'linewidth',1)
 drawnow;
 for kk=1:length(seps)
     plot(get(gca,'XLim'),[1 1]*seps(kk),'--','color',myc)
 end
 
 
-subplot(5,5,[21 22 23 24]);
+ax3=subplot(5,5,[21 22 23 24]);
 plot(nt,Zt,'k-','linewidth',1);
 hold on
 ntFit = linspace(min(nt),max(nt),1e3);
@@ -276,6 +243,8 @@ set(gca,'ydir','normal','fontsize',14,'Xcolor',co(2,:),'fontname','times')
 xlabel('$n_1$ (site)','interpreter','latex');
 xlim([min(nt) max(nt)])
 
+linkaxes([ax1 ax2],'y');
+linkaxes([ax1 ax3],'x');
 
 subplot(5,5,25);
 plot(centers,scores,'ko','markerfacecolor',[.5 .5 .5]);
