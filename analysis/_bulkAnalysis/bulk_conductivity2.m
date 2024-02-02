@@ -83,92 +83,92 @@
 
 %%
 
-% runs=[
-%     2023 12 19 07;
-%     2023 12 19 08;
-%     2023 12 19 09;
-%     2023 12 19 10;
-%     2023 12 19 11;
-%     2023 12 19 12;
-%     2023 12 19 13;
-%     2023 12 19 14;
-%     2023 12 19 15;
-%     2023 12 19 16;
-%     2023 12 19 17;
-% 
-%     ];
-% 
-% % fit_types = {''};
-% data_label = '2.5 Er'; 
-% dVar = 'Xc';
-% varname = '12_19_shake_stripe_25Er_2v2v_190G_80mW';
-% n = 400;
-% % 
-% % %
-% clear data
-% fname = 'digdata';
-% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-% data = [all_data.(fname)];
-% pddir = 'X:\LabJackLogs\ODTQPD\2023\2023.12\12.19';
+runs=[
+    2023 12 19 07;
+    2023 12 19 08;
+    2023 12 19 09;
+    2023 12 19 10;
+    2023 12 19 11;
+    2023 12 19 12;
+    2023 12 19 13;
+    2023 12 19 14;
+    2023 12 19 15;
+    2023 12 19 16;
+    2023 12 19 17;
 
-% %% DEC 7TH + 19TH RUN
+    ];
+
+% fit_types = {''};
+data_label = '2.5 Er'; 
+dVar = 'Xc';
+varname = '12_19_shake_stripe_25Er_2v2v_190G_80mW';
+n = 400;
 % 
-% runs=[
-%     2023 12 07 05;
-%     2023 12 07 06;
-%     2023 12 07 07;
-%     2023 12 07 08;
-%     2023 12 07 09;
-%     2023 12 07 10;
-%     2023 12 07 11;
-%     2023 12 07 12;
-%     2023 12 07 13;
-%     2023 12 07 14;
-%     2023 12 07 15;
-%     2023 12 07 16;
-%     2023 12 07 17;
-%     2023 12 07 18;
-%     2023 12 07 19;
-%     2023 12 07 20;
-%     2023 12 07 21;
-%     2023 12 07 22;
-%     2023 12 07 23;
-%     2023 12 07 24;
-%     2023 12 07 25;
-%     2023 12 07 26;
-%     2023 12 07 27;
-%     2023 12 07 28;
-%     2023 12 07 29;
-%     2023 12 07 30;
-%     2023 12 07 31;
-%     2023 12 07 32;
-%     2023 12 07 33;
-%     2023 12 07 34;
-%     2023 12 07 35;
-%     2023 12 19 07;
-%     2023 12 19 08;
-%     2023 12 19 09;
-%     2023 12 19 10;
-%     2023 12 19 11;
-%     2023 12 19 12;
-%     2023 12 19 13;
-%     2023 12 19 14;
-%     2023 12 19 15;
-%     2023 12 19 16;
-%     2023 12 19 17;
-%     ];
-% 
-% % fit_types = {''};
-% data_label = '2.5 Er'; 
-% dVar = 'Xc';
-% varname = 'combined_shake_stripe_25Er_2v2v_190G_75mW';
-% n = 600;
-% 
-% clear data
-% fname = 'digdata';
-% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-% data = [all_data.(fname)];
-% 
+% %
+clear data
+fname = 'digdata';
+[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+data = [all_data.(fname)];
+pddir = 'X:\LabJackLogs\ODTQPD\2023\2023.12\12.19';
+
+%% DEC 7TH + 19TH RUN
+
+runs=[
+    2023 12 07 05;
+    2023 12 07 06;
+    2023 12 07 07;
+    2023 12 07 08;
+    2023 12 07 09;
+    2023 12 07 10;
+    2023 12 07 11;
+    2023 12 07 12;
+    2023 12 07 13;
+    2023 12 07 14;
+    2023 12 07 15;
+    2023 12 07 16;
+    2023 12 07 17;
+    2023 12 07 18;
+    2023 12 07 19;
+    2023 12 07 20;
+    2023 12 07 21;
+    2023 12 07 22;
+    2023 12 07 23;
+    2023 12 07 24;
+    2023 12 07 25;
+    2023 12 07 26;
+    2023 12 07 27;
+    2023 12 07 28;
+    2023 12 07 29;
+    2023 12 07 30;
+    2023 12 07 31;
+    2023 12 07 32;
+    2023 12 07 33;
+    2023 12 07 34;
+    2023 12 07 35;
+    2023 12 19 07;
+    2023 12 19 08;
+    2023 12 19 09;
+    2023 12 19 10;
+    2023 12 19 11;
+    2023 12 19 12;
+    2023 12 19 13;
+    2023 12 19 14;
+    2023 12 19 15;
+    2023 12 19 16;
+    2023 12 19 17;
+    ];
+
+% fit_types = {''};
+data_label = '2.5 Er'; 
+dVar = 'Xc';
+varname = 'combined_shake_stripe_25Er_2v2v_190G_75mW';
+n = 600;
+
+clear data
+fname = 'digdata';
+[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+data = [all_data.(fname)];
+
 
  %% JAN 3RD RUN
 % % %
@@ -202,76 +202,76 @@
 % data = [all_data.(fname)];
 
 %% JAN 4th RUN
-
-runs=[
-    2024 01 04 03;
-    2024 01 04 04;
-    2024 01 04 05;
-    2024 01 04 06;
-    2024 01 04 07;
-    2024 01 04 08;
-    2024 01 04 09;
-    2024 01 04 10;
-    2024 01 04 11;
-    2024 01 04 12;
-    2024 01 04 13;
-
-    ];
-
-% fit_types = {''};
-data_label = '2.5 Er'; 
-dVar = 'Xc';
-varname = 'shake_stripe_25Er_2v2v_195G_80mW';
-n = 500;
 % 
-% %
-clear data
-fname = 'digdata';
-[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-data = [all_data.(fname)];
+% runs=[
+%     2024 01 04 03;
+%     2024 01 04 04;
+%     2024 01 04 05;
+%     2024 01 04 06;
+%     2024 01 04 07;
+%     2024 01 04 08;
+%     2024 01 04 09;
+%     2024 01 04 10;
+%     2024 01 04 11;
+%     2024 01 04 12;
+%     2024 01 04 13;
+% 
+%     ];
+% 
+% % fit_types = {''};
+% data_label = '2.5 Er'; 
+% dVar = 'Xc';
+% varname = 'shake_stripe_25Er_2v2v_195G_80mW';
+% n = 500;
+% % 
+% % %
+% clear data
+% fname = 'digdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
 %% JAN 4th RUN
-
-runs=[
-    2024 01 16 04;
-    2024 01 16 05;
-    2024 01 16 06;
-    2024 01 16 07;
-    2024 01 16 08;
-    2024 01 16 09;
-    2024 01 16 10;
-    2024 01 16 11;
-    2024 01 16 12;
-    2024 01 16 13;
-    2024 01 16 14;
-    2024 01 16 15;
-    2024 01 16 16;
-    2024 01 16 17;
-    2024 01 16 18;
-    2024 01 16 19;
-    2024 01 16 20;
-    2024 01 16 21;
-    2024 01 16 22;
-    2024 01 16 23;
-    2024 01 16 24;
-    2024 01 16 25;
-    2024 01 16 26;
-    2024 01 16 27;
-    2024 01 16 28;
-    2024 01 16 29;
-
-    ];
-
-% fit_types = {''};
-data_label = '2.5 Er'; 
-dVar = 'Xc';
-varname = 'shake_stripe_25Er_4v4v_198G_85mW';
-n = 500;
 % 
-% %
-clear data
-fname = 'digdata';
-[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-data = [all_data.(fname)];
+% runs=[
+%     2024 01 16 04;
+%     2024 01 16 05;
+%     2024 01 16 06;
+%     2024 01 16 07;
+%     2024 01 16 08;
+%     2024 01 16 09;
+%     2024 01 16 10;
+%     2024 01 16 11;
+%     2024 01 16 12;
+%     2024 01 16 13;
+%     2024 01 16 14;
+%     2024 01 16 15;
+%     2024 01 16 16;
+%     2024 01 16 17;
+%     2024 01 16 18;
+%     2024 01 16 19;
+%     2024 01 16 20;
+%     2024 01 16 21;
+%     2024 01 16 22;
+%     2024 01 16 23;
+%     2024 01 16 24;
+%     2024 01 16 25;
+%     2024 01 16 26;
+%     2024 01 16 27;
+%     2024 01 16 28;
+%     2024 01 16 29;
+% 
+%     ];
+% 
+% % fit_types = {''};
+% data_label = '2.5 Er'; 
+% dVar = 'Xc';
+% varname = 'shake_stripe_25Er_4v4v_198G_85mW';
+% n = 500;
+% % 
+% % %
+% clear data
+% fname = 'digdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
 %%
 % runs=[
 %     2023 10 07 02;
@@ -486,8 +486,8 @@ for nn=1:length(data)
     
     % add minus sign to account for the fact that + peizo movies cloud
     % negative
-    vpd1 = -vpd1;
-    vpd2 = -vpd2;
+%     vpd1 = -vpd1;
+%     vpd2 = -vpd2;
     
     i1 = find(tpd>=min(X),1);
     i2 = find(tpd>=max(X),1);
@@ -519,14 +519,14 @@ for nn=1:length(data)
     myfit = fittype(@(A,B,C,t) myfunc(A,B,C,t),'independent',{'t'},...
         'coefficients',{'A','B','C'});
     
-    myfit2 = fittype(@(A,B,C,t) myfunc(A,B,C,t),'independent',{'t'},...
-        'coefficients',{'A','B','C'});
+ 
     
     Agp = (max(vpd1_sub)-min(vpd1_sub))/2;
     Cgp = mean(vpd1_sub);
     Bgp =  mod(2*pi*(150)/T+pi,2*pi);% additional pi since positive piezo moves cloud to -
     opt = fitoptions(myfit);
     opt.StartPoint = [Agp Bgp Cgp];
+    opt.Lower = [0 -10*pi Cgp-20];
     fout_pd = fit(t_sub',vpd1_sub,myfit,opt);
     tt=linspace(min(X),max(X),1e3);
     
@@ -534,18 +534,23 @@ for nn=1:length(data)
     Cg = mean(Y);
     Bg = fout_pd.B;
     
+    myfunc2 = @(A,B,C,t) A*sin(2*pi*t/T + Bg + B) + C;
+       myfit2 = fittype(@(A,B,C,t) myfunc2(A,B,C,t),'independent',{'t'},...
+        'coefficients',{'A','B','C'});
     opt.StartPoint = [Ag Bg Cg];
+
+    opt.StartPoint = [Ag 0 Cg];
     opt.Robust = 'bisquare';
     opt.Lower  = [0 -10*pi Cg-20];
      opt.Upper  = [Ag*5 +10*pi Cg+20];
 
-    fout_dig = fit(X',Y',myfit,opt);
+    fout_dig = fit(X',Y',myfit2,opt);
     lvl = 0.682;0.95;
 %     c=confint(fout_dig,0.667);   
         c=confint(fout_dig,lvl);   
 
 
-         
+   
     % Make Axis and Plot Data
     axbot=subplot(3,3,mod(nn-1,nPlotMax)+1);    
     
@@ -607,10 +612,14 @@ for nn=1:length(data)
     yyaxis left
     plot(tpd,vpd1,'k-');
     hold on
-    plot(tt,feval(fout_pd,tt),'-','color',[.5 .5 .5],'linewidth',2);
+    plot(tpd,vpd2,'b-');
+    hold on
+%     plot(tt,feval(fout_pd,tt),'-','color',[.5 .5 .5],'linewidth',2);
     set(gca,'YColor','k');   
     ylim(Ym+[-15 15]);
     xlim([min(X) max(X)]); 
+    
+%     keyboard
     
     
            
@@ -619,9 +628,12 @@ for nn=1:length(data)
     myamp_err(nn) = (c(2,1)-c(1,1))/2;
 
    % phi(nn) = mod(fout_dig.B,2*pi)-mod(fout_pd.B,2*pi);
-    phi(nn) = 2*pi-mod(fout_dig.B-fout_pd.B,2*pi);%-1.5*pi; %why subtract -3/2pi
+%     phi(nn) = 2*pi-mod(fout_dig.B-fout_pd.B,2*pi);%-1.5*pi; %why subtract -3/2pi
+%     phi(nn) = mod(fout_dig.B-fout_pd.B,2*pi);
 %     phi(nn) = mod(fout_dig.B-fout_pd.B,2*pi); %why subtract -3/2pi
     %phi(nn) = mod(fout_dig.B-Bgp,2*pi)-pi/2;
+    
+    phi(nn) = mod(fout_dig.B,2*pi);
     phi_err(nn) = (c(2,2)-c(1,2))/2;
     lvls(nn) = lvl;
 end
@@ -720,9 +732,12 @@ m = 39.964008*amu;
 
 Force = m*(w_HO^2)*d;
 
-cond = -1i*(hbar/(Force*aL^2)).*(2*pi*f).*myamp*aL.*exp(1i*phi);
-cond_real = real(cond);
-cond_imag = imag(cond);
+cond = -1i*(hbar/(Force*aL^2)).*(2*pi*f).*myamp*aL.*exp(-1i*phi);
+% cond_real = real(cond);
+% cond_imag = imag(cond);
+
+cond_real = (hbar/(Force*aL^2)).*(2*pi*f).*myamp*aL.*cos(phi+pi/2);
+cond_imag = -(hbar/(Force*aL^2)).*(2*pi*f).*myamp*aL.*sin(phi+pi/2);
 
 cond_real_error = (hbar/(Force*aL^2)).*(2*pi*f).*sqrt((sin(phi).^2).*((myamp_err*aL).^2) + (cos(phi).^2).*((myamp*aL).^2).*(phi_err.^2));
 cond_imag_error = (hbar/(Force*aL^2)).*(2*pi*f).*sqrt((cos(phi).^2).*((myamp_err*aL).^2) + (sin(phi).^2).*((myamp*aL).^2).*(phi_err.^2));
