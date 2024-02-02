@@ -18,17 +18,22 @@ if nargin~=4
     opts = struct;
 end
 
+% Default direction to look at stripes
 if ~isfield(opts,'SumIndex')
     opts.SumIndex = 2;
 end
+
+% Default figure number
 if ~isfield(opts,'FigNum')
     opts.FigNum = 901;
 end
 
+% Default wavelength guess is to be automatically determined
 if ~isfield(opts,'LGuess')
    opts.LGuess = []; 
 end
 
+% Thresholds to throw data away and for focusing score
 if ~isfield(opts,'ColorThreshold')
     opts.ColorThreshold = [1000 3000];
 end
@@ -135,6 +140,9 @@ fit_opts_s.Lower = [As*.8 ns0-10 ss/1.5 0.1 L/1.1 0.1 0.01 phi-pi];
 % Perform the fit
 fout_s = fit(ns,Zs,fit_exp_stripe,fit_opts_s);
 
+% Stripe envelope function
+stripe_envelope = @(n) fout_s.A*exp(-(n-fout_s.n0).^2/(2*fout_s.s^2));
+
 %% Score the focusing
 nL = floor(min(ns)/fout_s.L-1);
 nH = ceil(max(ns)/fout_s.L+1);
@@ -165,57 +173,55 @@ disp(['(' num2str(t,2) 's)']);
 %% Plot the Results
 
 hF1=figure(opts.FigNum);
+co=get(gca,'colororder');
+myc = [255,140,0]/255;
 hF1.Color='w';
 hF1.Position(3:4) = [770 720];
 if (hF1.Position(2)+hF1.Position(4))>1000;hF1.Position(2) = 100;end
 clf
 
-co=get(gca,'colororder');
-myc = [255,140,0]/255;
+% Image Plot
 ax1=subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19]);
 imagesc(n1,n2,Zb);
-axis equal tight
+% axis equal tight
 colormap([[0 0 0];winter; [1 0 0]]);
-c=colorbar('location','north','fontsize',6,'color',myc,...
-    'fontname','arial');
-c.Label.Color='b';
 
-xlabel('$n_1$ (site)','interpreter','latex');
-ylabel('$n_2$ (site)','interpreter','latex');
-set(gca,'ydir','normal','fontsize',14,'XAxisLocation','Top','YColor',co(1,:),...
-    'XColor',co(2,:),'fontname','times')
+p = get(gca,'Position');
+c=colorbar('location','westoutside','fontsize',10,'color',[0 0 0 0],...
+    'fontname','times');
+c.Label.Color='k';
+c.Label.String ='counts/site';
+set(gca,'position',p)
+set(gca,'ydir','normal','fontsize',10,'XAxisLocation','bottom','YColor',co(1,:),...
+    'XColor',co(2,:),'fontname','times','yaxislocation','right')
 caxis(opts.ColorThreshold)
 hold on
+
+% Lines for indicating the absence of atoms
 for kk=1:length(seps)
     plot(get(gca,'XLim'),[1 1]*seps(kk),'--','color',myc)
 end
 
+% Text label for each string
 for kk=1:length(centers)
-    str = ['n=' num2str(centers(kk)) newline 'score=' num2str(scores(kk),'%.2e')];
+    str = ['score=' num2str(scores(kk),'%.2e')];
     text(min(nt)+6,centers(kk),str,'horizontalalignment','left',...
         'verticalalignment','middle','fontsize',10,...
         'color',myc)
 end
 
+% Text summary of stripe fit
 str = ['$\lambda=' num2str(fout_s.L,'%.2f') ',' ...
     '\phi=2\pi\cdot' num2str(round(mod(fout_s.phi,2*pi)/(2*pi),2),'%.2f') ',' ...
     '\alpha = ' num2str(round(fout_s.B,2),'%.2f') '$'];
+text(5,5,str,'horizontalalignment','left',...
+    'verticalalignment','bottom','fontsize',14,...
+    'color',myc,'interpreter','latex','backgroundcolor',[0 0 0],'Margin',1,...
+    'units','pixels')
 
-text(min(nt),min(ns),str,'horizontalalignment','left',...
-    'verticalalignment','bottom','fontsize',12,...
-    'color',myc,'interpreter','latex')
-
-[bob,inds] = sort(scores,'descend');
-bob = bob/max(scores);
-
-for nn=1:length(scores)
-    if bob(nn)>=0.9
-        plot(min(nt)+2,centers(inds(nn)),'pentagram','markersize',12,...
-            'markerfacecolor',myc,'markeredgecolor',myc*.8)
-    end
-end
-
-stripe_envelope = @(n) fout_s.A*exp(-(n-fout_s.n0).^2/(2*fout_s.s^2));
+% Plot star for most in-focused plane
+plot(min(nt)+2,focus_center,'pentagram','markersize',12,...
+    'markerfacecolor',myc,'markeredgecolor',myc*.8)
 
 ax2=subplot(5,5,[5 10 15 20]);
 cla
@@ -223,7 +229,7 @@ plot(Zs,ns,'k-','linewidth',1,'color','k');
 hold on
 nsFit = linspace(min(ns),max(ns),1e3);
 plot(feval(fout_s,nsFit),nsFit,'-','color',co(1,:),'linewidth',2);
-set(gca,'fontsize',14,'YAxisLocation','right','YColor',co(1,:),'fontname','times',...
+set(gca,'fontsize',12,'YAxisLocation','right','YColor',co(1,:),'fontname','times',...
     'Xaxislocation','top')
 ylabel('$n_2$ (site)','interpreter','latex');
 ylim([min(ns) max(ns)])
@@ -232,16 +238,17 @@ drawnow;
 for kk=1:length(seps)
     plot(get(gca,'XLim'),[1 1]*seps(kk),'--','color',myc)
 end
-
+grid on
 
 ax3=subplot(5,5,[21 22 23 24]);
 plot(nt,Zt,'k-','linewidth',1);
 hold on
 ntFit = linspace(min(nt),max(nt),1e3);
 plot(ntFit,feval(fout_t,ntFit),'-','color',co(2,:),'linewidth',2);
-set(gca,'ydir','normal','fontsize',14,'Xcolor',co(2,:),'fontname','times')
+set(gca,'ydir','normal','fontsize',12,'Xcolor',co(2,:),'fontname','times')
 xlabel('$n_1$ (site)','interpreter','latex');
 xlim([min(nt) max(nt)])
+grid on
 
 linkaxes([ax1 ax2],'y');
 linkaxes([ax1 ax3],'x');
@@ -253,7 +260,6 @@ ylabel('score');
 set(gca,'fontsize',8);
 yL =get(gca,'YLim');
 ylim([0 yL(2)]);
-grid on
 end
 
 % rectangular pulse via erf functions
