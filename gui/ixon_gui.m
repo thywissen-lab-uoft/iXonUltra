@@ -3258,6 +3258,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
     function saveGUIData       
         if doSaveGUIAnalysis
+            try
             gui_saveData = struct;     
             gui_saveData.Date = data.Date;
             gui_saveData.FileName = data.Name;
@@ -3296,14 +3297,17 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             end               
 
             filename=[data.Name '.mat']; 
-            if ~exist(GUIAnalysisSaveDir,'dir')
+            if ~exist(GUIAnalysisSaveDir,'dir')                
                mkdir(GUIAnalysisSaveDir);
             end     
             
             filename=fullfile(GUIAnalysisSaveDir,filename);
             fprintf('%s',[filename ' ...']);
             save(filename,"-struct",'gui_saveData');
-            disp(' done');       
+            disp(' done');      
+            catch ME
+                warning('Unable to save GUI data.')
+            end
         end 
     end
 
