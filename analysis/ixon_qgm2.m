@@ -123,7 +123,23 @@ if ixon_doQGM_BinStripe
             opts_stripe.ColorThreshold = ColorThreshold;
             
             [out(kk),hF_bin_stripe] = ixon_fitStripe_dig(n1,n2,Zb,opts_stripe);
-                  exportgraphics(gcf,'testAnimated.gif','Append',true);
+%                   exportgraphics(gcf,'testAnimated.gif','Append',true);
+            frame=getframe(hF_bin_stripe);
+            im = frame2im(frame);
+            [A,map] = rgb2ind(im,256);  
+            
+            filename = fullfile(saveDir,'binstripe_75.gif');
+            
+            if out(kk).ModDepth>=.75 && out(kk).Counts>0.5e6
+                switch n
+                    case 1
+                        imwrite(A,map,filename,'gif','LoopCount',Inf,'DelayTime',1);
+                    case length(ixondata)
+                        imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',1);
+                    otherwise
+                        imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',.1);
+                end
+            end
 
         end
         ixondata(n).BinStripe = out;    

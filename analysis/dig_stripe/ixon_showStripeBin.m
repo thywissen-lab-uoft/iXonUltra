@@ -4,17 +4,28 @@ BS = [qgmdata.BinStripe];
 P = [qgmdata.Params];
 X = [P.(xVar)];
 
+alpha = [BS.ModDepth];
+N = [BS.Counts];
+
+goodInds = logical([alpha>.75].*[N>0.5e6]);
+
+P = P(goodInds);
+X = X(goodInds);
+BS = BS(goodInds);
+
+
 pos = zeros(length(BS),2);
 for kk=1:length(BS)
     s = [BS(kk).Scores];
     c = [BS(kk).Centers];
     
-    [s, inds] = sort(s,'descend');;
+    [s, inds] = sort(s,'descend');
     c = c(inds);
     pos(kk,1) = c(1);
     pos(kk,2) = c(2);
 end
-hF = figure
+hF = figure(9);
+clf
 
 subplot(3,2,1);
 plot(X,[BS.Phase]/(2*pi),'o');
@@ -31,6 +42,7 @@ if isequal(xVar,'ExecutionDate')
     datetick x
 end
 ylabel('ModDepth');
+ylim([0 1]);
 
 subplot(3,2,3);
 plot(X,pos(:,1),'o');
