@@ -46,6 +46,7 @@ if ixon_doQGM_FindLattice
     for n = 1:length(ixondata)
         for kk=1:size(ixondata(n).Zf,3)
             tic;
+            opts = struct;
             fprintf(['(' num2str(kk) '/' num2str(size(ixondata(n).Zf,3))...
                 ') Fitting reciprocal lattice ...']);
             ixondata(n).LatticeK(kk) = findLatticeK(ixondata(n).f,ixondata(n).f,...
@@ -103,13 +104,13 @@ end
 
 %% Bin Stripe
 if ixon_doQGM_BinStripe
-    LGuess = 26.62;
+    LGuess = 25;
     ColorThreshold = [1000 3000];
     
     if ~isfield(ixondata,'LatticeBin')
         return;
     end
-    
+    clear out
     for n = 1:length(ixondata)                
         for kk = 1:length(ixondata(n).LatticeBin)
             n1 = ixondata(n).LatticeBin(kk).n1;
@@ -117,9 +118,13 @@ if ixon_doQGM_BinStripe
             Zb = ixondata(n).LatticeBin(kk).Zbin;    
             opts_stripe.LGuess = LGuess;
             opts_stripe.FigNum=3000+10*(n-1)+kk-1;
+                        opts_stripe.FigNum=3000;
+
             opts_stripe.ColorThreshold = ColorThreshold;
             
             [out(kk),hF_bin_stripe] = ixon_fitStripe_dig(n1,n2,Zb,opts_stripe);
+                  exportgraphics(gcf,'testAnimated.gif','Append',true);
+
         end
         ixondata(n).BinStripe = out;    
         qgmdata(n).BinStripe = out;
