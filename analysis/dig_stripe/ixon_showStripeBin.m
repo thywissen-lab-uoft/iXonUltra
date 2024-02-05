@@ -7,28 +7,35 @@ X = [P.(xVar)];
 alpha = [BS.ModDepth];
 N = [BS.Counts];
 
+% goodInds = ones(1,length(N));
 goodInds = logical([alpha>.75].*[N>0.5e6]);
+goodInds = logical([N>0.5e6]);
 
+goodInds = logical(ones(length(qgmdata),1));
+% 
 P = P(goodInds);
 X = X(goodInds);
 BS = BS(goodInds);
 
+phinc = mod(2*pi*(85./[BS.Lambda])-[BS.Phase],2*pi);
+% phinc = mod([BS.Phase]-pi/2,2*pi);
 
 pos = zeros(length(BS),2);
 for kk=1:length(BS)
     s = [BS(kk).Scores];
     c = [BS(kk).Centers];
-    
+
     [s, inds] = sort(s,'descend');
     c = c(inds);
     pos(kk,1) = c(1);
     pos(kk,2) = c(2);
 end
+
 hF = figure(9);
 clf
 
 subplot(3,2,1);
-plot(X,[BS.Phase]/(2*pi),'o');
+plot(X,phinc/(2*pi),'o');
 xlabel(xVar);
 if isequal(xVar,'ExecutionDate')
     datetick x
@@ -45,9 +52,11 @@ ylabel('ModDepth');
 ylim([0 1]);
 
 subplot(3,2,3);
-plot(X,pos(:,1),'o');
-hold on
-% plot(X,pos(:,2),'o');
+plot(X,[BS.FocusCenter],'ko');
+% hold on
+% plot(X,pos(:,1),'bo');
+
+% plot(X,pos(:,2),'ro');
 
 xlabel(xVar);
 if isequal(xVar,'ExecutionDate')
@@ -70,6 +79,18 @@ xlabel(xVar);
 if isequal(xVar,'ExecutionDate')
     datetick x
 end
-ylabel('counts');
+ylabel('selection frequency offset (kHz)');
+
+
+subplot(3,2,6);
+plot(X,[BS.Lambda],'o');
+xlabel(xVar);
+if isequal(xVar,'ExecutionDate')
+    datetick x
 end
+ylabel('wavelength (sites)');
+
+
+end
+
 

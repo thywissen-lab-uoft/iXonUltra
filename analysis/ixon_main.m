@@ -108,10 +108,10 @@ doPSF                               = 1;
 ixon_doQGM                          = 1;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
-ixon_doQGM_BinStripe                = 1;
+ixon_doQGM_BinStripe                = 0;
 
 ixon_doQGM_BinStandardAnalysis      = 0;
-ixon_doQGM_Digitize                 = 0;
+ixon_doQGM_Digitize                 = 1;
 ixon_doQGM_DigitalStandardAnalysis  = 0;
 
 

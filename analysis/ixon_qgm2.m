@@ -66,7 +66,7 @@ if ixon_doQGM_FindLattice
     end        
 end
 
-%% Find the Lattice
+%% Bin Data
 if ixon_doQGM_Bin
     for n=1:length(ixondata)
         for kk=1:size(ixondata(n).Z,3)
@@ -146,8 +146,6 @@ if ixon_doQGM_BinStripe
         qgmdata(n).BinStripe = out;
     end
 end  
-        
-
 
 %% Digitization Stuff
 if ixon_doQGM_Digitize
