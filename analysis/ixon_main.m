@@ -82,9 +82,9 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'conductivity_mod_time'; % Variable Name
+ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -93,7 +93,7 @@ ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
 ixon_doBoxCount             = 1;
-ixon_doGaussFit             = 1;
+ixon_doGaussFit             = 0;
 
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
@@ -104,7 +104,15 @@ ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-ixon_doQGM                  = 0;
+doPSF                               = 1;
+ixon_doQGM                          = 1;
+ixon_doQGM_FindLattice              = 1;
+ixon_doQGM_Bin                      = 1;
+ixon_doQGM_BinStripe                = 0;
+
+ixon_doQGM_BinStandardAnalysis      = 0;
+ixon_doQGM_Digitize                 = 1;
+ixon_doQGM_DigitalStandardAnalysis  = 0;
 
 
 %% Image Processing Options
@@ -116,7 +124,7 @@ ixon_mask=ixon_mask.BW;
 
 img_opt = struct;
 img_opt.doSubtractBias      = 1;        % Subtract 200 count electronic offset
-img_opt.doSubtractBG        = 0;
+img_opt.doSubtractBG        = 1;
 img_opt.doScale             = 1;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
@@ -128,7 +136,7 @@ img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
-img_opt.doPSF               = 0;        % Deconvolve with PSF
+img_opt.doPSF               = doPSF;    % Deconvolve with PSF
 img_opt.PSF                 = [1.3163 51 21]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
@@ -350,9 +358,9 @@ if ixon_doAnimate == 1 && ixon_doSave
     ixon_animateOpts=struct;
     
     ixon_animateOpts.xUnit=ixon_unit;
-    ixon_animateOpts.StartDelay=2; % Time to hold on first picture
-    ixon_animateOpts.MidDelay=.8;     % Time to hold in middle picutres
-    ixon_animateOpts.EndDelay=2;     % Time to hold final picture
+    ixon_animateOpts.StartDelay=1; % Time to hold on first picture
+    ixon_animateOpts.MidDelay=.2;     % Time to hold in middle picutres
+    ixon_animateOpts.EndDelay=1;     % Time to hold final picture
 
     % Animate in ascending or descending order?
     % animateOpts.Order='descend';    % Asceneding or descending
@@ -360,9 +368,10 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     % Color limit for image
 ixon_animateOpts.Source = 'ZNoFilter';
+ixon_animateOpts.Source = 'Z';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-    ixon_animateOpts.CLim=[0 100];   % Color limits
+    ixon_animateOpts.CLim=[0 200];   % Color limits
 %     ixon_animateOpts.CLim=[0 1800];   % Color limits
 
 
@@ -376,6 +385,9 @@ if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis
 if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
 %% Quantum Gas Micrscopy
-if ixon_doQGM; ixon_QGM;end
+if ixon_doQGM
+%     ixon_QGM
+    ixon_qgm2;
+end
 %% Stripe Analysis
 if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end

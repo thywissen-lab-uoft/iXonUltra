@@ -1,36 +1,67 @@
 function [out,hF1] = ixon_fitStripe_dig(n1,n2,Zb,opts)
-out = struct;
+%ixon_fitStripe_dig Fit a binned fluorescence image to a stripe pattern.
+%   When taking fluoresence images of a 2D slice of the 3D cloud,
+%   application of a transverse magnetic field induces a stripe pattern to
+%  form which is a sample of each plane.  This code fits this distribution
+%  and also uses the fluoresence per site to describe the relative focusing
+%  between each stripe.
+%
+%   n1   : lattice site vector which describes the columns of Zb
+%   n2   : lattice site vector which describes the rows of Zb
+%   Zb   : matrix of size n2xn1 which has fluoresence counts per site
+%   opts : options structure
+%           - SumIndex : which index are the stripes (NOT WORKING)
+%           - LGuess :  wavelength guess
+%           - FigNum :  figure number to assign output 
+%           - ColorThreshold
 if nargin~=4
     opts = struct;
 end
 
+% Default direction to look at stripes
 if ~isfield(opts,'SumIndex')
     opts.SumIndex = 2;
 end
+
+% Default figure number
 if ~isfield(opts,'FigNum')
     opts.FigNum = 901;
 end
 
+% Default wavelength guess is to be automatically determined
 if ~isfield(opts,'LGuess')
    opts.LGuess = []; 
 end
 
-ColorThreshold = [1000 3000];
+% Thresholds to throw data away and for focusing score
+if ~isfield(opts,'ColorThreshold')
+    opts.ColorThreshold = [1000 3000];
+end
+
+fprintf('Stripe bin fitting...')
+tic
 %% Fit Functions
 
+% Transverse Fit Function
 fit_exp = fittype(@(A,n0,s,n) A.*exp(-(n-n0).^2/(2*s^2)),...
     'independent','n','coefficients',{'A','n0','s'});
 fit_opts_t = fitoptions(fit_exp);
 
-fit_exp_stripe = fittype(@(A,n0,s,B,L,duty,R,phi,n) ...
-    A.*exp(-(n-n0).^2/(2*s^2)).*(1-B*erf_pulse_wave(L,duty,phi,R,n)),...
-    'independent','n','coefficients',{'A','n0','s','B','L','duty','R','phi'});
+% Stripe Fit Function
+myfunc = @(A,n0,s,B,L,duty,R,phi,n) ...
+    A.*exp(-(n-n0).^2/(2*s^2)).*(1-B*erf_pulse_wave(L,duty,phi,R,n));
 
+fit_exp_stripe = fittype(@(A,n0,s,B,L,duty,R,phi,n) myfunc(A,n0,s,B,L,duty,R,phi,n),...
+    'independent','n','coefficients',...
+    {'A','n0','s','B','L','duty','R','phi'});
 fit_opts_s = fitoptions(fit_exp_stripe);
+fit_opts_s.MaxIter = 1200;
+fit_opts_s.MaxFunEvals = 1e3;
+% fit_opts_s.Robust='bisquare';
 %% Data Processing
+Zb(isnan(Zb))=0;Zb(isinf(Zb))=0;        % Remove non number sites
+Zb(Zb<opts.ColorThreshold(1)) = 0;           % Threshold low sites
 
-Zb(isnan(Zb))=0;Zb(isinf(Zb))=0;
-Zb(Zb<ColorThreshold(1)) = 0;
 Zs1 = sum(Zb,1);
 Zs1 = Zs1(:);
 n1 = n1(:);
@@ -51,7 +82,6 @@ if opts.SumIndex == 1
     ns = n1;
     ns0 = n01g;
     ss = s1g;
-
     Zt = smooth(Zs2,R);
     nt = n2;
     nt0 = n02g;
@@ -68,83 +98,81 @@ else
     ss = s2g;
 end
 
-At = prctile(Zt,95);
-As = prctile(Zs,95);
-
-
-%% Construct Tranverse Guess
-
-fit_opts_t.StartPoint = [At nt0 st];
-fout_t = fit(nt,Zt,fit_exp,fit_opts_t);
-
-out.FitTransverse = fout_t;
-
-%% Construct Stripe Guess
+%% Fit Transverse Distribution
+fit_opts_t.StartPoint = [max(Zt) nt0 st];
+[fout_t,gof_t] = fit(nt,Zt,fit_exp,fit_opts_t);
+%% Fit Stripe Distribution
 
 % Wavelength Guess
 if isempty(opts.LGuess) || isnan(opts.LGuess)
-
     ZsumSmooth=smooth(Zs,5);
-    % [yA,P]=islocalmax(ZsumSmooth,'MinSeparation',10,...
-        % 'MaxNumExtrema',4,'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
-
-    [yA,P]=islocalmin(ZsumSmooth,'MinSeparation',10,...
-        'MaxNumExtrema',4,'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
-
+    [yA,P]=islocalmin(ZsumSmooth,'MinSeparation',10,'MaxNumExtrema',4,...
+        'MinProminence',(max(ZsumSmooth)-min(ZsumSmooth))*0.05);
     nA=diff(ns(yA));
     Pvec = movsum(P(yA),2);
     Pvec = Pvec(2:end);
-
     [~,ind]=max(Pvec);
-
-    L = mean(nA);
     L = nA(ind);
 else
-   L =opts.LGuess; 
+    L =opts.LGuess; 
 end
 
+% Amplitude Guess
+As = max(Zs);
 
 % Phase Guess
 phiVec=linspace(0,2*pi,50);
-Sphi = zeros(length(phiVec),1);
+Ephi = zeros(length(phiVec),1);
 for nn=1:length(phiVec)
-    phi = phiVec(nn);
-    Sphi(nn) = sum(sin(pi*ns/L+phi/2).^2.*Zs,'all')/sum(Zs,'all');
+    phi = phiVec(nn);    
+    y = myfunc(As,ns0,ss,0.8,L,0.5,0.05,phi,ns);
+    Ephi(nn)=sum((y-Zs).^2);
 end
-[~,ind]=min(Sphi);
+[~,ind]=min(Ephi);
 phi=phiVec(ind);
 
-% % Duty Cycle
-% dutyVec = linspace(10,90,100);
-% D = zeros(length(phiVec),1);
+B_list = linspace(0,1,20);
+D_list = linspace(.1,.9,20);
+[BB,DD]=meshgrid(B_list,D_list);
+BB=BB(:);
+DD=DD(:);
+EE=zeros(length(BB),1);
+for kk=1:length(BB)
+    y = myfunc(As,ns0,ss,BB(kk),L,DD(kk),1,phi,ns);
+    EE(kk)=sum((y-Zs).^2);
+end
+[~,ind] = min(EE);
+B = BB(ind);
+D = DD(ind);
+
+% Initial Guess and bounds
+fit_opts_s.StartPoint = [As ns0 ss B L D .5 phi];
+fit_opts_s.Upper = [As*1.1 ns0+10 (ss*1.5+10) 1 L+2 0.9 3 phi+pi];
+fit_opts_s.Lower = [As*.8 ns0-10 0 0.25 L-2 0.1 0.1 phi-pi];
+
+% Perform the fit 
+try
+    [fout_s ,gof_s] = fit(ns,Zs,fit_exp_stripe,fit_opts_s);
+end
+
+% disp([fout_s.A fout_s.n0 fout_s.s fout_s.B fout_s.L fout_s.duty fout_s.R fout_s.phi] - ...
+    % fit_opts_s.StartPoint);
+
+fprintf('dA');fprintf('%.0e',[fout_s.A - As]);fprintf(', ');
+fprintf('dn');fprintf('%.1f',[fout_s.n0 - ns0]);fprintf(', ');
+fprintf('dB');fprintf('%.2f',[fout_s.B - B]);fprintf(', ');
+fprintf('dL');fprintf('%.1f',[fout_s.L - L]);fprintf(', ');
+fprintf('dD');fprintf('%.1f',[fout_s.duty - D]);fprintf(', ');
+fprintf('dR');fprintf('%.1f',[fout_s.R - 0.5]);fprintf(', ');
+fprintf('dP');fprintf('%.1f',[fout_s.phi - phi]);fprintf(')');
+
+% disp(fout_s. - As)
 % 
-% for nn = 1:length(dutyVec)
-%     D(nn) = sum(foo(ns,phi,dutyVec(nn),L,5).*Zs,'all')/sum(Zs,'all');
-% end
-
-% keyboard
-B = 0.5;
-
-As = max(Zs);
-
-fit_opts_s.MaxIter = 1200;
-fit_opts_s.MaxFunEvals = 1e3;
-% fit_opts_s.StartPoint = [As ns0 ss B L phi];
-fit_opts_s.StartPoint = [As ns0 ss B L 0.5 0.1 phi];
-
 % {'A','n0','s','B','L','duty','R','phi'}
+% Stripe envelope function
+stripe_envelope = @(n) fout_s.A*exp(-(n-fout_s.n0).^2/(2*fout_s.s^2));
 
-
-fit_opts_s.Upper = [As*1.1 ns0+10 ss*1.5 1 L*1.1 0.9 0.15 phi+pi];
-fit_opts_s.Lower = [As*.8 ns0-10 ss/1.5 0.1 L/1.1 0.1 0.01 phi-pi];
-
-fit_opts_s.Robust='bisquare';
-% fit_opts_s.TolFun=1e-12;
-% fit_opts_s.TolX=1e-9;
-
-fout_s = fit(ns,Zs,fit_exp_stripe,fit_opts_s);
-
-
+%% Score the focusing
 nL = floor(min(ns)/fout_s.L-1);
 nH = ceil(max(ns)/fout_s.L+1);
 
@@ -154,116 +182,122 @@ seps = round(seps);
 seps(seps<min(ns))=[];
 seps(seps>max(ns))=[];
 
-[scores,centers] = ixon_stripe_dig_contrast(ns,Zb,seps,ColorThreshold);
-
-foo_env = @(n) fout_s.A*exp(-(n-fout_s.n0).^2/(2*fout_s.s^2));
-
-out.FitStripe = fout_s;
-out.Centers = centers;
-out.Scores = scores;
-
-out.Lambda = fout_s.L;
-out.Phase = fout_s.phi;
-out.Duty = fout_s.duty;
-out.ModDepth = fout_s.B;
-
+[scores,centers] = ixon_stripe_dig_contrast(ns,Zb,seps,opts.ColorThreshold);
 [~,ind] = max(scores);
-out.FocusCenter = centers(ind);
+focus_center = centers(ind);
 
 
-%%
-ca = [0 0 0];       
-    cb = [0.7 .1 .6];
-    cc = [linspace(ca(1),cb(1),1000)' ...
-        linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+%% Create Output Data
+out = struct;
+out.FitTransverse       = fout_t;
+out.FitStripe           = fout_s;
+out.RSquareStripe       = gof_s.rsquare;
+out.RSquareTransverse   = gof_t.rsquare;
+out.Centers             = centers;
+out.Scores              = scores;
+out.Lambda              = fout_s.L;
+out.Phase               = fout_s.phi;
+out.Duty                = fout_s.duty;
+out.ModDepth            = fout_s.B;
+out.FocusCenter         = focus_center;
+out.Counts              = sum(Zb,'all');
 
-
-hF1=figure(opts.FigNum);
-hF1.Color='w';
-hF1.Position(3:4) = [770 720];
-
-if hF1.Position(2)+hF1.Position(4) > 1000
-    hF1.Position(2) = 100;
-end
-
-% if hF1.Position(1)+hF1.Position(4) > 1000
-%     hF1.Position(2) = 100;
+% if focus_center > 110
+%     keyboard
 % end
 
-clf
+t = toc;
+disp(['(' num2str(t,2) 's)']);
+%% Plot the Results
+% 
+hF1=figure(opts.FigNum);
 co=get(gca,'colororder');
 myc = [255,140,0]/255;
-subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19]);
-imagesc(n1,n2,Zb);
-axis equal tight
-colormap([[0 0 0];winter; [1 0 0]]);
-% colormap(cc);
-c=colorbar('location','north','fontsize',6,'color',myc,...
-    'fontname','arial');
-c.Label.Color='b';
+hF1.Color='w';
+hF1.Position(3:4) = [770 720];
+if (hF1.Position(2)+hF1.Position(4))>1000;hF1.Position(2) = 100;end
+clf
 
-xlabel('$n_1$ (site)','interpreter','latex');
-ylabel('$n_2$ (site)','interpreter','latex');
-set(gca,'ydir','normal','fontsize',14,'XAxisLocation','Top','YColor',co(1,:),...
-    'XColor',co(2,:),'fontname','times')
-caxis(ColorThreshold)
+% Image Plot
+ax1=subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19]);
+imagesc(n1,n2,Zb);
+% axis equal tight
+colormap([[0 0 0];winter; [1 0 0]]);
+
+p = get(gca,'Position');
+c=colorbar('location','westoutside','fontsize',10,'color',[0 0 0 0],...
+    'fontname','times');
+c.Label.Color='k';
+c.Label.String ='counts/site';
+set(gca,'position',p)
+set(gca,'ydir','normal','fontsize',10,'XAxisLocation','bottom','YColor',co(1,:),...
+    'XColor',co(2,:),'fontname','times','yaxislocation','right')
+caxis(opts.ColorThreshold)
 hold on
+
+% Lines for indicating the absence of atoms
 for kk=1:length(seps)
     plot(get(gca,'XLim'),[1 1]*seps(kk),'--','color',myc)
 end
 
+% Text label for each string
 for kk=1:length(centers)
-    str = ['n=' num2str(centers(kk)) newline 'score=' num2str(scores(kk),'%.2e')];
+    str = ['score=' num2str(scores(kk),'%.2e')];
     text(min(nt)+6,centers(kk),str,'horizontalalignment','left',...
         'verticalalignment','middle','fontsize',10,...
         'color',myc)
 end
 
+% Text summary of stripe fit
 str = ['$\lambda=' num2str(fout_s.L,'%.2f') ',' ...
     '\phi=2\pi\cdot' num2str(round(mod(fout_s.phi,2*pi)/(2*pi),2),'%.2f') ',' ...
     '\alpha = ' num2str(round(fout_s.B,2),'%.2f') '$'];
+text(5,5,str,'horizontalalignment','left',...
+    'verticalalignment','bottom','fontsize',14,...
+    'color',myc,'interpreter','latex','backgroundcolor',[0 0 0],'Margin',1,...
+    'units','pixels')
 
-text(min(nt),min(ns),str,'horizontalalignment','left',...
-    'verticalalignment','bottom','fontsize',12,...
-    'color',myc,'interpreter','latex')
-
-[bob,inds] = sort(scores,'descend');
-bob = bob/max(scores);
-
-for nn=1:length(scores)
-    if bob(nn)>=0.9
-        plot(min(nt)+2,centers(inds(nn)),'pentagram','markersize',12,...
-            'markerfacecolor',myc,'markeredgecolor',myc*.8)
-    end
+% Plot star for most in-focused plane
+try
+plot(min(nt)+2,focus_center,'pentagram','markersize',12,...
+    'markerfacecolor',myc,'markeredgecolor',myc*.8)
 end
 
-
-subplot(5,5,[5 10 15 20]);
+ax2=subplot(5,5,[5 10 15 20]);
 cla
 plot(Zs,ns,'k-','linewidth',1,'color','k');
 hold on
 nsFit = linspace(min(ns),max(ns),1e3);
 plot(feval(fout_s,nsFit),nsFit,'-','color',co(1,:),'linewidth',2);
-set(gca,'fontsize',14,'YAxisLocation','right','YColor',co(1,:),'fontname','times',...
+set(gca,'fontsize',12,'YAxisLocation','right','YColor',co(1,:),'fontname','times',...
     'Xaxislocation','top')
 ylabel('$n_2$ (site)','interpreter','latex');
 ylim([min(ns) max(ns)])
-plot(foo_env(nsFit),nsFit,'--','color',co(1,:),'linewidth',1)
+plot(stripe_envelope(nsFit),nsFit,'--','color',co(1,:),'linewidth',1)
 drawnow;
 for kk=1:length(seps)
     plot(get(gca,'XLim'),[1 1]*seps(kk),'--','color',myc)
 end
+grid on
+strR = ['$R^2 = ' num2str(gof_t.rsquare,'%.3f') '$'];
+text(4,2,strR,'fontsize',10,'interpreter','latex','verticalalignment','bottom',...
+    'units','pixels');
 
-
-subplot(5,5,[21 22 23 24]);
+ax3=subplot(5,5,[21 22 23 24]);
 plot(nt,Zt,'k-','linewidth',1);
 hold on
 ntFit = linspace(min(nt),max(nt),1e3);
 plot(ntFit,feval(fout_t,ntFit),'-','color',co(2,:),'linewidth',2);
-set(gca,'ydir','normal','fontsize',14,'Xcolor',co(2,:),'fontname','times')
+set(gca,'ydir','normal','fontsize',12,'Xcolor',co(2,:),'fontname','times')
 xlabel('$n_1$ (site)','interpreter','latex');
 xlim([min(nt) max(nt)])
+grid on
+strR = ['$R^2 = ' num2str(gof_s.rsquare,'%.3f') '$'];
+text(4,2,strR,'fontsize',10,'interpreter','latex','verticalalignment','bottom',...
+    'units','pixels')
 
+linkaxes([ax1 ax2],'y');
+linkaxes([ax1 ax3],'x');
 
 subplot(5,5,25);
 plot(centers,scores,'ko','markerfacecolor',[.5 .5 .5]);
@@ -272,30 +306,21 @@ ylabel('score');
 set(gca,'fontsize',8);
 yL =get(gca,'YLim');
 ylim([0 yL(2)]);
-grid on
+xlim([min(n1) max(n1)])
 end
 
+% rectangular pulse via erf functions
 function y = erf_pulse(center,smooth_width,FWHM,xx) 
     y = 0.5.*(erf((xx+FWHM*0.5-center)./smooth_width)+erf((-xx+FWHM*0.5+center)./smooth_width));
     y = y/erf_pulse_ampl(smooth_width,FWHM);
 end
 
+% Amplitude of rectangular pulse via erf function
 function y = erf_pulse_ampl(smooth_width,FWHM)
     y = 0.5.*(erf((FWHM*0.5)./smooth_width)+erf((FWHM*0.5)./smooth_width));
-
 end
 
-% function y = erf_pulse_wave(smooth_width,HWHM,separation,xx)
-%     x1 = min(xx);
-%     x2 = max(xx);
-%     n1 = floor(x1/separation-3);
-%     n2 = ceil(x2/separation+3);
-%     y = xx*0;
-%     for n = n1:n2 
-%         y = y + erf_pulse(n*separation,smooth_width,HWHM,xx);
-%     end
-% end
-
+% rectangular pulse wave
 function y = erf_pulse_wave(L,duty,phi,R,xx)
     x1 = min(xx);
     x2 = max(xx);
@@ -303,6 +328,6 @@ function y = erf_pulse_wave(L,duty,phi,R,xx)
     n2 = ceil(x2/L+1);
     y = xx*0;
     for n = n1:n2 
-        y = y + erf_pulse(n*L+phi/(2*pi)*L,R*L,duty*L,xx);
+        y = y + erf_pulse(n*L+phi/(2*pi)*L,R,duty*L,xx);
     end
 end
