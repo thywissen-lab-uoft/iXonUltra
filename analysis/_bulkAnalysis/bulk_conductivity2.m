@@ -111,64 +111,64 @@
 % data = [all_data.(fname)];
 % pddir = 'X:\LabJackLogs\ODTQPD\2023\2023.12\12.19';
 
-% %% DEC 7TH + 19TH RUN
-% 
-% runs=[
-%     2023 12 07 05;
-%     2023 12 07 06;
-%     2023 12 07 07;
-%     2023 12 07 08;
-%     2023 12 07 09;
-%     2023 12 07 10;
-%     2023 12 07 11;
-%     2023 12 07 12;
-%     2023 12 07 13;
-%     2023 12 07 14;
-%     2023 12 07 15;
-%     2023 12 07 16;
-%     2023 12 07 17;
-%     2023 12 07 18;
-%     2023 12 07 19;
-%     2023 12 07 20;
-%     2023 12 07 21;
-%     2023 12 07 22;
-%     2023 12 07 23;
-%     2023 12 07 24;
-%     2023 12 07 25;
-%     2023 12 07 26;
-%     2023 12 07 27;
-%     2023 12 07 28;
-%     2023 12 07 29;
-%     2023 12 07 30;
-%     2023 12 07 31;
-%     2023 12 07 32;
-%     2023 12 07 33;
-%     2023 12 07 34;
-%     2023 12 07 35;
-%     2023 12 19 07;
-%     2023 12 19 08;
-%     2023 12 19 09;
-%     2023 12 19 10;
-%     2023 12 19 11;
-%     2023 12 19 12;
-%     2023 12 19 13;
-%     2023 12 19 14;
-%     2023 12 19 15;
-%     2023 12 19 16;
-%     2023 12 19 17;
-%     ];
-% 
-% % fit_types = {''};
-% data_label = '2.5 Er'; 
-% dVar = 'Xc';
-% varname = 'combined_shake_stripe_25Er_2v2v_190G_75mW';
-% n = 600;
-% 
-% clear data
-% fname = 'digdata';
-% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-% data = [all_data.(fname)];
-% 
+%% DEC 7TH + 19TH RUN
+
+runs=[
+    2023 12 07 05;
+    2023 12 07 06;
+    2023 12 07 07;
+    2023 12 07 08;
+    2023 12 07 09;
+    2023 12 07 10;
+    2023 12 07 11;
+    2023 12 07 12;
+    2023 12 07 13;
+    2023 12 07 14;
+    2023 12 07 15;
+    2023 12 07 16;
+    2023 12 07 17;
+    2023 12 07 18;
+    2023 12 07 19;
+    2023 12 07 20;
+    2023 12 07 21;
+    2023 12 07 22;
+    2023 12 07 23;
+    2023 12 07 24;
+    2023 12 07 25;
+    2023 12 07 26;
+    2023 12 07 27;
+    2023 12 07 28;
+    2023 12 07 29;
+    2023 12 07 30;
+    2023 12 07 31;
+    2023 12 07 32;
+    2023 12 07 33;
+    2023 12 07 34;
+    2023 12 07 35;
+    2023 12 19 07;
+    2023 12 19 08;
+    2023 12 19 09;
+    2023 12 19 10;
+    2023 12 19 11;
+    2023 12 19 12;
+    2023 12 19 13;
+    2023 12 19 14;
+    2023 12 19 15;
+    2023 12 19 16;
+    2023 12 19 17;
+    ];
+
+% fit_types = {''};
+data_label = '2.5 Er'; 
+dVar = 'Xc';
+varname = 'combined_shake_stripe_25Er_2v2v_190G_75mW';
+n = 600;
+
+clear data
+fname = 'digdata';
+[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+data = [all_data.(fname)];
+
 
  %% JAN 3RD RUN
 % % %
@@ -203,75 +203,75 @@
 
 %% JAN 4th RUN
 
-runs=[
-    2024 01 04 03;
-    2024 01 04 04;
-    2024 01 04 05;
-    2024 01 04 06;
-    2024 01 04 07;
-    2024 01 04 08;
-    2024 01 04 09;
-    2024 01 04 10;
-    2024 01 04 11;
-    2024 01 04 12;
-    2024 01 04 13;
-
-    ];
-
-% fit_types = {''};
-data_label = '2.5 Er'; 
-dVar = 'Xc';
-varname = 'shake_stripe_25Er_2v2v_195G_80mW';
-n = 500;
+% runs=[
+%     2024 01 04 03;
+%     2024 01 04 04;
+%     2024 01 04 05;
+%     2024 01 04 06;
+%     2024 01 04 07;
+%     2024 01 04 08;
+%     2024 01 04 09;
+%     2024 01 04 10;
+%     2024 01 04 11;
+%     2024 01 04 12;
+%     2024 01 04 13;
 % 
-% %
-clear data
-fname = 'digdata';
-[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-data = [all_data.(fname)];
+%     ];
+% 
+% % fit_types = {''};
+% data_label = '2.5 Er'; 
+% dVar = 'Xc';
+% varname = 'shake_stripe_25Er_2v2v_195G_80mW';
+% n = 500;
+% % 
+% % %
+% clear data
+% fname = 'digdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
 %% JAN 4th RUN
 
-runs=[
-    2024 01 16 04;
-    2024 01 16 05;
-    2024 01 16 06;
-    2024 01 16 07;
-    2024 01 16 08;
-    2024 01 16 09;
-    2024 01 16 10;
-    2024 01 16 11;
-    2024 01 16 12;
-    2024 01 16 13;
-    2024 01 16 14;
-    2024 01 16 15;
-    2024 01 16 16;
-    2024 01 16 17;
-    2024 01 16 18;
-    2024 01 16 19;
-    2024 01 16 20;
-    2024 01 16 21;
-    2024 01 16 22;
-    2024 01 16 23;
-    2024 01 16 24;
-    2024 01 16 25;
-    2024 01 16 26;
-    2024 01 16 27;
-    2024 01 16 28;
-    2024 01 16 29;
-
-    ];
-
-% fit_types = {''};
-data_label = '2.5 Er'; 
-dVar = 'Xc';
-varname = 'shake_stripe_25Er_4v4v_198G_85mW';
-n = 500;
+% runs=[
+%     2024 01 16 04;
+%     2024 01 16 05;
+%     2024 01 16 06;
+%     2024 01 16 07;
+%     2024 01 16 08;
+%     2024 01 16 09;
+%     2024 01 16 10;
+%     2024 01 16 11;
+%     2024 01 16 12;
+%     2024 01 16 13;
+%     2024 01 16 14;
+%     2024 01 16 15;
+%     2024 01 16 16;
+%     2024 01 16 17;
+%     2024 01 16 18;
+%     2024 01 16 19;
+%     2024 01 16 20;
+%     2024 01 16 21;
+%     2024 01 16 22;
+%     2024 01 16 23;
+%     2024 01 16 24;
+%     2024 01 16 25;
+%     2024 01 16 26;
+%     2024 01 16 27;
+%     2024 01 16 28;
+%     2024 01 16 29;
 % 
-% %
-clear data
-fname = 'digdata';
-[all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
-data = [all_data.(fname)];
+%     ];
+% 
+% % fit_types = {''};
+% data_label = '2.5 Er'; 
+% dVar = 'Xc';
+% varname = 'shake_stripe_25Er_4v4v_198G_85mW';
+% n = 500;
+% % 
+% % %
+% clear data
+% fname = 'digdata';
+% [all_data,dirNames,dirDates] = ixon_loadBulk(runs,[fname '.mat']);
+% data = [all_data.(fname)];
 %%
 % runs=[
 %     2023 10 07 02;
@@ -415,6 +415,10 @@ clear gamma
 clear gamma_err
 clear myamp
 clear myamp_err
+clear myamp_real
+clear myamp_real_err
+clear myamp_imag
+clear myamp_imag_err
 clear lvls
 clear phi
 clear phi_err
@@ -514,12 +518,8 @@ for nn=1:length(data)
     T = 1e3/f(nn);
     
 
-    myfunc = @(A,B,C,t) A*sin(2*pi*t/T + B) + C;    
-
+    myfunc = @(A,B,C,t) A*sin(2*pi*t/T + B) + C;  
     myfit = fittype(@(A,B,C,t) myfunc(A,B,C,t),'independent',{'t'},...
-        'coefficients',{'A','B','C'});
-    
-    myfit2 = fittype(@(A,B,C,t) myfunc(A,B,C,t),'independent',{'t'},...
         'coefficients',{'A','B','C'});
     
     Agp = (max(vpd1_sub)-min(vpd1_sub))/2;
@@ -529,17 +529,25 @@ for nn=1:length(data)
     opt.StartPoint = [Agp Bgp Cgp];
     fout_pd = fit(t_sub',vpd1_sub,myfit,opt);
     tt=linspace(min(X),max(X),1e3);
+
+    myfunc2 = @(A,B,C,t) A*sin(2*pi*t/T + mod(fout_pd.B,2*pi)) + B*cos(2*pi*t/T + mod(fout_pd.B,2*pi)) + C;
+    myfit2 = fittype(@(A,B,C,t) myfunc2(A,B,C,t),'independent',{'t'},...
+        'coefficients',{'A','B','C'});
+
     
     Ag = (max(Y) - min(Y))*.5;
     Cg = mean(Y);
     Bg = fout_pd.B;
     
-    opt.StartPoint = [Ag Bg Cg];
+    % opt.StartPoint = [Ag Bg Cg];
+    opt.StartPoint = [Ag Ag Cg];
     opt.Robust = 'bisquare';
-    opt.Lower  = [0 -10*pi Cg-20];
-     opt.Upper  = [Ag*5 +10*pi Cg+20];
+    % opt.Lower  = [0 -10*pi Cg-20];
+    %  opt.Upper  = [Ag*5 +10*pi Cg+20];
+    opt.Lower  = [-Ag*5 -Ag*5 Cg-20];
+     opt.Upper  = [Ag*5 Ag*5 Cg+20];
 
-    fout_dig = fit(X',Y',myfit,opt);
+    fout_dig = fit(X',Y',myfit2,opt);
     lvl = 0.682;0.95;
 %     c=confint(fout_dig,0.667);   
         c=confint(fout_dig,lvl);   
@@ -611,18 +619,21 @@ for nn=1:length(data)
     set(gca,'YColor','k');   
     ylim(Ym+[-15 15]);
     xlim([min(X) max(X)]); 
-    
-    
-           
 
-    myamp(nn) = fout_dig.A;
-    myamp_err(nn) = (c(2,1)-c(1,1))/2;
+    % myamp(nn) = fout_dig.A;
+    % myamp_err(nn) = (c(2,1)-c(1,1))/2;
+
+    myamp_real(nn) = fout_dig.B;
+    myamp_real_err(nn) = (c(2,2)-c(1,2))/2;
+
+    myamp_imag(nn) = fout_dig.A;
+    myamp_imag_err(nn) = (c(2,1)-c(1,1))/2;
 
    % phi(nn) = mod(fout_dig.B,2*pi)-mod(fout_pd.B,2*pi);
-    phi(nn) = 2*pi-mod(fout_dig.B-fout_pd.B,2*pi);%-1.5*pi; %why subtract -3/2pi
+    % phi(nn) = -mod(fout_dig.B-fout_pd.B,2*pi);%-1.5*pi; %why subtract -3/2pi
 %     phi(nn) = mod(fout_dig.B-fout_pd.B,2*pi); %why subtract -3/2pi
     %phi(nn) = mod(fout_dig.B-Bgp,2*pi)-pi/2;
-    phi_err(nn) = (c(2,2)-c(1,2))/2;
+    % phi_err(nn) = (c(2,2)-c(1,2))/2;
     lvls(nn) = lvl;
 end
 %%
@@ -635,105 +646,113 @@ for nn=1:length(data)
 end
 
 
-f1=figure(5213)
-clf
-f1.WindowStyle='docked';
-subplot(131);
-errorbar(f,myamp,myamp_err,'ko','markerfacecolor','k');
-xlabel('frequency (Hz)');
-ylabel('amplitude (lattice sites)');
-grid on
-ylim([0 5]);
-subplot(132);
-errorbar(f,phi/(2*pi),phi_err/(2*pi),'o','markerfacecolor','b');
-ylabel('phase difference (2*pi)');
-ylim([-0.5 0.5]);
-grid on
-xlabel('frequency (Hz)');
-
-subplot(133);
-errorbar(f,Nbar,Nerr,'ko','markerfacecolor','k');
-ylabel('N atoms');
-xlabel('frequency (Hz)');
-grid on
-
-%%
+% f1=figure(5213)
+% clf
+% f1.WindowStyle='docked';
+% subplot(131);
+% errorbar(f,myamp,myamp_err,'ko','markerfacecolor','k');
+% xlabel('frequency (Hz)');
+% ylabel('amplitude (lattice sites)');
+% grid on
+% ylim([0 5]);
+% subplot(132);
+% errorbar(f,phi/(2*pi),phi_err/(2*pi),'o','markerfacecolor','b');
+% ylabel('phase difference (2*pi)');
+% ylim([-0.5 0.5]);
+% grid on
+% xlabel('frequency (Hz)');
+% 
+% subplot(133);
+% errorbar(f,Nbar,Nerr,'ko','markerfacecolor','k');
+% ylabel('N atoms');
+% xlabel('frequency (Hz)');
+% grid on
 
 %%
-f2=figure(5214)
-clf
-f2.WindowStyle='docked';
 
-subplot(131);
-errorbar(B,myamp,myamp_err,'ko','markerfacecolor','k');
-xlabel('Bfield (G)');
-ylabel('amplitude (lattice sites)');
-grid on
-ylim([0 5]);
-subplot(132);
-errorbar(B,phi/(2*pi),phi_err/(2*pi),'o','markerfacecolor','b');
-ylabel('phase difference (2*pi)');
-ylim([-0.5 0.5]);
-grid on
-xlabel('Bfield (G)');
-
-subplot(133);
-errorbar(B,Nbar,Nerr,'ko','markerfacecolor','k');
-ylabel('N atoms');
-xlabel('Bfield (G)');
-grid on
 %%
-f3=figure(5126)
-clf
-f3.WindowStyle='docked';
-
-subplot(131);
-errorbar(B2a(B).^2,myamp,myamp_err,'ko','markerfacecolor','k');
-xlabel('a^2 (a_0^2)');
-ylabel('amplitude (lattice sites)');
-grid on
-ylim([0 5]);
-subplot(132);
-errorbar(B2a(B).^2,phi/(2*pi),phi_err/(2*pi),'o','markerfacecolor','b');
-ylabel('phase difference (2*pi)');
-ylim([-0.5 0.5]);
-grid on
-xlabel('a^2 (a_0^2)');
-
-subplot(133);
-errorbar(B2a(B).^2,Nbar,Nerr,'ko','markerfacecolor','k');
-ylabel('N atoms');
-xlabel('a^2 (a_0^2)');
-grid on
+% f2=figure(5214)
+% clf
+% f2.WindowStyle='docked';
+% 
+% subplot(131);
+% errorbar(B,myamp,myamp_err,'ko','markerfacecolor','k');
+% xlabel('Bfield (G)');
+% ylabel('amplitude (lattice sites)');
+% grid on
+% ylim([0 5]);
+% subplot(132);
+% errorbar(B,phi/(2*pi),phi_err/(2*pi),'o','markerfacecolor','b');
+% ylabel('phase difference (2*pi)');
+% ylim([-0.5 0.5]);
+% grid on
+% xlabel('Bfield (G)');
+% 
+% subplot(133);
+% errorbar(B,Nbar,Nerr,'ko','markerfacecolor','k');
+% ylabel('N atoms');
+% xlabel('Bfield (G)');
+% grid on
 %%
-%Calculate conductivity
+% f3=figure(5126)
+% clf
+% f3.WindowStyle='docked';
+% 
+% subplot(131);
+% errorbar(B2a(B).^2,myamp,myamp_err,'ko','markerfacecolor','k');
+% xlabel('a^2 (a_0^2)');
+% ylabel('amplitude (lattice sites)');
+% grid on
+% ylim([0 5]);
+% subplot(132);
+% errorbar(B2a(B).^2,phi/(2*pi),phi_err/(2*pi),'o','markerfacecolor','b');
+% ylabel('phase difference (2*pi)');
+% ylim([-0.5 0.5]);
+% grid on
+% xlabel('a^2 (a_0^2)');
+% 
+% subplot(133);
+% errorbar(B2a(B).^2,Nbar,Nerr,'ko','markerfacecolor','k');
+% ylabel('N atoms');
+% xlabel('a^2 (a_0^2)');
+% grid on
+%% Calculate conductivity
 
 %Constants
 amu = 1.660538921e-27;
 aL = 532e-9;
+h = 6.626e-34;
 hbar = 6.626e-34/(2*pi);
+kb = 1.380649e-23;
 
 %Params
+tHz = 563.4109123332288;
 d = 11.4106*16/81.5*2*1e-6;
 w_HO = 2*pi*33;
 m = 39.964008*amu;
 
 Force = m*(w_HO^2)*d;
 
-cond = -1i*(hbar/(Force*aL^2)).*(2*pi*f).*myamp*aL.*exp(1i*phi);
-cond_real = real(cond);
-cond_imag = imag(cond);
+% cond = -1i*(hbar/(Force*aL^2)).*(2*pi*f).*myamp*aL.*exp(1i*phi);
+% cond_real = real(cond);
+% cond_imag = imag(cond);
 
-cond_real_error = (hbar/(Force*aL^2)).*(2*pi*f).*sqrt((sin(phi).^2).*((myamp_err*aL).^2) + (cos(phi).^2).*((myamp*aL).^2).*(phi_err.^2));
-cond_imag_error = (hbar/(Force*aL^2)).*(2*pi*f).*sqrt((cos(phi).^2).*((myamp_err*aL).^2) + (sin(phi).^2).*((myamp*aL).^2).*(phi_err.^2));
-f_fit = f(cond_real>0);
-cond_real_fit = cond_real(cond_real>0);
+cond_real = -(hbar/(Force*aL^2)).*(2*pi*f).*myamp_real.*aL;
+cond_imag = -(hbar/(Force*aL^2)).*(2*pi*f).*myamp_imag.*aL;
+
+cond_real_error = (hbar/(Force*aL^2)).*(2*pi*f).*myamp_real.*aL.*myamp_real_err./myamp_real;
+cond_imag_error = (hbar/(Force*aL^2)).*(2*pi*f).*myamp_imag.*aL.*myamp_imag_err./myamp_imag;
+
+% cond_real_error = (hbar/(Force*aL^2)).*(2*pi*f).*sqrt((sin(phi).^2).*((myamp_err*aL).^2) + (cos(phi).^2).*((myamp*aL).^2).*(phi_err.^2));
+% cond_imag_error = (hbar/(Force*aL^2)).*(2*pi*f).*sqrt((cos(phi).^2).*((myamp_err*aL).^2) + (sin(phi).^2).*((myamp*aL).^2).*(phi_err.^2));
+% f_fit = f(cond_real>0);
+% cond_real_fit = cond_real(cond_real>0);
 
 %Drude Model Fit
 % myfunc_real = @(A,B,C,w) A*(B./(1+((w-C)*B).^2));
 % myfunc_imag = @(A,B,C,w) A*((w-C)*B.^2./(1+((w-C)*B).^2));
 
-%LRC Model Fit
+%% LRC Model Fit
 myfunc_real = @(A,B,C,w) A*((B.*w.^2)./((w.^2-C.^2).^2+(w.*B).^2));
 myfunc_imag = @(A,B,C,w) A*((w.^2-C.^2).*w./((w.^2-C.^2).^2+(w*B).^2));
 
@@ -756,8 +775,48 @@ Gamma_real = fout_real.B;
 m_imag = hbar/(fout_imag.A*aL^2);
 Gamma_imag = fout_imag.B;
 
-ff = 0:0.001:150;
-f4 = figure(5216)
+%% TDPT Fit (Full Quantum Model)
+%See fit function definition at the end of the script
+
+%Import energies and Rmn values from lookup tables
+energies_Hz = importdata('EnergyHz_V55_2.txt');
+
+global energies;
+energies = h*(energies_Hz);
+
+omega_pk = (energies(2)-energies(1))/hbar;
+
+m_eff = m*(2*pi*55/omega_pk)^2;
+
+global Rvalues;
+Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_55Hz.csv'));
+Rvalues = -1j*(aL/pi)*Rvalues_unscaled;
+
+
+myqfit_real = fittype(@(TT,GG,ww) qfit_real(TT,GG,ww), 'independent',{'ww'},...
+        'coefficients',{'TT','GG'});
+
+qopt_real = fitoptions(myqfit_real);
+qopt_real.Display = 'iter';
+qopt_real.StartPoint = [70e-9 2*pi*20];
+
+qfout_real = fit((2*pi*f)',cond_real',myqfit_real,qopt_real);
+
+
+myqfit_imag = fittype(@(TT,GG,ww) qfit_imag(TT,GG,ww), 'independent',{'ww'},...
+        'coefficients',{'TT','GG'});
+
+qopt_imag = fitoptions(myqfit_imag);
+qopt_imag.Display = 'iter';
+qopt_imag.StartPoint = [30e-9 2*pi*20];
+
+
+qfout_imag = fit((2*pi*f)',cond_imag',myqfit_imag,qopt_imag);
+
+
+%% Plot conductivity fits
+ff = 0:0.001:250;
+f4 = figure(5216);
 clf
 f4.WindowStyle ='docked';
 
@@ -765,12 +824,19 @@ subplot(121)
 errorbar(f,cond_real,cond_real_error,'ko','markerfacecolor','k');
 hold on
 plot(ff,myfunc_real(fout_real.A,fout_real.B,fout_real.C,2*pi*ff))
-plot(ff,myfunc_real(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff),'--')
+% plot(ff,myfunc_real(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff),'--')
+plot(ff,qfit_real(qfout_real.TT,qfout_real.GG,2*pi*ff),color='b')
 hold on
-text(1,3.3*2*pi,'$y = A\frac{\omega^2B}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex')
-text(1,3*2*pi,['$\Gamma = B = 2\pi\times$' num2str(round(Gamma_real/(2*pi),2)) ' Hz'], 'Interpreter','latex')
-text(1,2.7*2*pi,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_real/amu,2)) ' amu'], 'Interpreter','latex')
-text(1,2.4*2*pi,['$C = 2\pi\times$' num2str(round(fout_real.C/(2*pi),2)) ' Hz'], 'Interpreter','latex')
+text(1,3.3*2*pi,'$y = A\frac{\omega^2B}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex',color= 'r')
+text(1,3*2*pi,['$\Gamma = B = 2\pi\times$' num2str(round(Gamma_real/(2*pi),2)) ' Hz'], 'Interpreter','latex',color= 'r')
+text(1,2.7*2*pi,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_real/amu,2)) ' amu'], 'Interpreter','latex',color= 'r')
+text(1,2.4*2*pi,['$C = 2\pi\times$' num2str(round(fout_real.C/(2*pi),2)) ' Hz'], 'Interpreter','latex',color= 'r')
+
+text(90,3.3*2*pi,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex',color= 'b')
+text(90,3*2*pi,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex',color= 'b')
+text(90,2.7*2*pi,['$\Gamma = 2\pi\times$' num2str(round(qfout_real.GG/(2*pi),2)) ' Hz'], 'Interpreter','latex',color= 'b')
+text(90,2.4*2*pi,['$T = $' num2str(round(qfout_real.TT/(1e-9),2)) ' nK'], 'Interpreter','latex',color= 'b')
+
 xlabel('frequency (Hz)')
 ylabel('real conductivity (\sigma/\sigma_0)')
 xlim([0 150])
@@ -781,12 +847,18 @@ subplot(122)
 errorbar(f,cond_imag,cond_imag_error,'ko','markerfacecolor','k');
 hold on;
 plot(ff,myfunc_imag(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff))
-plot(ff,myfunc_imag(fout_real.A,fout_real.B,fout_real.C,2*pi*ff),'--')
+% plot(ff,myfunc_imag(fout_real.A,fout_real.B,fout_real.C,2*pi*ff),'--')
+plot(ff,qfit_imag(qfout_imag.TT,qfout_imag.GG,2*pi*ff),color='b')
 hold on;
-text(1,24,'$y = A\frac{\omega(\omega^2-C^2)}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex')
-text(1,22,['$\Gamma = B = 2\pi\times$' num2str(round(Gamma_imag/(2*pi),2)) ' Hz'], 'Interpreter','latex')
-text(1,20,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_imag/amu,2)) ' amu'], 'Interpreter','latex')
-text(1,18,['$C = 2\pi\times$ ' num2str(round(fout_imag.C/(2*pi),2)) ' Hz'], 'Interpreter','latex')
+text(1,24,'$y = A\frac{\omega(\omega^2-C^2)}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex',color= 'r')
+text(1,22,['$\Gamma = B = 2\pi\times$' num2str(round(Gamma_imag/(2*pi),2)) ' Hz'], 'Interpreter','latex',color= 'r')
+text(1,20,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_imag/amu,2)) ' amu'], 'Interpreter','latex',color= 'r')
+text(1,18,['$C = 2\pi\times$ ' num2str(round(fout_imag.C/(2*pi),2)) ' Hz'], 'Interpreter','latex',color= 'r')
+
+text(90,24,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex',color= 'b')
+text(90,22,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex',color= 'b')
+text(90,20,['$\Gamma = 2\pi\times$' num2str(round(qfout_imag.GG/(2*pi),2)) ' Hz'], 'Interpreter','latex',color= 'b')
+text(90,18,['$T = $' num2str(round(qfout_imag.TT/(1e-9),2)) ' nK'], 'Interpreter','latex',color= 'b')
 
 xlabel('frequency (Hz)')
 ylabel('imag conductivity (\sigma/\sigma_0)')
@@ -794,8 +866,12 @@ xlim([0 150])
 ylim([-10 25])
 grid on;
 
-
-
+% 
+% f5 = figure(5217);
+% plot(ff,qfit_real(50e-9,2*pi*10,2*pi*ff))
+% 
+% f6 = figure(5218);
+% plot(ff,qfit_imag(50e-9,2*pi*20,2*pi*ff))
 
 %%
 
@@ -804,5 +880,4 @@ a = B2a(B);
 asquare = B2a(B).^2;
 % save(varname,'Nbar','N_err','phi','phi_err',...
 %     'myamp','myamp_err','B','a','asquare','f','lvls');
-
 
