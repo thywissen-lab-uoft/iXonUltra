@@ -55,12 +55,16 @@
 
 %% 2D Stripe Analysis
 if ixon_doAnalyzeStripes2D
-    
+    1
     stripe_2d_opts=struct;
     stripe_2d_opts.xVar = ixon_xVar;
     stripe_2d_opts.xUnit=ixon_unit;
     stripe_2d_opts.ShimFit=0;
     stripe_2d_opts.Theta=[10 190]; % Specify the domain (MUST BE 180 DEGREES)
+    
+    stripe_2d_opts.Theta=[-70 110]; % Specify the domain (MUST BE 180 DEGREES)
+    stripe_2d_opts.Theta=[89 91]; % Specify the domain (MUST BE 180 DEGREES)
+
     stripe_2d_opts.saveAnimation=1;        % save the animation?
     stripe_2d_opts.StartDelay=1;
     stripe_2d_opts.MidDelay=.1;

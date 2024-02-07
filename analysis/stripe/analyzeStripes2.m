@@ -79,7 +79,7 @@ opt2=fitoptions(myfit);
              
 
 % Define fit options
-% opt.Robust='bisquare';
+opt.Robust='bisquare';
 opt.MaxIter=1000;
 opt.MaxFunEvals=1000;
 opt.TolFun=1E-8;

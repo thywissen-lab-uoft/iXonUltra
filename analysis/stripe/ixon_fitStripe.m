@@ -50,6 +50,9 @@ opt2.StartPoint = G;
 % A,xC,yC,s1,s2,B,theta,L,phi
 opt2.Upper = [G(1)*2 512 512 250 250 1  360 512 inf];
 opt2.Lower = [0        0   0   0   0 0 -360   0 -inf];
+
+opt2.Upper = [G(1)*2 512 512 250 250 1 opts.Theta(2) 512 inf];
+opt2.Lower = [0        0   0   0   0 0 opts.Theta(1)   0 -inf];
 %% Rescale the data
 
 Zsc=imresize(z,sc);xsc=imresize(x,sc);ysc=imresize(y,sc);

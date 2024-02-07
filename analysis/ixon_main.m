@@ -82,9 +82,9 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 0;      % Auto detect changing variable?
+ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'ExecutionDate'; % Variable Name
+ixon_xVar           = 'qgm_plane_tilt_dIx'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -104,11 +104,11 @@ ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
 % QGM Single Plane Analysis
-doPSF                               = 1;
 ixon_doQGM                          = 1;
+doPSF                               = 1;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
-ixon_doQGM_BinStripe                = 0;
+ixon_doQGM_BinStripe                = 1;
 
 ixon_doQGM_BinStandardAnalysis      = 0;
 ixon_doQGM_Digitize                 = 1;
@@ -128,9 +128,8 @@ img_opt.doSubtractBG        = 1;
 img_opt.doScale             = 1;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
-img_opt.Theta               = 60.2077;  % Rotation amount (deg.)
-img_opt.Theta               = 59.64;  % Rotation amount (deg.)
-% img_opt.Theta               = 59.81;  % Rotation amount (deg.)
+% img_opt.Theta               = 59.64;  % Rotation amount (deg.)
+img_opt.Theta               = 59.81;  % Rotation amount (deg.)
 
 img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
