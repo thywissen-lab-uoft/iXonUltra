@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = ixon_ffit_example
+function ixon_ffit_example
 % 2D FFTs can be a bit funny (at least to CF), also where do the 2*pi's go?
 
 % This peice of code provides intuitiion about our 2D FFT code.
