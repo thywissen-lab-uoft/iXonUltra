@@ -149,5 +149,5 @@ end
 
 %% Digitization Stuff
 if ixon_doQGM_Digitize
-    qgm_DigitalAnalysis;
+    ixon_main_digital;
 end

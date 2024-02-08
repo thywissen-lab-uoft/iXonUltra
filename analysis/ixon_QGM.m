@@ -225,5 +225,5 @@ end
       
 %% 
 if qgm_doDigitalAnalysis
-   qgm_DigitalAnalysis; 
+   ixon_main_digital; 
 end
