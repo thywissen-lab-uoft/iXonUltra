@@ -386,7 +386,7 @@ if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
 %% Quantum Gas Micrscopy
 if ixon_doQGM
 %     ixon_QGM
-    ixon_qgm2;
+    ixon_main_makeBin;
 end
 %% Stripe Analysis
 if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
