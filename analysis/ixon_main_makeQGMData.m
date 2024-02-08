@@ -1,4 +1,15 @@
-function [ixondata,qgmdata,hF_LatticeK] = ixon_makeQGMData(ixondata)
+% ixon_QGM.m
+%
+% Author : CF Fujiwara
+%
+% This script is the primary analysis code for ixon images which are single
+% plane.
+
+% Display this filename
+disp(repmat('-',1,60));disp(repmat('-',1,60));    
+disp(['Calling ' mfilename '.m']);
+disp(repmat('-',1,60));disp(repmat('-',1,60));  
+
 
 ixon_doQGM_FindLattice = 1;
 reassignBadK = 1;
@@ -118,5 +129,5 @@ for nn = 1:length(ixondata)
     qgmdata(nn).LatticeBin = ixondata(n).LatticeBin;
 end
 
-end
+
 

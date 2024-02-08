@@ -389,16 +389,13 @@ if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 
 %% Quantum Gas Micrscopy
 if ixon_doQGM
-    [ixondata,qgmdata,hF_LatticeK] = ixon_makeQGMData(ixondata);
-    
- 
             
+    ixon_main_makeQGMData;  
     
     hF_LatticeVectors = ixon_showLatticeA(ixondata);
     hF_LatticePhase = ixon_showLatticePhase(ixondata);    
     
-    if ixon_doSave
-        
+    if ixon_doSave        
         ixon_saveFigure2(hF_LatticeK,...
             'ixon_LatticeK',saveOpts);
         ixon_saveFigure2(hF_LatticeVectors,...
