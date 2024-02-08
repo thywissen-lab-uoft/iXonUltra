@@ -11,7 +11,6 @@ disp(['Calling ' mfilename '.m']);
 disp(repmat('-',1,60));disp(repmat('-',1,60));  
 
 
-
 %% Bin Stripe
 if ixon_doQGM_BinStripe
     LGuess = 25;
