@@ -3352,7 +3352,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
     % Process the Images
-    data = ixonProcessImages(data,opt);  
+    data = ixon_ProcessImages(data,opt);  
 
     % Update history index
     updateHistoryInd(data); 

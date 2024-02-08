@@ -248,7 +248,7 @@ end
 [ixondata.PixelSize] = deal(ixon_PixelSize);
 
 %% Process Images
-ixondata = ixonProcessImages(ixondata,img_opt);
+ixondata = ixon_ProcessImages(ixondata,img_opt);
 
 %% ANALYSIS : BOX COUNT
 
