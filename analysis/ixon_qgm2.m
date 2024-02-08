@@ -46,7 +46,7 @@ if ixon_doQGM_FindLattice
     for n = 1:length(ixondata)
         tic
         fprintf(['(' num2str(n) '/' num2str(numel(ixondata))...
-                ') Fitting reciprocal lattice']);
+                ') lattice wavevector']);
         for kk=1:size(ixondata(n).Zf,3)
             fprintf(['...' num2str(kk)]);
             ixondata(n).LatticeK(kk) = findLatticeK(...
@@ -66,12 +66,12 @@ end
 %% 
 
 reassignBadK = 1;
-useAverageK = 1;
+useAverageK = 0;
 
 if ixon_doQGM_FindLattice
     for nn=1:length(ixondata)
         fprintf(['(' num2str(nn) '/' num2str(numel(ixondata))...
-            ') Fitting lattice phase']);
+            ') lattice phase']);
         
         k1 = ixondata(nn).LatticeK(1).k1;
         k2 = ixondata(nn).LatticeK(1).k2;  
@@ -87,11 +87,22 @@ if ixon_doQGM_FindLattice
 
         tic
         for kk=1:size(ixondata(nn).Zf,3)
+            fprintf(['...' num2str(kk)]);
+
             ixondata(nn).LatticePhase(kk) = findLatticePhase(...
                 ixondata(nn).X,ixondata(nn).Y,ixondata(nn).Z,k1,k2);              
         end
         disp([' done (' num2str(toc,'%.2f') 's)']);        
     end
+end
+
+%% 
+if ixon_doQGM_FindLattice
+    
+    opts.useAverageK = useAverageK;
+    
+    [LatticeR,hF] = ixon_showLatticePhase(ixondata,opts);
+    
 end
 
 %% Assign Lattice Data to QGM data
