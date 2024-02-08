@@ -209,7 +209,7 @@ out.Counts              = sum(Zb,'all');
 t = toc;
 disp(['(' num2str(t,2) 's)']);
 %% Plot the Results
-% 
+
 hF1=figure(opts.FigNum);
 co=get(gca,'colororder');
 myc = [255,140,0]/255;
