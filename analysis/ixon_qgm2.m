@@ -44,27 +44,57 @@ end
 %% Find the Lattice
 if ixon_doQGM_FindLattice
     for n = 1:length(ixondata)
+        tic
+        fprintf(['(' num2str(n) '/' num2str(numel(ixondata))...
+                ') Fitting reciprocal lattice']);
         for kk=1:size(ixondata(n).Zf,3)
-            tic;
-            opts = struct;
-            fprintf(['(' num2str(kk) '/' num2str(size(ixondata(n).Zf,3))...
-                ') Fitting reciprocal lattice ...']);
-            ixondata(n).LatticeK(kk) = findLatticeK(ixondata(n).f,ixondata(n).f,...
-                ixondata(n).Zf(:,:,kk),opts);                
-            k1 = ixondata(n).LatticeK(kk).k1;
-            k2 = ixondata(n).LatticeK(kk).k2;          
-            t2 = toc;
-            fprintf([' done (' num2str(t2,2) ' sec.)' ' phase ...']);
-            tic;
-            ixondata(n).LatticePhase(kk) = findLatticePhase(...
-                ixondata(n).X,ixondata(n).Y,ixondata(n).Z,k1,k2);              
-            t=toc;
-            disp([' done (' num2str(t,2) ' sec.)']);                
-        end        
-        qgmdata(n).LatticeK = ixondata(n).LatticeK;
-        qgmdata(n).LatticePhase = ixondata(n).LatticePhase;
-    end        
+            fprintf(['...' num2str(kk)]);
+            ixondata(n).LatticeK(kk) = findLatticeK(...
+                ixondata(n).f,ixondata(n).f,...
+                ixondata(n).Zf(:,:,kk)); 
+        end 
+        disp([' done (' num2str(toc,'%.2f') 's)']);
+    end
 end
+
+%% Plot Lattice Analysis
+
+if ixon_doQGM_FindLattice
+    [LatticeK,hF] = ixon_showLatticeK(ixondata);   
+end
+
+%% 
+
+reassignBadK = 1;
+useAverageK = 1;
+
+if ixon_doQGM_FindLattice
+    for nn=1:length(ixondata)
+        fprintf(['(' num2str(nn) '/' num2str(numel(ixondata))...
+            ') Fitting lattice phase']);
+        
+        k1 = ixondata(nn).LatticeK(1).k1;
+        k2 = ixondata(nn).LatticeK(1).k2;  
+        
+        if (reassignBadK && LatticeK.BadLattice(nn)) || useAverageK
+            k1 = LatticeK.k1;
+            k2 = LatticeK.k2;
+        end
+        
+        % Make sure column vector
+        k1 = reshape(k1,[2 1]);
+        k2 = reshape(k2,[2 1]);
+
+        tic
+        for kk=1:size(ixondata(nn).Zf,3)
+            ixondata(nn).LatticePhase(kk) = findLatticePhase(...
+                ixondata(nn).X,ixondata(nn).Y,ixondata(nn).Z,k1,k2);              
+        end
+        disp([' done (' num2str(toc,'%.2f') 's)']);        
+    end
+end
+
+%% Assign Lattice Data to QGM data
 
 %% Bin Data
 if ixon_doQGM_Bin
