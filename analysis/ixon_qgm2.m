@@ -8,7 +8,7 @@
 % Display this filename
 disp(repmat('-',1,60));disp(repmat('-',1,60));    
 disp(['Calling ' mfilename '.m']);
-disp(repmat('-',1,60));disp(repmat('-',1,60));   
+disp(repmat('-',1,60));disp(repmat('-',1,60));  
 
 qgmdata = struct;
 
@@ -24,21 +24,6 @@ for kk=1:length(img_opts)
         error(['Run ' num2str(kk) ' of ' length(img_opts) ' was not ' ...
             'sharpened with the PSF deconvlution.']);
     end
-end
-
-%% Initialize QGM Data
-    
-for nn = 1:length(ixondata)
-    qgmdata(nn).Date = ixondata(nn).Date;
-    qgmdata(nn).Name = ixondata(nn).Name;
-    qgmdata(nn).Params = ixondata(nn).Params;
-    qgmdata(nn).Units = ixondata(nn).Units;
-    qgmdata(nn).Flags = ixondata(nn).Flags;
-    qgmdata(nn).CameraInformation = ixondata(nn).CameraInformation;
-    qgmdata(nn).AcquisitionInformation = ixondata(nn).AcquisitionInformation;
-    qgmdata(nn).AcquisitionDescription = ixondata(nn).AcquisitionDescription;
-    qgmdata(nn).ROI = ixondata(nn).ROI;
-    qgmdata(nn).ProcessOptions = ixondata(nn).ProcessOptions;
 end
 
 %% Find the Lattice
@@ -83,7 +68,6 @@ if ixon_doQGM_FindLattice
         tic
         for kk=1:size(ixondata(nn).Zf,3)
             fprintf(['...' num2str(kk)]);
-
             ixondata(nn).LatticePhase(kk) = findLatticePhase(...
                 ixondata(nn).X,ixondata(nn).Y,ixondata(nn).Z,k1,k2);              
         end
@@ -132,8 +116,23 @@ if ixon_doQGM_Bin
             ixondata(n).LatticeBin(kk) = binLattice(x,y,z,opts); 
         end    
         disp([' done (' num2str(toc,'%.2f') 's)']);        
-        qgmdata(n).LatticeBin = ixondata(n).LatticeBin;
     end
+end
+
+%% Initialize QGM Data
+    
+for nn = 1:length(ixondata)
+    qgmdata(nn).Date = ixondata(nn).Date;
+    qgmdata(nn).Name = ixondata(nn).Name;
+    qgmdata(nn).Params = ixondata(nn).Params;
+    qgmdata(nn).Units = ixondata(nn).Units;
+    qgmdata(nn).Flags = ixondata(nn).Flags;
+    qgmdata(nn).CameraInformation = ixondata(nn).CameraInformation;
+    qgmdata(nn).AcquisitionInformation = ixondata(nn).AcquisitionInformation;
+    qgmdata(nn).AcquisitionDescription = ixondata(nn).AcquisitionDescription;
+    qgmdata(nn).ROI = ixondata(nn).ROI;
+    qgmdata(nn).ProcessOptions = ixondata(nn).ProcessOptions;    
+    qgmdata(nn).LatticeBin = ixondata(n).LatticeBin;
 end
 
 %% Bin Stripe
