@@ -392,20 +392,6 @@ if ixon_doQGM
             
     ixon_main_makeQGMData;  
     
-    hF_LatticeVectors = ixon_showLatticeA(ixondata);
-    hF_LatticePhase = ixon_showLatticePhase(ixondata);    
-    
-    if ixon_doSave        
-        ixon_saveFigure2(hF_LatticeK,...
-            'ixon_LatticeK',saveOpts);
-        ixon_saveFigure2(hF_LatticeVectors,...
-            'ixon_LatticeVectors',saveOpts);
-        ixon_saveFigure2(hF_LatticePhase,...
-            'ixon_LatticePhase',saveOpts);      
-                        
-% %         Params =[ixondata.Params];
-%         filename=fullfile(ixon_imgdir,'figures','Params.mat');
-%         save(filename,'Params');
-    end
+
 
 end

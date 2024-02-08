@@ -1,4 +1,4 @@
-% ixon_QGM.m
+% ixon_main_makeQGMData.m
 %
 % Author : CF Fujiwara
 %
@@ -10,12 +10,14 @@ disp(repmat('-',1,60));disp(repmat('-',1,60));
 disp(['Calling ' mfilename '.m']);
 disp(repmat('-',1,60));disp(repmat('-',1,60));  
 
+% Initialize outputs
+qgmdata = struct;
 
+% Some flags
 ixon_doQGM_FindLattice = 1;
 reassignBadK = 1;
 useAverageK = 1;
 ixon_doQGM_Bin = 1;
-qgmdata = struct;
 
 %% Initial checks
 % Check to make sure that PSF deconvolution had been done 
@@ -110,6 +112,8 @@ if ixon_doQGM_Bin
         disp([' done (' num2str(toc,'%.2f') 's)']);        
     end
 end
+   
+
 
 %% Initialize QGM Data
     
@@ -129,5 +133,22 @@ for nn = 1:length(ixondata)
     qgmdata(nn).LatticeBin = ixondata(n).LatticeBin;
 end
 
+%% Save Figures
 
+hF_LatticeVectors = ixon_showLatticeA(ixondata);
+hF_LatticePhase = ixon_showLatticePhase(ixondata);    
 
+if ixon_doSave        
+    ixon_saveFigure2(hF_LatticeK,...
+        'ixon_LatticeK',saveOpts);
+    ixon_saveFigure2(hF_LatticeVectors,...
+        'ixon_LatticeVectors',saveOpts);
+    ixon_saveFigure2(hF_LatticePhase,...
+        'ixon_LatticePhase',saveOpts);      
+end
+
+%% Save QGM Data
+
+if ixon_doSave        
+   
+end
