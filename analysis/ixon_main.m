@@ -383,10 +383,32 @@ if ixon_doStandardAnalysis;ixon_StandardAnalysis;end
 if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis
 if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
-%% Quantum Gas Micrscopy
-if ixon_doQGM
-%     ixon_QGM
-    ixon_main_makeBin;
-end
+
 %% Stripe Analysis
 if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
+
+%% Quantum Gas Micrscopy
+if ixon_doQGM
+    [ixondata,qgmdata,hF_LatticeK] = ixon_makeQGMData(ixondata);
+    
+ 
+            
+    
+    hF_LatticeVectors = ixon_showLatticeA(ixondata);
+    hF_LatticePhase = ixon_showLatticePhase(ixondata);    
+    
+    if ixon_doSave
+        
+        ixon_saveFigure2(hF_LatticeK,...
+            'ixon_LatticeK',saveOpts);
+        ixon_saveFigure2(hF_LatticeVectors,...
+            'ixon_LatticeVectors',saveOpts);
+        ixon_saveFigure2(hF_LatticePhase,...
+            'ixon_LatticePhase',saveOpts);      
+                        
+% %         Params =[ixondata.Params];
+%         filename=fullfile(ixon_imgdir,'figures','Params.mat');
+%         save(filename,'Params');
+    end
+
+end
