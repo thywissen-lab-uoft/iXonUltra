@@ -66,25 +66,20 @@ end
 %% 
 
 reassignBadK = 1;
-useAverageK = 0;
-
+useAverageK = 1;
 if ixon_doQGM_FindLattice
     for nn=1:length(ixondata)
         fprintf(['(' num2str(nn) '/' num2str(numel(ixondata))...
-            ') lattice phase']);
-        
+            ') lattice phase']);        
         k1 = ixondata(nn).LatticeK(1).k1;
-        k2 = ixondata(nn).LatticeK(1).k2;  
-        
+        k2 = ixondata(nn).LatticeK(1).k2;          
         if (reassignBadK && LatticeK.BadLattice(nn)) || useAverageK
             k1 = LatticeK.k1;
             k2 = LatticeK.k2;
-        end
-        
+        end        
         % Make sure column vector
         k1 = reshape(k1,[2 1]);
         k2 = reshape(k2,[2 1]);
-
         tic
         for kk=1:size(ixondata(nn).Zf,3)
             fprintf(['...' num2str(kk)]);
@@ -97,28 +92,28 @@ if ixon_doQGM_FindLattice
 end
 
 %% 
-if ixon_doQGM_FindLattice
-    
+if ixon_doQGM_FindLattice    
     if ~useAverageK
         [hF] = ixon_showLatticeA(ixondata);
-    end
-    
-    
-    
+    end    
+    [hF] = ixon_showLatticePhase(ixondata);    
 end
-
-%% Assign Lattice Data to QGM data
 
 %% Bin Data
 if ixon_doQGM_Bin
     for n=1:length(ixondata)
+        fprintf(['(' num2str(n) '/' num2str(numel(ixondata))...
+            ') lattice binning']);
+        tic
         for kk=1:size(ixondata(n).Z,3)
+            fprintf(['...' num2str(kk)]);
+
             opts = struct;
             a1 = ixondata(n).LatticePhase(kk).a1;
             a2 = ixondata(n).LatticePhase(kk).a2;                        
             p1 = ixondata(n).LatticePhase(kk).p1;
             p2 = ixondata(n).LatticePhase(kk).p2;        
-            opts.ScaleFactor = 3;    
+            opts.ScaleFactor = 2;    
             opts.a1 = a1;
             opts.a2 = a2;
             opts.p1 = p1;
@@ -134,13 +129,9 @@ if ixon_doQGM_Bin
             x = ixondata(n).X(ix_1:ix_2);
             y = ixondata(n).Y(iy_1:iy_2);   
             z = ixondata(n).Z(iy_1:iy_2,ix_1:ix_2,kk);    
-            tic;
-            fprintf(['(' num2str(kk) '/' num2str(size(ixondata(n).Zf,3)) ...
-                ') binning into lattice ...']);   
             ixondata(n).LatticeBin(kk) = binLattice(x,y,z,opts); 
-            t2=toc;
-            disp(['done (' num2str(t2,3) ' sec.)']);                
         end    
+        disp([' done (' num2str(toc,'%.2f') 's)']);        
         qgmdata(n).LatticeBin = ixondata(n).LatticeBin;
     end
 end
