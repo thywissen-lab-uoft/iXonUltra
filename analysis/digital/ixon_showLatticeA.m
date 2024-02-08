@@ -1,4 +1,4 @@
-function [out,hF] = ixon_showLatticePhase(data,opts)
+function [hF] = ixon_showLatticeA(data,opts)
 
 if nargin ==1
    opts = struct; 
@@ -11,9 +11,6 @@ else
     FigLabel = '';
 end
 
-if ~isfield(opts,'useAverageK')
-    opts.useAverageK = 0;    
-end
 %%
 
 a1x = zeros(length(data),length(data(1).LatticePhase));

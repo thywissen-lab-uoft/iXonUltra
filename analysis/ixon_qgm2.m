@@ -99,9 +99,11 @@ end
 %% 
 if ixon_doQGM_FindLattice
     
-    opts.useAverageK = useAverageK;
+    if ~useAverageK
+        [hF] = ixon_showLatticeA(ixondata);
+    end
     
-    [LatticeR,hF] = ixon_showLatticePhase(ixondata,opts);
+    
     
 end
 
