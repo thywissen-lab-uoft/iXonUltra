@@ -152,37 +152,14 @@ end
             else
                 Nnoise = 50;
             end           
-            noise_variance = Nnoise^2;
-
-            % data(kk).Z(:,:,ii)=data(kk).Z(:,:,ii)+Nnoise;
-            % noise_variance=noise_variance*2;
-
+            noise_variance = Nnoise^2;        
             Zpre = data(kk).Z(:,:,ii);
-
             Zpre(Zpre<=0)=0;
-%             iPos = [Zpre>0];
-
             psf2     = fspecial('gaussian',N,3*s);  
             psf = psf*.85+psf2*.15;
-
-
-            % if isfield(data(kk),'RotationMask')
-            %     W = double(~data(kk).RotationMask);
-            % else
-            %     W = ones(size(data(kk).Z(:,:,ii),1),size(data(kk).Z(:,:,ii),2));
-            %     % W = double(iPos);  
-            % 
-            % end
-
-            % data(kk).Z(:,:,ii) = deconvlucy(data(kk).Z(:,:,ii),...
-                % psf,Niter,0,1,noise_variance);   
             Zsharp = deconvlucy(Zpre,...
                 psf,Niter,0,1,noise_variance);             
-            % Zsharp(~iPos)=Zpre(~iPos);
             data(kk).Z(:,:,ii) =    Zsharp;
-
-            % data(kk).Z(:,:,ii)=data(kk).Z(:,:,ii)-Nnoise;
-
         end        
     end  
 %% Fast Fourier Transform (FFT)
