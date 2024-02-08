@@ -48,7 +48,7 @@ theta2_std=std(theta1);
 
 hF = figure(5002);
 hF.Color='w';
-hF.Position = [100 100 600 400];
+hF.Position = [100 100 600 200];
 clf
 
 hF.Name = 'Lattice Phase';

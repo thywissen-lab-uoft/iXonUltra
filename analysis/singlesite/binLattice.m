@@ -122,8 +122,13 @@ out.a2 = opts.a2;
 out.n1 = n1;
 out.n2 = n2;
 out.Zbin = Zbin;
-out.Xn = Xn;
-out.Yn = Yn;
+
+out.R0 = [Xn(1) Yn(1)];     % Position of first lattice site in pixels
+out.N0 = [N(1,1) N(2,1)];   % Value of n1 n2 corresponding to the first lattice site
+
+% Dont store these for space considerations
+% out.Xn = Xn;
+% out.Yn = Yn;
 
 
 % 

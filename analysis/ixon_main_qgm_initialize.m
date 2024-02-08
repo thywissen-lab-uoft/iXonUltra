@@ -79,6 +79,7 @@ end
 
 %% Bin Data
 if ixon_doQGM_Bin
+    ixondata = rmfield(ixondata,'LatticeBin');
     for n=1:length(ixondata)
         fprintf(['(' num2str(n) '/' num2str(numel(ixondata))...
             ') lattice binning']);
@@ -111,12 +112,9 @@ if ixon_doQGM_Bin
         end    
         disp([' done (' num2str(toc,'%.2f') 's)']);        
     end
-end
-   
+end  
 
-
-%% Initialize QGM Data
-    
+%% Initialize QGM Data    
 for nn = 1:length(ixondata)
     qgmdata(nn).Date = ixondata(nn).Date;
     qgmdata(nn).Name = ixondata(nn).Name;
@@ -148,7 +146,7 @@ if ixon_doSave
 end
 
 %% Save QGM Data
-
-if ixon_doSave        
-   
+if ixon_doSave       
+    filename = fullfile(saveOpts.saveDir,'qgmdata.mat');
+    save(filename, 'qgmdata');
 end
