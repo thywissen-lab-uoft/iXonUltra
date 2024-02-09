@@ -36,8 +36,8 @@ end
 
 if qgm_auto_file
     dialog_title='Select GUI data';       
-    [filename,ixon_imgdir,b]=uigetfile(fullfile(ixon_getDayDir,'*.mat'),dialog_title);
-    filename = fullfile(ixon_imgdir,filename);    
+    [filename,qgm_imgdir,b]=uigetfile(fullfile(ixon_getDayDir,'*.mat'),dialog_title);
+    filename = fullfile(qgm_imgdir,filename);    
     if  b == 0
         disp('Canceling.');    
         return; 
@@ -57,7 +57,7 @@ qgmdata = ixon_matchParamsFlags(qgmdata);
 
 qgm_opts = struct;
 qgm_opts.Quality = 'auto';
-qgm_opts.saveDir=ixon_imgdir;
+qgm_opts.saveDir=qgm_imgdir;
 strs=strsplit(imgdir,filesep);
 qgm_opts.FigLabel=[strs{end-1} filesep strs{end}];
 
@@ -129,14 +129,35 @@ end
 
 % animated of binned image
 % statistics on different ROIs
-% statistics on total image
-% is average binned image helpful? --> maybe?
 
 %% Histogram
 
 if qgm_BinAcummulateHist
-    Bins = linspace(0,qgm_BinAcummulateHist_Zmax,qgm_BinAcummulateHist_Nbins);
-    qgm_binnedTotalHistogram(qgmdata,Bins);
+    opts = qgm_opts;
+    opts.Bins =  linspace(0,qgm_BinAcummulateHist_Zmax,...
+        qgm_BinAcummulateHist_Nbins);    
+    opts.saveDir = qgm_opts.saveDir;
+    
+    opts.doAnimate = 0;
+    
+    % Full Cloud
+    opts.ROI = 'max';
+    opts.filename = 'qgm_BinAnimateFull.gif';    
+    hF_BinHistogramFull = qgm_binnedTotalHistogram(qgmdata,opts);    
+    if qgm_opts.doSave
+        ixon_saveFigure2(hF_BinHistogramFull,...
+         'qgm_BinHistogramFull',qgm_opts);  
+    end
+    
+    % Center Cloud
+    opts.ROI = [110 135 70 100];
+    opts.filename = 'qgm_BinAnimateCenter.gif';    
+    hF_BinHistogramFull = qgm_binnedTotalHistogram(qgmdata,opts);    
+    if qgm_opts.doSave
+        ixon_saveFigure2(hF_BinHistogramFull,...
+         'qgm_BinHistogramCenter',qgm_opts);  
+    end
+    
 end
 
 %% Bin Stripe
