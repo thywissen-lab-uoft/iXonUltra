@@ -1,4 +1,4 @@
-function [myhist] = qgm_binnedTotalHistogram(qgmdata,Nbins)
+function [hF] = qgm_binnedTotalHistogram(qgmdata,Nbins)
     if ~isfield(qgmdata,'LatticeBin')
        return;
     end      

@@ -77,6 +77,9 @@ qgm_opts.doSave         = 1;                % Save Analysis?
 
 %% Flags
 
+% Recenter all binned data to have same limits
+qgm_BinRecenter                         = 1;
+
 % Histogram for accumalted data
 qgm_BinAcummulateHist                   = 1;
 qgm_BinAcummulateHist_Zmax              = 6000;
@@ -91,13 +94,6 @@ qgm_BinStripe_ColorThreshold            = [1000 3000];
 % Digitzation
 qgm_Digitize                            = 0; 
 qgm_DigitizationThreshold               = 3000;
-
-% Digization 
-qgm_DigAcummulateMoments                = 0;
-
-qgm_DigMoments                          = 0;
-qgm_DigMomentsSineFit                   = 0;
-
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and
@@ -122,6 +118,12 @@ end
 P = [qgmdata.Params];
 [~,inds] =  sort([P.(qgm_opts.xVar)]);
 qgmdata = qgmdata(inds);
+
+%% Recenter
+
+if qgm_BinRecenter
+   qgmdata = qgm_recenter(qgmdata);
+end
 
 %% Histogram
 
@@ -160,8 +162,7 @@ if qgm_BinStripe
 end  
 %% Bin Stripe Summary
 if qgm_BinStripe    
-    hF_StripeSummary = qgm_showStripeBinSummary(qgmdata,qgm_opts.xVar,qgm_opts);
-    
+    hF_StripeSummary = qgm_showStripeBinSummary(qgmdata,qgm_opts.xVar,qgm_opts);    
     if qgm_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
          'qgm_StripeSummary',saveOpts);     
@@ -172,13 +173,11 @@ end
 if qgm_BinStripe && qgm_BinStripeAnimate
     opts = qgm_opts;
     opts.ColorThreshold = qgm_BinStripe_ColorThreshold;
-    opts.filename = 'BinStripeAnimation.gif';
+    opts.filename = 'qgm_BinStripeAnimation.gif';
     qgm_showStripeBin(qgmdata,qgm_opts.xVar,opts);
 end
-%%
-
-
 %% Digitization Stuff
-% if ixon_doQGM_Digitize
-%     ixon_main_digital;
-% end
+if qgm_Digitize
+    qgmdata = ixon_digitize(qgmdata,qgm_DigitizationThreshold);    
+    digdata = qgm_makeDigData(qgmdata,qgm_opts);
+end

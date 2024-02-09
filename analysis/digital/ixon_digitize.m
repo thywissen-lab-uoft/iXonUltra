@@ -11,9 +11,6 @@ for kk=1:length(ixondata)
         Zdig = ixondata(kk).LatticeBin(k).Zbin>=threshold; 
         Natoms = sum(sum(Zdig));        % Total number of atoms
 
-
-
-
         zY=sum(Zdig,2)';zY = zY/sum(zY);
         zX=sum(Zdig,1); zX = zX/sum(zX);
 
