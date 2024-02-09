@@ -125,7 +125,8 @@ end
 if isequal(qgm_xVar,'ExecutionDate');ixon_unit='';end
 
 % Sort the data by your given parameter
-P = [qgmdata.Params];qgmdata = sort(qgmdata,[P.(qgm_xVar)]);
+[~,inds] =  sort([P.(qgm_xVar)]);
+P = [qgmdata.Params];qgmdata = qgmdata(inds);
 
 %% Histogram
 
