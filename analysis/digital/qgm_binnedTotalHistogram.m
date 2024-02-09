@@ -9,7 +9,9 @@ Nthresh=1000;
 
     Zall = [];
     for nn = 1:length(qgmdata)        
-        Zthis = qgmdata(nn).LatticeBin(1).Zbin;        
+        Zthis = qgmdata(nn).LatticeBin(1).Zbin;    
+        
+        Zthis = Zthis(80:120,100:150);
         Zall = [Zall; Zthis(:)];
     end
     

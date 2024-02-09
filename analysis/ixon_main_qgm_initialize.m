@@ -79,7 +79,9 @@ end
 
 %% Bin Data
 if ixon_doQGM_Bin
+    if isfield(ixondata,'LatticeBin')
     ixondata = rmfield(ixondata,'LatticeBin');
+    end
     for n=1:length(ixondata)
         fprintf(['(' num2str(n) '/' num2str(numel(ixondata))...
             ') lattice binning']);
