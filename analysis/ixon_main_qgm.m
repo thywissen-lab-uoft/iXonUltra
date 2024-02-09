@@ -8,10 +8,84 @@
 % Display this filename
 disp(repmat('-',1,60));disp(repmat('-',1,60));    
 disp(['Calling ' mfilename '.m']);
-disp(repmat('-',1,60));disp(repmat('-',1,60));  
+disp(repmat('-',1,60));disp(repmat('-',1,60));    
+
+% Add all subdirectories for this m file
+curpath = fileparts(mfilename('fullpath'));
+addpath(curpath);addpath(genpath(curpath));
+
+a = fileparts(curpath);
+addpath(a);addpath(genpath(a));
+%% Close all non GUI figures
+% Close all figures without the GUI tag.
+figs=get(groot,'Children');
+disp('Closing all non GUI figures.');
+for kk=1:length(figs)
+   if ~isequal(figs(kk).Tag,'GUI')
+        disp(['Closing figure ' num2str(figs(kk).Number) ' ' figs(kk).Name]);
+        close(figs(kk)) 
+   end
+end
+disp(' ');
+
+%% Select image directory
+qgm_saveOpts = struct;
+qgm_saveOpts.Quality = 'auto';
+    
+if ~exist('qgm_auto_file')
+   qgm_auto_file = 1; 
+end
+
+if qgm_auto_file
+    dialog_title='Select GUI data';       
+    [filename,ixon_imgdir,b]=uigetfile(fullfile(ixon_getDayDir,'*.mat'),dialog_title);
+    filename = fullfile(ixon_imgdir,filename);    
+    if  b == 0
+        disp('Canceling.');    
+        return; 
+    end
+end
+
+qgm_saveOpts.saveDir=ixon_imgdir;
+strs=strsplit(imgdir,filesep);
+qgm_saveOpts.FigLabel=[strs{end-1} filesep strs{end}];
+
+clear qgmdata
+tic
+fprintf('Loading qgmdata ...');
+load(filename);
+disp([' done (' num2str(toc,'%.2f') 's']);
+%% Analysis Variable
+% This section of code chooses the variable to plot against for aggregate
+% plots.  The chosen variable MUST match a variable provided in the params
+% field of the .mat file. The unit has no tangibile affect and only affects
+% display properties.
+
+% Choose what kind of variable to plot against (sequencer/camera)
+varType             = 'param';          % always select 'param' for now 
+qgm_autoXVar       = 0;                % Auto detect changing variable?
+qgm_autoUnit       = 1;                % Auto detect unit for variable?
+qgm_xVar           = 'ExecutionDate';  % Variable Name
+qgm_overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
+qgm_doSave         = 1;                % Save Analysis?
+
+%% Flags
+
+qgm_BinTotalHist   = 1;
+qgm_BinStripe = 0;
+qgm_Digitize  = 0;
+
+%% Histogram
+
+if qgm_BinTotalHist
+    Zmax = 6000;
+    Nbins = 100;
+    Bins = linspace(0,Zmax,Nbins);
+    qgm_binnedTotalHistogram(qgmdata,Bins);
+end
 
 %% Bin Stripe
-if ixon_doQGM_BinStripe
+if qgm_BinStripe
     LGuess = 25;
     ColorThreshold = [1000 3000];
     
@@ -51,11 +125,10 @@ if ixon_doQGM_BinStripe
 
         end
         qgmdata(n).BinStripe = out;    
-        qgmdata(n).BinStripe = out;
     end
 end  
 
 %% Digitization Stuff
-if ixon_doQGM_Digitize
-    ixon_main_digital;
-end
+% if ixon_doQGM_Digitize
+%     ixon_main_digital;
+% end

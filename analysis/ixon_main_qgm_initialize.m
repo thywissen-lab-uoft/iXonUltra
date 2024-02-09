@@ -16,7 +16,7 @@ qgmdata = struct;
 % Some flags
 ixon_doQGM_FindLattice = 1;
 reassignBadK = 1;
-useAverageK = 1;
+useAverageK = 0;
 ixon_doQGM_Bin = 1;
 
 %% Initial checks
@@ -126,15 +126,16 @@ for nn = 1:length(ixondata)
     qgmdata(nn).AcquisitionDescription = ixondata(nn).AcquisitionDescription;
     qgmdata(nn).ROI = ixondata(nn).ROI;
     qgmdata(nn).ProcessOptions = ixondata(nn).ProcessOptions;  
-    qgmdata(nn).LatticeK = ixondata(n).LatticeK;
-    qgmdata(nn).LatticePhase = ixondata(n).LatticePhase;
-    qgmdata(nn).LatticeBin = ixondata(n).LatticeBin;
+    qgmdata(nn).LatticeK = ixondata(nn).LatticeK;
+    qgmdata(nn).LatticePhase = ixondata(nn).LatticePhase;
+    qgmdata(nn).LatticeBin = ixondata(nn).LatticeBin;
 end
 
 %% Save Figures
 
 hF_LatticeVectors = ixon_showLatticeA(ixondata);
 hF_LatticePhase = ixon_showLatticePhase(ixondata);    
+[LatticeK,hF_LatticeK] = ixon_showLatticeK(ixondata);   
 
 if ixon_doSave        
     ixon_saveFigure2(hF_LatticeK,...
