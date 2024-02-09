@@ -125,10 +125,6 @@ if qgm_BinRecenter
    qgmdata = qgm_recenter(qgmdata);
 end
 
-%% Standard Binned Analysis
-
-% animated of binned image
-% statistics on different ROIs
 
 %% Histogram
 
@@ -138,7 +134,7 @@ if qgm_BinAcummulateHist
         qgm_BinAcummulateHist_Nbins);    
     opts.saveDir = qgm_opts.saveDir;
     
-    opts.doAnimate = 0;
+    opts.doAnimate = 1;
     
     % Full Cloud
     opts.ROI = 'max';
@@ -151,6 +147,8 @@ if qgm_BinAcummulateHist
     
     % Center Cloud
     opts.ROI = [110 135 70 100];
+    opts.ROI = [80 135 80 100];
+
     opts.filename = 'qgm_BinAnimateCenter.gif';    
     hF_BinHistogramFull = qgm_binnedTotalHistogram(qgmdata,opts);    
     if qgm_opts.doSave
