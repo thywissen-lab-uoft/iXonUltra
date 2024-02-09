@@ -101,8 +101,15 @@ Zb = zeros(50,50);
     set(gca,'fontsize',8);
     ylim([0 1]);
     xlim([0 1])
+    
+    
+    t=uicontrol('style','text','string',opts.FigLabel,'units','pixels','backgroundcolor',...
+        'w','horizontalalignment','left');
+    t.Position(4)=t.Extent(4);
+    t.Position(3)=hF.Position(3);
+    t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
-    %% main Loop
+    %% Main Loop
 
     for nn = 1:length(qgmdata)
         n1 = [qgmdata(nn).LatticeBin.n1];
@@ -166,6 +173,25 @@ Zb = zeros(50,50);
         set(ax4,'XLim',[min(n1) max(n1)],'YLim',[0 max([BS.Scores])*1.2]);
         end
         drawnow;
+        
+        
+        if opts.doSave
+            frame=getframe(hF);
+            im = frame2im(frame);
+            [A,map] = rgb2ind(im,256);              
+            filename = fullfile(opts.saveDir,opts.filename);            
+            switch nn
+                case 1
+                    imwrite(A,map,filename,'gif','LoopCount',...
+                        Inf,'DelayTime',1);
+                case length(qgmdata)
+                    imwrite(A,map,filename,'gif','WriteMode',...
+                        'append','DelayTime',1);
+                otherwise
+                    imwrite(A,map,filename,'gif','WriteMode',...
+                        'append','DelayTime',.1);
+            end
+        end
         
         
     end

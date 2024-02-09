@@ -1,4 +1,4 @@
-function [] = qgm_showStripeBinSummary(qgmdata,xVar,opts)
+function [hF] = qgm_showStripeBinSummary(qgmdata,xVar,opts)
 
 if nargin <3
     opts = struct;
@@ -73,6 +73,12 @@ hF.Color='w';
 hF.Position = [100 100 1200 600];
 clf
 
+t=uicontrol('style','text','string',opts.FigLabel,'units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left');
+t.Position(4)=t.Extent(4);
+t.Position(3)=hF.Position(3);
+t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
+    
 subplot(2,4,1);
 plot(X,phin_global/(2*pi),'ko','markerfacecolor',co(1,:),'linewidth',1);
 hold on

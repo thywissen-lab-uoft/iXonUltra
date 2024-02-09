@@ -160,32 +160,23 @@ if qgm_BinStripe
 end  
 %% Bin Stripe Summary
 if qgm_BinStripe    
-    qgm_showStripeBinSummary(qgmdata,qgm_opts.xVar);
+    hF_StripeSummary = qgm_showStripeBinSummary(qgmdata,qgm_opts.xVar,qgm_opts);
+    
+    if qgm_opts.doSave
+        ixon_saveFigure2(hF_StripeSummary,...
+         'qgm_StripeSummary',saveOpts);     
+    end
 end
 
 %% Bin Stripe Animation
 if qgm_BinStripe && qgm_BinStripeAnimate
     opts = qgm_opts;
     opts.ColorThreshold = qgm_BinStripe_ColorThreshold;
+    opts.filename = 'BinStripeAnimation.gif';
     qgm_showStripeBin(qgmdata,qgm_opts.xVar,opts);
 end
 %%
-%             frame=getframe(hF_bin_stripe);
-%             im = frame2im(frame);
-%             [A,map] = rgb2ind(im,256);  
-%             
-%             filename = fullfile(qgm_saveOpts.saveDir,'binstripe_75.gif');
-            
-%             if out(kk).ModDepth>=.75 && out(kk).Counts>0.5e6
-%                 switch n
-%                     case 1
-%                         imwrite(A,map,filename,'gif','LoopCount',Inf,'DelayTime',1);
-%                     case length(qgmdata)
-%                         imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',1);
-%                     otherwise
-%                         imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',.1);
-%                 end
-%             end
+
 
 %% Digitization Stuff
 % if ixon_doQGM_Digitize
