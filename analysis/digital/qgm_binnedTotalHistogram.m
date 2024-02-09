@@ -11,7 +11,7 @@ function [hF] = qgm_binnedTotalHistogram(qgmdata,Nbins)
     for nn = 1:length(qgmdata)        
         Zthis = qgmdata(nn).LatticeBin(1).Zbin;    
         
-        Zthis = Zthis(80:120,100:150);
+%         Zthis = Zthis(80:120,100:150);
         Zall = [Zall; Zthis(:)];
     end
     

@@ -180,4 +180,9 @@ end
 if qgm_Digitize
     qgmdata = ixon_digitize(qgmdata,qgm_DigitizationThreshold);    
     digdata = qgm_makeDigData(qgmdata,qgm_opts);
+    
+    if qgm_opts.doSave 
+        filename = [qgm_opts.saveDir 'digdata.mat'];
+        save(filename,'-struct','digdata');
+    end
 end
