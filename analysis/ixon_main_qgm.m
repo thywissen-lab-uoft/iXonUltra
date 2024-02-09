@@ -54,6 +54,12 @@ tic
 fprintf('Loading qgmdata ...');
 load(filename);
 disp([' done (' num2str(toc,'%.2f') 's']);
+
+%% Match Parameters and Flags
+% This makes sure that all data as has all the flags and params in each. 
+% This is usually not necessary.
+qgmdata = ixon_matchParamsFlags(qgmdata);
+
 %% Analysis Variable
 % This section of code chooses the variable to plot against for aggregate
 % plots.  The chosen variable MUST match a variable provided in the params
@@ -70,27 +76,66 @@ qgm_doSave         = 1;                % Save Analysis?
 
 %% Flags
 
-qgm_BinTotalHist                = 1;
-qgm_BinTotalHist_Zmax           = 6000;
-qgm_BinTotalHist_Nbins          = 100;
+% Histogram for accumalted data
+qgm_BinAcummulateHist                   = 1;
+qgm_BinAcummulateHist_Zmax              = 6000;
+qgm_BinAcummulateHist_Nbins             = 100;
 
-qgm_BinStripe                   = 0;
-qgm_BinStripe_LGuess            = 25;
-qgm_BinStripe_ColorThreshold    = [1000 3000];
+% Stripe fit Data
+qgm_BinStripe                           = 0;
+qgm_BinStripe_LGuess                    = 25;
+qgm_BinStripe_ColorThreshold            = [1000 3000];
 
-qgm_Digitize                    = 0; 
-qgm_DigitizationThreshold       = 3000;
+% Digitzation
+qgm_Digitize                            = 0; 
+qgm_DigitizationThreshold               = 3000;
+
+% Digization 
+qgm_DigAcummulateMoments                = 0;
+
+qgm_DigMoments                          = 0;
+qgm_DigMomentsSineFit                   = 0;
+
+
+%% X Variable and Units
+% If auto unit and variable are chosen, search through the parameters and
+% data to find which variable(s) are being changed.
+
+% Also, sort the data by that chosen variable.
+
+if qgm_autoXVar
+    xVars = ixon_findXVars(qgmdata);
+    disp([' Found ' num2str(length(xVars)) ...
+        ' valid variables that are changing to plot against.']);
+    disp(xVars);    
+    qgm_xVar = xVars{1};    
+    disp([' Setting ' qgm_xVar ' to be the x-variable']);    
+    for kk=1:length(ixondata)
+        disp([' (' num2str(kk) ') (' num2str(ixondata(kk).Params.(qgm_xVar)) ') ' ...
+            ixondata(kk).Name]); 
+    end
+end
+
+if ixon_autoUnit && isfield(ixondata(1),'Units')
+    ixon_unit=ixondata(1).Units.(qgm_xVar);
+else
+    ixon_unit=ixon_overrideUnit;
+end
+
+if isequal(qgm_xVar,'ExecutionDate');ixon_unit='';end
+
+% Sort the data by your given parameter
+P = [qgmdata.Params];qgmdata = sort(qgmdata,[P.(qgm_xVar)]);
 
 %% Histogram
 
-if qgm_BinTotalHist
-    Bins = linspace(0,qgm_BinTotalHist_Zmax,qgm_BinTotalHist_Nbins);
+if qgm_BinAcummulateHist
+    Bins = linspace(0,qgm_BinAcummulateHist_Zmax,qgm_BinAcummulateHist_Nbins);
     qgm_binnedTotalHistogram(qgmdata,Bins);
 end
 
 %% Bin Stripe
-if qgm_BinStripe
-    
+if qgm_BinStripe    
     if ~isfield(qgmdata,'LatticeBin')
         return;
     end
@@ -100,14 +145,15 @@ if qgm_BinStripe
             n1 = qgmdata(n).LatticeBin(kk).n1;
             n2 = qgmdata(n).LatticeBin(kk).n2;
             Zb = qgmdata(n).LatticeBin(kk).Zbin;    
+
             opts_stripe.LGuess = qgm_BinStripe_LGuess;
             opts_stripe.FigNum=3000+10*(n-1)+kk-1;
             opts_stripe.FigNum=3000;
-
             opts_stripe.ColorThreshold = qgm_BinStripe_ColorThreshold;
             
-            [out(kk),hF_bin_stripe] = ixon_BinStripeFit(n1,n2,Zb,opts_stripe);
-%                   exportgraphics(gcf,'testAnimated.gif','Append',true);
+            [qgmdata(n).BinStripe(kk),hF_bin_stripe] = ...
+                ixon_BinStripeFit(n1,n2,Zb,opts_stripe);
+
             frame=getframe(hF_bin_stripe);
             im = frame2im(frame);
             [A,map] = rgb2ind(im,256);  
