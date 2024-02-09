@@ -125,6 +125,13 @@ if qgm_BinRecenter
    qgmdata = qgm_recenter(qgmdata);
 end
 
+%% Standard Binned Analysis
+
+% animated of binned image
+% statistics on different ROIs
+% statistics on total image
+% is average binned image helpful? --> maybe?
+
 %% Histogram
 
 if qgm_BinAcummulateHist
