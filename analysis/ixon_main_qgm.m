@@ -1,4 +1,4 @@
-% ixon_QGM.m
+% ixon_main_qgm.m
 %
 % Author : CF Fujiwara
 %
@@ -10,24 +10,23 @@ disp(repmat('-',1,60));disp(repmat('-',1,60));
 disp(['Calling ' mfilename '.m']);
 disp(repmat('-',1,60));disp(repmat('-',1,60));  
 
-
 %% Bin Stripe
 if ixon_doQGM_BinStripe
     LGuess = 25;
     ColorThreshold = [1000 3000];
     
-    if ~isfield(ixondata,'LatticeBin')
+    if ~isfield(qgmdata,'LatticeBin')
         return;
     end
     clear out
-    for n = 1:length(ixondata)                
-        for kk = 1:length(ixondata(n).LatticeBin)
-            n1 = ixondata(n).LatticeBin(kk).n1;
-            n2 = ixondata(n).LatticeBin(kk).n2;
-            Zb = ixondata(n).LatticeBin(kk).Zbin;    
+    for n = 1:length(qgmdata)                
+        for kk = 1:length(qgmdata(n).LatticeBin)
+            n1 = qgmdata(n).LatticeBin(kk).n1;
+            n2 = qgmdata(n).LatticeBin(kk).n2;
+            Zb = qgmdata(n).LatticeBin(kk).Zbin;    
             opts_stripe.LGuess = LGuess;
             opts_stripe.FigNum=3000+10*(n-1)+kk-1;
-                        opts_stripe.FigNum=3000;
+            opts_stripe.FigNum=3000;
 
             opts_stripe.ColorThreshold = ColorThreshold;
             
@@ -43,7 +42,7 @@ if ixon_doQGM_BinStripe
                 switch n
                     case 1
                         imwrite(A,map,filename,'gif','LoopCount',Inf,'DelayTime',1);
-                    case length(ixondata)
+                    case length(qgmdata)
                         imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',1);
                     otherwise
                         imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',.1);
@@ -51,7 +50,7 @@ if ixon_doQGM_BinStripe
             end
 
         end
-        ixondata(n).BinStripe = out;    
+        qgmdata(n).BinStripe = out;    
         qgmdata(n).BinStripe = out;
     end
 end  
