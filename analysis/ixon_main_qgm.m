@@ -86,14 +86,14 @@ qgm_BinAcummulateHist_Zmax              = 6000;
 qgm_BinAcummulateHist_Nbins             = 100;
 
 % Stripe fit Data
-qgm_BinStripe                           = 1;
+qgm_BinStripe                           = 0;
 qgm_BinStripeAnimate                    = 1;
 qgm_BinStripe_LGuess                    = 25;
 qgm_BinStripe_ColorThreshold            = [1000 3000];
 
 % Digitzation
-qgm_Digitize                            = 0; 
-qgm_DigitizationThreshold               = 3000;
+qgm_Digitize                            = 1; 
+qgm_DigitizationThreshold               = 2500;
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and
