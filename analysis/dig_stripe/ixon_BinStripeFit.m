@@ -199,7 +199,7 @@ BinStripe.Duty                = fout_s.duty;
 BinStripe.ModDepth            = fout_s.B;
 BinStripe.FocusCenter         = focus_center;
 BinStripe.Counts              = sum(Zb,'all');
-
+BinStripe.Separations         = seps;
 % if focus_center > 110
 %     keyboard
 % end
