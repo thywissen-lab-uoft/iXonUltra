@@ -27,7 +27,6 @@ for kk=1:length(figs)
    end
 end
 disp(' ');
-
 %% Select image directory
 qgm_saveOpts = struct;
 qgm_saveOpts.Quality = 'auto';
@@ -62,7 +61,7 @@ disp([' done (' num2str(toc,'%.2f') 's']);
 % display properties.
 
 % Choose what kind of variable to plot against (sequencer/camera)
-varType             = 'param';          % always select 'param' for now 
+varType            = 'param';          % always select 'param' for now 
 qgm_autoXVar       = 0;                % Auto detect changing variable?
 qgm_autoUnit       = 1;                % Auto detect unit for variable?
 qgm_xVar           = 'ExecutionDate';  % Variable Name
@@ -71,23 +70,26 @@ qgm_doSave         = 1;                % Save Analysis?
 
 %% Flags
 
-qgm_BinTotalHist   = 1;
-qgm_BinStripe = 0;
-qgm_Digitize  = 0;
+qgm_BinTotalHist                = 1;
+qgm_BinTotalHist_Zmax           = 6000;
+qgm_BinTotalHist_Nbins          = 100;
+
+qgm_BinStripe                   = 0;
+qgm_BinStripe_LGuess            = 25;
+qgm_BinStripe_ColorThreshold    = [1000 3000];
+
+qgm_Digitize                    = 0; 
+qgm_DigitizationThreshold       = 3000;
 
 %% Histogram
 
 if qgm_BinTotalHist
-    Zmax = 6000;
-    Nbins = 100;
-    Bins = linspace(0,Zmax,Nbins);
+    Bins = linspace(0,qgm_BinTotalHist_Zmax,qgm_BinTotalHist_Nbins);
     qgm_binnedTotalHistogram(qgmdata,Bins);
 end
 
 %% Bin Stripe
 if qgm_BinStripe
-    LGuess = 25;
-    ColorThreshold = [1000 3000];
     
     if ~isfield(qgmdata,'LatticeBin')
         return;
@@ -98,11 +100,11 @@ if qgm_BinStripe
             n1 = qgmdata(n).LatticeBin(kk).n1;
             n2 = qgmdata(n).LatticeBin(kk).n2;
             Zb = qgmdata(n).LatticeBin(kk).Zbin;    
-            opts_stripe.LGuess = LGuess;
+            opts_stripe.LGuess = qgm_BinStripe_LGuess;
             opts_stripe.FigNum=3000+10*(n-1)+kk-1;
             opts_stripe.FigNum=3000;
 
-            opts_stripe.ColorThreshold = ColorThreshold;
+            opts_stripe.ColorThreshold = qgm_BinStripe_ColorThreshold;
             
             [out(kk),hF_bin_stripe] = ixon_BinStripeFit(n1,n2,Zb,opts_stripe);
 %                   exportgraphics(gcf,'testAnimated.gif','Append',true);
