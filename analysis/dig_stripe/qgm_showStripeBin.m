@@ -1,16 +1,18 @@
-function [outputArg1,outputArg2] = qgm_showStripeBin(qgmdata,xVar)
+function qgm_showStripeBin(qgmdata,xVar,opts)
     
-    hF1=figure(opts.FigNum);
+
+%% Initialize Graphics
+    hF=figure;
     co=get(gca,'colororder');
     myc = [255,140,0]/255;
-    hF1.Color='w';
-    hF1.Position(3:4) = [770 720];
-    if (hF1.Position(2)+hF1.Position(4))>1000;hF1.Position(2) = 100;end
+    hF.Color='w';
+    hF.Position(3:4) = [770 720];
+    if (hF.Position(2)+hF.Position(4))>1000;hF.Position(2) = 100;end
     clf
     
     % Image Plot
     ax1=subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19]);
-    imagesc(n1,n2,Zb);
+    hImg = imagesc(n1,n2,Zb);
     % axis equal tight
     colormap([[0 0 0];winter; [1 0 0]]);
     
@@ -27,38 +29,36 @@ function [outputArg1,outputArg2] = qgm_showStripeBin(qgmdata,xVar)
     
     % Lines for indicating the absence of atoms
     for kk=1:length(seps)
-        plot(get(gca,'XLim'),[1 1]*seps(kk),'--','color',myc)
+        pSeps(kk) = plot(get(gca,'XLim'),[1 1]*seps(kk),'--','color',myc);
     end
     
     % Text label for each string
     for kk=1:length(centers)
         str = ['score=' num2str(scores(kk),'%.2e')];
-        text(min(nt)+6,centers(kk),str,'horizontalalignment','left',...
+        tScores(kk) = text(min(nt)+6,centers(kk),str,'horizontalalignment','left',...
             'verticalalignment','middle','fontsize',10,...
-            'color',myc)
+            'color',myc);
     end
     
     % Text summary of stripe fit
     str = ['$\lambda=' num2str(fout_s.L,'%.2f') ',' ...
         '\phi=2\pi\cdot' num2str(round(mod(fout_s.phi,2*pi)/(2*pi),2),'%.2f') ',' ...
         '\alpha = ' num2str(round(fout_s.B,2),'%.2f') '$'];
-    text(5,5,str,'horizontalalignment','left',...
+    tSummary = text(5,5,str,'horizontalalignment','left',...
         'verticalalignment','bottom','fontsize',14,...
         'color',myc,'interpreter','latex','backgroundcolor',[0 0 0],'Margin',1,...
         'units','pixels')
     
     % Plot star for most in-focused plane
-    try
-    plot(min(nt)+2,focus_center,'pentagram','markersize',12,...
-        'markerfacecolor',myc,'markeredgecolor',myc*.8)
-    end
+    pStar = plot(min(nt)+2,focus_center,'pentagram','markersize',12,...
+        'markerfacecolor',myc,'markeredgecolor',myc*.8);
     
     ax2=subplot(5,5,[5 10 15 20]);
     cla
-    plot(Zs,ns,'k-','linewidth',1,'color','k');
+    pZs = plot(Zs,ns,'k-','linewidth',1,'color','k');
     hold on
     nsFit = linspace(min(ns),max(ns),1e3);
-    plot(feval(fout_s,nsFit),nsFit,'-','color',co(1,:),'linewidth',2);
+    pZsF = plot(feval(fout_s,nsFit),nsFit,'-','color',co(1,:),'linewidth',2);
     set(gca,'fontsize',12,'YAxisLocation','right','YColor',co(1,:),'fontname','times',...
         'Xaxislocation','top')
     ylabel('$n_2$ (site)','interpreter','latex');

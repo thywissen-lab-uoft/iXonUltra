@@ -1,4 +1,4 @@
-function [out,hF1] = ixon_BinStripeFit(n1,n2,Zb,opts)
+function BinStripe = ixon_BinStripeFit(n1,n2,Zb,opts)
 %ixon_BinStripeFit Fit a binned fluorescence image to a stripe pattern.
 %   When taking fluoresence images of a 2D slice of the 3D cloud,
 %   application of a transverse magnetic field induces a stripe pattern to
@@ -38,8 +38,6 @@ if ~isfield(opts,'ColorThreshold')
     opts.ColorThreshold = [1000 3000];
 end
 
-fprintf('Stripe bin fitting...')
-tic
 %% Fit Functions
 
 % Transverse Fit Function
@@ -157,14 +155,14 @@ end
 
 % disp([fout_s.A fout_s.n0 fout_s.s fout_s.B fout_s.L fout_s.duty fout_s.R fout_s.phi] - ...
     % fit_opts_s.StartPoint);
-
-fprintf('dA');fprintf('%.0e',[fout_s.A - As]);fprintf(', ');
-fprintf('dn');fprintf('%.1f',[fout_s.n0 - ns0]);fprintf(', ');
-fprintf('dB');fprintf('%.2f',[fout_s.B - B]);fprintf(', ');
-fprintf('dL');fprintf('%.1f',[fout_s.L - L]);fprintf(', ');
-fprintf('dD');fprintf('%.1f',[fout_s.duty - D]);fprintf(', ');
-fprintf('dR');fprintf('%.1f',[fout_s.R - 0.5]);fprintf(', ');
-fprintf('dP');fprintf('%.1f',[fout_s.phi - phi]);fprintf(')');
+% 
+% fprintf('dA');fprintf('%.0e',[fout_s.A - As]);fprintf(', ');
+% fprintf('dn');fprintf('%.1f',[fout_s.n0 - ns0]);fprintf(', ');
+% fprintf('dB');fprintf('%.2f',[fout_s.B - B]);fprintf(', ');
+% fprintf('dL');fprintf('%.1f',[fout_s.L - L]);fprintf(', ');
+% fprintf('dD');fprintf('%.1f',[fout_s.duty - D]);fprintf(', ');
+% fprintf('dR');fprintf('%.1f',[fout_s.R - 0.5]);fprintf(', ');
+% fprintf('dP');fprintf('%.1f',[fout_s.phi - phi]);fprintf(')');
 
 % disp(fout_s. - As)
 % 
@@ -188,28 +186,25 @@ focus_center = centers(ind);
 
 
 %% Create Output Data
-out = struct;
-out.FitTransverse       = fout_t;
-out.FitStripe           = fout_s;
-out.RSquareStripe       = gof_s.rsquare;
-out.RSquareTransverse   = gof_t.rsquare;
-out.Centers             = centers;
-out.Scores              = scores;
-out.Lambda              = fout_s.L;
-out.Phase               = fout_s.phi;
-out.Duty                = fout_s.duty;
-out.ModDepth            = fout_s.B;
-out.FocusCenter         = focus_center;
-out.Counts              = sum(Zb,'all');
+BinStripe = struct;
+BinStripe.FitTransverse       = fout_t;
+BinStripe.FitStripe           = fout_s;
+BinStripe.RSquareStripe       = gof_s.rsquare;
+BinStripe.RSquareTransverse   = gof_t.rsquare;
+BinStripe.Centers             = centers;
+BinStripe.Scores              = scores;
+BinStripe.Lambda              = fout_s.L;
+BinStripe.Phase               = fout_s.phi;
+BinStripe.Duty                = fout_s.duty;
+BinStripe.ModDepth            = fout_s.B;
+BinStripe.FocusCenter         = focus_center;
+BinStripe.Counts              = sum(Zb,'all');
 
 % if focus_center > 110
 %     keyboard
 % end
-
-t = toc;
-disp(['(' num2str(t,2) 's)']);
 %% Plot the Results
-
+%{
 hF1=figure(opts.FigNum);
 co=get(gca,'colororder');
 myc = [255,140,0]/255;
@@ -307,6 +302,7 @@ set(gca,'fontsize',8);
 yL =get(gca,'YLim');
 ylim([0 yL(2)]);
 xlim([min(n1) max(n1)])
+%}
 end
 
 % rectangular pulse via erf functions
