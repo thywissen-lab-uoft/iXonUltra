@@ -28,7 +28,6 @@ for kk=1:length(figs)
 end
 disp(' ');
 %% Select image directory
-
     
 if ~exist('qgm_auto_file')
    qgm_auto_file = 1; 
@@ -93,7 +92,6 @@ qgm_BinStripe_ColorThreshold            = [1000 6000];
 
 % Digitzation
 qgm_Digitize                            = 1; 
-qgm_DigitizationThreshold               = 3500;
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and
@@ -204,11 +202,5 @@ if qgm_BinStripe && qgm_BinStripeAnimate
 end
 %% Digitization Stuff
 if qgm_Digitize
-    qgmdata = ixon_digitize(qgmdata,qgm_DigitizationThreshold);    
-    digdata = qgm_makeDigData(qgmdata,qgm_opts);
-    
-    if qgm_opts.doSave 
-        filename = [qgm_opts.saveDir 'digdata.mat'];
-        save(filename,'-struct','digdata');
-    end
+    ixon_dig_initialize;
 end

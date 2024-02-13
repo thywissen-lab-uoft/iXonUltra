@@ -389,5 +389,5 @@ if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 
 %% Quantum Gas Micrscopy
 if ixon_doQGM            
-    ixon_main_qgm_initialize; 
+    ixon_bin_initialize; 
 end

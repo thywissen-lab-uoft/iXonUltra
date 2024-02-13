@@ -1,4 +1,4 @@
-% ixon_main_makeQGMData.m
+% ixon_bin_initialize.m
 %
 % Author : CF Fujiwara
 %
