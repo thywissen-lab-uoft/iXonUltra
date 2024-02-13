@@ -130,14 +130,14 @@ end
 
             set(hImg,'Cdata',mean(digdata.Zdig,3));
             
-            clim(ax,'auto')
+            caxis(ax,'auto')
             % tSE.Visible = 'off';
             tSW.Visible = 'off';
 
             set(tNW,'String',[num2str(size(digdata.Zdig,3)) ' images']);
 
             sSE = ['threshold :' num2str(unique(digdata.Threshold)) newline ...
-                num2str(mean(sum(digdata.Zdig,[1 2]))) '\pm' ...
+                num2str(round(mean(sum(digdata.Zdig,[1 2])))) '\pm' ...
                 num2str(round(std(sum(digdata.Zdig,[1 2])))) ' atoms'];
 
             set(tSE,'String',sSE);
