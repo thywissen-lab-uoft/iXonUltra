@@ -14,8 +14,12 @@ function [digdata] = bin_makeDigData(bindata,opts)
         Zdig(:,:,nn) = [bindata(nn).LatticeDig.Zdig];        
     end
     
-    digdata = struct;
+    LD = [bindata.LatticeDig];
+    
+    digdata = struct;    
+    digdata.SourceDirectory = unique({bindata.SourceDirectory});
     digdata.FileNames = {bindata.Name}';
+    digdata.Threshold = [LD.Threshold];
     digdata.xVar = opts.xVar;
     digdata.X = [P.(opts.xVar)];
     digdata.Params = P;

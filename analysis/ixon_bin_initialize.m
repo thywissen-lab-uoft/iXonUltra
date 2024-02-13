@@ -10,8 +10,6 @@ disp(repmat('-',1,60));disp(repmat('-',1,60));
 disp(['Calling ' mfilename '.m']);
 disp(repmat('-',1,60));disp(repmat('-',1,60));  
 
-% Initialize outputs
-bindata = struct;
 
 % Some flags
 ixon_doQGM_FindLattice = 1;
@@ -116,8 +114,13 @@ if ixon_doQGM_Bin
     end
 end  
 
-%% Initialize QGM Data    
+%% Initialize bindata    
+
+% Initialize outputs
+bindata = struct;
+
 for nn = 1:length(ixondata)
+    bindata(nn).SourceDirectory = fileparts(saveOpts.saveDir);
     bindata(nn).Date = ixondata(nn).Date;
     bindata(nn).Name = ixondata(nn).Name;
     bindata(nn).Params = ixondata(nn).Params;
