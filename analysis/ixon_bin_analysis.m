@@ -1,4 +1,4 @@
-% ixon_main_qgm.m
+% ixon_bin_analysis.m
 %
 % Author : CF Fujiwara
 %
@@ -29,14 +29,14 @@ end
 disp(' ');
 %% Select image directory
     
-if ~exist('qgm_auto_file')
-   qgm_auto_file = 1; 
+if ~exist('bin_auto_file')
+   bin_auto_file = 1; 
 end
 
-if qgm_auto_file
+if bin_auto_file
     dialog_title='Select GUI data';       
-    [filename,qgm_imgdir,b]=uigetfile(fullfile(ixon_getDayDir,'*.mat'),dialog_title);
-    filename = fullfile(qgm_imgdir,filename);    
+    [filename,bin_imgdir,b]=uigetfile(fullfile(ixon_getDayDir,'*.mat'),dialog_title);
+    filename = fullfile(bin_imgdir,filename);    
     if  b == 0
         disp('Canceling.');    
         return; 
@@ -56,7 +56,7 @@ bindata = ixon_matchParamsFlags(bindata);
 
 bin_opts = struct;
 bin_opts.Quality = 'auto';
-bin_opts.saveDir=qgm_imgdir;
+bin_opts.saveDir=bin_imgdir;
 strs=strsplit(imgdir,filesep);
 bin_opts.FigLabel=[strs{end-1} filesep strs{end}];
 
@@ -136,22 +136,22 @@ if bin_BinAcummulateHist
     
     % Full Cloud
     opts.ROI = 'max';
-    opts.filename = 'qgm_BinAnimateFull.gif';    
+    opts.filename = 'bin_BinAnimateFull.gif';    
     hF_BinHistogramFull = qgm_binnedTotalHistogram(bindata,opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinHistogramFull,...
-         'qgm_BinHistogramFull',bin_opts);  
+         'bin_BinHistogramFull',bin_opts);  
     end
     
     % Center Cloud
     opts.ROI = [110 135 70 100];
     opts.ROI = [80 135 80 100];
 
-    opts.filename = 'qgm_BinAnimateCenter.gif';    
+    opts.filename = 'bin_BinAnimateCenter.gif';    
     hF_BinHistogramFull = qgm_binnedTotalHistogram(bindata,opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinHistogramFull,...
-         'qgm_BinHistogramCenter',bin_opts);  
+         'bin_BinHistogramCenter',bin_opts);  
     end
     
 end
@@ -189,7 +189,7 @@ if bin_BinStripe
     hF_StripeSummary = qgm_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
-         'qgm_StripeSummary',saveOpts);     
+         'bin_StripeSummary',saveOpts);     
     end
 end
 
@@ -197,7 +197,7 @@ end
 if bin_BinStripe && bin_BinStripeAnimate
     opts = bin_opts;
     opts.ColorThreshold = bin_BinStripe_ColorThreshold;
-    opts.filename = 'qgm_BinStripeAnimation.gif';
+    opts.filename = 'bin_BinStripeAnimation.gif';
     qgm_showStripeBin(bindata,bin_opts.xVar,opts);
 end
 %% Digitization Stuff
