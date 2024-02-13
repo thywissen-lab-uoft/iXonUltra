@@ -1,4 +1,4 @@
-function [hF] = qgm_showStripeBinSummary(qgmdata,xVar,opts)
+function [hF] = bin_showStripeBinSummary(bindata,xVar,opts)
 
 if nargin <3
     opts = struct;
@@ -21,8 +21,8 @@ co =  [0    0.4470    0.7410
     0.3010    0.7450    0.9330
     0.6350    0.0780    0.1840];
 
-BS = [qgmdata.BinStripe];
-P = [qgmdata.Params];
+BS = [bindata.BinStripe];
+P = [bindata.Params];
 X = [P.(xVar)];
 
 alpha = [BS.ModDepth];
@@ -32,7 +32,7 @@ N = [BS.Counts];
 goodInds = logical([alpha>.75].*[N>0.5e6]);
 goodInds = logical([N>0.5e6]);
 
-goodInds = logical(ones(length(qgmdata),1));
+goodInds = logical(ones(length(bindata),1));
 % 
 P = P(goodInds);
 X = X(goodInds);
@@ -53,10 +53,10 @@ MYC=[];
 
 % goodInds = logical([N>0.5e6]);
 
- for kk=1:length(qgmdata)
-    ss = [qgmdata(kk).BinStripe.Scores];
+ for kk=1:length(bindata)
+    ss = [bindata(kk).BinStripe.Scores];
     ss(isnan(ss))=0;
-    cs=[qgmdata(kk).BinStripe.Centers];
+    cs=[bindata(kk).BinStripe.Centers];
     xs = repmat(X(kk),[length(cs),1]);
     XX=[XX;xs(1:6)];    
     [~,iii]=sort(ss,'descend');    

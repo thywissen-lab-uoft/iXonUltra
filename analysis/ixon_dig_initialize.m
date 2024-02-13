@@ -21,7 +21,7 @@ addpath(a);addpath(genpath(a));
 
 dig_DigitizationThreshold               = 3500;
 bindata = ixon_digitize(bindata,dig_DigitizationThreshold);    
-digdata = qgm_makeDigData(bindata,bin_opts);
+digdata = bin_makeDigData(bindata,bin_opts);
     
 if bin_opts.doSave 
     filename = [bin_opts.saveDir 'digdata.mat'];

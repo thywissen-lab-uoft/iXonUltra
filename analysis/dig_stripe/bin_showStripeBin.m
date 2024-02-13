@@ -1,4 +1,4 @@
-function qgm_showStripeBin(qgmdata,xVar,opts)
+function bin_showStripeBin(bindata,xVar,opts)
     
 Nseps = 10;
 Ncenters = Nseps-1;
@@ -111,15 +111,15 @@ Zb = zeros(50,50);
 
     %% Main Loop
 
-    for nn = 1:length(qgmdata)
-        n1 = [qgmdata(nn).LatticeBin.n1];
-        n2 = [qgmdata(nn).LatticeBin.n2];
-        Zb = [qgmdata(nn).LatticeBin.Zbin];
+    for nn = 1:length(bindata)
+        n1 = [bindata(nn).LatticeBin.n1];
+        n2 = [bindata(nn).LatticeBin.n2];
+        Zb = [bindata(nn).LatticeBin.Zbin];
         Zb2 = Zb;
         Zb2(Zb<opts.ColorThreshold(1)) = 0;
         Zb2(isnan(Zb)) = 0;
         
-        BS = [qgmdata(nn).BinStripe];
+        BS = [bindata(nn).BinStripe];
 
         % Update Main Image
         set(hImg,'CData',Zb,'XData',n1,'YData',n2);
@@ -184,7 +184,7 @@ Zb = zeros(50,50);
                 case 1
                     imwrite(A,map,filename,'gif','LoopCount',...
                         Inf,'DelayTime',1);
-                case length(qgmdata)
+                case length(bindata)
                     imwrite(A,map,filename,'gif','WriteMode',...
                         'append','DelayTime',1);
                 otherwise

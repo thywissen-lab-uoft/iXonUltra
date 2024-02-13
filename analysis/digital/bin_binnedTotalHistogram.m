@@ -1,5 +1,5 @@
-function [hF] = qgm_binnedTotalHistogram(qgmdata,opts)
-    if ~isfield(qgmdata,'LatticeBin')
+function [hF] = bin_binnedTotalHistogram(bindata,opts)
+    if ~isfield(bindata,'LatticeBin')
        return;
     end   
     
@@ -25,8 +25,8 @@ function [hF] = qgm_binnedTotalHistogram(qgmdata,opts)
     end
 %% Get ROI
     
-    n1 = qgmdata(1).LatticeBin(1).n1;
-    n2 = qgmdata(1).LatticeBin(1).n2;
+    n1 = bindata(1).LatticeBin(1).n1;
+    n2 = bindata(1).LatticeBin(1).n2;
     
     if isequal(opts.ROI,'max')
        opts.ROI = [min(n1) max(n1) min(n2) max(n2)]; 
@@ -34,8 +34,8 @@ function [hF] = qgm_binnedTotalHistogram(qgmdata,opts)
     R = opts.ROI;
     %% Prepare Data
     Zall = zeros(length(n2),length(n1));
-    for nn = 1:length(qgmdata)        
-        Zthis = qgmdata(nn).LatticeBin(1).Zbin;    
+    for nn = 1:length(bindata)        
+        Zthis = bindata(nn).LatticeBin(1).Zbin;    
         Zall(:,:,nn) =  Zthis;
     end
     
@@ -110,14 +110,14 @@ function [hF] = qgm_binnedTotalHistogram(qgmdata,opts)
     %% Populate with data
     
     if opts.doAnimate
-        for nn = 1:length(qgmdata)
+        for nn = 1:length(bindata)
             [N,~] = histcounts(Zall(in2i:in2f,in1i:in1f,nn),opts.Bins);  
             set(pHistB1,'Xdata',centers(iL),'Ydata',N(iL));
             set(pHistB2,'Xdata',centers(iH),'Ydata',N(iH));
             set(hImg,'Cdata',Zall(:,:,nn));
                str1 = ['ROI : [' num2str(R(1)) ' ' num2str(R(2)) ' ' ...
         num2str(R(3)) ' ' num2str(R(4)) ']' ...
-        newline 'image ' num2str(nn) '/' num2str(length(qgmdata))];
+        newline 'image ' num2str(nn) '/' num2str(length(bindata))];
     
             set(t1,'String',str1);
             
@@ -129,7 +129,7 @@ function [hF] = qgm_binnedTotalHistogram(qgmdata,opts)
                 case 1
                     imwrite(A,map,filename,'gif','LoopCount',...
                         Inf,'DelayTime',1);
-                case length(qgmdata)
+                case length(bindata)
                     imwrite(A,map,filename,'gif','WriteMode',...
                         'append','DelayTime',1);
                 otherwise

@@ -1,11 +1,11 @@
-function qgmdata = ixon_binReshape(qgmdata)
+function bindata = ixon_binReshape(bindata)
 
 % INCOMPLETE
 % Get all bounds on the lattice sites indeces
 n1i = min(LatticeDig(1).n1);n1f = max(LatticeDig(1).n1);
 n2i = min(LatticeDig(1).n2);n2f = max(LatticeDig(1).n2);
 
-for n = 1:length(qgmdata)
+for n = 1:length(bindata)
     
 end
 % Get all bounds on the lattice sites indeces

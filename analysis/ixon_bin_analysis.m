@@ -120,7 +120,7 @@ bindata = bindata(inds);
 %% Recenter
 
 if bin_BinRecenter
-   bindata = qgm_recenter(bindata);
+   bindata = bin_recenter(bindata);
 end
 
 
@@ -137,7 +137,7 @@ if bin_BinAcummulateHist
     % Full Cloud
     opts.ROI = 'max';
     opts.filename = 'bin_BinAnimateFull.gif';    
-    hF_BinHistogramFull = qgm_binnedTotalHistogram(bindata,opts);    
+    hF_BinHistogramFull = bin_binnedTotalHistogram(bindata,opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinHistogramFull,...
          'bin_BinHistogramFull',bin_opts);  
@@ -148,7 +148,7 @@ if bin_BinAcummulateHist
     opts.ROI = [80 135 80 100];
 
     opts.filename = 'bin_BinAnimateCenter.gif';    
-    hF_BinHistogramFull = qgm_binnedTotalHistogram(bindata,opts);    
+    hF_BinHistogramFull = bin_binnedTotalHistogram(bindata,opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinHistogramFull,...
          'bin_BinHistogramCenter',bin_opts);  
@@ -186,7 +186,7 @@ if bin_BinStripe
 end  
 %% Bin Stripe Summary
 if bin_BinStripe    
-    hF_StripeSummary = qgm_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
+    hF_StripeSummary = bin_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
          'bin_StripeSummary',saveOpts);     
@@ -198,7 +198,7 @@ if bin_BinStripe && bin_BinStripeAnimate
     opts = bin_opts;
     opts.ColorThreshold = bin_BinStripe_ColorThreshold;
     opts.filename = 'bin_BinStripeAnimation.gif';
-    qgm_showStripeBin(bindata,bin_opts.xVar,opts);
+    bin_showStripeBin(bindata,bin_opts.xVar,opts);
 end
 %% Digitization Stuff
 if bin_Digitize

@@ -1,6 +1,6 @@
-function [qgmdata] = qgm_recenter(qgmdata)
+function [bindata] = bin_recenter(bindata)
 
-LatticeBin = [qgmdata.LatticeBin];
+LatticeBin = [bindata.LatticeBin];
 
 % Get all bounds on the lattice sites indeces
 n1i = min(LatticeBin(1).n1);n1f = max(LatticeBin(1).n1);
@@ -35,10 +35,10 @@ for n = 1:length(LatticeBin)
     Zbin_all(:,:,n) = Zthis;
 end
 
-for n = 1:length(qgmdata)
-    qgmdata(n).LatticeBin.n1 = n1; 
-    qgmdata(n).LatticeBin.n2 = n2; 
-    qgmdata(n).LatticeBin.Zbin = Zbin_all(:,:,n);
+for n = 1:length(bindata)
+    bindata(n).LatticeBin.n1 = n1; 
+    bindata(n).LatticeBin.n2 = n2; 
+    bindata(n).LatticeBin.Zbin = Zbin_all(:,:,n);
 end
 
 
