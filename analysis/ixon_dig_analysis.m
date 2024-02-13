@@ -55,8 +55,7 @@ disp([' done (' num2str(toc,'%.2f') 's)']);
 dig_opts = struct;
 dig_opts.Quality = 'auto';
 dig_opts.saveDir=dig_imgdir;
-strs=strsplit(imgdir,filesep);
-dig_opts.FigLabel=[strs{end-1} filesep strs{end}];
+dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 %% Analysis Variable
 % This section of code chooses the variable to plot against for aggregate
@@ -74,5 +73,22 @@ dig_opts.doSave         = 1;                % Save Analysis?
 
 %% Flags
 
+% Recenter all binned data to have same limits
+dig_doShowCloud                         = 1;
+dig_doShowCloudAnimate                  = 1;
+
 
 %%
+
+if dig_doShowCloud
+    opts = dig_opts;
+    opts.doAnimate = 1;
+    opts.ROI = 'max';
+    opts.filename = 'dig_animateFull.gif';
+    hF_digCloud = dig_showCloud(digdata,opts);
+
+    if dig_opts.doSave
+        ixon_saveFigure2(hF_digCloud,...
+         'dig_average',dig_opts);  
+    end
+end
