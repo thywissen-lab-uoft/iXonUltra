@@ -31,10 +31,10 @@ disp(' ');
 
     
 if ~exist('dig_auto_file')
-   qgm_auto_file = 1; 
+   dig_auto_file = 1; 
 end
 
-if qgm_auto_file
+if dig_auto_file
     dialog_title='Select GUI data';       
     [filename,dig_imgdir,b]=uigetfile(fullfile(ixon_getDayDir,'*.mat'),dialog_title);
     filename = fullfile(dig_imgdir,filename);    
