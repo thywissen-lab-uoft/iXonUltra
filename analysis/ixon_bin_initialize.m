@@ -149,8 +149,9 @@ if ixon_doSave
 end
 
 %% Save QGM Data
-if ixon_doSave       
+if ixon_doSave           
     try if ~exist(saveOpts.saveDir,'dir');mkdir(saveOpts.saveDir);end;end
     filename = fullfile(saveOpts.saveDir,'bindata.mat');
+    disp(['Saving ' filename ' ...']);
     save(filename, 'bindata');
 end

@@ -85,7 +85,7 @@ bin_BinAcummulateHist_Zmax              = 12000;
 bin_BinAcummulateHist_Nbins             = 100;
 
 % Stripe fit Data
-bin_BinStripe                           = 1;
+bin_BinStripe                           = 0;
 bin_BinStripeAnimate                    = 1;
 bin_BinStripe_LGuess                    = 25;
 bin_BinStripe_ColorThreshold            = [1000 6000];
