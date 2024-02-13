@@ -17,13 +17,13 @@ addpath(curpath);addpath(genpath(curpath));
 a = fileparts(curpath);
 addpath(a);addpath(genpath(a));
 
-%%
+%% Initialize Digdata
 
-qgm_DigitizationThreshold               = 3500;
-qgmdata = ixon_digitize(qgmdata,qgm_DigitizationThreshold);    
-digdata = qgm_makeDigData(qgmdata,qgm_opts);
+dig_DigitizationThreshold               = 3500;
+bindata = ixon_digitize(bindata,dig_DigitizationThreshold);    
+digdata = qgm_makeDigData(bindata,bin_opts);
     
 if qgm_opts.doSave 
-    filename = [qgm_opts.saveDir 'digdata.mat'];
+    filename = [bin_opts.saveDir 'digdata.mat'];
     save(filename,'-struct','digdata');
 end

@@ -11,7 +11,7 @@ disp(['Calling ' mfilename '.m']);
 disp(repmat('-',1,60));disp(repmat('-',1,60));  
 
 % Initialize outputs
-qgmdata = struct;
+bindata = struct;
 
 % Some flags
 ixon_doQGM_FindLattice = 1;
@@ -118,19 +118,19 @@ end
 
 %% Initialize QGM Data    
 for nn = 1:length(ixondata)
-    qgmdata(nn).Date = ixondata(nn).Date;
-    qgmdata(nn).Name = ixondata(nn).Name;
-    qgmdata(nn).Params = ixondata(nn).Params;
-    qgmdata(nn).Units = ixondata(nn).Units;
-    qgmdata(nn).Flags = ixondata(nn).Flags;
-    qgmdata(nn).CameraInformation = ixondata(nn).CameraInformation;
-    qgmdata(nn).AcquisitionInformation = ixondata(nn).AcquisitionInformation;
-    qgmdata(nn).AcquisitionDescription = ixondata(nn).AcquisitionDescription;
-    qgmdata(nn).ROI = ixondata(nn).ROI;
-    qgmdata(nn).ProcessOptions = ixondata(nn).ProcessOptions;  
-    qgmdata(nn).LatticeK = ixondata(nn).LatticeK;
-    qgmdata(nn).LatticePhase = ixondata(nn).LatticePhase;
-    qgmdata(nn).LatticeBin = ixondata(nn).LatticeBin;
+    bindata(nn).Date = ixondata(nn).Date;
+    bindata(nn).Name = ixondata(nn).Name;
+    bindata(nn).Params = ixondata(nn).Params;
+    bindata(nn).Units = ixondata(nn).Units;
+    bindata(nn).Flags = ixondata(nn).Flags;
+    bindata(nn).CameraInformation = ixondata(nn).CameraInformation;
+    bindata(nn).AcquisitionInformation = ixondata(nn).AcquisitionInformation;
+    bindata(nn).AcquisitionDescription = ixondata(nn).AcquisitionDescription;
+    bindata(nn).ROI = ixondata(nn).ROI;
+    bindata(nn).ProcessOptions = ixondata(nn).ProcessOptions;  
+    bindata(nn).LatticeK = ixondata(nn).LatticeK;
+    bindata(nn).LatticePhase = ixondata(nn).LatticePhase;
+    bindata(nn).LatticeBin = ixondata(nn).LatticeBin;
 end
 
 %% Save Figures
@@ -150,6 +150,6 @@ end
 
 %% Save QGM Data
 if ixon_doSave       
-    filename = fullfile(saveOpts.saveDir,'qgmdata.mat');
-    save(filename, 'qgmdata');
+    filename = fullfile(saveOpts.saveDir,'bindata.mat');
+    save(filename, 'bindata');
 end

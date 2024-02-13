@@ -43,22 +43,22 @@ if qgm_auto_file
     end
 end
 %% Load the Data
-clear qgmdata
+clear bindata
 tic
-fprintf('Loading qgmdata ...');
+fprintf('Loading bindata ...');
 load(filename);
 disp([' done (' num2str(toc,'%.2f') 's)']);
 %% Match Parameters and Flags
 % This makes sure that all data as has all the flags and params in each. 
 % This is usually not necessary.
-qgmdata = ixon_matchParamsFlags(qgmdata);
+bindata = ixon_matchParamsFlags(bindata);
 %% Initialize Options
 
-qgm_opts = struct;
-qgm_opts.Quality = 'auto';
-qgm_opts.saveDir=qgm_imgdir;
+bin_opts = struct;
+bin_opts.Quality = 'auto';
+bin_opts.saveDir=qgm_imgdir;
 strs=strsplit(imgdir,filesep);
-qgm_opts.FigLabel=[strs{end-1} filesep strs{end}];
+bin_opts.FigLabel=[strs{end-1} filesep strs{end}];
 
 %% Analysis Variable
 % This section of code chooses the variable to plot against for aggregate
@@ -67,31 +67,31 @@ qgm_opts.FigLabel=[strs{end-1} filesep strs{end}];
 % display properties.
 
 % Choose what kind of variable to plot against (sequencer/camera)
-qgm_opts.varType        = 'param';          % always select 'param' for now 
-qgm_opts.autoXVar       = 0;                % Auto detect changing variable?
-qgm_opts.autoUnit       = 1;                % Auto detect unit for variable?
-qgm_opts.xVar           = 'ExecutionDate';  % Variable Name
-qgm_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
-qgm_opts.doSave         = 1;                % Save Analysis?
+bin_opts.varType        = 'param';          % always select 'param' for now 
+bin_opts.autoXVar       = 0;                % Auto detect changing variable?
+bin_opts.autoUnit       = 1;                % Auto detect unit for variable?
+bin_opts.xVar           = 'ExecutionDate';  % Variable Name
+bin_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
+bin_opts.doSave         = 1;                % Save Analysis?
 
 %% Flags
 
 % Recenter all binned data to have same limits
-qgm_BinRecenter                         = 1;
+bin_BinRecenter                         = 1;
 
 % Histogram for accumalted data
-qgm_BinAcummulateHist                   = 1;
-qgm_BinAcummulateHist_Zmax              = 12000;
-qgm_BinAcummulateHist_Nbins             = 100;
+bin_BinAcummulateHist                   = 1;
+bin_BinAcummulateHist_Zmax              = 12000;
+bin_BinAcummulateHist_Nbins             = 100;
 
 % Stripe fit Data
-qgm_BinStripe                           = 1;
-qgm_BinStripeAnimate                    = 1;
-qgm_BinStripe_LGuess                    = 25;
-qgm_BinStripe_ColorThreshold            = [1000 6000];
+bin_BinStripe                           = 1;
+bin_BinStripeAnimate                    = 1;
+bin_BinStripe_LGuess                    = 25;
+bin_BinStripe_ColorThreshold            = [1000 6000];
 
 % Digitzation
-qgm_Digitize                            = 1; 
+bin_Digitize                            = 1; 
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and
@@ -99,48 +99,48 @@ qgm_Digitize                            = 1;
 
 % Also, sort the data by that chosen variable.
 
-if qgm_autoXVar
-    xVars = ixon_findXVars(qgmdata);
+if bin_opts.autoXVar
+    xVars = ixon_findXVars(bindata);
     disp([' Found ' num2str(length(xVars)) ...
         ' valid variables that are changing to plot against.']);
     disp(xVars);    
     xVar = xVars{1};    
     disp([' Setting ' xVar ' to be the x-variable']);    
-    for kk=1:length(ixondata)
-        disp([' (' num2str(kk) ') (' num2str(ixondata(kk).Params.(xVar)) ') ' ...
-            ixondata(kk).Name]); 
+    for kk=1:length(bindata)
+        disp([' (' num2str(kk) ') (' num2str(bindata(kk).Params.(xVar)) ') ' ...
+            bindata(kk).Name]); 
     end
 end
 
 % Sort the data by your given parameter
-P = [qgmdata.Params];
-[~,inds] =  sort([P.(qgm_opts.xVar)]);
-qgmdata = qgmdata(inds);
+P = [bindata.Params];
+[~,inds] =  sort([P.(bin_opts.xVar)]);
+bindata = bindata(inds);
 
 %% Recenter
 
-if qgm_BinRecenter
-   qgmdata = qgm_recenter(qgmdata);
+if bin_BinRecenter
+   bindata = qgm_recenter(bindata);
 end
 
 
 %% Histogram
 
-if qgm_BinAcummulateHist
-    opts = qgm_opts;
-    opts.Bins =  linspace(0,qgm_BinAcummulateHist_Zmax,...
-        qgm_BinAcummulateHist_Nbins);    
-    opts.saveDir = qgm_opts.saveDir;
+if bin_BinAcummulateHist
+    opts = bin_opts;
+    opts.Bins =  linspace(0,bin_BinAcummulateHist_Zmax,...
+        bin_BinAcummulateHist_Nbins);    
+    opts.saveDir = bin_opts.saveDir;
     
     opts.doAnimate = 1;
     
     % Full Cloud
     opts.ROI = 'max';
     opts.filename = 'qgm_BinAnimateFull.gif';    
-    hF_BinHistogramFull = qgm_binnedTotalHistogram(qgmdata,opts);    
-    if qgm_opts.doSave
+    hF_BinHistogramFull = qgm_binnedTotalHistogram(bindata,opts);    
+    if bin_opts.doSave
         ixon_saveFigure2(hF_BinHistogramFull,...
-         'qgm_BinHistogramFull',qgm_opts);  
+         'qgm_BinHistogramFull',bin_opts);  
     end
     
     % Center Cloud
@@ -148,36 +148,36 @@ if qgm_BinAcummulateHist
     opts.ROI = [80 135 80 100];
 
     opts.filename = 'qgm_BinAnimateCenter.gif';    
-    hF_BinHistogramFull = qgm_binnedTotalHistogram(qgmdata,opts);    
-    if qgm_opts.doSave
+    hF_BinHistogramFull = qgm_binnedTotalHistogram(bindata,opts);    
+    if bin_opts.doSave
         ixon_saveFigure2(hF_BinHistogramFull,...
-         'qgm_BinHistogramCenter',qgm_opts);  
+         'qgm_BinHistogramCenter',bin_opts);  
     end
     
 end
 
 %% Bin Stripe
-if qgm_BinStripe    
-    if ~isfield(qgmdata,'LatticeBin')
+if bin_BinStripe    
+    if ~isfield(bindata,'LatticeBin')
         return;
     end
     clear out
-    for n = 1:length(qgmdata)    
+    for n = 1:length(bindata)    
         fprintf(['(' num2str(n) '/' num2str(numel(ixondata))...
             ') lattice stripe fit']);
         tic
-        for kk = 1:length(qgmdata(n).LatticeBin)
+        for kk = 1:length(bindata(n).LatticeBin)
             fprintf(['...' num2str(kk)]);
-            n1 = qgmdata(n).LatticeBin(kk).n1;
-            n2 = qgmdata(n).LatticeBin(kk).n2;
-            Zb = qgmdata(n).LatticeBin(kk).Zbin;    
+            n1 = bindata(n).LatticeBin(kk).n1;
+            n2 = bindata(n).LatticeBin(kk).n2;
+            Zb = bindata(n).LatticeBin(kk).Zbin;    
 
-            opts_stripe.LGuess = qgm_BinStripe_LGuess;
+            opts_stripe.LGuess = bin_BinStripe_LGuess;
             opts_stripe.FigNum=3000+10*(n-1)+kk-1;
             opts_stripe.FigNum=3000;
-            opts_stripe.ColorThreshold = qgm_BinStripe_ColorThreshold;
+            opts_stripe.ColorThreshold = bin_BinStripe_ColorThreshold;
             
-            qgmdata(n).BinStripe(kk) = ...
+            bindata(n).BinStripe(kk) = ...
                 ixon_BinStripeFit(n1,n2,Zb,opts_stripe);
         end
         disp([' done (' num2str(toc,'%.2f') 's)']); 
@@ -185,22 +185,22 @@ if qgm_BinStripe
 
 end  
 %% Bin Stripe Summary
-if qgm_BinStripe    
-    hF_StripeSummary = qgm_showStripeBinSummary(qgmdata,qgm_opts.xVar,qgm_opts);    
-    if qgm_opts.doSave
+if bin_BinStripe    
+    hF_StripeSummary = qgm_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
+    if bin_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
          'qgm_StripeSummary',saveOpts);     
     end
 end
 
 %% Bin Stripe Animation
-if qgm_BinStripe && qgm_BinStripeAnimate
-    opts = qgm_opts;
-    opts.ColorThreshold = qgm_BinStripe_ColorThreshold;
+if bin_BinStripe && bin_BinStripeAnimate
+    opts = bin_opts;
+    opts.ColorThreshold = bin_BinStripe_ColorThreshold;
     opts.filename = 'qgm_BinStripeAnimation.gif';
-    qgm_showStripeBin(qgmdata,qgm_opts.xVar,opts);
+    qgm_showStripeBin(bindata,bin_opts.xVar,opts);
 end
 %% Digitization Stuff
-if qgm_Digitize
+if bin_Digitize
     ixon_dig_initialize;
 end
