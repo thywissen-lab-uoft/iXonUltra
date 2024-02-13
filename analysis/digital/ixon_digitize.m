@@ -25,6 +25,7 @@ for kk=1:length(ixondata)
         Y2=sum(zY.*(y-Yc).^2); % x variance
         Ys=sqrt(Y2); % standard deviation Y               
 
+        LatticeDig(k).Threshold = threshold;
         LatticeDig(k).Zdig = Zdig;
         LatticeDig(k).Natoms = Natoms;
         LatticeDig(k).n1 = x;
