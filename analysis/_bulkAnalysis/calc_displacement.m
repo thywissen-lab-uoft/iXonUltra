@@ -24,11 +24,12 @@ d = [-15:0.01:15]*1e-6;
 w = 2*pi*[20,40,55,70,90,100];
 B = zeros([length(w),length(d)]);
 A = zeros([length(w),length(d)]);
+amp = zeros([length(w),length(d)]);
 for ww = 1:length(w)
     
     B(ww,:) = -aL^2*m*wXDT^2*qfit_real(T,G,w(ww)).*d./(hbar*w(ww));
     A(ww,:) = -aL^2*m*wXDT^2*qfit_imag(T,G,w(ww)).*d./(hbar*w(ww));
-
+    amp(ww,:) = sqrt(B(ww,:).^2 + A(ww,:).^2);
 end
 
 %% Plot Results
@@ -39,11 +40,13 @@ for loop = 1:length(w)
     plot(d/1e-6,B(loop,:)/1e-6, 'DisplayName', 'Asin(\phi)')
     hold on;
     plot(d/1e-6,A(loop,:)/1e-6, 'DisplayName', 'Acos(\phi)')
+    plot(d/1e-6,amp(loop,:)/1e-6, 'DisplayName', 'A')
     xlabel('trap displacement ($\mu m$)','Interpreter','latex')
     ylabel('amplitude/phase response ($\mu m$)','Interpreter','latex')
     title(['$\omega_{trap} = 55 \mathrm{ Hz}, \omega_{drive} = \mathrm{ }$' num2str(w(loop)/(2*pi)) '$\mathrm{ Hz}$'],'Interpreter','latex')
-    legend('Location','north');
+    legend('Location','south');
     xlim([-15,15])
+    ylim([-3 3])
     grid();
 end
 
