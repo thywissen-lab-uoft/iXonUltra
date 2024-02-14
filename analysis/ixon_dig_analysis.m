@@ -65,7 +65,7 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 0;                % Auto detect changing variable?
+dig_opts.autoXVar       = 1;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'ExecutionDate';  % Variable Name
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
@@ -92,3 +92,108 @@ if dig_doShowCloud
          'dig_average',dig_opts);  
     end
 end
+
+%%
+Xc2vec = zeros(1,size(digdata.Zdig,3));
+for nn=1:size(digdata.Zdig,3)
+    y=smooth(sum(digdata.Zdig(:,:,nn),2),10);
+    
+    try
+    [pks,locs,w,p]=findpeaks(y,'SortStr','descend');
+    
+    pks=pks(1:3);
+    locs=locs(1:3);
+    [val,ind]=min(abs(locs-75));
+    loc = locs(ind);
+    
+    n2sub_ind = loc + [-12:1:12];
+    
+    Zsub = digdata.Zdig(n2sub_ind,:,nn);    
+    n1sub = digdata.n1;
+    n2sub = digdata.n2(n2sub_ind);
+    
+    [n1,n2] = meshgrid(n1sub,n2sub);
+    
+    Xc2= sum(Zsub.*n1,'all')/sum(Zsub,'all');  
+    catch 
+        Xc2 = NaN;
+    end
+    Xc2vec(nn) = Xc2;    
+end
+
+digdata.Xc75 =Xc2vec;
+
+
+hF=figure(7001);
+clf
+hF.Color='w';
+hF.Position=[100 100 600 300];
+co=get(gca,'colororder');
+plot(digdata.X+150,digdata.Xc75,'o','markerfacecolor',co(1,:),...
+    'markersize',8,'markeredgecolor',co(1,:)*.5);
+xlabel([digdata.xVar ' + 150 ms'],'interpreter','none');
+ylabel('x center (sites)');
+hold on
+
+P=[digdata.Params];
+f = unique([P.conductivity_mod_freq]);
+myfit = fittype(@(A,phi,x0,t) A*sin(2*pi*f*t*1e-3+phi) + x0 ,...
+    'independent','t','coefficients',{'A','phi','x0'});
+
+Ag = max(digdata.Xc75)-min(digdata.Xc75);
+Bg = Ag;
+x0g = median(digdata.Xc75);
+fitopt = fitoptions(myfit);
+fitopt.StartPoint = [4 2.5 106.3];
+fitopt.Lower = [0 -20 x0g-5];
+
+x=digdata.X'+150;
+y = digdata.Xc75';
+
+inds = isnan(y);
+
+x(inds)=[];
+y(inds)=[];
+
+fout = fit(x,y,myfit,fitopt);
+
+str = ['A: ' num2str(round(fout.A,4)) ];
+P = [digdata.Params];
+B = unique([P.conductivity_FB_field]);
+Pevap = unique([P.xdt_evap1_power]);
+amp = unique([P.conductivity_ODT2_mod_amp]);
+
+str = [num2str(B) ' G, ' num2str(Pevap*1e3) ' mW, ' ...
+    num2str(f) ' Hz, ' num2str(amp) ' V amp'];
+
+title(str);
+% 
+cc=confint(fout,0.66);
+
+Aerr =  (cc(2,1)-cc(1,1))/2;
+phierr = (cc(2,2)-cc(1,2))/2;
+x0err = (cc(2,3)-cc(1,3))/2;
+
+str2 = ['A=' num2str(round(fout.A,2)) '\pm' num2str(round(Aerr,2)) ...
+    ' \phi=' num2str(round(fout.phi,2)) '\pm' num2str(round(phierr,2))];
+
+% tt=linspace(200,200+1e3*3/f,1e3);
+% f=55;
+% phi=2.5;
+% x0=106.3;
+% A=2;
+% plot(tt,A*sin(2*pi*f*tt*1e-3+phi)+x0,'k-');
+plot(fout);
+
+legend(str2,'location','best');
+s3 = digdata.SourceDirectory{1};
+t=uicontrol('style','text','String',s3,'backgroundcolor','w',...
+    'fontsize',6);
+t.Position(3:4)=t.Extent(3:4);
+t.Position(1:2)=[0 0];
+xlabel('time (ms)');
+
+if dig_opts.doSave
+        ixon_saveFigure2(hF,...
+         'dig_center_stripe_fit',dig_opts);  
+    end

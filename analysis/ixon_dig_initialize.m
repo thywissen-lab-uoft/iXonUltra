@@ -24,7 +24,7 @@ bindata = ixon_digitize(bindata,dig_DigitizationThreshold);
 digdata = bin_makeDigData(bindata,bin_opts);
     
 if bin_opts.doSave 
-    filename = [bin_opts.saveDir 'digdata.mat'];
+    filename = fullfile(bin_opts.saveDir,'digdata.mat');
     disp(['Saving ' filename ' ...']);
     save(filename,'-struct','digdata');
 end

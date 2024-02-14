@@ -48,14 +48,18 @@ src = 'X:\Data';
 %     2024 01 03 13;
 %     ];
 
-runs = [2024 01 16 23;
-    2024 01 16 24;
-    2024 01 16 25;
-    2024 01 16 26;
-    2024 01 16 27;
-    2024 01 16 28;
-    2024 01 16 29;
-    2024 01 16 30;
+runs = [2024 02 13 20;
+2024 02 13 21;
+2024 02 13 22;    
+2024 02 13 23;    
+2024 02 13 24;    
+2024 02 13 25;    
+2024 02 13 26;    
+2024 02 13 27;    
+2024 02 13 28;    
+2024 02 13 29;    
+2024 02 13 30;    
+2024 02 13 31;    
     ];
 
 %% Get the direcotry list
@@ -68,5 +72,28 @@ for nn=1:length(dir_list)
     ixon_auto_dir = 1;
 end
 
+%% Get the direcotry list
+dir_list = ixon_findRunDirectory(runs);
 
+for nn=1:length(dir_list)
+    bin_auto_file = 0;
+    filename = fullfile(dir_list{nn},'figures','bindata.mat');
+    bin_imgdir = fullfile(dir_list{nn},'figures');
+    ixon_bin_analysis;
+    bin_auto_file = 1;    
+end
+
+
+
+%% Get the direcotry list
+dir_list = ixon_findRunDirectory(runs);
+
+for nn=1:length(dir_list)
+    dig_auto_file = 0;
+    dig_imgdir = fullfile(dir_list{nn},'figures');
+    filename = fullfile(dir_list{nn},'figures','digdata.mat');
+
+    ixon_dig_analysis;
+    dig_auto_file = 1;    
+end
 

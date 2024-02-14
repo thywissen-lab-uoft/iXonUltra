@@ -54,15 +54,31 @@ MYC=[];
 % goodInds = logical([N>0.5e6]);
 
  for kk=1:length(bindata)
+     try
+     Zb = bindata(kk).LatticeBin.Zbin;
+     Zb(isnan(Zb))=0;
+     Zb(Zb<500) = 0;
+     if sum(Zb,'all')<5e5
+         continue;
+     end
+     
     ss = [bindata(kk).BinStripe.Scores];
     ss(isnan(ss))=0;
     cs=[bindata(kk).BinStripe.Centers];
     xs = repmat(X(kk),[length(cs),1]);
-    XX=[XX;xs(1:6)];    
+    
+    n = length(xs);
+    n = min([6 n]);
+    
+    
+    XX=[XX;xs(1:n)];    
     [~,iii]=sort(ss,'descend');    
-    MYC = [MYC; co(1:6,:)];
-    S = [S; ss(iii(1:6))];
-    C=[C;cs(iii(1:6))];
+    MYC = [MYC; co(1:n,:)];
+    S = [S; ss(iii(1:n))];
+    C=[C;cs(iii(1:n))];
+     catch ME
+        keyboard 
+     end
  end
 
 

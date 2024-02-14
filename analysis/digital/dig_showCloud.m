@@ -129,7 +129,8 @@ end
             c.Label.String = 'average counts/site';
 
             set(hImg,'Cdata',mean(digdata.Zdig,3));
-            
+%                         set(hImg,'Cdata',imgaussfilt(mean(digdata.Zdig,3),.5));
+
             caxis(ax,'auto')
             % tSE.Visible = 'off';
             tSW.Visible = 'off';

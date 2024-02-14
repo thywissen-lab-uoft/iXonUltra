@@ -57,9 +57,9 @@ bindata = ixon_matchParamsFlags(bindata);
 bin_opts = struct;
 bin_opts.Quality = 'auto';
 bin_opts.saveDir=bin_imgdir;
-strs=strsplit(imgdir,filesep);
-bin_opts.FigLabel=[strs{end-1} filesep strs{end}];
-
+% strs=strsplit(bin_imgdir,filesep);
+% bin_opts.FigLabel=[strs{end-1} filesep strs{end}];
+bin_opts.FigLabel = bindata(1).SourceDirectory;
 %% Analysis Variable
 % This section of code chooses the variable to plot against for aggregate
 % plots.  The chosen variable MUST match a variable provided in the params
@@ -68,7 +68,7 @@ bin_opts.FigLabel=[strs{end-1} filesep strs{end}];
 
 % Choose what kind of variable to plot against (sequencer/camera)
 bin_opts.varType        = 'param';          % always select 'param' for now 
-bin_opts.autoXVar       = 0;                % Auto detect changing variable?
+bin_opts.autoXVar       = 1;                % Auto detect changing variable?
 bin_opts.autoUnit       = 1;                % Auto detect unit for variable?
 bin_opts.xVar           = 'ExecutionDate';  % Variable Name
 bin_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
@@ -85,10 +85,10 @@ bin_BinAcummulateHist_Zmax              = 12000;
 bin_BinAcummulateHist_Nbins             = 100;
 
 % Stripe fit Data
-bin_BinStripe                           = 0;
+bin_BinStripe                           = 1;
 bin_BinStripeAnimate                    = 1;
-bin_BinStripe_LGuess                    = 25;
-bin_BinStripe_ColorThreshold            = [1000 6000];
+bin_BinStripe_LGuess                    = 26.5;
+bin_BinStripe_ColorThreshold            = [1000 4500];
 
 % Digitzation
 bin_Digitize                            = 1; 
@@ -110,6 +110,7 @@ if bin_opts.autoXVar
         disp([' (' num2str(kk) ') (' num2str(bindata(kk).Params.(xVar)) ') ' ...
             bindata(kk).Name]); 
     end
+    bin_opts.xVar = xVar;
 end
 
 % Sort the data by your given parameter
@@ -163,7 +164,7 @@ if bin_BinStripe
     end
     clear out
     for n = 1:length(bindata)    
-        fprintf(['(' num2str(n) '/' num2str(numel(ixondata))...
+        fprintf(['(' num2str(n) '/' num2str(numel(bindata))...
             ') lattice stripe fit']);
         tic
         for kk = 1:length(bindata(n).LatticeBin)
@@ -186,6 +187,7 @@ if bin_BinStripe
 end  
 %% Bin Stripe Summary
 if bin_BinStripe    
+    bin_opts.nCenter = 70;
     hF_StripeSummary = bin_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
