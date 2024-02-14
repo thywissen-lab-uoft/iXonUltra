@@ -15,7 +15,7 @@ function [ixondata,qpd_out] = AnalyzeIxonQPD(ixondata,saveDir,opts)
 
 if nargin~=3
     opts.doPlot = 1;
-    opts.isMac = 0;
+    opts.isMac = 1;
     opts.doSave = 1;
     opts.isRemote = 0;
 end
@@ -136,13 +136,47 @@ if opts.doPlot
         linkaxes([ax1 ax2 ax3 ax4],'x')
         xlim([min(qpd_data(nn).t(ramp_start-buffer_t:mod_end+buffer_t)) max(qpd_data(nn).t(ramp_start-buffer_t:mod_end+buffer_t))])
 
+        % Plot modulation in um
+
+        fmsum_um=figure(401);
+        fmsum_um.Position = [600 100 800 600];
+        plotColor = turbo(length(qpdfiles));
+    
+        ax1=subplot(4,3,1);
+        plot(qpd_data(nn).t(ramp_start-buffer_t:mod_end+buffer_t),qpd_data(nn).X1(ramp_start-buffer_t:mod_end+buffer_t)./qpd_data(nn).SUM1(ramp_start-buffer_t:mod_end+buffer_t)*162.5473,'.',  'color',  plotColor(nn,:))
+        hold on;
+        xlabel('Time (ms)')
+        ylabel('ODT 1 X (um)')
+    
+        ax2=subplot(4,3,4);
+        plot(qpd_data(nn).t(ramp_start-buffer_t:mod_end+buffer_t),qpd_data(nn).Y1(ramp_start-buffer_t:mod_end+buffer_t)./qpd_data(nn).SUM1(ramp_start-buffer_t:mod_end+buffer_t),'.',  'color',  plotColor(nn,:))
+        hold on;
+        xlabel('Time (ms)')
+        ylabel('ODT 1 Y (V/V)')
+    
+        ax3=subplot(4,3,7);
+        plot(qpd_data(nn).t(ramp_start-buffer_t:mod_end+buffer_t),qpd_data(nn).X2(ramp_start-buffer_t:mod_end+buffer_t)./qpd_data(nn).SUM2(ramp_start-buffer_t:mod_end+buffer_t)*-617.4149,'.',  'color',  plotColor(nn,:))
+        hold on;
+        xlabel('Time (ms)')
+        ylabel('ODT 2 X (um)')
+    
+        ax4=subplot(4,3,10);
+        plot(qpd_data(nn).t(ramp_start-buffer_t:mod_end+buffer_t),qpd_data(nn).Y2(ramp_start-buffer_t:mod_end+buffer_t)./qpd_data(nn).SUM2(ramp_start-buffer_t:mod_end+buffer_t),'.',  'color',  plotColor(nn,:))
+        hold on;
+        xlabel('Time (ms)')
+        ylabel('ODT 2 Y (V/V)')
+    
+        linkaxes([ax1 ax2 ax3 ax4],'x')
+        xlim([min(qpd_data(nn).t(ramp_start-buffer_t:mod_end+buffer_t)) max(qpd_data(nn).t(ramp_start-buffer_t:mod_end+buffer_t))])
+
    
     end
 
     %%%%%%%%%%%%%% Summary plot for the modulation %%%%%%%%%%%%%%%
 
-    figure(201)
+    % (V/V)
 
+    figure(201)
     ax5=subplot(4,3,[2 5]);
     histogram([qpd_data.modfit_X1_A],15)
     xlabel('Norm. X1 mod. amp. (V/V)')
@@ -163,6 +197,30 @@ if opts.doPlot
     histogram(1./[qpd_data.modfit_X2_T],15)
     xlabel('Frequency (kHz)')
 
+    % um
+    figure(401)
+
+    % um Feb 13/24 conversion 162.5473 um/(V/V)
+    ax5=subplot(4,3,[2 5]);
+    histogram([qpd_data.modfit_X1_A]*162.5473,15)
+    xlabel('Norm. X1 mod. amp. (um)')
+    
+    % um Feb 13/24 conversion -617.4149 um/(V/V)
+    ax6=subplot(4,3,[3 6]);
+    histogram([qpd_data.modfit_X2_A]*617.4149,15)
+    xlabel('Norm. X2 mod. amp. (um)')
+    
+    ax7=subplot(4,3,[8 11]);
+    histogram([qpd_data.modfit_X1_B]/(2*pi),15)
+    hold on;
+    histogram([qpd_data.modfit_X2_B]/(2*pi),15)
+    xlabel('Phase/ (2$\pi$)','Interpreter','Latex','FontName','Helvetica')
+    
+    ax8=subplot(4,3,[9 12]);
+    histogram(1./[qpd_data.modfit_X1_T],15)
+    hold on;
+    histogram(1./[qpd_data.modfit_X2_T],15)
+    xlabel('Frequency (kHz)')
     
     %%%%%%%%%%%%% Summary plot for the power %%%%%%%%%%%%%
     
@@ -215,6 +273,7 @@ end
 if opts.doSave
 
     saveas(fmsum,[saveDir filesep 'qpd_modulation_summary.png']);
+    saveas(fmsum_um,[saveDir filesep 'qpd_modulation_summary_um.png']);
     saveas(fpsum,[saveDir filesep 'qpd_power_summary.png']);
 
     filename=fullfile(saveDir,'qpddata.mat');
