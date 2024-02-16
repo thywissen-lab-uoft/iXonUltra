@@ -92,7 +92,7 @@ ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
-ixon_doBoxCount             = 1;
+ixon_doBoxCount             = 0;
 ixon_doGaussFit             = 0;
 
 % Analysis to run
@@ -102,17 +102,18 @@ ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
+ixon_doAnalyzeQPD           = 1;    % Analyze QPD traces
 
 % QGM Single Plane Analysis
 ixon_doQGM                          = 1;
 doPSF                               = 1;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
-ixon_doQGM_BinStripe                = 1;
+ixon_doQGM_BinStripe                = 0;
 
-ixon_doQGM_BinStandardAnalysis      = 0;
+ixon_doQGM_BinStandardAnalysis      = 1;
 ixon_doQGM_Digitize                 = 1;
-ixon_doQGM_DigitalStandardAnalysis  = 0;
+ixon_doQGM_DigitalStandardAnalysis  = 1;
 
 
 %% Image Processing Options
@@ -387,7 +388,14 @@ if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
 %% Stripe Analysis
 if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 
+%% QPD Analysis
+if ixon_doAnalyzeQPD;[ixondata,qpd_out]=AnalyzeIxonQPD(ixondata,saveDir);end
+
 %% Quantum Gas Micrscopy
 if ixon_doQGM            
     ixon_bin_initialize; 
 end
+
+
+
+
