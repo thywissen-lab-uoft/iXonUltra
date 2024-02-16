@@ -77,6 +77,17 @@ tt=linspace(min(pd_data(nn).modfit_t),max(pd_data(nn).modfit_t),1e3);
         ylabel('Normalized X2')        
 end
 
+    if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
+        tFig=uicontrol('style','text','string',opts.FigLabel,...
+            'units','pixels','backgroundcolor',...
+            'w','horizontalalignment','left');
+        tFig.Position(4)=tFig.Extent(4);
+        tFig.Position(3)=f_trace.Position(3);
+        tFig.Position(1:2)=[5 f_trace.Position(4)-tFig.Position(4)];
+    end    
+    
+  
+
 %% Plot All Traces and histgorams
 
 f_mod = figure;
@@ -177,7 +188,17 @@ legend({'odt1','odt2'});
     ax7=subplot(4,3,[3 6]);
 
 
-
+    if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
+        tFig=uicontrol('style','text','string',opts.FigLabel,...
+            'units','pixels','backgroundcolor',...
+            'w','horizontalalignment','left');
+        tFig.Position(4)=tFig.Extent(4);
+        tFig.Position(3)=f_mod.Position(3);
+        tFig.Position(1:2)=[5 f_mod.Position(4)-tFig.Position(4)];
+    end    
+    
+  
+ 
 %%
 %     figure(201)
 
@@ -298,5 +319,14 @@ legend({'odt1','odt2'});
 
  
 
-
+    if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
+        tFig=uicontrol('style','text','string',opts.FigLabel,...
+            'units','pixels','backgroundcolor',...
+            'w','horizontalalignment','left');
+        tFig.Position(4)=tFig.Extent(4);
+        tFig.Position(3)=f_sum.Position(3);
+        tFig.Position(1:2)=[5 f_sum.Position(4)-tFig.Position(4)];
+    end    
+    
+  
 end

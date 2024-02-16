@@ -1,4 +1,4 @@
-function [ixondata,pd_summary] = AnalyzeIxonQPD(ixondata,saveDir,opts)
+function [ixondata,pd_summary] = AnalyzeIxonQPD(ixondata,saveDir,opts,FigLabel)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Matches QPD files to a list of iXon data of the form ixondata.digdata
@@ -17,12 +17,14 @@ disp('Analyzing QPD traces...')
 
 %% Initialize options
 
-if nargin~=3
+if nargin~=3 || isstruct(opts)
     opts.doPlot = 1;
     opts.isMac = 0;
     opts.doSave = 1;
     opts.isRemote = 0;
+
 end
+opts.FigLabel = FigLabel;
 
 %% Data Root
 % Find the data source file

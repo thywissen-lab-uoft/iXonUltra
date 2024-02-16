@@ -389,7 +389,7 @@ if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
 if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 
 %% QPD Analysis
-if ixon_doAnalyzeQPD;[ixondata,pd_summary]=AnalyzeIxonQPD(ixondata,saveDir);end
+if ixon_doAnalyzeQPD;[ixondata,pd_summary]=AnalyzeIxonQPD(ixondata,saveDir,[],FigLabel);end
 
 %% Quantum Gas Micrscopy
 if ixon_doQGM            
