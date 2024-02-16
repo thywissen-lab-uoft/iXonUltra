@@ -6,6 +6,8 @@ function qpd_out = loadQPD(qpd_filename)
 % start of modulation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+% Calling this loadQPD.m is a misnomer
 %% Initialize data struct and load QPD data
 
 qpd_out = struct;

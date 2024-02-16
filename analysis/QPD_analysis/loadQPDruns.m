@@ -13,6 +13,8 @@ if nargin~=2
     opts.doSave = 0;
 end
 
+% - should plotting be separated from analysis?
+
 %% Analyze the list of QPD files
 
 % Initialize data struct
@@ -22,9 +24,7 @@ for nn=1:length(qpdfiles)
 
     % Analyze single QPD file
     qpd_data(nn) = loadQPD(qpdfiles(nn));
-
     ixondata(nn).qpd_data = qpd_data(nn);
-
 end
 
 %% Assign analyzed data to output
