@@ -95,41 +95,56 @@ end
 
 %%
 Xc2vec = zeros(1,size(digdata.Zdig,3));
-for nn=1:size(digdata.Zdig,3)
-    y=smooth(sum(digdata.Zdig(:,:,nn),2),10);
-    
-    try
-    [pks,locs,w,p]=findpeaks(y,'SortStr','descend');
-    
-    pks=pks(1:3);
-    locs=locs(1:3);
-    [val,ind]=min(abs(locs-75));
-    loc = locs(ind);
-    
-    n2sub_ind = loc + [-12:1:12];
-    
-    Zsub = digdata.Zdig(n2sub_ind,:,nn);    
-    n1sub = digdata.n1;
-    n2sub = digdata.n2(n2sub_ind);
-    
-    [n1,n2] = meshgrid(n1sub,n2sub);
-    
-    Xc2= sum(Zsub.*n1,'all')/sum(Zsub,'all');  
-    catch 
-        Xc2 = NaN;
-    end
-    Xc2vec(nn) = Xc2;    
-end
-
-digdata.Xc75 =Xc2vec;
 
 
-hF=figure(7001);
+Nmed = median(sum(digdata.Zdig,[1 2]));
+% 
+% for nn=1:size(digdata.Zdig,3)
+%     y=smooth(sum(digdata.Zdig(:,:,nn),2),10);
+%     
+%     try
+%     [pks,locs,w,p]=findpeaks(y,'SortStr','descend');
+%     
+%     pks=pks(1:3);
+%     locs=locs(1:3);
+%     [val,ind]=min(abs(locs-75));
+%     loc = locs(ind);
+%     
+%     n2sub_ind = loc + [-12:1:12];
+%     
+%     Zsub = digdata.Zdig(n2sub_ind,:,nn);    
+%     n1sub = digdata.n1;
+%     n2sub = digdata.n2(n2sub_ind);
+%     
+%     [n1,n2] = meshgrid(n1sub,n2sub);
+%     
+%     Xc2= sum(Zsub.*n1,'all')/sum(Zsub,'all');  
+%     catch 
+%         Xc2 = NaN;
+%     end
+%     Xc2vec(nn) = Xc2;    
+% end
+
+inds=[sum(digdata.Zdig,[1 2])<Nmed/3];
+
+% digdata.Xc75 =Xc2vec;
+
+x=digdata.X'+150;
+% y = digdata.Xc75';
+y = digdata.Xc';
+% y = (digdata.Xc-(rx0+65)/.527)';
+% inds = isnan(y);
+
+x(inds)=[];
+y(inds)=[];
+
+
+hF=figure(7002);
 clf
 hF.Color='w';
 hF.Position=[100 100 600 300];
 co=get(gca,'colororder');
-plot(digdata.X+150,digdata.Xc75,'o','markerfacecolor',co(1,:),...
+plot(x,y,'o','markerfacecolor',co(1,:),...
     'markersize',8,'markeredgecolor',co(1,:)*.5);
 xlabel([digdata.xVar ' + 150 ms'],'interpreter','none');
 ylabel('x center (sites)');
@@ -139,23 +154,23 @@ P=[digdata.Params];
 f = unique([P.conductivity_mod_freq]);
 myfit = fittype(@(A,phi,x0,t) A*sin(2*pi*f*t*1e-3+phi) + x0 ,...
     'independent','t','coefficients',{'A','phi','x0'});
-
-Ag = max(digdata.Xc75)-min(digdata.Xc75);
+% myfit = fittype(@(A,phi,x0,v0,a0,t) A*sin(2*pi*f*t*1e-3+phi) + x0 +v0*t +0.5*a0^2*t.^2 ,...
+%     'independent','t','coefficients',{'A','phi','x0','v0','a0'});
+Ag = max(y)-min(y);
 Bg = Ag;
-x0g = median(digdata.Xc75);
+% x0g = median(digdata.Xc75);
 fitopt = fitoptions(myfit);
-fitopt.StartPoint = [4 2.5 106.3];
-fitopt.Lower = [0 -20 x0g-5];
+fitopt.StartPoint = [0.5*Ag 3.5 mean(y);];
 
-x=digdata.X'+150;
-y = digdata.Xc75';
+% fitopt.StartPoint = [0.5*Ag 3.5 mean(y) 0 0];
+% fitopt.Upper = [10 10 inf 2 .02];
+% fitopt.Lower = [0 0 -inf -2 -.02];
 
-inds = isnan(y);
+fitopt.Robust = 'bisquare';
+% fitopt.Lower = [0 -20 x0g-5];
 
-x(inds)=[];
-y(inds)=[];
 
-fout = fit(x,y,myfit,fitopt);
+fout = fit(x,y,myfit,fitopt)
 
 str = ['A: ' num2str(round(fout.A,4)) ];
 P = [digdata.Params];

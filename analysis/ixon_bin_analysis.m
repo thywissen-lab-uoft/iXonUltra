@@ -81,11 +81,11 @@ bin_BinRecenter                         = 1;
 
 % Histogram for accumalted data
 bin_BinAcummulateHist                   = 1;
-bin_BinAcummulateHist_Zmax              = 12000;
+bin_BinAcummulateHist_Zmax              = 30000;
 bin_BinAcummulateHist_Nbins             = 100;
 
 % Stripe fit Data
-bin_BinStripe                           = 1;
+bin_BinStripe                           = 0;
 bin_BinStripeAnimate                    = 1;
 bin_BinStripe_LGuess                    = 26.5;
 bin_BinStripe_ColorThreshold            = [1000 4500];
@@ -146,7 +146,7 @@ if bin_BinAcummulateHist
     
     % Center Cloud
     opts.ROI = [110 135 70 100];
-    opts.ROI = [80 135 80 100];
+    opts.ROI = [95 115 65 85];
 
     opts.filename = 'bin_BinAnimateCenter.gif';    
     hF_BinHistogramFull = bin_binnedTotalHistogram(bindata,opts);    
