@@ -84,7 +84,7 @@ end
 varType             = 'param'; % always select 'param' for now 
 ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'qgm_plane_tilt_dIx'; % Variable Name
+ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -249,7 +249,7 @@ end
 [ixondata.PixelSize] = deal(ixon_PixelSize);
 
 %% Process Images
-ixondata = ixonProcessImages(ixondata,img_opt);
+ixondata = ixon_ProcessImages(ixondata,img_opt);
 
 %% ANALYSIS : BOX COUNT
 
@@ -384,14 +384,18 @@ if ixon_doStandardAnalysis;ixon_StandardAnalysis;end
 if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis
 if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
-%% Quantum Gas Micrscopy
-if ixon_doQGM
-%     ixon_QGM
-    ixon_qgm2;
-end
+
 %% Stripe Analysis
 if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 
 %% QPD Analysis
 if ixon_doAnalyzeQPD;[ixondata,qpd_out]=AnalyzeIxonQPD(ixondata,saveDir);end
+
+%% Quantum Gas Micrscopy
+if ixon_doQGM            
+    ixon_bin_initialize; 
+end
+
+
+
 

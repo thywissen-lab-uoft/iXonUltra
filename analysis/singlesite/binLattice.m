@@ -122,8 +122,38 @@ out.a2 = opts.a2;
 out.n1 = n1;
 out.n2 = n2;
 out.Zbin = Zbin;
-out.Xn = Xn;
-out.Yn = Yn;
+
+p1 = opts.p1;
+p2 = opts.p2;
+a1 = opts.a1;
+a2 = opts.a2;
+out.site2px = @(n1,n2) (n1+p1)*a1 + (n2+p2)*a2;
+
+
+
+
+% Lattice Spacing in pixels
+lattice_spacing_px = mean([norm(a1) ...
+    norm(a2)]);
+
+%Lattice spacing in um
+lattice_spacing_um = 0.527; 
+
+out.lattice_spacing_um = lattice_spacing_um;
+out.lattice_spacing_px = lattice_spacing_px;
+out.site2um = @(n1,n2) ((n1+p1)*a1 + (n2+p2)*a2)*(lattice_spacing_um/lattice_spacing_px);
+
+
+
+
+
+
+% out.R0 = [Xn(1) Yn(1)];     % Position of first lattice site in pixels
+% out.N0 = [N(1,1) N(2,1)];   % Value of n1 n2 corresponding to the first lattice site
+
+% Dont store these for space considerations
+% out.Xn = Xn;
+% out.Yn = Yn;
 
 
 % 

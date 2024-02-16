@@ -1540,9 +1540,14 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
                 Zb = data.LatticeBin(ll).Zbin;    
                 opts_stripe.LGuess = 26.62;
                 opts_stripe.FigNum=3000+ll-1;
-                [out(ll),hF_bin_stripe] = ixon_fitStripe_dig(n1,n2,Zb,opts_stripe);
+%                 [out(ll),hF_bin_stripe] = ixon_fitStripe_dig(n1,n2,Zb,opts_stripe);
+                out = ixon_BinStripeFit(n1,n2,Zb,opts_stripe);
             end
-            data.BinStripe = out;            
+            
+            data.BinStripe = out;       
+            
+            bin_showStripeBin(data,[],opts_stripe);
+
         end  
     
     
@@ -3352,7 +3357,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
     % Process the Images
-    data = ixonProcessImages(data,opt);  
+    data = ixon_ProcessImages(data,opt);  
 
     % Update history index
     updateHistoryInd(data); 

@@ -1,4 +1,4 @@
-function data = ixon_binnedHistogram(data,Nbins)
+function [data,Zbb] = ixon_binnedHistogram(data,Nbins)
         if ~isfield(data,'LatticeBin')
            return;
         end      
@@ -7,9 +7,12 @@ function data = ixon_binnedHistogram(data,Nbins)
            Nbins = 200;
         end
 %         Nbins = histBtbl.Data(1,2);    
-        
-        Zall = data.LatticeBin(1).Zbin;
+% Zbb = {};
+for nn = 1:length(data)        
+        Zall = data(nn).LatticeBin(1).Zbin;
         Zall = Zall(:);
+%         Zbb{end+1} = Zall;
+
         Zall(Zall==0) = NaN;                     
         [N,edges] = histcounts(Zall,Nbins);        
         centers = (edges(1:end-1) + edges(2:end))/2;
@@ -17,18 +20,23 @@ function data = ixon_binnedHistogram(data,Nbins)
         LatticeHistogram.Edges = edges;
         LatticeHistogram.Centers = centers;
         LatticeHistogram.N = N;  
-        data.LatticeHistogram(1) = LatticeHistogram; 
-        for kk=2:length(data.LatticeBin)
-            Zall = data.LatticeBin(kk).Zbin;
+        data(nn).LatticeHistogram(1) = LatticeHistogram; 
+        for kk=2:length(data(nn).LatticeBin)
+            Zall = data(nn).LatticeBin(kk).Zbin;
             Zall = Zall(:);
+%             Zbb{end+1} = Zall;
+
+%             Zbb = [Zbb; Zall];
 %           Zall(Zall==0)=[];            
-            [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
+            [N,edges] = histcounts(Zall,data(nn).LatticeHistogram(1).Edges);
             centers = (edges(1:end-1) + edges(2:end))/2;
             LatticeHistogram = struct;
             LatticeHistogram.Edges = edges;
             LatticeHistogram.Centers = centers;
             LatticeHistogram.N = N;  
-            data.LatticeHistogram(kk) = LatticeHistogram;            
+            data(nn).LatticeHistogram(kk) = LatticeHistogram;            
         end  
+end
+
 end
 

@@ -48,15 +48,55 @@ src = 'X:\Data';
 %     2024 01 03 13;
 %     ];
 
-runs = [2024 01 16 23;
-    2024 01 16 24;
-    2024 01 16 25;
-    2024 01 16 26;
-    2024 01 16 27;
-    2024 01 16 28;
-    2024 01 16 29;
-    2024 01 16 30;
+% runs = [
+%  2024 02 14 4;
+%  2024 02 14 5;
+%  2024 02 14 6;
+%  2024 02 14 7;
+%  2024 02 14 8;
+%  2024 02 14 9;
+%  2024 02 14 10;
+%     ];
+% 
+% runs = [
+%   2024 02 14 13;
+%   2024 02 14 14;
+%   2024 02 14 15;
+%   2024 02 14 16;
+%   2024 02 14 17;
+%   2024 02 14 18;
+%   2024 02 14 19;
+%   2024 02 14 20;
+%     ];
+
+runs = [
+  2024 02 14 03;
+  2024 02 14 04;
+  2024 02 14 05;
+  2024 02 14 06;
+  2024 02 14 07;
+  2024 02 14 08;
+  2024 02 14 09;
+  2024 02 14 10;
+  2024 02 14 11;
+  2024 02 14 12;
+  2024 02 14 13;
+  2024 02 14 14;
+  2024 02 14 15;
+  2024 02 14 17;
+  2024 02 14 18;
+  2024 02 14 19;
+  2024 02 14 20;
+  2024 02 14 21;
+  2024 02 14 22;
+  2024 02 14 23;
+  2024 02 14 24;
+  2024 02 14 25;
+  2024 02 14 26;
     ];
+
+runs=  [2024 02 14 16];
+
 
 %% Get the direcotry list
 dir_list = ixon_findRunDirectory(runs);
@@ -68,5 +108,28 @@ for nn=1:length(dir_list)
     ixon_auto_dir = 1;
 end
 
+%% Get the direcotry list
+dir_list = ixon_findRunDirectory(runs);
 
+for nn=1:length(dir_list)
+    bin_auto_file = 0;
+    filename = fullfile(dir_list{nn},'figures','bindata.mat');
+    bin_imgdir = fullfile(dir_list{nn},'figures');
+    ixon_bin_analysis;
+    bin_auto_file = 1;    
+end
+
+
+
+%% Get the direcotry list
+dir_list = ixon_findRunDirectory(runs);
+
+for nn=1:length(dir_list)
+    dig_auto_file = 0;
+    dig_imgdir = fullfile(dir_list{nn},'figures');
+    filename = fullfile(dir_list{nn},'figures','digdata.mat');
+
+    ixon_dig_analysis;
+    dig_auto_file = 1;    
+end
 
