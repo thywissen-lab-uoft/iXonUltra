@@ -121,7 +121,7 @@ bindata = bindata(inds);
 %% Recenter
 
 if bin_BinRecenter
-   bindata = bin_recenter(bindata);
+    bindata = bin_recenter(bindata);
 end
 
 
