@@ -67,10 +67,12 @@ for jj=1:length([ixondata.Params])
 end
 
 %% Analyze the QPD traces
-% CF : Why does ixondata need to be passed in order to load a QPD file.
-% Means I can't run QPD analysis without ixondata
 
-[ixondata,qpd_out] = loadQPDruns(ixondata,qpdfiles,opts);
+qpd_out = photodiode_collect_analysis(qpdfiles,opts);
+
+for nn=1:length(ixondata)
+ixondata(nn).qpd_data = qpd_out(nn).qpd_data;
+end
 
 
 %% Plotting

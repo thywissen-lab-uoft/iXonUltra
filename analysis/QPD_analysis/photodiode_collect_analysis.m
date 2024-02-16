@@ -1,4 +1,4 @@
-function [ixondata,qpd_out] = loadQPDruns(ixondata,qpdfiles,opts)
+function qpd_out = photodiode_collect_analysis(qpdfiles,opts)
 
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Analyzes list of QPD filenames 
@@ -23,8 +23,8 @@ end
 for nn=1:length(qpdfiles)
 
     % Analyze single QPD file
-    qpd_data(nn) = loadQPD(qpdfiles(nn));
-    ixondata(nn).qpd_data = qpd_data(nn);
+    qpd_data(nn) = photodiode_analyze(qpdfiles(nn));
+    % ixondata(nn).qpd_data = qpd_data(nn);
 end
 
 %% Assign analyzed data to output

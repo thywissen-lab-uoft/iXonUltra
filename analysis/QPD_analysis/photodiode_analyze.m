@@ -1,4 +1,4 @@
-function qpd_out = loadQPD(qpd_filename)
+function qpd_out = photodiode_analyze(qpd_filename)
 
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Analyzes a single QPD file
