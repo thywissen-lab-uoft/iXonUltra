@@ -68,15 +68,29 @@ end
 
 %% Analyze the QPD traces
 
-qpd_out = photodiode_collect_analysis(qpdfiles,opts);
-
-for nn=1:length(ixondata)
-ixondata(nn).qpd_data = qpd_out(nn).qpd_data;
+clear qpd_data
+for nn=1:length(qpdfiles)
+    qpd_data = photodiode_analyze(qpdfiles(nn));    % Analyze a single trace
+    ixondata(nn).qpd_data = qpd_data(nn);           % Assign output of single trace to ixondata
 end
 
+%% Perform the analysis on the qpd data
+
+[hF,qpd_summary_data] = photodiode_collect_analysis(qpd_data,opts);
+
+
+% if opts.doSave
+%     saveas(fmsum,[saveDir filesep 'qpd_modulation_summary.png']);
+%     saveas(fmsum_um,[saveDir filesep 'qpd_modulation_summary_um.png']);
+%     saveas(fpsum,[saveDir filesep 'qpd_power_summary.png']);
+% 
+%     filename=fullfile(saveDir,'qpddata.mat');
+%     save(filename,'qpd_out');    
+% end
 
 %% Plotting
-
+%{
+% why should plotting be in this function?
 % Plot the individual fits during modulation and summary plot of modulation traces
 if opts.doPlot
 
@@ -307,6 +321,6 @@ if opts.doSave
 
     
 end
-
+%}
 
 end

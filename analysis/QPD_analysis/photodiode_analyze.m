@@ -11,29 +11,29 @@ function qpd_out = photodiode_analyze(qpd_filename)
 %% Initialize data struct and load QPD data
 
 qpd_out = struct;
-qpd_data = load(qpd_filename);
+qpd_single = load(qpd_filename);
 
 %% Shift the time such that modulation start at t=0ms
 
 % Index of modulation start and convert to ms
-mod_start = max(find(diff(qpd_data.data(:,10))==1));
+mod_start = max(find(diff(qpd_single.data(:,10))==1));
 
 % Shift time by modulation start time
-t = (qpd_data.t - qpd_data.t(mod_start))*1e3;
+t = (qpd_single.t - qpd_single.t(mod_start))*1e3;
 
 %% Save all of the traces with the correct shifted time
 
 qpd_out.t       = t;
-qpd_out.X1      = qpd_data.data(:,1);
-qpd_out.Y1      = qpd_data.data(:,2);
-qpd_out.SUM1    = qpd_data.data(:,3);
-qpd_out.X2      = qpd_data.data(:,4);
-qpd_out.Y2      = qpd_data.data(:,5);
-qpd_out.SUM2    = qpd_data.data(:,6);
-qpd_out.XLATT   = qpd_data.data(:,7);
-qpd_out.YLATT   = qpd_data.data(:,8);
-qpd_out.ZLATT   = qpd_data.data(:,9);
-qpd_out.TRIG    = qpd_data.data(:,10);
+qpd_out.X1      = qpd_single.data(:,1);
+qpd_out.Y1      = qpd_single.data(:,2);
+qpd_out.SUM1    = qpd_single.data(:,3);
+qpd_out.X2      = qpd_single.data(:,4);
+qpd_out.Y2      = qpd_single.data(:,5);
+qpd_out.SUM2    = qpd_single.data(:,6);
+qpd_out.XLATT   = qpd_single.data(:,7);
+qpd_out.YLATT   = qpd_single.data(:,8);
+qpd_out.ZLATT   = qpd_single.data(:,9);
+qpd_out.TRIG    = qpd_single.data(:,10);
 
 %% Average the power over the the 200ms before the ramp --> first 50ms of mod.
 
@@ -48,20 +48,20 @@ qpd_out.t_ave = t(start_ave:end_ave);
 
 % Average the powers over the averaging window
 
-qpd_out.ODT1_ave = mean(qpd_data.data(start_ave:end_ave,3));
-qpd_out.ODT1_std = std(qpd_data.data(start_ave:end_ave,3));
+qpd_out.ODT1_ave = mean(qpd_single.data(start_ave:end_ave,3));
+qpd_out.ODT1_std = std(qpd_single.data(start_ave:end_ave,3));
 
-qpd_out.ODT2_ave = mean(qpd_data.data(start_ave:end_ave,6));
-qpd_out.ODT2_std = std(qpd_data.data(start_ave:end_ave,6));
+qpd_out.ODT2_ave = mean(qpd_single.data(start_ave:end_ave,6));
+qpd_out.ODT2_std = std(qpd_single.data(start_ave:end_ave,6));
 
-qpd_out.XLatt_ave = mean(qpd_data.data(start_ave:end_ave,7));
-qpd_out.XLatt_std = std(qpd_data.data(start_ave:end_ave,7));
+qpd_out.XLatt_ave = mean(qpd_single.data(start_ave:end_ave,7));
+qpd_out.XLatt_std = std(qpd_single.data(start_ave:end_ave,7));
 
-qpd_out.YLatt_ave = mean(qpd_data.data(start_ave:end_ave,8));
-qpd_out.YLatt_std = std(qpd_data.data(start_ave:end_ave,8));
+qpd_out.YLatt_ave = mean(qpd_single.data(start_ave:end_ave,8));
+qpd_out.YLatt_std = std(qpd_single.data(start_ave:end_ave,8));
 
-qpd_out.ZLatt_ave = mean(qpd_data.data(start_ave:end_ave,9));
-qpd_out.ZLatt_std = std(qpd_data.data(start_ave:end_ave,9));
+qpd_out.ZLatt_ave = mean(qpd_single.data(start_ave:end_ave,9));
+qpd_out.ZLatt_std = std(qpd_single.data(start_ave:end_ave,9));
 
 %% Fit the first 50 ms of modulation
 
@@ -70,8 +70,8 @@ mod50 = find(round(t,1)==50);
 t_fitmod = t(mod_start:mod50);
 
 % Normalize the data by the sum
-X1_fitmod = qpd_data.data(mod_start:mod50,1)./qpd_data.data(mod_start:mod50,3);
-X2_fitmod = qpd_data.data(mod_start:mod50,4)./qpd_data.data(mod_start:mod50,6);
+X1_fitmod = qpd_single.data(mod_start:mod50,1)./qpd_single.data(mod_start:mod50,3);
+X2_fitmod = qpd_single.data(mod_start:mod50,4)./qpd_single.data(mod_start:mod50,6);
 
 % Basic sin func to fit
 myfunc = @(A,B,C,T,t) A*sin(2*pi*t/T + B) + C;    
