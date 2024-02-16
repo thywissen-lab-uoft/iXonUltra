@@ -87,13 +87,13 @@ ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'qgm_plane_tilt_dIx'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
-ixon_doSave         = 0;    % Save Analysis?
+ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
-ixon_doBoxCount             = 1;
-ixon_doGaussFit             = 1;
+ixon_doBoxCount             = 0;
+ixon_doGaussFit             = 0;
 
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
@@ -105,15 +105,15 @@ ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in 
 ixon_doAnalyzeQPD           = 1;    % Analyze QPD traces
 
 % QGM Single Plane Analysis
-ixon_doQGM                          = 0;
-doPSF                               = 0;
-ixon_doQGM_FindLattice              = 0;
-ixon_doQGM_Bin                      = 0;
+ixon_doQGM                          = 1;
+doPSF                               = 1;
+ixon_doQGM_FindLattice              = 1;
+ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
 
-ixon_doQGM_BinStandardAnalysis      = 0;
-ixon_doQGM_Digitize                 = 0;
-ixon_doQGM_DigitalStandardAnalysis  = 0;
+ixon_doQGM_BinStandardAnalysis      = 1;
+ixon_doQGM_Digitize                 = 1;
+ixon_doQGM_DigitalStandardAnalysis  = 1;
 
 
 %% Image Processing Options
@@ -394,6 +394,4 @@ if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 
 %% QPD Analysis
 if ixon_doAnalyzeQPD;[ixondata,qpd_out]=AnalyzeIxonQPD(ixondata,saveDir);end
-
-
 

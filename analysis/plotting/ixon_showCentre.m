@@ -1,4 +1,4 @@
-function hF = ixon_showCentre(data,xVar,plt_opts,fit_opts)
+function hF = ixon_showCentre(datain,xVar,plt_opts,fit_opts)
 
 if nargin <4 
     fit_opts = struct;
@@ -19,17 +19,17 @@ end
 doFit = 1;
 
 %% Get Data
-Xc = data.Xc;
-Yc = data.Yc;
+Xc = datain.Xc;
+Yc = datain.Yc;
 
-params = [data.Params];
+params = [datain.Params];
 xvals = [params.(xVar)];
-PixelSize = data.PixelSize;
+PixelSize = datain.PixelSize;
 
-px2um = data.PixelSize/data.Magnification;
+px2um = datain.PixelSize/datain.Magnification;
 %% Make Figure
 
-hF=figure('Name',[pad(['iXon ' data.FitType ' centre'],20) plt_opts.FigLabel],...
+hF=figure('Name',[pad(['iXon ' datain.FitType ' centre'],20) plt_opts.FigLabel],...
     'units','pixels','color','w','numbertitle','off');
 hF.Position(1)=510;
 hF.Position(2)=380;
@@ -44,7 +44,7 @@ t.Position(4)=t.Extent(4);
 t.Position(3)=hF.Position(3);
 t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
 
-uicontrol('style','text','string',['iXon ' data.FitType],'units','pixels','backgroundcolor',...
+uicontrol('style','text','string',['iXon ' datain.FitType],'units','pixels','backgroundcolor',...
     'w','horizontalalignment','left','fontsize',10,'fontweight','bold',...
     'position',[2 2 80 20]);
 
@@ -458,7 +458,7 @@ if isfield(fit_opts,'Center_Linear') && fit_opts.Center_Linear && length(xvals)>
     data{3,1}='intercept (px)';
     data{4,1}='intercept (um) ';
 
-    pxsize = 16/(80*2);
+    pxsize = 16/(80);
     
     data{1,2}=fit1(1);
     data{2,2}=fit1(1)*pxsize*1e6;

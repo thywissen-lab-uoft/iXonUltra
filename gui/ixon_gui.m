@@ -1525,7 +1525,7 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
 
         data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
         data = ixon_SharpnessBinned(data);  
-        data = ixon_binnedHistogramFit(data);
+%         data = ixon_binnedHistogramFit(data);
         
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    

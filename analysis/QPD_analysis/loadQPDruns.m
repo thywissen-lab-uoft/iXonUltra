@@ -13,18 +13,6 @@ if nargin~=2
     opts.doSave = 0;
 end
 
-%% Close plots
-
-if ishandle(101)
-    close(101)
-end
-if ishandle(201)
-    close(201)
-end
-if ishandle(301)
-    close(301)
-end
-
 %% Analyze the list of QPD files
 
 % Initialize data struct
