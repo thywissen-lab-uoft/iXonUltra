@@ -1,16 +1,20 @@
-function qpd_out = photodiode_analyze(qpd_filename)
+function qpd_out = photodiode_analyze(qpd_filenames)
 
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Analyzes a single QPD file
 % Outputs average powers, fit parameters, raw channels with time shifted to
 % start of modulation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear qpd_out;
 
+disp(['Analysing ' num2str(length(qpd_filenames)) ' qpd files...']);
 
-for nn=1:length(qpd_filename)
+for nn=1:length(qpd_filenames)
+    fprintf(['(' num2str(nn) '/' num2str(length(qpd_filenames)) ') ... ']);
+
     %% Initialize data struct and load QPD data
 
-    qpd_single = load(qpd_filename);
+    qpd_single = load(qpd_filenames{nn});
 
     %% Shift the time such that modulation start at t=0ms
 
@@ -110,6 +114,9 @@ for nn=1:length(qpd_filename)
     qpd_out(nn).modfit_X2_C   = fout_X2.C;
     qpd_out(nn).modfit_X1_T   = fout_X1.T;
     qpd_out(nn).modfit_X2_T   = fout_X2.T;
+%%
+
+disp('done');
 end
 
 end

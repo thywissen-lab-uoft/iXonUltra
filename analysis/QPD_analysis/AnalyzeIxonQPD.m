@@ -1,4 +1,4 @@
-function [ixondata,qpd_out] = AnalyzeIxonQPD(ixondata,saveDir,opts)
+function [ixondata,pd_summary] = AnalyzeIxonQPD(ixondata,saveDir,opts)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Matches QPD files to a list of iXon data of the form ixondata.digdata
@@ -54,26 +54,25 @@ end
 %% Analyze the QPD traces
 
 clear qpd_data
-
 qpd_data = photodiode_analyze(qpdfiles);    % Analyze a single trace
 
+%% Assign single QPD analysis trace to ixondata
 for nn=1:length(qpdfiles)
     ixondata(nn).qpd_data = qpd_data(nn);           % Assign output of single trace to ixondata
 end
 
-%% Perform the analysis on the qpd data
+%% Perform the analysis on the total qpd data
 
-[hF,qpd_summary_data] = photodiode_collect_analysis(qpd_data,opts);
+[pd_summary,f_trace,f_mod,f_sum] = photodiode_collect_analysis(qpd_data,opts);
 
 
-% if opts.doSave
-%     saveas(fmsum,[saveDir filesep 'qpd_modulation_summary.png']);
-%     saveas(fmsum_um,[saveDir filesep 'qpd_modulation_summary_um.png']);
-%     saveas(fpsum,[saveDir filesep 'qpd_power_summary.png']);
-% 
-%     filename=fullfile(saveDir,'qpddata.mat');
-%     save(filename,'qpd_out');    
-% end
+if opts.doSave
+    saveas(f_trace,[saveDir filesep 'qpd_traces.png']);
+    saveas(f_mod,[saveDir filesep 'qpd_modulation.png']);
+    saveas(f_sum,[saveDir filesep 'qpd_power.png']);
+    filename=fullfile(saveDir,'pd_summary.mat');
+    save(filename,'-struct','pd_summary');    
+end
 
 
 
