@@ -7,6 +7,25 @@ n1 = 1:50;
 n2 = 1:50;
 Zb = zeros(50,50);
 
+if nargin <3
+   opts=struct;
+end
+
+if nargin<2
+    xVar = 'ExecutionDate';
+end
+
+if ~isfield(opts,'ColorThreshold')
+    opts.ColorThreshold = [1000 5000];
+end
+
+if ~isfield(opts,'FigLabel')
+    opts.FigLabel = [];
+end
+
+if ~isfield(opts,'doSave')
+   opts.doSave = 0; 
+end
 %% Initialize Graphics
     hF=figure;
     co=get(gca,'colororder');
@@ -103,12 +122,14 @@ Zb = zeros(50,50);
     xlim([0 1])
     
     
-    t=uicontrol('style','text','string',opts.FigLabel,'units','pixels','backgroundcolor',...
-        'w','horizontalalignment','left');
-    t.Position(4)=t.Extent(4);
-    t.Position(3)=hF.Position(3);
-    t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
-
+    if ~isempty(opts.FigLabel)
+    
+        t=uicontrol('style','text','string',opts.FigLabel,'units','pixels','backgroundcolor',...
+            'w','horizontalalignment','left');
+        t.Position(4)=t.Extent(4);
+        t.Position(3)=hF.Position(3);
+        t.Position(1:2)=[5 hF.Position(4)-t.Position(4)];
+    end
     %% Main Loop
 
     for nn = 1:length(bindata)
