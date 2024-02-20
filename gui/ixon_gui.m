@@ -1284,7 +1284,7 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 %% Binning Panel
 hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
-hpBin.Position=[0 hpKspace.Position(2)-180 160 200];
+hpBin.Position=[0 hpKspace.Position(2)-180 160 220];
 
 
 ttstr='auto do bin analysis';
@@ -1419,15 +1419,6 @@ uicontrol(hpBin,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         delete(p1);delete(p2);                   % Delete markers
     end
 
-
-
-
-
-
-
-
-
-
 % Button group for lattice basis
 bgBasis = uibuttongroup(hpBin,'units','pixels','backgroundcolor','w',...
     'title','lattice basis (px)','fontsize',7);  
@@ -1457,9 +1448,16 @@ hc_anlB_Histogram=uicontrol(hpBin,'style','checkbox','string','histogram','fonts
     'ToolTipString',ttstr,'enable','off','Value',1);
 
 ttstr='bin stripe focus';
-hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe and focus','fontsize',7,...
+hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe; Threshold :','fontsize',7,...
     'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
+
+stripe_threshold_tbl=uitable('parent',hpBin,'units','pixels','RowName',{},'ColumnName',{},...
+    'Data',[3000 7000],'ColumnWidth',{30,30},'ColumnEditable',[true true],...
+    'ColumnFormat',{'numeric'});
+stripe_threshold_tbl.Position(3:4)=stripe_threshold_tbl.Extent(3:4);
+stripe_threshold_tbl.Position(1:2)=[90 hc_anlB_stripe.Position(2)];
+
 
 % Refit button
 hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','analyze',...
@@ -1532,29 +1530,24 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
         
         if hc_anlB_stripe.Value
             opts_stripe = struct;
-%             opts.Theta = [10 190];
-            
+            opts_stripe.FigureNumber=3000;
+            opts_stripe.Threshold = stripe_threshold_tbl.Data;
             for ll = 1:length(data.LatticeBin)
                 n1 = data.LatticeBin(ll).n1;
                 n2 = data.LatticeBin(ll).n2;
                 Zb = data.LatticeBin(ll).Zbin;    
                 opts_stripe.LGuess = 26.62;
-                opts_stripe.FigNum=3000+ll-1;
-%                 [out(ll),hF_bin_stripe] = ixon_fitStripe_dig(n1,n2,Zb,opts_stripe);
-                out = ixon_BinStripeFit(n1,n2,Zb,opts_stripe);
-            end
-            
-            data.BinStripe = out;       
-            
+                out = bin_StripeFit(n1,n2,Zb,opts_stripe);                
+            end            
+            data.BinStripe = out;     
             bin_showStripeBin(data,[],opts_stripe);
-
         end  
     
     
     end
 %% Digitization Panel
 hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
-hpDig.Position=[0 hpBin.Position(2)-80 160 80];
+hpDig.Position=[0 hpBin.Position(2)-80 160 100];
 
 ttstr='auto do digital analysis';
 hc_anlD_auto=uicontrol(hpDig,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...

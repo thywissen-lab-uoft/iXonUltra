@@ -1,5 +1,5 @@
-function BinStripe = ixon_BinStripeFit(n1,n2,Zb,opts)
-%ixon_BinStripeFit Fit a binned fluorescence image to a stripe pattern.
+function BinStripe = bin_StripeFit(n1,n2,Zb,opts)
+%bin_StripeFit Fit a binned fluorescence image to a stripe pattern.
 %   When taking fluoresence images of a 2D slice of the 3D cloud,
 %   application of a transverse magnetic field induces a stripe pattern to
 %  form which is a sample of each plane.  This code fits this distribution
@@ -13,7 +13,7 @@ function BinStripe = ixon_BinStripeFit(n1,n2,Zb,opts)
 %           - SumIndex : which index are the stripes (NOT WORKING)
 %           - LGuess :  wavelength guess
 %           - FigNum :  figure number to assign output 
-%           - ColorThreshold
+%           - Threshold
 if nargin~=4
     opts = struct;
 end
@@ -34,7 +34,7 @@ if ~isfield(opts,'LGuess')
 end
 
 % Thresholds to throw data away and for focusing score
-if ~isfield(opts,'ColorThreshold')
+if ~isfield(opts,'Threshold')
     opts.ColorThreshold = [1000 3000];
 end
 
@@ -58,7 +58,7 @@ fit_opts_s.MaxFunEvals = 1e3;
 % fit_opts_s.Robust='bisquare';
 %% Data Processing
 Zb(isnan(Zb))=0;Zb(isinf(Zb))=0;        % Remove non number sites
-Zb(Zb<opts.ColorThreshold(1)) = 0;           % Threshold low sites
+Zb(Zb<opts.Threshold(1)) = 0;           % Threshold low sites
 
 Zs1 = sum(Zb,1);
 Zs1 = Zs1(:);
@@ -145,8 +145,8 @@ D = DD(ind);
 
 % Initial Guess and bounds
 fit_opts_s.StartPoint = [As ns0 ss B L D .5 phi];
-fit_opts_s.Upper = [As*1.1 ns0+10 (ss*1.5+10) 1 L+2 0.9 3 phi+pi];
-fit_opts_s.Lower = [As*.8 ns0-10 0 0.25 L-2 0.1 0.1 phi-pi];
+fit_opts_s.Upper = [As*2 ns0+10 (ss*1.5+10) 1 L+2 0.9 5 phi+pi];
+fit_opts_s.Lower = [As*.5 ns0-10 0 0.25 L-2 0.1 0.1 phi-pi];
 
 % Perform the fit 
 try
@@ -180,7 +180,7 @@ seps = round(seps);
 seps(seps<min(ns))=[];
 seps(seps>max(ns))=[];
 
-[scores,centers] = ixon_stripe_dig_contrast(ns,Zb,seps,opts.ColorThreshold);
+[scores,centers] = bin_StripeScore(ns,Zb,seps,opts.Threshold);
 [~,ind] = max(scores);
 focus_center = centers(ind);
 
@@ -191,18 +191,16 @@ BinStripe.FitTransverse       = fout_t;
 BinStripe.FitStripe           = fout_s;
 BinStripe.RSquareStripe       = gof_s.rsquare;
 BinStripe.RSquareTransverse   = gof_t.rsquare;
-BinStripe.Centers             = centers;
-BinStripe.Scores              = scores;
 BinStripe.Lambda              = fout_s.L;
 BinStripe.Phase               = fout_s.phi;
 BinStripe.Duty                = fout_s.duty;
 BinStripe.ModDepth            = fout_s.B;
+BinStripe.Separations         = seps;
+BinStripe.Centers             = centers;
+BinStripe.Scores              = scores;
 BinStripe.FocusCenter         = focus_center;
 BinStripe.Counts              = sum(Zb,'all');
-BinStripe.Separations         = seps;
-% if focus_center > 110
-%     keyboard
-% end
+
 %% Plot the Results
 %{
 hF1=figure(opts.FigNum);

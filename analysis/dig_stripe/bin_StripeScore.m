@@ -1,4 +1,4 @@
-function [scores,centers]=ixon_stripe_dig_contrast(n1,Zb,seps,threshold)
+function [scores,centers]=bin_StripeScore(n1,Zb,seps,threshold)
 Zb(Zb<threshold(1))=0;
 
 s = sum(Zb,'all');

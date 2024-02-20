@@ -78,7 +78,8 @@ dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
-%%
+dig_doRadialAnalysis                    = 1;
+%% Show CLoud
 
 if dig_doShowCloud
     opts = dig_opts;
@@ -93,7 +94,7 @@ if dig_doShowCloud
     end
 end
 
-%% 
+%% Standard Analysis
 
 if dig_standardAnalysis
     hF_digStandard = dig_showStandardAnalysis(digdata,opts);
@@ -103,7 +104,25 @@ if dig_standardAnalysis
     end
 end
 
-%% 
+%% Radial Analysis
+
+if dig_doRadialAnalysis
+    opts = dig_opts;   
+    opts.MoveCenter = 0;
+    [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF_digRadial_2,...
+         'dig_radial_center_mean',dig_opts);  
+    end
+
+    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+    filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
+    disp(['Saving ' filename ' ...']);
+    save(filename, '-struct','dig_radial_data');
+
+end
+
+%% Conductivity Analysis
 
 if dig_ac_conductivity_fit
 opts = dig_opts;
