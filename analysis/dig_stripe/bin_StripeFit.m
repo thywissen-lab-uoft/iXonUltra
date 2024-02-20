@@ -1,5 +1,5 @@
-function BinStripe = ixon_BinStripeFit(n1,n2,Zb,opts)
-%ixon_BinStripeFit Fit a binned fluorescence image to a stripe pattern.
+function BinStripe = bin_StripeFit(n1,n2,Zb,opts)
+%bin_StripeFit Fit a binned fluorescence image to a stripe pattern.
 %   When taking fluoresence images of a 2D slice of the 3D cloud,
 %   application of a transverse magnetic field induces a stripe pattern to
 %  form which is a sample of each plane.  This code fits this distribution
@@ -180,7 +180,7 @@ seps = round(seps);
 seps(seps<min(ns))=[];
 seps(seps>max(ns))=[];
 
-[scores,centers] = ixon_stripe_dig_contrast(ns,Zb,seps,opts.ColorThreshold);
+[scores,centers] = bin_StripeScore(ns,Zb,seps,opts.ColorThreshold);
 [~,ind] = max(scores);
 focus_center = centers(ind);
 
