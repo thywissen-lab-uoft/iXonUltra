@@ -78,6 +78,7 @@ dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
+dig_doRadialAnalysis                    = 1;
 %%
 
 if dig_doShowCloud
@@ -101,6 +102,21 @@ if dig_standardAnalysis
         ixon_saveFigure2(hF_digStandard,...
          'dig_standard',dig_opts);  
     end
+end
+
+%% 
+
+if dig_doRadialAnalysis
+    opts = dig_opts;
+    
+
+    opts.MoveCenter = 0;
+    hF_digRadial_2 = dig_radialAnalysis(digdata,opts);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF_digRadial_2,...
+         'dig_radial_center_mean',dig_opts);  
+    end
+
 end
 
 %% 

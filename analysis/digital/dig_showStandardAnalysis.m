@@ -44,6 +44,9 @@ plot(digdata.X,digdata.Xc_um,'o','markerfacecolor',co(1,:),...
 'linewidth',1,'markeredgecolor',co(1,:)*.5);
 ylabel('x position (\mum)');
 xlabel(digdata.xVar,'interpreter','none');
+if isequal(digdata.xVar,'ExecutionDate')
+    datetick x
+end
 
 
 subplot(234)
@@ -51,23 +54,36 @@ plot(digdata.X,digdata.Xs_um,'o','markerfacecolor',co(1,:),...
 'linewidth',1,'markeredgecolor',co(1,:)*.5);
 ylabel('x sigma (\mum)');
 xlabel(digdata.xVar,'interpreter','none');
+if isequal(digdata.xVar,'ExecutionDate')
+    datetick x
+end
 
 subplot(232)
 plot(digdata.X,digdata.Yc_um,'o','markerfacecolor',co(2,:),...
 'linewidth',1,'markeredgecolor',co(2,:)*.5);
 ylabel('y position (\mum)');
 xlabel(digdata.xVar,'interpreter','none');
+if isequal(digdata.xVar,'ExecutionDate')
+    datetick x
+end
 
 subplot(235)
 plot(digdata.X,digdata.Ys_um,'o','markerfacecolor',co(2,:),...
 'linewidth',1,'markeredgecolor',co(2,:)*.5);
 ylabel('y sigma (\mum)');
 xlabel(digdata.xVar,'interpreter','none');
+if isequal(digdata.xVar,'ExecutionDate')
+    datetick x
+end
 
 subplot(233)
-plot(digdata.X,digdata.Natoms,'ko','markerfacecolor',[.5 .5 .5],...
+plot([digdata.X],[digdata.Natoms],'ko','markerfacecolor',[.5 .5 .5],...
 'linewidth',1);
-  xlabel(digdata.xVar,'interpreter','none');
+xlabel(digdata.xVar,'interpreter','none');
+ylabel('Natoms');
+if isequal(digdata.xVar,'ExecutionDate')
+    datetick x
+end
 str = ['$N_{\mathrm{thresh}} = ' num2str(unique([digdata.Threshold])) '$'];
 text(2,2,str,'units','pixels','fontsize',10,'verticalalignment','bottom',...
 'horizontalalignment','left','interpreter','latex');
