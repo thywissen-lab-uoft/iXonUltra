@@ -23,11 +23,17 @@ if ~isfield(opts,'FigLabel')
     opts.FigLabel = [];
 end
 
+if ~isfield(opts,'FigureNumber')
+    opts.FigureNumber = 30001;
+end
+
 if ~isfield(opts,'doSave')
    opts.doSave = 0; 
 end
+
+
 %% Initialize Graphics
-    hF=figure;
+    hF=figure(opts.FigureNumber);
     co=get(gca,'colororder');
     myc = [255,140,0]/255;
     hF.Color='w';
