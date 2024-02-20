@@ -58,7 +58,7 @@ fit_opts_s.MaxFunEvals = 1e3;
 % fit_opts_s.Robust='bisquare';
 %% Data Processing
 Zb(isnan(Zb))=0;Zb(isinf(Zb))=0;        % Remove non number sites
-Zb(Zb<opts.ColorThreshold(1)) = 0;           % Threshold low sites
+Zb(Zb<opts.Threshold(1)) = 0;           % Threshold low sites
 
 Zs1 = sum(Zb,1);
 Zs1 = Zs1(:);
@@ -145,8 +145,8 @@ D = DD(ind);
 
 % Initial Guess and bounds
 fit_opts_s.StartPoint = [As ns0 ss B L D .5 phi];
-fit_opts_s.Upper = [As*1.1 ns0+10 (ss*1.5+10) 1 L+2 0.9 3 phi+pi];
-fit_opts_s.Lower = [As*.8 ns0-10 0 0.25 L-2 0.1 0.1 phi-pi];
+fit_opts_s.Upper = [As*2 ns0+10 (ss*1.5+10) 1 L+2 0.9 5 phi+pi];
+fit_opts_s.Lower = [As*.5 ns0-10 0 0.25 L-2 0.1 0.1 phi-pi];
 
 % Perform the fit 
 try

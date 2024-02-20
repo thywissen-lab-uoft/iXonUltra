@@ -15,7 +15,7 @@ if nargin<2
     xVar = 'ExecutionDate';
 end
 
-if ~isfield(opts,'ColorThreshold')
+if ~isfield(opts,'Threshold')
     opts.ColorThreshold = [1000 5000];
 end
 
@@ -56,7 +56,7 @@ end
     set(ax1,'position',p,'ydir','normal','fontsize',10,...
         'XAxisLocation','bottom','YColor',co(1,:),...
         'XColor',co(2,:),'fontname','times','yaxislocation','right')
-    caxis(opts.ColorThreshold)
+    caxis(opts.Threshold)
     hold on
     
     % Separation of Stripes
@@ -143,7 +143,7 @@ end
         n2 = [bindata(nn).LatticeBin.n2];
         Zb = [bindata(nn).LatticeBin.Zbin];
         Zb2 = Zb;
-        Zb2(Zb<opts.ColorThreshold(1)) = 0;
+        Zb2(Zb<opts.Threshold(1)) = 0;
         Zb2(isnan(Zb)) = 0;
         
         BS = [bindata(nn).BinStripe];
