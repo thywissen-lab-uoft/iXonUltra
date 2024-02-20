@@ -1532,7 +1532,6 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
         
         if hc_anlB_stripe.Value
             opts_stripe = struct;
-%             opts.Theta = [10 190];
             opts_stripe.FigureNumber=3000;
             opts_stripe.Threshold = [1000 3000];
             for ll = 1:length(data.LatticeBin)
@@ -1540,8 +1539,6 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
                 n2 = data.LatticeBin(ll).n2;
                 Zb = data.LatticeBin(ll).Zbin;    
                 opts_stripe.LGuess = 26.62;
-%                 [out(ll),hF_bin_stripe] = ixon_fitStripe_dig(n1,n2,Zb,opts_stripe);
-                % out = ixon_BinStripeFit(n1,n2,Zb,opts_stripe);
                 out = bin_StripeFit(n1,n2,Zb,opts_stripe);                
             end            
             data.BinStripe = out;     
