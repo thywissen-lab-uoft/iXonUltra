@@ -109,11 +109,17 @@ end
 if dig_doRadialAnalysis
     opts = dig_opts;   
     opts.MoveCenter = 0;
-    hF_digRadial_2 = dig_radialAnalysis(digdata,opts);
+    [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);
     if dig_opts.doSave
         ixon_saveFigure2(hF_digRadial_2,...
          'dig_radial_center_mean',dig_opts);  
     end
+
+    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+    filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
+    disp(['Saving ' filename ' ...']);
+    save(filename, '-struct','dig_radial_data');
+
 end
 
 %% Conductivity Analysis

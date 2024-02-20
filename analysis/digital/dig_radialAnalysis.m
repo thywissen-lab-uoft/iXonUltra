@@ -59,6 +59,16 @@ end
     ZsubDev = std(Zsub,0,3);
     [TicsDev,AverageDev,devDev,nDev]=radial_profile(ZsubDev,1);
 
+out = struct;
+out.CroppedImages = Zsub;
+out.SiteVector1 = r(1):r(2);
+out.SiteVector2 = r(3):r(4);
+out.RadialCenter = [Xcbar Ycbar];
+out.RadialVector = Tics;
+out.AverageOccupation = Average;
+out.AverageOccupationUncertainty = dev./sqrt(n);
+out.DeviationOccupation = AverageDev;
+out.DeviationOccupationUncertainty = devDev./sqrt(nDev);
 
     hF = figure;
     hF.Color='w';
