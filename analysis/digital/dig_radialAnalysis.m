@@ -65,6 +65,15 @@ end
     hF.Position = [300 100 700 500];
     clf
 
+    if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
+        tFig=uicontrol('style','text','string',opts.FigLabel,...
+            'units','pixels','backgroundcolor',...
+            'w','horizontalalignment','left');
+        tFig.Position(4)=tFig.Extent(4);
+        tFig.Position(3)=hF.Position(3);
+        tFig.Position(1:2)=[5 hF.Position(4)-tFig.Position(4)];
+    end    
+
     subplot(221);
     errorbar(Tics(2:end),Average(2:end),dev(2:end)./sqrt(n(2:end)),'ko','markerfacecolor',[.5 .5 .5],...
         'markersize',10,'linewidth',1);
