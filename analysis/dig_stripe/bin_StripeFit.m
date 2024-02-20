@@ -191,18 +191,16 @@ BinStripe.FitTransverse       = fout_t;
 BinStripe.FitStripe           = fout_s;
 BinStripe.RSquareStripe       = gof_s.rsquare;
 BinStripe.RSquareTransverse   = gof_t.rsquare;
-BinStripe.Centers             = centers;
-BinStripe.Scores              = scores;
 BinStripe.Lambda              = fout_s.L;
 BinStripe.Phase               = fout_s.phi;
 BinStripe.Duty                = fout_s.duty;
 BinStripe.ModDepth            = fout_s.B;
+BinStripe.Separations         = seps;
+BinStripe.Centers             = centers;
+BinStripe.Scores              = scores;
 BinStripe.FocusCenter         = focus_center;
 BinStripe.Counts              = sum(Zb,'all');
-BinStripe.Separations         = seps;
-% if focus_center > 110
-%     keyboard
-% end
+
 %% Plot the Results
 %{
 hF1=figure(opts.FigNum);
