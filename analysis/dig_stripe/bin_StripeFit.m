@@ -13,7 +13,7 @@ function BinStripe = bin_StripeFit(n1,n2,Zb,opts)
 %           - SumIndex : which index are the stripes (NOT WORKING)
 %           - LGuess :  wavelength guess
 %           - FigNum :  figure number to assign output 
-%           - ColorThreshold
+%           - Threshold
 if nargin~=4
     opts = struct;
 end
@@ -34,7 +34,7 @@ if ~isfield(opts,'LGuess')
 end
 
 % Thresholds to throw data away and for focusing score
-if ~isfield(opts,'ColorThreshold')
+if ~isfield(opts,'Threshold')
     opts.ColorThreshold = [1000 3000];
 end
 
@@ -180,7 +180,7 @@ seps = round(seps);
 seps(seps<min(ns))=[];
 seps(seps>max(ns))=[];
 
-[scores,centers] = bin_StripeScore(ns,Zb,seps,opts.ColorThreshold);
+[scores,centers] = bin_StripeScore(ns,Zb,seps,opts.Threshold);
 [~,ind] = max(scores);
 focus_center = centers(ind);
 

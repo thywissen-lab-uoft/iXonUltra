@@ -1534,6 +1534,7 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
             opts_stripe = struct;
 %             opts.Theta = [10 190];
             opts_stripe.FigureNumber=3000;
+            opts_stripe.Threshold = [1000 3000];
             for ll = 1:length(data.LatticeBin)
                 n1 = data.LatticeBin(ll).n1;
                 n2 = data.LatticeBin(ll).n2;
