@@ -1,4 +1,4 @@
-mydir = 'X:\Data\2024\2024.02\02.15\04 Overnight ac shake 40 Hz 190G, 60mW, 4V ODT2 amp mod, 45kHz ps 2 plane ish, vary mod ramp time';
+mydir = 'X:\Data\2024\2024.02\02.15\04 ps 65 mw idle';
 names = dir([mydir filesep '*.mat']);
 names = {names.name};
 
