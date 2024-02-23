@@ -848,7 +848,7 @@ errorbar(f,cond_imag,cond_imag_error,'ko','markerfacecolor','k');
 hold on;
 plot(ff,myfunc_imag(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff))
 % plot(ff,myfunc_imag(fout_real.A,fout_real.B,fout_real.C,2*pi*ff),'--')
-plot(ff,qfit_imag(qfout_imag.TT,qfout_imag.GG,2*pi*ff),color='b')
+plot(ff,qfit_imag(qfout_real.TT,qfout_real.GG,2*pi*ff),color='b')
 hold on;
 text(1,24,'$y = A\frac{\omega(\omega^2-C^2)}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex',color= 'r')
 text(1,22,['$\Gamma = B = 2\pi\times$' num2str(round(Gamma_imag/(2*pi),2)) ' Hz'], 'Interpreter','latex',color= 'r')

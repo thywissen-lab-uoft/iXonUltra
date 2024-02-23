@@ -17,11 +17,11 @@ energies = h*(energies_Hz);
 
 %% Calculate the displacement
 wXDT = 2*pi*33; %2*pi*Hz
-T = 70e-9; %K
-G = 2*pi*18; %2*pi*Hz
+T = 20e-9; %K
+G = 2*pi*36; %2*pi*Hz
 
 d = [-15:0.01:15]*1e-6;
-w = 2*pi*[20,40,55,70,90,100];
+w = 2*pi*[20,30,40,50,60,70];
 B = zeros([length(w),length(d)]);
 A = zeros([length(w),length(d)]);
 amp = zeros([length(w),length(d)]);
