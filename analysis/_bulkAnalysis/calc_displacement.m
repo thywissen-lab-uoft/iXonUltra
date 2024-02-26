@@ -2,26 +2,26 @@
 h = 6.626e-34;
 hbar = h/(2*pi);
 kb = 1.380649e-23;
-aL = 532e-9;
+aL = 527e-9;
 amu = 1.660538921e-27;
 m = 39.964008*amu;
 
 %% Define the lookup tables for R and E
 global Rvalues;
-Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_55Hz.csv'));
+Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_64_4Hz_200.csv'));
 Rvalues = -1j*(aL/pi)*Rvalues_unscaled;
 
 global energies;
-energies_Hz = importdata('EnergyHz_V55_2.txt');
+energies_Hz = importdata('EnergyHz_64_4Hz_200.txt');
 energies = h*(energies_Hz);
 
 %% Calculate the displacement
 wXDT = 2*pi*33; %2*pi*Hz
 T = 20e-9; %K
-G = 2*pi*36; %2*pi*Hz
+G = 2*pi*14; %2*pi*Hz
 
 d = [-15:0.01:15]*1e-6;
-w = 2*pi*[20,30,40,50,60,70];
+w = 2*pi*[80,90,100,110,120,70];
 B = zeros([length(w),length(d)]);
 A = zeros([length(w),length(d)]);
 amp = zeros([length(w),length(d)]);
