@@ -3,25 +3,25 @@
 %Date: February 22nd, 2024
 
 %% Select runs
-runs = [
-    2024 02 21 08;
-    2024 02 21 09;
-    2024 02 21 10;
-    2024 02 21 11;
-    2024 02 21 12;
-    2024 02 21 13;
-    2024 02 21 14;
-    2024 02 21 15;
-    2024 02 21 17;
-    2024 02 21 18;
-    2024 02 21 19;
-    2024 02 21 20;
-    2024 02 21 21;
-    2024 02 21 22;
-    2024 02 21 23;
-    2024 02 21 24;
-    2024 02 21 25;
-    ];
+% runs = [
+%     2024 02 21 08;
+%     2024 02 21 09;
+%     2024 02 21 10;
+%     2024 02 21 11;
+%     2024 02 21 12;
+%     2024 02 21 13;
+%     2024 02 21 14;
+%     2024 02 21 15;
+%     2024 02 21 17;
+%     2024 02 21 18;
+%     2024 02 21 19;
+%     2024 02 21 20;
+%     2024 02 21 21;
+%     2024 02 21 22;
+%     2024 02 21 23;
+%     2024 02 21 24;
+%     2024 02 21 25;
+%     ];
 
 % runs = [
 %     2024 02 22 04;
@@ -30,6 +30,28 @@ runs = [
 %     2024 02 22 07;
 % 
 %     ];
+
+runs = [
+    2024 02 23 06;
+    2024 02 23 07;
+    2024 02 23 08;
+    2024 02 23 09;
+    2024 02 23 10;
+    2024 02 23 11;
+    2024 02 23 12;
+    2024 02 23 13;
+    2024 02 23 14;
+    2024 02 23 16;
+    2024 02 23 17;
+    2024 02 23 18;
+    2024 02 23 19;
+    2024 02 23 20;
+    2024 02 23 21;
+    2024 02 23 22;
+    2024 02 23 23;
+    2024 02 23 24;
+    2024 02 23 25;
+    ];
 
 
 %% Find files and parameters and calculate the conductivity
@@ -210,7 +232,7 @@ Gamma_imag = fout_imag.B;
 %See fit function definition at the end of the script
 
 %Import energies and Rmn values from lookup tables
-energies_Hz = importdata('EnergyHz_65.txt');
+energies_Hz = importdata('EnergyHz_64_4Hz_200.txt');
 
 global energies;
 energies = h*(energies_Hz);
@@ -220,7 +242,7 @@ omega_pk = (energies(2)-energies(1))/hbar;
 m_eff = m*(2*pi*64.4/omega_pk)^2;
 
 global Rvalues;
-Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_64_4Hz.csv'));
+Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_64_4Hz_200.csv'));
 Rvalues = -1j*(aL/pi)*Rvalues_unscaled;
 
 
@@ -230,7 +252,7 @@ myqfit_real = fittype(@(TT,GG,ww) qfit_real(TT,GG,ww), 'independent',{'ww'},...
 lvl = 0.667;
 qopt_real = fitoptions(myqfit_real);
 qopt_real.Display = 'iter';
-qopt_real.StartPoint = [30e-9 2*pi*20];
+qopt_real.StartPoint = [20e-9 2*pi*10];
 
 qfout_real = fit(omega',cond_real',myqfit_real,qopt_real);
 qfout_real_c=confint(qfout_real,lvl);
@@ -242,7 +264,7 @@ myqfit_imag = fittype(@(TT,GG,ww) qfit_imag(TT,GG,ww), 'independent',{'ww'},...
 
 qopt_imag = fitoptions(myqfit_imag);
 qopt_imag.Display = 'iter';
-qopt_imag.StartPoint = [30e-9 2*pi*20];
+qopt_imag.StartPoint = [33e-9 2*pi*13];
 
 
 qfout_imag = fit(omega',cond_imag',myqfit_imag,qopt_imag);
@@ -251,7 +273,7 @@ qT_imag_unc = (qfout_imag_c(2,1)-qfout_imag_c(1,1))/2;
 qG_imag_unc = (qfout_imag_c(2,2)-qfout_imag_c(1,2))/2;
 
 %% Plot conductivity fits
-ff = 0:0.001:250;
+ff = 0:0.1:250;
 f4 = figure(444);
 clf
 f4.WindowStyle ='docked';
@@ -263,20 +285,20 @@ plot(ff,myfunc_real(fout_real.A,fout_real.B,fout_real.C,2*pi*ff))
 plot(ff,qfit_real(qfout_imag.TT,qfout_imag.GG,2*pi*ff),'b--')
 plot(ff,qfit_real(qfout_real.TT,qfout_real.GG,2*pi*ff),'color','b')
 hold on
-text(1,3.3*2*pi,'$y = A\frac{\omega^2B}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
-text(1,3*2*pi,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_real/(2*pi),2)) '$\pm$' num2str(round(B_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
-text(1,2.7*2*pi,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_real/amu,2)) '$\pm$' num2str(round(m_real_unc/amu,2)) ' amu'], 'Interpreter','latex','color','r')
-text(1,2.4*2*pi,['$C/2\pi = $' num2str(round(fout_real.C/(2*pi),2)) '$\pm$' num2str(round(C_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
+text(1,29,'$y = A\frac{\omega^2B}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
+text(1,27,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_real/(2*pi),2)) '$\pm$' num2str(round(B_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
+text(1,25,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_real/amu,2)) '$\pm$' num2str(round(m_real_unc/amu,2)) ' amu'], 'Interpreter','latex','color','r')
+text(1,23,['$C/2\pi = $' num2str(round(fout_real.C/(2*pi),2)) '$\pm$' num2str(round(C_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
 
-text(90,3.3*2*pi,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
-text(90,3*2*pi,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color','b')
-text(90,2.7*2*pi,['$\Gamma = 2\pi\times$' num2str(round(qfout_real.GG/(2*pi),2)) '$\pm$' num2str(round(qG_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','b')
-text(90,2.4*2*pi,['$T = $' num2str(round(qfout_real.TT/(1e-9),2)) '$\pm$' num2str(round(qT_real_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color','b')
+text(90,29,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
+text(90,27,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color','b')
+text(90,25,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_real.GG/(2*pi),2)) '$\pm$' num2str(round(qG_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','b')
+text(90,23,['$T = $' num2str(round(qfout_real.TT/(1e-9),2)) '$\pm$' num2str(round(qT_real_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color','b')
 
 xlabel('frequency (Hz)')
 ylabel('real conductivity (\sigma/\sigma_0)')
 xlim([0 150])
-ylim([-1.2 3.5]*2*pi)
+ylim([-5 30])
 grid on;
 
 subplot(122)
@@ -293,13 +315,13 @@ text(1,18,['$\frac{C}{2\pi} = $ ' num2str(round(fout_imag.C/(2*pi),2)) '$\pm$' n
 
 text(90,24,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
 text(90,22,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color', 'b')
-text(90,20,['$\Gamma = 2\pi\times$' num2str(round(qfout_imag.GG/(2*pi),2)) '$\pm$' num2str(round(qG_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
+text(90,20,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_imag.GG/(2*pi),2)) '$\pm$' num2str(round(qG_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
 text(90,18,['$T = $' num2str(round(qfout_imag.TT/(1e-9),2)) '$\pm$' num2str(round(qT_imag_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color', 'b')
 
 xlabel('frequency (Hz)')
 ylabel('imag conductivity (\sigma/\sigma_0)')
 xlim([0 150])
-ylim([-10 25])
+ylim([-15 25])
 grid on;
 
 

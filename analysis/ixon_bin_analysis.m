@@ -68,7 +68,7 @@ bin_opts.FigLabel = bindata(1).SourceDirectory;
 
 % Choose what kind of variable to plot against (sequencer/camera)
 bin_opts.varType        = 'param';          % always select 'param' for now 
-bin_opts.autoXVar       = 0;                % Auto detect changing variable?
+bin_opts.autoXVar       = 1;                % Auto detect changing variable?
 bin_opts.autoUnit       = 1;                % Auto detect unit for variable?
 bin_opts.xVar           = 'ExecutionDate';  % Variable Name
 bin_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this

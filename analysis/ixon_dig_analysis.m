@@ -77,7 +77,7 @@ dig_opts.doSave         = 1;                % Save Analysis?
 dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
-dig_ac_conductivity_fit                 = 0;
+dig_ac_conductivity_fit                 = 1;
 dig_doRadialAnalysis                    = 1;
 %% Show CLoud
 
