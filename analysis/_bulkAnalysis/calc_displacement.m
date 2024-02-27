@@ -21,7 +21,7 @@ T = 20e-9; %K
 G = 2*pi*14; %2*pi*Hz
 
 d = [-15:0.01:15]*1e-6;
-w = 2*pi*[80,90,100,110,120,70];
+w = 2*pi*[40,90,100,110,120,70];
 B = zeros([length(w),length(d)]);
 A = zeros([length(w),length(d)]);
 amp = zeros([length(w),length(d)]);

@@ -1,15 +1,16 @@
 %% Plot the Rvalues in a 2D heatmap
-Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_64_4Hz.csv'));
+Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_64_4Hz_200.csv'));
 
-start = 0;
-final = 21;
+start = 20;
+final = 70;
 n = [start:final];
 m = [start:final];
 
 f5 = figure(1001);
-hm = heatmap(n,m,abs(Rvalues_unscaled((start+1):(final+1),(start+1):(final+1)))*(2/pi));
+hm = heatmap(n,m,log10(abs(Rvalues_unscaled((start+1):(final+1),(start+1):(final+1)))*(2/pi)));
 hm.YDisplayData=flip(hm.YDisplayData);
-clim([0,23])
+clim([-4, 2])
+% set(gca,'ColorScale','log')
 colormap(bone)
 xlabel('m')
 ylabel('n')
@@ -18,7 +19,7 @@ title('|R_{mn}| (a_L/2)')
 %% Plot the real conductivity for various temperatures
 freq = [0:200];
 
-f10 = figure(1002);
+f10 = figure(1012);
 plot(freq,qfit_real(300e-9,2*pi*16.6,2*pi*freq), 'DisplayName', 'T = 300 nK');
 hold on;
 plot(freq,qfit_real(70e-9,2*pi*16.6,2*pi*freq), 'DisplayName', 'T = 70 nK');
@@ -28,6 +29,40 @@ plot(freq,qfit_real(10e-9,2*pi*16.6,2*pi*freq), 'DisplayName', 'T = 10 nK');
 xlabel('frequency (Hz)')
 ylabel('real conductivity (\sigma/\sigma_0)')
 title('$\Gamma/2\pi =$ 15 Hz, $\omega_0 = 55$ Hz, $V_L = 2.5 E_\mathrm{R}$','Interpreter','latex')
+
+hold off;
+legend;
+
+%% Plot the real conductivity for various gamma
+freq = [0:300];
+
+f10 = figure(1010);
+plot(freq,qfit_real(65e-9,2*pi*10,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 10 Hz');
+hold on;
+plot(freq,qfit_real(65e-9,2*pi*20,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 20 Hz');
+plot(freq,qfit_real(65e-9,2*pi*30,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 30 Hz');
+plot(freq,qfit_real(65e-9,2*pi*40,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 40 Hz');
+plot(freq,qfit_real(65e-9,2*pi*60,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 60 Hz');
+xlabel('frequency (Hz)')
+ylabel('real conductivity (\sigma/\sigma_0)')
+title('$T =$ 65 nK, $\omega_0 = 55$ Hz, $V_L = 2.5 E_\mathrm{R}$','Interpreter','latex')
+
+hold off;
+legend;
+
+%% Plot the imag conductivity for various gamma
+freq = [0:300];
+
+f10 = figure(1011);
+plot(freq,qfit_imag(65e-9,2*pi*7,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 7 Hz');
+hold on;
+plot(freq,qfit_imag(65e-9,2*pi*20,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 20 Hz');
+plot(freq,qfit_imag(65e-9,2*pi*30,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 30 Hz');
+plot(freq,qfit_imag(65e-9,2*pi*40,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 40 Hz');
+plot(freq,qfit_imag(65e-9,2*pi*60,2*pi*freq), 'DisplayName', '\Gamma/2\pi = 60 Hz');
+xlabel('frequency (Hz)')
+ylabel('imag conductivity (\sigma/\sigma_0)')
+title('$T =$ 65 nK, $\omega_0 = 55$ Hz, $V_L = 2.5 E_\mathrm{R}$','Interpreter','latex')
 
 hold off;
 legend;

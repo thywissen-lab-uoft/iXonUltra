@@ -1,17 +1,17 @@
 %% Define the lookup tables for R and E
 global Rvalues;
-Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_55Hz.csv'));
+Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_64_4Hz_200.csv'));
 Rvalues = -1j*(aL/pi)*Rvalues_unscaled;
 
 global energies;
-energies_Hz = importdata('EnergyHz_V55_2.txt');
+energies_Hz = importdata('EnergyHz_64_4Hz_200.txt');
 energies = h*(energies_Hz);
 
 %% Constants
 h = 6.626e-34;
 hbar = h/(2*pi);
 kb = 1.380649e-23;
-aL = 532e-9;
+aL = 527e-9;
 
 
 
@@ -31,7 +31,7 @@ STB = besseli(1,2.*tK./T)./besseli(0,2.*tK./T);
 TT = [1:0.1:5]*tK;
 fsum = [];
 for loop = 1:length(TT)
-    fun = @(w) qfit_real(TT(loop),2*pi*18,w).*(aL^2)./hbar;
+    fun = @(w) qfit_real(TT(loop),2*pi*14,w).*(aL^2)./hbar;
     
     fsum(loop) = m0*(2/pi)*integral(fun,0,inf);
 end

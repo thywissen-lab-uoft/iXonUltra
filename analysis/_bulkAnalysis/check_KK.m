@@ -1,10 +1,10 @@
 %% Define the lookup tables for R and E
 global Rvalues;
-Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_55Hz.csv'));
+Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_64_4Hz_200.csv'));
 Rvalues = -1j*(aL/pi)*Rvalues_unscaled;
 
 global energies;
-energies_Hz = importdata('EnergyHz_V55_2.txt');
+energies_Hz = importdata('EnergyHz_64_4Hz_200.txt');
 energies = h*(energies_Hz);
 
 %% Constants

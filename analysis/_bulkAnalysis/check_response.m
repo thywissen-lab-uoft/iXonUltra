@@ -26,7 +26,7 @@ G = 2*pi*14; %2*pi*Hz
 % y = [0.45,0.38,0.30,0.29,0.40,0.61,0.89,1.22,1.60,2.02,2.51];
 
 amp_desired = 0.65; %um
-f = [20:5:120];
+f = [20:5:150];
 d = [];
 for ff = 1:length(f)
     d(ff) = hbar*2*pi*f(ff)*amp_desired/(aL^2*m*wXDT^2*sqrt(qfit_real(T,G,2*pi*f(ff))^2+qfit_imag(T,G,2*pi*f(ff))^2))/3.55; %V
@@ -43,7 +43,7 @@ opt = fitoptions(myfit);
 opt.StartPoint = [-1.5 20 40];
 fout = fit(f',d',myfit,opt);
 
-xx = 20:1:120;
+xx = 20:1:150;
 yy = myfunc(fout.a,fout.b,fout.c,xx);
 
 clf(f33)
@@ -55,7 +55,7 @@ plot(xx,yy,'r')
 % plot([98 100], [4,4],'r')
 xlabel('Drive Frequency (Hz)')
 ylabel('Drive Amplitude (V)')
-text(22,2.4,'y =a(x-b)^2 + c','color','r')
-text(22,2.3,['a = ' num2str(fout.a)],'color','r')
-text(22,2.2,['b = ' num2str(fout.b)],'color','r')
-text(22,2.1,['c = ' num2str(fout.c)],'color','r')
+text(22,4.1,'y =a(x-b)^2 + c','color','r')
+text(22,3.9,['a = ' num2str(fout.a)],'color','r')
+text(22,3.7,['b = ' num2str(fout.b)],'color','r')
+text(22,3.5,['c = ' num2str(fout.c)],'color','r')
