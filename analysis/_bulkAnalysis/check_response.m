@@ -46,8 +46,9 @@ fout = fit(f',d',myfit,opt);
 xx = 20:1:150;
 yy = myfunc(fout.a,fout.b,fout.c,xx);
 
-clf(f33)
+
 f33 = figure(33);
+clf(f33);
 plot(f,d,'ko')
 hold on;
 plot(xx,yy,'r')

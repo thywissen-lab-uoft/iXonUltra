@@ -95,8 +95,9 @@ for loop = T
     fmax(index)=freq(I);
     index=index+1;
 end
-clf(f11);
+
 f11 = figure(1003);
+clf(f11);
 plot(T/1e-9,fmax)
 xlabel('T (nK)')
 ylabel('$\omega_{\mathrm{max}}/2\pi$ (Hz)','Interpreter','latex')

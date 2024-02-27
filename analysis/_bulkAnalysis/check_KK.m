@@ -1,3 +1,9 @@
+%% Constants
+h = 6.626e-34;
+hbar = h/(2*pi);
+kb = 1.380649e-23;
+aL = 527e-9;
+
 %% Define the lookup tables for R and E
 global Rvalues;
 Rvalues_unscaled = table2array(readtable('Rvalues_unscaled_64_4Hz_200.csv'));
@@ -7,11 +13,7 @@ global energies;
 energies_Hz = importdata('EnergyHz_64_4Hz_200.txt');
 energies = h*(energies_Hz);
 
-%% Constants
-h = 6.626e-34;
-hbar = h/(2*pi);
-kb = 1.380649e-23;
-aL = 532e-9;
+%% Perform integration
 
 ff = 1:1:200;
 
@@ -20,8 +22,9 @@ cimag = KKR2I(30e-9,2*pi*18,2*pi*ff);
 
 
 %% Plot
-clf(f2);
+
 f2 = figure(222);
+clf(f2);
 plot(ff,creal,'DisplayName','Kramers-Kronig');
 hold on;
 plot(ff,qfit_real(30e-9,2*pi*18,2*pi*ff),'--','DisplayName','Calculated Real')
@@ -29,8 +32,9 @@ xlabel('frequency (Hz)')
 ylabel('real conductivity (\sigma/\sigma_0)')
 legend();
 
-clf(f3);
+
 f3 = figure(333);
+clf(f3);
 plot(ff,cimag, 'DisplayName','Kramers-Kronig')
 hold on;
 plot(ff,qfit_imag(30e-9,2*pi*18,2*pi*ff),'--','DisplayName','Calculated Imag')

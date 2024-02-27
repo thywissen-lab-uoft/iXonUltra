@@ -33,8 +33,9 @@ for ww = 1:length(w)
 end
 
 %% Plot Results
-clf(10);
+
 f10 = figure(10);
+clf(f10);
 for loop = 1:length(w)
     subplot(2,3,loop);
     plot(d/1e-6,B(loop,:)/1e-6, 'DisplayName', 'Asin(\phi)')

@@ -5,7 +5,7 @@ function sigma = qfit_imag(T,G,w)
     
     hbar = 6.626e-34/(2*pi);
     kb = 1.380649e-23;
-    aL = 532e-9;
+    aL = 527e-9;
     beta = 1/(kb*T);
 
     Z = sum(exp(-beta*energies)); %Partition function
