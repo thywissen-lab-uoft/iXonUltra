@@ -31,28 +31,50 @@
 % 
 %     ];
 
-runs = [
-    2024 02 23 06;
-    2024 02 23 07;
-    2024 02 23 08;
-    2024 02 23 09;
-    2024 02 23 10;
-    2024 02 23 11;
-    2024 02 23 12;
-    2024 02 23 13;
-    2024 02 23 14;
-    2024 02 23 16;
-    2024 02 23 17;
-    2024 02 23 18;
-    2024 02 23 19;
-    2024 02 23 20;
-    2024 02 23 21;
-    2024 02 23 22;
-    2024 02 23 23;
-    2024 02 23 24;
-    2024 02 23 25;
-    ];
+% runs = [
+%     2024 02 23 06;
+%     2024 02 23 07;
+%     2024 02 23 08;
+%     2024 02 23 09;
+%     2024 02 23 10;
+%     2024 02 23 11;
+%     2024 02 23 12;
+%     2024 02 23 13;
+%     2024 02 23 14;
+%     2024 02 23 16;
+%     2024 02 23 17;
+%     2024 02 23 18;
+%     2024 02 23 19;
+%     2024 02 23 20;
+%     2024 02 23 21;
+%     2024 02 23 22;
+%     2024 02 23 23;
+%     2024 02 23 24;
+%     2024 02 23 25;
+%     ];
 
+runs = [
+    2024 02 26 04;
+    2024 02 26 05;
+    2024 02 26 06;
+    2024 02 26 07;
+    2024 02 26 08;
+    2024 02 26 09;
+    2024 02 26 10;
+    2024 02 26 11;
+    2024 02 26 12;
+    2024 02 26 14;
+    2024 02 26 15;
+    2024 02 26 16;
+    2024 02 26 17;
+    2024 02 26 18;
+    2024 02 26 19;
+    2024 02 26 20;
+    2024 02 26 21;
+    2024 02 26 22;
+    2024 02 26 23;
+    2024 02 26 24;
+    ];
 
 %% Find files and parameters and calculate the conductivity
 dir_list = ixon_findRunDirectory(runs);
@@ -94,8 +116,8 @@ amu = 1.660538921e-27; %kg
 m = 39.964008*amu; %kg
 
 %Experimental parameters
-T = 19.37e-9; %K
-G = 2*pi*26.14; %2*pi*Hz
+T = 20e-9; %K
+G = 2*pi*14; %2*pi*Hz
 
 
 for nn=1:length(dir_list)
@@ -163,6 +185,7 @@ pSexp = plot(freq_ord,Sexp_ord,'r--');
 pCexp = plot(freq_ord,Cexp_ord,'b--');
 pAexp = plot(freq_ord,Aexp_ord,'k--');
 xlabel('frequency (Hz)')
+xlim([min(freq) max(freq)])
 ylabel('amplitude/phase response (\mum)')
 legend('S = A cos(\phi)','C = A sin(\phi)','A_{SC} = (S^2+C^2)^{1/2}',...
  'S expected','C expected','A expected',...
@@ -175,6 +198,7 @@ hold on
 pA_SC2 = errorbar(freq,A_SC,A_SCerr,'ko','MarkerFaceColor','k');
 pAexp2 = plot(freq_ord,Aexp_ord,'k--');
 xlabel('frequency (Hz)')
+xlim([min(freq) max(freq)])
 ylabel('amplitude response (\mum)')
 legend('A','A_{SC} = (S^2+C^2)^{1/2}','A expected')
 
@@ -189,6 +213,7 @@ hold on
 pphiSC = errorbar(freq,phiSC/pi,phiSCerr/pi,'ko','MarkerFaceColor','k');
 % pphiSC = errorbar(freq,phiSC,phiSCerr,'ko','MarkerFaceColor','k'); % radians
 xlabel('frequency (Hz)')
+xlim([min(freq) max(freq)])
 ylabel('phase / \pi')
 legend('\phi','\phi_{SC} = arctan(C/S)')
 
@@ -252,7 +277,7 @@ myqfit_real = fittype(@(TT,GG,ww) qfit_real(TT,GG,ww), 'independent',{'ww'},...
 lvl = 0.667;
 qopt_real = fitoptions(myqfit_real);
 qopt_real.Display = 'iter';
-qopt_real.StartPoint = [20e-9 2*pi*10];
+qopt_real.StartPoint = [20e-9 2*pi*8];
 
 qfout_real = fit(omega',cond_real',myqfit_real,qopt_real);
 qfout_real_c=confint(qfout_real,lvl);
@@ -264,7 +289,7 @@ myqfit_imag = fittype(@(TT,GG,ww) qfit_imag(TT,GG,ww), 'independent',{'ww'},...
 
 qopt_imag = fitoptions(myqfit_imag);
 qopt_imag.Display = 'iter';
-qopt_imag.StartPoint = [33e-9 2*pi*13];
+qopt_imag.StartPoint = [23e-9 2*pi*7];
 
 
 qfout_imag = fit(omega',cond_imag',myqfit_imag,qopt_imag);
@@ -277,6 +302,7 @@ ff = 0:0.1:250;
 f4 = figure(444);
 clf
 f4.WindowStyle ='docked';
+f4.Color = 'w';
 
 subplot(121)
 errorbar(freq,cond_real,cond_real_err,'ko','markerfacecolor','k');
@@ -285,20 +311,20 @@ plot(ff,myfunc_real(fout_real.A,fout_real.B,fout_real.C,2*pi*ff))
 plot(ff,qfit_real(qfout_imag.TT,qfout_imag.GG,2*pi*ff),'b--')
 plot(ff,qfit_real(qfout_real.TT,qfout_real.GG,2*pi*ff),'color','b')
 hold on
-text(1,29,'$y = A\frac{\omega^2B}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
-text(1,27,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_real/(2*pi),2)) '$\pm$' num2str(round(B_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
-text(1,25,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_real/amu,2)) '$\pm$' num2str(round(m_real_unc/amu,2)) ' amu'], 'Interpreter','latex','color','r')
-text(1,23,['$C/2\pi = $' num2str(round(fout_real.C/(2*pi),2)) '$\pm$' num2str(round(C_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
+text(1,63,'$y = A\frac{\omega^2B}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
+text(1,60,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_real/(2*pi),2)) '$\pm$' num2str(round(B_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
+text(1,57,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_real/amu,2)) '$\pm$' num2str(round(m_real_unc/amu,2)) ' amu'], 'Interpreter','latex','color','r')
+text(1,54,['$C/2\pi = $' num2str(round(fout_real.C/(2*pi),2)) '$\pm$' num2str(round(C_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
 
-text(90,29,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
-text(90,27,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color','b')
-text(90,25,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_real.GG/(2*pi),2)) '$\pm$' num2str(round(qG_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','b')
-text(90,23,['$T = $' num2str(round(qfout_real.TT/(1e-9),2)) '$\pm$' num2str(round(qT_real_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color','b')
+text(90,63,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
+text(90,60,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color','b')
+text(90,57,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_real.GG/(2*pi),2)) '$\pm$' num2str(round(qG_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','b')
+text(90,54,['$T = $' num2str(round(qfout_real.TT/(1e-9),2)) '$\pm$' num2str(round(qT_real_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color','b')
 
 xlabel('frequency (Hz)')
 ylabel('real conductivity (\sigma/\sigma_0)')
 xlim([0 150])
-ylim([-5 30])
+ylim([-5 65])
 grid on;
 
 subplot(122)
@@ -308,20 +334,20 @@ plot(ff,myfunc_imag(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff))
 plot(ff,qfit_imag(qfout_real.TT,qfout_real.GG,2*pi*ff),'b--')
 plot(ff,qfit_imag(qfout_imag.TT,qfout_imag.GG,2*pi*ff),'color','b')
 hold on;
-text(1,24,'$y = A\frac{\omega(\omega^2-C^2)}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
-text(1,22,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_imag/(2*pi),2)) '$\pm$' num2str(round(B_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
-text(1,20,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_imag/amu,2)) '$\pm$' num2str(round(m_imag_unc/amu,2)) ' amu'], 'Interpreter','latex','color', 'r')
-text(1,18,['$\frac{C}{2\pi} = $ ' num2str(round(fout_imag.C/(2*pi),2)) '$\pm$' num2str(round(C_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
+text(1,38,'$y = A\frac{\omega(\omega^2-C^2)}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
+text(1,35,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_imag/(2*pi),2)) '$\pm$' num2str(round(B_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
+text(1,32,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_imag/amu,2)) '$\pm$' num2str(round(m_imag_unc/amu,2)) ' amu'], 'Interpreter','latex','color', 'r')
+text(1,29,['$\frac{C}{2\pi} = $ ' num2str(round(fout_imag.C/(2*pi),2)) '$\pm$' num2str(round(C_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
 
-text(90,24,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
-text(90,22,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color', 'b')
-text(90,20,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_imag.GG/(2*pi),2)) '$\pm$' num2str(round(qG_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
-text(90,18,['$T = $' num2str(round(qfout_imag.TT/(1e-9),2)) '$\pm$' num2str(round(qT_imag_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color', 'b')
+text(90,38,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
+text(90,35,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color', 'b')
+text(90,32,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_imag.GG/(2*pi),2)) '$\pm$' num2str(round(qG_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
+text(90,29,['$T = $' num2str(round(qfout_imag.TT/(1e-9),2)) '$\pm$' num2str(round(qT_imag_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color', 'b')
 
 xlabel('frequency (Hz)')
 ylabel('imag conductivity (\sigma/\sigma_0)')
 xlim([0 150])
-ylim([-15 25])
+ylim([-35 40])
 grid on;
 
 

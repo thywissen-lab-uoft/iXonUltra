@@ -1,4 +1,4 @@
-function qpd_out = photodiode_analyze(qpd_filenames)
+function qpd_out = photodiode_analyze(qpd_filenames,ixondata)
 
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Analyzes a single QPD file
@@ -68,6 +68,8 @@ for nn=1:length(qpd_filenames)
 
     %% Fit the first 50 ms of modulation
 
+
+
     % Select the first 50 ms of modulation
     mod50 = find(round(t,1)==50);
     t_fitmod = t(mod_start:mod50);
@@ -84,16 +86,29 @@ for nn=1:length(qpd_filenames)
 
     Agp = (max(X1_fitmod)-min(X1_fitmod))/2;
     Cgp = mean(X1_fitmod);
-    Tgp = 1/(0.06);
-    Bgp =  mod(2*pi*(150)/Tgp,2*pi);
+
+%     [pks,plocs] = findpeaks(smoothdata(X1_fitmod,"gaussian",10),'MinPeakProminence',Agp/4);
+%     [trs,tlocs] = findpeaks(-smoothdata(X1_fitmod,"gaussian",10),'MinPeakProminence',Agp/4);
+%     npeaks = min(length(plocs),length(tlocs));
+%     Tgp = 2*abs(mean(t_fitmod(tlocs(1:npeaks))-t_fitmod(plocs(1:npeaks))));
+%     Tgp = 1/0.06;
+
+%     Tgp = 1/(0.145);
+    if isfield(ixondata(nn).Params,'conductivity_mod_freq')
+        Tgp = 1e3/(ixondata(nn).Params.conductivity_mod_freq);
+    else
+        Tgp = 1/0.06;
+    end
+    
+    Bgp =  mod(-2*pi*(50)/Tgp,2*pi);
     opt = fitoptions(myfit);
     opt.StartPoint = [Agp Bgp Cgp Tgp];
     opt.Lower  = [0 -10*pi Cgp-20 0];
-    fout_X1 = fit(t_fitmod',X1_fitmod,myfit,opt);
+    fout_X1 = fit(t_fitmod',X1_fitmod,myfit,opt);  
 
     Agp = (max(X2_fitmod)-min(X2_fitmod))/2;
     Cgp = mean(X2_fitmod);
-    Bgp =  mod(2*pi*(150)/Tgp,2*pi);
+    Bgp =  mod(2*pi*(50)/Tgp,2*pi);
     opt = fitoptions(myfit);
     opt.StartPoint = [Agp Bgp Cgp Tgp];
     opt.Lower  = [0 -10*pi Cgp-20 0];

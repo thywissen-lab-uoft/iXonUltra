@@ -56,7 +56,7 @@ end
 %% Analyze the QPD traces
 
 clear qpd_data
-qpd_data = photodiode_analyze(qpdfiles);    % Analyze a single trace
+qpd_data = photodiode_analyze(qpdfiles,ixondata);    % Analyze a single trace
 
 %% Assign single QPD analysis trace to ixondata
 for nn=1:length(qpdfiles)
