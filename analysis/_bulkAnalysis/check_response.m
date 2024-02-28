@@ -18,7 +18,7 @@ energies = h*(energies_Hz);
 %% Trap parameters
 wXDT = 2*pi*33; %2*pi*Hz
 T = 20e-9; %K
-G = 2*pi*14; %2*pi*Hz
+G = 2*pi*80; %2*pi*Hz
 
 %% Create data points
 
