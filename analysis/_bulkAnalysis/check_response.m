@@ -16,9 +16,9 @@ energies_Hz = importdata('EnergyHz_64_4Hz_200.txt');
 energies = h*(energies_Hz);
 
 %% Trap parameters
-wXDT = 2*pi*33; %2*pi*Hz
-T = 20e-9; %K
-G = 2*pi*80; %2*pi*Hz
+wXDT = 2*pi*42.5; %2*pi*Hz
+T = 80e-9; %K
+G = 2*pi*17.5; %2*pi*Hz
 
 %% Create data points
 
@@ -40,23 +40,27 @@ myfit = fittype(@(a,b,c,x) myfunc(a,b,c,x),'independent',{'x'},...
         'coefficients',{'a','b','c'});
 
 opt = fitoptions(myfit);
-opt.StartPoint = [-1.5 20 40];
-fout = fit(f',d',myfit,opt);
+opt.StartPoint = [-1.5 60 40];
+fout = fit(f(9:(end-7))',d(9:(end-7))',myfit,opt);
 
-xx = 20:1:150;
+xx = 56:1:150;
 yy = myfunc(fout.a,fout.b,fout.c,xx);
 
-
+x2=[20:1:56];
+y2= -0.0117.*x2+1.254;
 f33 = figure(33);
 clf(f33);
 plot(f,d,'ko')
 hold on;
 plot(xx,yy,'r')
+plot(x2,y2,'b')
+xlim([20,120])
 % plot([20 40], [1.63,1.63],'r')
 % plot([98 100], [4,4],'r')
 xlabel('Drive Frequency (Hz)')
 ylabel('Drive Amplitude (V)')
-text(22,4.1,'y =a(x-b)^2 + c','color','r')
-text(22,3.9,['a = ' num2str(fout.a)],'color','r')
-text(22,3.7,['b = ' num2str(fout.b)],'color','r')
-text(22,3.5,['c = ' num2str(fout.c)],'color','r')
+text(22,3.4,'y =a(x-b)^2 + c','color','r')
+text(22,3.2,['a = ' num2str(fout.a)],'color','r')
+text(22,3,['b = ' num2str(fout.b)],'color','r')
+text(22,2.8,['c = ' num2str(fout.c)],'color','r')
+text(22,2.6,'y= -0.0117x + 1.254','color','b')
