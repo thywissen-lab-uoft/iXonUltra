@@ -8,8 +8,8 @@ end
 [Natoms,bad_inds] = rmoutliers([digdata.Natoms]);
 X = [digdata.Xc_um];X(bad_inds)=[];
 Xs = [digdata.Xs_um];Xs(bad_inds)=[];
-Y = [digdata.Xc_um];Y(bad_inds)=[];
-Ys = [digdata.Xs_um];Ys(bad_inds)=[];
+Y = [digdata.Yc_um];Y(bad_inds)=[];
+Ys = [digdata.Ys_um];Ys(bad_inds)=[];
 
 
 P = [digdata.Params];

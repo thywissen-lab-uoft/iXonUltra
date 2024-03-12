@@ -105,15 +105,15 @@ ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in 
 ixon_doAnalyzeQPD           = 1;    % Analyze QPD traces
 
 % QGM Single Plane Analysis
-ixon_doQGM                          = 0;
-doPSF                               = 0;
-ixon_doQGM_FindLattice              = 0;
-ixon_doQGM_Bin                      = 0;
-ixon_doQGM_BinStripe                = 0;
+ixon_doQGM                          = 1;
+doPSF                               = 1;
+ixon_doQGM_FindLattice              = 1;
+ixon_doQGM_Bin                      = 1;
+ixon_doQGM_BinStripe                = 1;
 
-ixon_doQGM_BinStandardAnalysis      = 0;
-ixon_doQGM_Digitize                 = 0;
-ixon_doQGM_DigitalStandardAnalysis  = 0;
+ixon_doQGM_BinStandardAnalysis      = 1;
+ixon_doQGM_Digitize                 = 1;
+ixon_doQGM_DigitalStandardAnalysis  = 1;
 
 
 %% Image Processing Options

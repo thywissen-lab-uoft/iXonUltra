@@ -1,12 +1,12 @@
-mydir = 'X:\Data\2024\2024.02\02.15\04 ps 65 mw idle';
+mydir = 'X:\Data\2024\2024.03\03.04\03 overnight, 199.4 G, 57mW AC shake';
 names = dir([mydir filesep '*.mat']);
 names = {names.name};
 
-daydir = 'X:\Data\2024\2024.02\02.15';
+daydir = 'X:\Data\2024\2024.03\03.04';
 % dir(daydir
 
 
-dir1 =  'X:\Data\2024\2024.02\02.15\04a tiltcheck';
+dir1 =  'X:\Data\2024\2024.03\03.04\03a tiltcheck';
 dir2 = mydir;
 if ~exist(dir1,'dir')
     mkdir(dir1);
