@@ -38,11 +38,12 @@ end
 
 %% Load the QPD files
 qpdfiles=strings(0);
+P = [ixondata.Params];
 
-for jj=1:length([ixondata.Params])
+for jj=1:length(P)
 
     % Date string for run
-    fdate = datestr(ixondata(jj).Params.ExecutionDateStr,'YYYY-mm-dd_HH-MM-SS');
+    fdate = datestr(P(jj).ExecutionDateStr,'YYYY-mm-dd_HH-MM-SS');
     
     % Directory of QPD file
     pddir = fullfile(pdsrc,fdate(1:4),[fdate(1:4) '.' fdate(6:7)],[fdate(6:7) '.' fdate(9:10)]);
@@ -56,7 +57,7 @@ end
 %% Analyze the QPD traces
 
 clear qpd_data
-qpd_data = photodiode_analyze(qpdfiles,ixondata);    % Analyze a single trace
+qpd_data = photodiode_analyze(qpdfiles,P);    % Analyze a single trace
 
 %% Assign single QPD analysis trace to ixondata
 for nn=1:length(qpdfiles)

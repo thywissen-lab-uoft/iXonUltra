@@ -102,7 +102,7 @@ ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
-ixon_doAnalyzeQPD           = 1;    % Analyze QPD traces
+ixon_doAnalyzeQPD           = 0;    % Analyze QPD traces
 
 % QGM Single Plane Analysis
 ixon_doQGM                          = 1;

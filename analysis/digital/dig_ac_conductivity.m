@@ -49,7 +49,7 @@ ax2=subplot(2,3,4);
 plot(Ttot,Xs,'o','markerfacecolor',co(1,:),...
     'linewidth',2,'markeredgecolor',co(1,:)*.5);
 xlabel('total modulation time (ms)');
-ylabel('x center (um)');
+ylabel('x sigma (um)');
 
 ax3=subplot(2,3,5);
 plot(Ttot,Natoms,'o','markerfacecolor',[.5 .5 .5],...

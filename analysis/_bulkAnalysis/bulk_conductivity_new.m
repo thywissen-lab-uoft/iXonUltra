@@ -140,6 +140,7 @@
 %     2024 03 04 21;
 %     ];
 
+% 200 G
 % runs = [
 %     2024 03 05 06;
 %     2024 03 05 07;
@@ -159,6 +160,7 @@
 %     2024 03 05 22;
 %     ];
 
+% % 198.5
 % runs = [
 %     2024 03 06 07;
 %     2024 03 06 08;
@@ -178,9 +180,9 @@
 %     2024 03 06 23;
 %     ];
 
-% 200.8 G
+% % 200.8 G
 % runs = [
-% %     2024 03 07 06;
+%     2024 03 07 06;
 %     2024 03 07 07;
 %     2024 03 07 08;
 %     2024 03 07 09;
@@ -200,24 +202,66 @@
 %     ];
 
 %200.9 G
+% runs = [
+%     2024 03 08 05;
+%     2024 03 08 06;
+%     2024 03 08 07;
+%     2024 03 08 08;
+%     2024 03 08 09;
+%     2024 03 08 10;
+%     2024 03 08 11;
+%     2024 03 08 13;
+%     2024 03 08 14;
+%     2024 03 08 15;
+%     2024 03 08 16;
+%     2024 03 08 17;
+%     2024 03 08 18;
+%     2024 03 08 19;
+%     2024 03 08 20;
+%     2024 03 08 21;
+%     
+%     ];
+
+% % 201.1 G (missing QPD analysis)
+% runs = [
+%     
+%     2024 03 14 06;
+%     2024 03 14 07;
+%     2024 03 14 08;
+%     2024 03 14 09;
+%     2024 03 14 10;
+%     2024 03 14 11;
+%     2024 03 14 12;
+%     2024 03 14 14;
+%     2024 03 14 15;
+%     2024 03 14 16;
+%     2024 03 14 17;
+%     2024 03 14 18;
+%     2024 03 14 19;
+%     2024 03 14 20;
+%     2024 03 14 21;
+%     2024 03 14 22;
+%     ];
+
+%200.65 G
 runs = [
-    2024 03 08 05;
-    2024 03 08 06;
-    2024 03 08 07;
-    2024 03 08 08;
-    2024 03 08 09;
-    2024 03 08 10;
-    2024 03 08 11;
-    2024 03 08 13;
-    2024 03 08 14;
-    2024 03 08 15;
-    2024 03 08 16;
-    2024 03 08 17;
-    2024 03 08 18;
-    2024 03 08 19;
-    2024 03 08 20;
-    2024 03 08 21;
     
+    2024 03 19 06;
+    2024 03 19 07;
+    2024 03 19 08;
+    2024 03 19 09;
+    2024 03 19 10;
+    2024 03 19 11;
+    2024 03 19 12;
+    2024 03 19 14;
+    2024 03 19 15;
+    2024 03 19 16;
+    2024 03 19 17;
+    2024 03 19 18;
+    2024 03 19 19;
+    2024 03 19 20;
+    2024 03 19 21;
+    2024 03 19 22;
     ];
 
 %% Find files and parameters and calculate the conductivity
@@ -275,7 +319,7 @@ w_T_xdir = 2*pi*66.8; % s^-1
 w_T_ydir = 2*pi*59.7; % s^-1
 
 %Experimental parameters
-T = 80e-9; %K
+T = 95e-9; %K
 G = 2*pi*18; %2*pi*Hz
 
 
@@ -349,7 +393,7 @@ cond_imag_err_ord = cond_imag_err(freq_I);
 B_0 = 202.15; %G %free space feshbach resonance
 deltaFB = 6.910; %G %width of FR
 a_bg = 166.978*a_0; %m %Background scattering length
-% Bfield = 200.91+0.1238; %G %Feshbach field
+% Bfield = 200.65+0.1238; %G %Feshbach field
 Bfield = field(1); %G %Feshbach field
 
 as = a_bg*(1-deltaFB/(Bfield-B_0)); %Scattering length
@@ -511,7 +555,15 @@ myqfit_real = fittype(@(TT,GG,ww) qfit_real(TT,GG,ww), 'independent',{'ww'},...
 lvl = 0.667;
 qopt_real = fitoptions(myqfit_real);
 qopt_real.Display = 'iter';
-qopt_real.StartPoint = [90e-9 2*pi*25];
+qopt_real.StartPoint = [90e-9 2*pi*20];
+
+qopt_real.StartPoint = [100e-9 Gamma_real*0.5];
+
+
+qopt_real.Robust = 'bisquare';
+
+% qopt_real.Weight = 1./abs(cond_real_err_ord(1:(end-5))).^2;
+
 
 qfout_real = fit(omega_ord(1:(end-5))',cond_real_ord(1:(end-5))',myqfit_real,qopt_real);
 qfout_real_c=confint(qfout_real,lvl);
@@ -523,8 +575,15 @@ myqfit_imag = fittype(@(TT,GG,ww) qfit_imag(TT,GG,ww), 'independent',{'ww'},...
 
 qopt_imag = fitoptions(myqfit_imag);
 qopt_imag.Display = 'iter';
-qopt_imag.StartPoint = [90e-9 2*pi*25];
+qopt_imag.StartPoint = [60e-9 2*pi*30];
 
+qopt_imag.StartPoint = [qfout_real.TT qfout_real.GG];
+
+% qopt_imag.Weight = 1./abs(cond_imag_err_ord(1:(end-5))).^2;
+
+qopt_imag.Robust='bisquare';
+% qopt_imag.TolFun=1e-9;
+% qopt_imag.TolX=1e-9;
 
 qfout_imag = fit(omega_ord(1:(end-5))',cond_imag_ord(1:(end-5))',myqfit_imag,qopt_imag);
 qfout_imag_c=confint(qfout_imag,lvl);
