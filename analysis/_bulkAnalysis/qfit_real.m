@@ -13,7 +13,7 @@ function sigma = qfit_real(T,G,w)
     ss = 0;
     for loop1 = 1:length(Rvalues)
         for loop2 = 1:length(Rvalues)
-            ss = ss + (abs(Rvalues(loop1,loop2))^2).*G.*(exp(-beta*energies(loop1))-exp(-beta*energies(loop2)))./((w - (energies(loop1)-energies(loop2))/hbar).^2 + G.^2);
+            ss = ss + (abs(Rvalues(loop1,loop2))^2).*(G/2).*(exp(-beta*energies(loop1))-exp(-beta*energies(loop2)))./((w - (energies(loop1)-energies(loop2))/hbar).^2 + (G/2).^2);
         end
     end
 

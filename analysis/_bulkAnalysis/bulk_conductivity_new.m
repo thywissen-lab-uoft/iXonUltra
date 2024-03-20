@@ -263,6 +263,8 @@ runs = [
     2024 03 19 21;
     2024 03 19 22;
     ];
+%% Choose to save files or not
+doSave = 0;
 
 %% Find files and parameters and calculate the conductivity
 dir_list = ixon_findRunDirectory(runs);
@@ -320,7 +322,7 @@ w_T_ydir = 2*pi*59.7; % s^-1
 
 %Experimental parameters
 T = 95e-9; %K
-G = 2*pi*18; %2*pi*Hz
+G = 2*pi*36; %2*pi*Hz
 
 
 for nn=1:length(dir_list)
@@ -408,6 +410,14 @@ filling = 0.07; %spin-up atoms per site
 
 nU2t = 2*pi*filling*Us^2/tunneling;
 
+
+%% Define plot data directory name
+% Image directory folder string
+FigLabel = files{1}.SourceDirecotry{1};
+FigLabel = FigLabel(1:29);
+dir_index_init = str2double(FigLabel((end-1):end));
+FigLabel = [FigLabel(1:29) '-' num2str(dir_index_init + length(files))];
+
 %% Plot dig conductivity analysis fit parameters
 
 % Plot amplitude fit parameters
@@ -415,6 +425,12 @@ f5 = figure(555);
 clf;
 f5.WindowStyle = 'docked';
 f5.Color = 'w';
+
+t=uicontrol('style','text','string',FigLabel,'units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left');
+t.Position(1:2)=[5 520];
+t.Position(4)= t.Extent(4);
+t.Position(3)= t.Extent(3);
 
 subplot(121)
 pS = errorbar(freq,S,Serr,'ro','MarkerFaceColor','r');
@@ -470,6 +486,12 @@ f7 = figure(777);
 clf;
 f7.WindowStyle = 'docked';
 f7.Color = 'w';
+
+t=uicontrol('style','text','string',FigLabel,'units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left');
+t.Position(1:2)=[5 520];
+t.Position(4)= t.Extent(4);
+t.Position(3)= t.Extent(3);
 
 subplot(221)
 pXsAvg = errorbar(freq,XsAvg,XsAvg_err,'o','Color',[.1 .2 .6],'MarkerFaceColor',[.1 .2 .6]);
@@ -557,7 +579,7 @@ qopt_real = fitoptions(myqfit_real);
 qopt_real.Display = 'iter';
 qopt_real.StartPoint = [90e-9 2*pi*20];
 
-qopt_real.StartPoint = [100e-9 Gamma_real*0.5];
+qopt_real.StartPoint = [100e-9 Gamma_real];
 
 
 qopt_real.Robust = 'bisquare';
@@ -592,64 +614,124 @@ qG_imag_unc = (qfout_imag_c(2,2)-qfout_imag_c(1,2))/2;
 
 %% Plot conductivity fits
 ff = 0:0.1:250;
-f4 = figure(444);
+f4=figure(444);
 clf
-f4.WindowStyle ='docked';
+if ~doSave
+    f4.WindowStyle ='docked';
+else
+    f4.WindowStyle = 'normal';
+end
 f4.Color = 'w';
+f4.Position = [800 100 1100 530];
 
-subplot(121)
-errorbar(freq_ord(1:(end-5)),cond_real_ord(1:(end-5)),cond_real_err_ord(1:(end-5)),'ko','markerfacecolor','k');
+t=uicontrol('style','text','string',FigLabel,'units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left');
+t.Position(1:2)=[5 510];
+t.Position(4)= t.Extent(4);
+t.Position(3)= t.Extent(3);
+
+subplot(131)
+errorbar(freq_ord(1:(end-5)),cond_real_ord(1:(end-5)),cond_real_err_ord(1:(end-5)),'ko','markerfacecolor','k','DisplayName','Fit');
 hold on
 errorbar(freq_ord((end-4):end),cond_real_ord((end-4):end),cond_real_err_ord((end-4):end),...
-'o','Color',[.1 .6 .2],'markerfacecolor',[.1 .6 .2]);
+'o','Color',[.1 .6 .2],'markerfacecolor',[.1 .6 .2],'DisplayName','Not Fit');
 
-plot(ff,myfunc_real(fout_real.A,fout_real.B,fout_real.C,2*pi*ff))
-plot(ff,qfit_real(qfout_imag.TT,qfout_imag.GG,2*pi*ff),'b--')
-plot(ff,qfit_real(qfout_real.TT,qfout_real.GG,2*pi*ff),'color','b')
+plot(ff,myfunc_real(fout_real.A,fout_real.B,fout_real.C,2*pi*ff),'r','DisplayName', 'Drude')
+plot(ff,qfit_real(qfout_real.TT,qfout_real.GG,2*pi*ff),'color','b','DisplayName','TDPT')
+plot(ff,qfit_real(qfout_imag.TT,qfout_imag.GG,2*pi*ff),'b--','DisplayName','TDPT (Imag)')
 hold on
-text(1,14,'$y = A\frac{\omega^2B}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
-text(1,13,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_real/(2*pi),2)) '$\pm$' num2str(round(B_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
-text(1,12,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_real/amu,2)) '$\pm$' num2str(round(m_real_unc/amu,2)) ' amu'], 'Interpreter','latex','color','r')
-text(1,11,['$C/2\pi = $' num2str(round(fout_real.C/(2*pi),2)) '$\pm$' num2str(round(C_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
 
-text(90,14,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
-text(90,13,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color','b')
-text(90,12,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_real.GG/(2*pi),2)) '$\pm$' num2str(round(qG_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','b')
-text(90,11,['$T = $' num2str(round(qfout_real.TT/(1e-9),2)) '$\pm$' num2str(round(qT_real_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color','b')
+% text(1,14,'$y = A\frac{\omega^2B}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
+% text(1,13,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_real/(2*pi),2)) '$\pm$' num2str(round(B_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
+% text(1,12,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_real/amu,2)) '$\pm$' num2str(round(m_real_unc/amu,2)) ' amu'], 'Interpreter','latex','color','r')
+% text(1,11,['$C/2\pi = $' num2str(round(fout_real.C/(2*pi),2)) '$\pm$' num2str(round(C_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
+% 
+% text(90,14,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
+% text(90,13,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color','b')
+% text(90,12,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_real.GG/(2*pi),2)) '$\pm$' num2str(round(qG_real_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','b')
+% text(90,11,['$T = $' num2str(round(qfout_real.TT/(1e-9),2)) '$\pm$' num2str(round(qT_real_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color','b')
 
 xlabel('frequency (Hz)')
 ylabel('real conductivity (\sigma/\sigma_0)')
 title(['U = ' num2str(round(Us,2)) ' Hz' ', t = ' num2str(round(tunneling,2)) ' Hz']);
 xlim([0 150])
-ylim([-2 15])
+ylim([-2 max(cond_real_ord(1:end-5))+5])
+legend('Location','northeast');
 grid on;
 
-subplot(122)
-errorbar(freq_ord(1:(end-5)),cond_imag_ord(1:(end-5)),cond_imag_err_ord(1:(end-5)),'ko','markerfacecolor','k');
+subplot(132)
+errorbar(freq_ord(1:(end-5)),cond_imag_ord(1:(end-5)),cond_imag_err_ord(1:(end-5)),'ko','markerfacecolor','k','DisplayName','Fit');
 hold on
 errorbar(freq_ord((end-4):end),cond_imag_ord((end-4):end),cond_imag_err_ord((end-4):end),...
-'o','Color',[.1 .6 .2],'markerfacecolor',[.1 .6 .2]);
+'o','Color',[.1 .6 .2],'markerfacecolor',[.1 .6 .2],'DisplayName','Not Fit');
 
-plot(ff,myfunc_imag(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff))
-plot(ff,qfit_imag(qfout_real.TT,qfout_real.GG,2*pi*ff),'b--')
-plot(ff,qfit_imag(qfout_imag.TT,qfout_imag.GG,2*pi*ff),'color','b')
+plot(ff,myfunc_imag(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff),'r','DisplayName','Drude')
+plot(ff,qfit_imag(qfout_imag.TT,qfout_imag.GG,2*pi*ff),'color','b','DisplayName','TDPT')
+plot(ff,qfit_imag(qfout_real.TT,qfout_real.GG,2*pi*ff),'b--','DisplayName','TDPT (real)')
+
 hold on;
-text(1,9,'$y = A\frac{\omega(\omega^2-C^2)}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
-text(1,8,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_imag/(2*pi),2)) '$\pm$' num2str(round(B_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
-text(1,7,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_imag/amu,2)) '$\pm$' num2str(round(m_imag_unc/amu,2)) ' amu'], 'Interpreter','latex','color', 'r')
-text(1,6,['$\frac{C}{2\pi} = $ ' num2str(round(fout_imag.C/(2*pi),2)) '$\pm$' num2str(round(C_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
-
-text(90,9,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
-text(90,8,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color', 'b')
-text(90,7,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_imag.GG/(2*pi),2)) '$\pm$' num2str(round(qG_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
-text(90,6,['$T = $' num2str(round(qfout_imag.TT/(1e-9),2)) '$\pm$' num2str(round(qT_imag_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color', 'b')
+% text(1,9,'$y = A\frac{\omega(\omega^2-C^2)}{(\omega^2-C^2)^2+w^2B^2}$', 'Interpreter','latex','color','r')
+% text(1,8,['$\frac{\Gamma}{2\pi} = \frac{B}{2\pi} = $' num2str(round(Gamma_imag/(2*pi),2)) '$\pm$' num2str(round(B_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color','r')
+% text(1,7,['$m^* = \frac{\hbar}{a_L^2A} = $ ' num2str(round(m_imag/amu,2)) '$\pm$' num2str(round(m_imag_unc/amu,2)) ' amu'], 'Interpreter','latex','color', 'r')
+% text(1,6,['$\frac{C}{2\pi} = $ ' num2str(round(fout_imag.C/(2*pi),2)) '$\pm$' num2str(round(C_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'r')
+% 
+% text(90,9,['$\omega_{\mathrm{pk}} = 2\pi\times$' num2str(round(omega_pk/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
+% text(90,8,['$m^* = $ ' num2str(round(m_eff/amu,2)) ' amu'], 'Interpreter','latex','color', 'b')
+% text(90,7,['$\frac{\Gamma}{2\pi} = $' num2str(round(qfout_imag.GG/(2*pi),2)) '$\pm$' num2str(round(qG_imag_unc/(2*pi),2)) ' Hz'], 'Interpreter','latex','color', 'b')
+% text(90,6,['$T = $' num2str(round(qfout_imag.TT/(1e-9),2)) '$\pm$' num2str(round(qT_imag_unc/(1e-9),2)) ' nK'], 'Interpreter','latex','color', 'b')
 
 xlabel('frequency (Hz)')
 ylabel('imag conductivity (\sigma/\sigma_0)')
 
 title(['U = ' num2str(round(Us,2)) ' Hz' ', t = ' num2str(round(tunneling,2)) ' Hz']);
 xlim([0 150])
-ylim([-5 10])
+ylim([min(cond_imag_ord(1:end-5))-2 max(cond_imag_ord(1:end-5))+2])
+legend('Location','southeast');
 grid on;
+
+subplot(133)
+% tableNames = {'$\frac{\omega_{\mathrm{pk}}}{2\pi}$ (Hz)'; '$m^*$ (amu)'; '$\frac{\Gamma}{2\pi}$ (Hz)';'$T$ (nK)'};
+tableNames = {'TDPT Real'; 'Wpk (Hz)'; 'm_eff (amu)'; 'Gamma (Hz)';'T (nK)';...
+              '';'TDPT Imag'; 'Wpk (Hz)'; 'm_eff (amu)'; 'Gamma (Hz)';'T (nK)';...
+              '';'Drude Real'; 'Wc (Hz)'; 'm_eff (amu)'; 'Gamma (Hz)';...
+              '';'Drude Imag'; 'Wc (Hz)'; 'm_eff (amu)'; 'Gamma (Hz)';...
+    };
+
+fitData = {'';round(omega_pk/(2*pi),1);round(m_eff/amu,1);round(qfout_real.GG/(2*pi),1);round(qfout_real.TT/(1e-9),1);...
+           '';'';round(omega_pk/(2*pi),1);round(m_eff/amu,1);round(qfout_imag.GG/(2*pi),1);round(qfout_imag.TT/(1e-9),1);...
+           '';'';round(fout_real.C/(2*pi),1);round(m_real/amu,1);round(Gamma_real/(2*pi),1);...
+           '';'';round(fout_imag.C/(2*pi),1);round(m_imag/amu,1);round(Gamma_imag/(2*pi),1)};
+       
+fitErrors = {'';'';'';round(qG_real_unc/(2*pi),1);round(qT_real_unc/(1e-9),1);...
+           '';'';'';'';round(qG_imag_unc/(2*pi),1);round(qT_imag_unc/(1e-9),1);...
+           '';'';round(C_real_unc/(2*pi),1);round(m_real_unc/amu,1);round(B_real_unc/(2*pi),1);...
+           '';'';round(C_imag_unc/(2*pi),1);round(m_imag_unc/amu,1);round(B_imag_unc/(2*pi),1)};
+       
+fitTable = table(tableNames,fitData,fitErrors);
+
+
+t = uitable(f4,'Data',fitTable{:,:},...
+            'RowName',{},... 
+            'ColumnName',{'','Value','Error'},...
+            'ColumnWidth',{77});
+
+pos = get(subplot(1,3,3),'position');
+title('Fit Results')
+set(subplot(1,3,3),'yTick',[])
+set(subplot(1,3,3),'xTick',[])
+set(t,'units','normalized')
+set(t,'position',pos)
+
+
+%% Save plots
+
+if doSave 
+    savedir = [FigLabel(1:27) 'Conductivity Figures'];
+    if ~exist(savedir, 'dir')
+       mkdir(savedir)
+    end
+    %Save conductivity spectra
+    saveas(f4,[savedir '\' 'conductivity_spectra.png']);
+end
 
 

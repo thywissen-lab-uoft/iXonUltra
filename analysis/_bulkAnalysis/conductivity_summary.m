@@ -55,9 +55,16 @@ legend('$2\Gamma$ of Re$[\sigma]$','$2/\tau_{\mathrm{ramp}}$','interpreter','lat
 %     'fontsize',12);
 % title('Constant temperature conductivity fits')
 
-%% Plot temperatures and interaction energies
+%% Plot interaction energies
 
 f9 = figure(999);
 clf;
 f9.WindowStyle = 'Docked';
 f9.Color = 'w';
+
+pUs = plot(nU2t_list,Us_list/tunneling,'ko','MarkerFaceColor','k');
+xlabel('$nU^2/t\: (\mathrm{s}^{-1})$', 'Interpreter','latex')
+ylabel('U/t')
+title('Interaction energies')
+
+%% Plot temperatures
