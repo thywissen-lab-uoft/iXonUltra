@@ -55,28 +55,28 @@
 %     ];
 
 % % 190 G
-% runs = [
-%     2024 02 26 04;
-%     2024 02 26 05;
-%     2024 02 26 06;
-%     2024 02 26 07;
-%     2024 02 26 08;
-%     2024 02 26 09;
-%     2024 02 26 10;
-%     2024 02 26 11;
-%     2024 02 26 12;
-%     2024 02 26 14;
-%     2024 02 26 15;
-%     2024 02 26 16;
-%     2024 02 26 17;
-%     2024 02 26 18;
-%     2024 02 26 19;
-%     2024 02 26 20;
-%     2024 02 26 21;
-%     2024 02 26 22;
-%     2024 02 26 23;
-%     2024 02 26 24;
-%     ];
+runs = [
+    2024 02 26 04;
+    2024 02 26 05;
+    2024 02 26 06;
+    2024 02 26 07;
+    2024 02 26 08;
+    2024 02 26 09;
+    2024 02 26 10;
+    2024 02 26 11;
+    2024 02 26 12;
+    2024 02 26 14;
+    2024 02 26 15;
+    2024 02 26 16;
+    2024 02 26 17;
+    2024 02 26 18;
+    2024 02 26 19;
+    2024 02 26 20;
+    2024 02 26 21;
+    2024 02 26 22;
+    2024 02 26 23;
+    2024 02 26 24;
+    ];
 
 % % 201 G
 % runs = [
@@ -244,25 +244,25 @@
 %     ];
 
 %200.65 G
-runs = [
-    
-    2024 03 19 06;
-    2024 03 19 07;
-    2024 03 19 08;
-    2024 03 19 09;
-    2024 03 19 10;
-    2024 03 19 11;
-    2024 03 19 12;
-    2024 03 19 14;
-    2024 03 19 15;
-    2024 03 19 16;
-    2024 03 19 17;
-    2024 03 19 18;
-    2024 03 19 19;
-    2024 03 19 20;
-    2024 03 19 21;
-    2024 03 19 22;
-    ];
+% runs = [
+%     
+%     2024 03 19 06;
+%     2024 03 19 07;
+%     2024 03 19 08;
+%     2024 03 19 09;
+%     2024 03 19 10;
+%     2024 03 19 11;
+%     2024 03 19 12;
+%     2024 03 19 14;
+%     2024 03 19 15;
+%     2024 03 19 16;
+%     2024 03 19 17;
+%     2024 03 19 18;
+%     2024 03 19 19;
+%     2024 03 19 20;
+%     2024 03 19 21;
+%     2024 03 19 22;
+%     ];
 %% Choose to save files or not
 doSave = 0;
 
@@ -324,6 +324,7 @@ w_T_ydir = 2*pi*59.7; % s^-1
 T = 95e-9; %K
 G = 2*pi*36; %2*pi*Hz
 
+numBad = 2;
 
 for nn=1:length(dir_list)
     ixon_auto_dir = 0;
@@ -395,8 +396,8 @@ cond_imag_err_ord = cond_imag_err(freq_I);
 B_0 = 202.15; %G %free space feshbach resonance
 deltaFB = 6.910; %G %width of FR
 a_bg = 166.978*a_0; %m %Background scattering length
-% Bfield = 200.65+0.1238; %G %Feshbach field
-Bfield = field(1); %G %Feshbach field
+Bfield = 196.5+0.1238; %G %Feshbach field
+% Bfield = field(1); %G %Feshbach field
 
 as = a_bg*(1-deltaFB/(Bfield-B_0)); %Scattering length
 
@@ -532,7 +533,7 @@ lvl = 0.667;
 
 opt_real = fitoptions(myfit_real);
 opt_real.StartPoint = [3600 2*pi*20 2*pi*50];
-fout_real = fit(omega_ord(1:(end-5))',cond_real_ord(1:(end-5))',myfit_real,opt_real);
+fout_real = fit(omega_ord(1:(end-numBad))',cond_real_ord(1:(end-numBad))',myfit_real,opt_real);
 fout_real_c = confint(fout_real,lvl);
 A_real_unc = (fout_real_c(2,1)-fout_real_c(1,1))/2;
 B_real_unc = (fout_real_c(2,2)-fout_real_c(1,2))/2;
@@ -540,7 +541,7 @@ C_real_unc = (fout_real_c(2,3)-fout_real_c(1,3))/2;
 
 opt_imag = fitoptions(myfit_imag);
 opt_imag.StartPoint = [3600 2*pi*20 2*pi*50];
-fout_imag = fit(omega_ord(1:(end-5))',cond_imag_ord(1:(end-5))',myfit_imag,opt_imag);
+fout_imag = fit(omega_ord(1:(end-numBad))',cond_imag_ord(1:(end-numBad))',myfit_imag,opt_imag);
 fout_imag_c = confint(fout_real,lvl);
 A_imag_unc = (fout_imag_c(2,1)-fout_imag_c(1,1))/2;
 B_imag_unc = (fout_imag_c(2,2)-fout_imag_c(1,2))/2;
@@ -577,17 +578,19 @@ myqfit_real = fittype(@(TT,GG,ww) qfit_real(TT,GG,ww), 'independent',{'ww'},...
 lvl = 0.667;
 qopt_real = fitoptions(myqfit_real);
 qopt_real.Display = 'iter';
-qopt_real.StartPoint = [90e-9 2*pi*20];
+% qopt_real.StartPoint = [90e-9 2*pi*20];
 
-qopt_real.StartPoint = [100e-9 Gamma_real];
+qopt_real.StartPoint = [15e-9 Gamma_real];
+% qopt_real.StartPoint = [40e-9 Gamma_real];
+% qopt_real.StartPoint = [20e-9 45];
 
 
-qopt_real.Robust = 'bisquare';
+% qopt_real.Robust = 'bisquare';
 
 % qopt_real.Weight = 1./abs(cond_real_err_ord(1:(end-5))).^2;
 
 
-qfout_real = fit(omega_ord(1:(end-5))',cond_real_ord(1:(end-5))',myqfit_real,qopt_real);
+qfout_real = fit(omega_ord(1:(end-numBad))',cond_real_ord(1:(end-numBad))',myqfit_real,qopt_real);
 qfout_real_c=confint(qfout_real,lvl);
 qT_real_unc = (qfout_real_c(2,1)-qfout_real_c(1,1))/2;
 qG_real_unc = (qfout_real_c(2,2)-qfout_real_c(1,2))/2;
@@ -597,17 +600,17 @@ myqfit_imag = fittype(@(TT,GG,ww) qfit_imag(TT,GG,ww), 'independent',{'ww'},...
 
 qopt_imag = fitoptions(myqfit_imag);
 qopt_imag.Display = 'iter';
-qopt_imag.StartPoint = [60e-9 2*pi*30];
+% qopt_imag.StartPoint = [60e-9 2*pi*30];
 
 qopt_imag.StartPoint = [qfout_real.TT qfout_real.GG];
 
-% qopt_imag.Weight = 1./abs(cond_imag_err_ord(1:(end-5))).^2;
+% qopt_imag.Weight = 1./abs(cond_imag_err_ord(1:(end-numBad))).^2;
 
-qopt_imag.Robust='bisquare';
+% qopt_imag.Robust='bisquare';
 % qopt_imag.TolFun=1e-9;
 % qopt_imag.TolX=1e-9;
 
-qfout_imag = fit(omega_ord(1:(end-5))',cond_imag_ord(1:(end-5))',myqfit_imag,qopt_imag);
+qfout_imag = fit(omega_ord(1:(end-numBad))',cond_imag_ord(1:(end-numBad))',myqfit_imag,qopt_imag);
 qfout_imag_c=confint(qfout_imag,lvl);
 qT_imag_unc = (qfout_imag_c(2,1)-qfout_imag_c(1,1))/2;
 qG_imag_unc = (qfout_imag_c(2,2)-qfout_imag_c(1,2))/2;
@@ -631,9 +634,9 @@ t.Position(4)= t.Extent(4);
 t.Position(3)= t.Extent(3);
 
 subplot(131)
-errorbar(freq_ord(1:(end-5)),cond_real_ord(1:(end-5)),cond_real_err_ord(1:(end-5)),'ko','markerfacecolor','k','DisplayName','Fit');
+errorbar(freq_ord(1:(end-numBad)),cond_real_ord(1:(end-numBad)),cond_real_err_ord(1:(end-numBad)),'ko','markerfacecolor','k','DisplayName','Fit');
 hold on
-errorbar(freq_ord((end-4):end),cond_real_ord((end-4):end),cond_real_err_ord((end-4):end),...
+errorbar(freq_ord((end-(numBad-1)):end),cond_real_ord((end-(numBad-1)):end),cond_real_err_ord((end-(numBad-1)):end),...
 'o','Color',[.1 .6 .2],'markerfacecolor',[.1 .6 .2],'DisplayName','Not Fit');
 
 plot(ff,myfunc_real(fout_real.A,fout_real.B,fout_real.C,2*pi*ff),'r','DisplayName', 'Drude')
@@ -655,14 +658,14 @@ xlabel('frequency (Hz)')
 ylabel('real conductivity (\sigma/\sigma_0)')
 title(['U = ' num2str(round(Us,2)) ' Hz' ', t = ' num2str(round(tunneling,2)) ' Hz']);
 xlim([0 150])
-ylim([-2 max(cond_real_ord(1:end-5))+5])
+ylim([-2 max(cond_real_ord(1:end-numBad))+5])
 legend('Location','northeast');
 grid on;
 
 subplot(132)
-errorbar(freq_ord(1:(end-5)),cond_imag_ord(1:(end-5)),cond_imag_err_ord(1:(end-5)),'ko','markerfacecolor','k','DisplayName','Fit');
+errorbar(freq_ord(1:(end-numBad)),cond_imag_ord(1:(end-numBad)),cond_imag_err_ord(1:(end-numBad)),'ko','markerfacecolor','k','DisplayName','Fit');
 hold on
-errorbar(freq_ord((end-4):end),cond_imag_ord((end-4):end),cond_imag_err_ord((end-4):end),...
+errorbar(freq_ord((end-(numBad-1)):end),cond_imag_ord((end-(numBad-1)):end),cond_imag_err_ord((end-(numBad-1)):end),...
 'o','Color',[.1 .6 .2],'markerfacecolor',[.1 .6 .2],'DisplayName','Not Fit');
 
 plot(ff,myfunc_imag(fout_imag.A,fout_imag.B,fout_imag.C,2*pi*ff),'r','DisplayName','Drude')
@@ -685,7 +688,7 @@ ylabel('imag conductivity (\sigma/\sigma_0)')
 
 title(['U = ' num2str(round(Us,2)) ' Hz' ', t = ' num2str(round(tunneling,2)) ' Hz']);
 xlim([0 150])
-ylim([min(cond_imag_ord(1:end-5))-2 max(cond_imag_ord(1:end-5))+2])
+ylim([min(cond_imag_ord(1:end-numBad))-2 max(cond_imag_ord(1:end-numBad))+2])
 legend('Location','southeast');
 grid on;
 
