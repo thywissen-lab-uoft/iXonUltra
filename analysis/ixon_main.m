@@ -92,8 +92,8 @@ ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
-ixon_doBoxCount             = 0;
-ixon_doGaussFit             = 0;
+ixon_doBoxCount             = 1;
+ixon_doGaussFit             = 1;
 
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
@@ -372,7 +372,7 @@ ixon_animateOpts.Source = 'Z';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
     ixon_animateOpts.CLim=[0 300];   % Color limits
-%     ixon_animateOpts.CLim=[0 1800];   % Color limits
+%     ixon_animateOpts.CLim=[0 1500];   % Color limits
 
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
