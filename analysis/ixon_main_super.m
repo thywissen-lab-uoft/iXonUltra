@@ -333,46 +333,86 @@ src = 'X:\Data';
 %     2024 03 14 22;
 %     ];
 
+% runs = [
+%     
+%     2024 03 19 06;
+%     2024 03 19 07;
+%     2024 03 19 08;
+%     2024 03 19 09;
+%     2024 03 19 10;
+%     2024 03 19 11;
+%     2024 03 19 12;
+%     2024 03 19 14;
+%     2024 03 19 15;
+%     2024 03 19 16;
+%     2024 03 19 17;
+%     2024 03 19 18;
+%     2024 03 19 19;
+%     2024 03 19 20;
+%     2024 03 19 21;
+%     2024 03 19 22;
+%     ];
+
+% runs = [
+%     
+%     2024 03 25 06;
+%     2024 03 25 07;
+%     2024 03 25 08;
+%     2024 03 25 09;
+%     2024 03 25 10;
+%     2024 03 25 11;
+%     2024 03 25 12;
+%     2024 03 25 14;
+%     2024 03 25 15;
+%     2024 03 25 16;
+%     2024 03 25 17;
+%     2024 03 25 18;
+%     2024 03 25 19;
+%     2024 03 25 20;
+%     2024 03 25 21;
+%     2024 03 25 22;
+%     ];
+
 runs = [
     
-    2024 03 19 06;
-    2024 03 19 07;
-    2024 03 19 08;
-    2024 03 19 09;
-    2024 03 19 10;
-    2024 03 19 11;
-    2024 03 19 12;
-    2024 03 19 14;
-    2024 03 19 15;
-    2024 03 19 16;
-    2024 03 19 17;
-    2024 03 19 18;
-    2024 03 19 19;
-    2024 03 19 20;
-    2024 03 19 21;
-    2024 03 19 22;
+    2024 03 26 06;
+    2024 03 26 07;
+    2024 03 26 08;
+    2024 03 26 09;
+    2024 03 26 10;
+    2024 03 26 11;
+    2024 03 26 12;
+    2024 03 26 14;
+    2024 03 26 15;
+    2024 03 26 16;
+    2024 03 26 17;
+    2024 03 26 18;
+    2024 03 26 19;
+    2024 03 26 20;
+    2024 03 26 21;
+    2024 03 26 22;
     ];
 
-%% Get the direcotry list
-dir_list = ixon_findRunDirectory(runs);
-
-for nn=1:length(dir_list)
-   ixon_auto_dir = 0;
-   imgdir = dir_list{nn};
-   ixon_main;
-    ixon_auto_dir = 1;
-end
-
-%% Get the direcotry list
-dir_list = ixon_findRunDirectory(runs);
-
-for nn=1:length(dir_list)
-    bin_auto_file = 0;
-    filename = fullfile(dir_list{nn},'figures','bindata.mat');
-    bin_imgdir = fullfile(dir_list{nn},'figures');
-    ixon_bin_analysis;
-    bin_auto_file = 1;    
-end
+% %% Get the direcotry list
+% dir_list = ixon_findRunDirectory(runs);
+% 
+% for nn=1:length(dir_list)
+%    ixon_auto_dir = 0;
+%    imgdir = dir_list{nn};
+%    ixon_main;
+%     ixon_auto_dir = 1;
+% end
+% 
+% %% Get the direcotry list
+% dir_list = ixon_findRunDirectory(runs);
+% 
+% for nn=1:length(dir_list)
+%     bin_auto_file = 0;
+%     filename = fullfile(dir_list{nn},'figures','bindata.mat');
+%     bin_imgdir = fullfile(dir_list{nn},'figures');
+%     ixon_bin_analysis;
+%     bin_auto_file = 1;    
+% end
 
 
 

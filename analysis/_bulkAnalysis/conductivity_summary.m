@@ -4,7 +4,7 @@
 B_0 = 202.15; %G %free space feshbach resonance
 deltaFB = 6.910; %G %width of FR
 a_bg = 166.978*a_0; %m %Background scattering length
-Bfield_list = [190,196.5,198.5,199.4,200,200.4,200.8,200.9,201,201.1]+0.1238; %G %Feshbach field
+Bfield_list = [190,196.5,198.5,199.4,200,200.4,200.65,200.8,200.9,201,201.1]+0.1238; %G %Feshbach field
 
 % Lattice Condtions
 W4 = 1.3798e19; %This is the integral of the ground band Wannier function to the 4th power, used to calculate U
@@ -29,8 +29,8 @@ end
 % yyyy_err = 4*pi.*[0.88,1.11,1.25,1.83,2.37,3.53,5.01,2.95];
 
 % constant temperature fit values
-real_2gamma = 4*pi.*[8.49,13.38,9.77,13.77,15.59,20,19.77,23.41,18.41,16.41];
-real_2gamma_err = 4*pi.*[1.50,1.6,1.25,2.39,3.01,3.92,5.01,6.87,4.55,2.83];
+real_2gamma = 4*pi.*[8.49,13.38,9.77,13.77,15.59,20,17.8,19.77,23.41,18.41,16.41];
+real_2gamma_err = 4*pi.*[1.50,1.6,1.25,2.39,3.01,3.92,1.85,5.01,6.87,4.55,2.83];
 
 imag_2gamma = 4*pi.*[14.78,20.33,12.78,12.6,10.02,15.23,10.88,17.17,15.23,22.77];
 imag_2gamma_err = 4*pi.*[3.05,3.77,1.76,3.54,2.65,7.18,4.93,4.62,6.99,3.77];
@@ -56,23 +56,24 @@ yline(2e3/tau_ramp,'k--')
 xlabel('$nU^2/t\: (\mathrm{s}^{-1})$', 'Interpreter','latex')
 ylabel('dissipation rate (s^{-1})');
 ylim([0 400]);
-legend('$2\Gamma$ of Re$[\sigma]$','$2/\tau_{\mathrm{ramp}}$','interpreter','latex','fontsize',14)
+legend('$2\Gamma$ of Re$[\sigma]$','$2/\tau_{\mathrm{ramp}}$',...
+    'interpreter','latex','fontsize',14)
 
 % text(8000,2*pi*1e3/tau_ramp,['2\pi/(' num2str(tau_ramp) ' ms)'],...
 %     'verticalalignment','bottom','horizontalalignment','left',...
 %     'fontsize',12);
 % title('Constant temperature conductivity fits')
 
-%% Plot interaction energies
-
-f9 = figure(999);
-clf;
-f9.WindowStyle = 'Docked';
-f9.Color = 'w';
-
-pUs = plot(nU2t_list,Us_list/tunneling,'ko','MarkerFaceColor','k');
-xlabel('$nU^2/t\: (\mathrm{s}^{-1})$', 'Interpreter','latex')
-ylabel('U/t')
-title('Interaction energies')
+% %% Plot interaction energies
+% 
+% f9 = figure(999);
+% clf;
+% f9.WindowStyle = 'Docked';
+% f9.Color = 'w';
+% 
+% pUs = plot(nU2t_list,Us_list/tunneling,'ko','MarkerFaceColor','k');
+% xlabel('$nU^2/t\: (\mathrm{s}^{-1})$', 'Interpreter','latex')
+% ylabel('U/t')
+% title('Interaction energies')
 
 %% Plot temperatures
