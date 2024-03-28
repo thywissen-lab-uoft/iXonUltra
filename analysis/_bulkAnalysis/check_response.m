@@ -18,7 +18,7 @@ energies = h*(energies_Hz);
 %% Trap parameters
 wXDT = 2*pi*42.5; %2*pi*Hz
 T = 60e-9; %K
-G = 2*pi*18; %2*pi*Hz
+G = 2*pi*12; %2*pi*Hz
 
 %% Create data points
 
@@ -34,13 +34,23 @@ end
 
 %% Fit the data
 % myfunc = @(A,x0,w,x) A.*exp(-(x-x0).^2./w.^2) + 4;
-myfunc = @(a,b,c,x) a.*(x-b).^2 + c;
+% myfunc = @(a,b,c,x) a.*(x-b).^2 + c;
+% 
+% myfit = fittype(@(a,b,c,x) myfunc(a,b,c,x),'independent',{'x'},...
+%         'coefficients',{'a','b','c'});
+%     opt = fitoptions(myfit);
+% opt.StartPoint = [-1.5 60 40];
 
-myfit = fittype(@(a,b,c,x) myfunc(a,b,c,x),'independent',{'x'},...
-        'coefficients',{'a','b','c'});
 
+    myfunc = @(x0,y0,a2,a4,x) a2.*(x-x0).^2 + a4.*(x-x0).^4 + y0;    
+myfit = fittype(@(x0,y0,a2,a4,x) myfunc(x0,y0,a2,a4,x),'independent',{'x'},...
+        'coefficients',{'x0','y0','a2','a4'});
 opt = fitoptions(myfit);
-opt.StartPoint = [-1.5 60 40];
+[d0,ind]=min(d);
+f0 = f(ind);
+
+opt.StartPoint = [d0 f0 1e-3 0];
+
 fout = fit(f(9:(end-5))',d(9:(end-5))',myfit,opt);
 
 xx = 56:1:150;
