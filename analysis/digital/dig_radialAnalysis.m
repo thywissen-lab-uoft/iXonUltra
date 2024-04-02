@@ -46,10 +46,12 @@ ii = [find(n1 == r(1),1) find(n1 == r(2),1) find(n2 == r(3),1) find(n2 == r(4),1
 
 % Zrad 
 Npics = size(Z,3);
+
 Zsub = zeros(length(ii(3):ii(4)),length(ii(1):ii(2)));
 for nn = 1:Npics
     Zsub(:,:,nn) = Z(ii(3):ii(4),ii(1):ii(2),nn);
 end
+
 
     % Look at average
     ZsubBar = mean(Zsub,3);

@@ -373,46 +373,114 @@ src = 'X:\Data';
 %     2024 03 25 22;
 %     ];
 
+% runs = [    
+%     2024 03 26 06;
+%     2024 03 26 07;
+%     2024 03 26 08;
+%     2024 03 26 09;
+%     2024 03 26 10;
+%     2024 03 26 11;
+%     2024 03 26 12;
+%     2024 03 26 14;
+%     2024 03 26 15;
+%     2024 03 26 16;
+%     2024 03 26 17;
+%     2024 03 26 18;
+%     2024 03 26 19;
+%     2024 03 26 20;
+%     2024 03 26 21;
+%     2024 03 26 22;
+%     ];
+
+
+% runs = [    
+%     2024 03 28 07;
+%     2024 03 28 08;
+%     2024 03 28 09;
+%     2024 03 28 10;
+%     2024 03 28 11;
+%     2024 03 28 12;
+%     2024 03 28 13;
+%     2024 03 28 15;
+%     2024 03 28 16;
+%     2024 03 28 17;
+%     2024 03 28 18;
+%     2024 03 28 19;
+%     2024 03 28 20;
+%     2024 03 28 21;
+%     2024 03 28 22;
+%     2024 03 28 23;
+%     ];
+
+
+% runs = [    
+%     2024 03 28 25;
+%     2024 03 28 26;
+%     2024 03 28 27;
+%     2024 03 28 28;
+%     2024 03 28 29;
+%     2024 03 28 30;
+%     2024 03 28 31;
+%     2024 03 28 33;
+%     2024 03 28 34;
+%     2024 03 28 35;
+%     2024 03 28 36;
+%     2024 03 28 37;
+%     2024 03 28 38;
+%     2024 03 28 39;
+%     2024 03 28 40;
+%     2024 03 28 41;
+%     ];
+
+% Single plane
 runs = [
-    
-    2024 03 26 06;
-    2024 03 26 07;
-    2024 03 26 08;
-    2024 03 26 09;
-    2024 03 26 10;
-    2024 03 26 11;
-    2024 03 26 12;
-    2024 03 26 14;
-    2024 03 26 15;
-    2024 03 26 16;
-    2024 03 26 17;
-    2024 03 26 18;
-    2024 03 26 19;
-    2024 03 26 20;
-    2024 03 26 21;
-    2024 03 26 22;
+    2024 03 01 12;
+    2024 03 01 20;
+    2024 03 04 04;
+    2024 03 04 12;
+    2024 03 05 05;
+    2024 03 05 13;
+    2024 03 06 06;
+    2024 03 06 14;
+    2024 03 07 5;
+    2024 03 07 13;
+    2024 03 08 04;
+    2024 03 08 12;
+    2024 03 14 05;
+    2024 03 14 13;
+    2024 03 19 05;
+    2024 03 19 13;
+    2024 03 25 05;
+    2024 03 26 05;
+    2024 03 26 13;
+    2024 03 27 05;
+    2024 03 27 13;
+    2024 03 28 06;
+    2024 03 28 14;
+    2024 03 28 24;
+    2024 03 28 32;
     ];
 
-% %% Get the direcotry list
-% dir_list = ixon_findRunDirectory(runs);
-% 
-% for nn=1:length(dir_list)
-%    ixon_auto_dir = 0;
-%    imgdir = dir_list{nn};
-%    ixon_main;
-%     ixon_auto_dir = 1;
-% end
-% 
-% %% Get the direcotry list
-% dir_list = ixon_findRunDirectory(runs);
-% 
-% for nn=1:length(dir_list)
-%     bin_auto_file = 0;
-%     filename = fullfile(dir_list{nn},'figures','bindata.mat');
-%     bin_imgdir = fullfile(dir_list{nn},'figures');
-%     ixon_bin_analysis;
-%     bin_auto_file = 1;    
-% end
+%% Get the direcotry list
+dir_list = ixon_findRunDirectory(runs);
+
+for nn=1:length(dir_list)
+   ixon_auto_dir = 0;
+   imgdir = dir_list{nn};
+   ixon_main;
+    ixon_auto_dir = 1;
+end
+
+%% Get the direcotry list
+dir_list = ixon_findRunDirectory(runs);
+
+for nn=1:length(dir_list)
+    bin_auto_file = 0;
+    filename = fullfile(dir_list{nn},'figures','bindata.mat');
+    bin_imgdir = fullfile(dir_list{nn},'figures');
+    ixon_bin_analysis;
+    bin_auto_file = 1;    
+end
 
 
 

@@ -17,22 +17,89 @@ energies = h*(energies_Hz);
 
 %% Trap parameters
 wXDT = 2*pi*42.5; %2*pi*Hz
-T = 60e-9; %K
-G = 2*pi*12; %2*pi*Hz
+T = 50e-9; %K
+G = 2*pi*30; %2*pi*Hz
+amp_desired = 0.65; %um
+
+f = [20:1:150];
 
 %% Create data points
 
-% x = [20,30,40,50,60,70,80,90,100,110,120];
-% y = [0.45,0.38,0.30,0.29,0.40,0.61,0.89,1.22,1.60,2.02,2.51];
-
-amp_desired = 0.65; %um
-f = [20:5:150];
 d = [];
 for ff = 1:length(f)
     d(ff) = hbar*2*pi*f(ff)*amp_desired/(aL^2*m*wXDT^2*sqrt(qfit_real(T,G,2*pi*f(ff))^2+qfit_imag(T,G,2*pi*f(ff))^2))/3.55; %V
 end
 
-%% Fit the data
+%% Plot Anticipated response
+f33 = figure;
+f33.Color='w';
+clf(f33);
+plot(f,d,'k.-')
+hold on;
+xlabel('drive frequency (Hz)');
+ylabel('drive amplitude (V)');
+
+% plot(xx,yy,'r')
+% plot(x2,y2,'b')
+xlim([20,130])
+
+
+
+
+%% Fit the response
+
+
+% plot(f,polyval(pp,f-f0),'r-');
+
+
+[d0,ind]=min(d);
+f0 = f(ind);
+pp = polyfit(f-f0,d,4);
+
+WH = [f>=f0]';
+WL = [f<=f0]';
+
+myfit = fittype(@(a8,a6,a4,a2,x) d0 + a2*(x-f0).^2 + a4*(x-f0).^4+ a6*(x-f0).^6+ a8*(x-f0).^8,...
+    'independent',{'x'},'coefficients',{'a8','a6','a4','a2'});
+opt = fitoptions(myfit);
+opt.StartPoint = [0 0 pp(1) pp(2)];
+opt.Weights = WH;
+opt.Robust = 'bisquare';
+
+foutH = fit(f',d',myfit,opt);
+
+opt.Weights = WL;
+foutL = fit(f',d',myfit,opt);
+
+plot(f(f>=f0),feval(foutH,f(f>=f0)),'r-','linewidth',1)
+plot(f(f<=f0),feval(foutL,f(f<=f0)),'b-','linewidth',1)
+
+s = ['$y = y_0 + a_2(x-x_0)^2 + a_4(x-x_0)^4 + a_6(x-x_0)^6 + a_8(x-x_0)^8$'];
+s = [s newline '$(x_0,y_0) = ' num2str(round(f0,3)) ',' num2str(round(d0,4)) '$'];
+s = [s newline '$(a_2,a_4,a_6,a_8)_L = ($' num2str(foutL.a2,'%.2e') ',' ...
+    num2str(foutL.a4,'%.2e') ', ' ...
+    num2str(foutL.a6,'%.2e') ', ' ...
+    num2str(foutL.a8,'%.2e') '$)$'];
+s = [s newline '$(a_2,a_4,a_6,a_8)_H = ($' num2str(foutH.a2,'%.2e') ',' ...
+    num2str(foutH.a4,'%.2e') ', ' ...
+    num2str(foutH.a6,'%.2e') ', ' ...
+    num2str(foutH.a8,'%.2e') '$)$'];
+
+text(.01,.98,s,'interpreter','latex','units','normalized','fontsize',12,...
+    'verticalalignment','top');
+
+
+% plot([20 40], [1.63,1.63],'r')
+% plot([98 100], [4,4],'r')
+% xlabel('Drive Frequency (Hz)')
+% ylabel('Drive Amplitude (V)')
+% text(22,3.4,'y =a(x-b)^2 + c','color','r')
+% text(22,3.2,['a = ' num2str(fout.a)],'color','r')
+% text(22,3,['b = ' num2str(fout.b)],'color','r')
+% text(22,2.8,['c = ' num2str(fout.c)],'color','r')
+% text(22,2.6,'y= -0.0084x + 0.9340','color','b')
+
+% %% Fit the response function 
 % myfunc = @(A,x0,w,x) A.*exp(-(x-x0).^2./w.^2) + 4;
 % myfunc = @(a,b,c,x) a.*(x-b).^2 + c;
 % 
@@ -40,37 +107,21 @@ end
 %         'coefficients',{'a','b','c'});
 %     opt = fitoptions(myfit);
 % opt.StartPoint = [-1.5 60 40];
+% 
+% % 
+%     myfunc = @(x0,y0,a2,a4,x) a2.*(x-x0).^2 + a4.*(x-x0).^4 + y0;    
+% myfit = fittype(@(x0,y0,a2,a4,x) myfunc(x0,y0,a2,a4,x),'independent',{'x'},...
+%         'coefficients',{'x0','y0','a2','a4'});
+% opt = fitoptions(myfit);
+% [d0,ind]=min(d);
+% f0 = f(ind);
+% opt.StartPoint = [d0 f0 1e-3 0];
+% 
+% fout = fit(f(9:(end-5))',d(9:(end-5))',myfit,opt);
+% 
+% xx = 56:1:150;
+% yy = myfunc(fout.a,fout.b,fout.c,xx);
+% 
+% x2=[20:1:56];
+% y2= -0.0084.*x2+0.9340;
 
-
-    myfunc = @(x0,y0,a2,a4,x) a2.*(x-x0).^2 + a4.*(x-x0).^4 + y0;    
-myfit = fittype(@(x0,y0,a2,a4,x) myfunc(x0,y0,a2,a4,x),'independent',{'x'},...
-        'coefficients',{'x0','y0','a2','a4'});
-opt = fitoptions(myfit);
-[d0,ind]=min(d);
-f0 = f(ind);
-
-opt.StartPoint = [d0 f0 1e-3 0];
-
-fout = fit(f(9:(end-5))',d(9:(end-5))',myfit,opt);
-
-xx = 56:1:150;
-yy = myfunc(fout.a,fout.b,fout.c,xx);
-
-x2=[20:1:56];
-y2= -0.0084.*x2+0.9340;
-f33 = figure(33);
-clf(f33);
-plot(f,d,'ko')
-hold on;
-plot(xx,yy,'r')
-plot(x2,y2,'b')
-xlim([20,150])
-% plot([20 40], [1.63,1.63],'r')
-% plot([98 100], [4,4],'r')
-xlabel('Drive Frequency (Hz)')
-ylabel('Drive Amplitude (V)')
-text(22,3.4,'y =a(x-b)^2 + c','color','r')
-text(22,3.2,['a = ' num2str(fout.a)],'color','r')
-text(22,3,['b = ' num2str(fout.b)],'color','r')
-text(22,2.8,['c = ' num2str(fout.c)],'color','r')
-text(22,2.6,'y= -0.0084x + 0.9340','color','b')
