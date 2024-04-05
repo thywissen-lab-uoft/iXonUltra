@@ -19,7 +19,7 @@ addpath(a);addpath(genpath(a));
 
 %% Initialize Digdata
 
-dig_DigitizationThreshold               = 5000;
+dig_DigitizationThreshold               = 2500;
 bindata = ixon_digitize(bindata,dig_DigitizationThreshold);    
 digdata = bin_makeDigData(bindata,bin_opts);
     

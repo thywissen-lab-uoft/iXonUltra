@@ -36,7 +36,7 @@ for kk=1:size(runs,1)
     dir_list = ixon_findRunDirectory(runs(kk,:));
     disp(repmat('-',1,60));disp(repmat('-',1,60));   
     disp(['loading ' num2str(runs(kk,:)) '...']);
-  
+  imgdir=dir_list{1};
     s1 = fullfile(imgdir,'Figures','digdata.mat');        
     %Load Files        
     data=load(s1);
