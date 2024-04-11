@@ -19,8 +19,8 @@ ixon_fit_opts.Number_Lorentzian   = 0;
 % Center position fit
 ixon_fit_opts.Center_Sine         = 0;
 ixon_fit_opts.Center_SineDecay    = 0;
-ixon_fit_opts.Center_SineGrow     = 0;
-ixon_fit_opts.Center_Linear       = 1;
+ixon_fit_opts.Center_SineGrow     = 1;
+ixon_fit_opts.Center_Linear       = 0;
 
 
 %% PLOTTING : BOX

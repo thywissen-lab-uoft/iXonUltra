@@ -1,6 +1,6 @@
 
 % Source directory of all data
-srcdir = 'X:\Data\2024\2024.04\04.04\04 overnight 190G, 650ms premod time';
+srcdir = 'X:\Data\2024\2024.04\04.10\03 overnight shake 190 G, heat at 201G for 500 ms first, 150 ms mod ramp time';
 
 
 % Parent directory of data to sort
