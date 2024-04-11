@@ -1,76 +1,101 @@
 function [hF,out] = dig_radialAnalysis(digdata,opts)
 
-if nargin == 1
-    opts = struct;
-end
-
-if ~isfield(opts,'RemoveOutliers')
-    opts.RemoveOutliers = 1;
-end
-
-
-%% Remove outliers
-Z   = [digdata.Zdig];
-P   = [digdata.Params];
-Xc  = [digdata.Xc_site];
-Yc  = [digdata.Yc_site];
-
-
-if opts.RemoveOutliers
-    [Natoms,bad_inds] = rmoutliers([digdata.Natoms]);    
-    Z(:,:,bad_inds) = [];
-    P(bad_inds) = [];
-    Xc(bad_inds)=[];
-    Yc(bad_inds)=[];
-end
-%% Find Center
-
-
-Xcbar = round(mean(Xc));
-Ycbar = round(mean(Yc));
-
-n1 = digdata.n1;
-n2 = digdata.n2;    
-
-nlimits = [min(n1) max(n1) min(n2) max(n2)];
-%%
-
-L = min(abs(nlimits - [Xcbar Xcbar Ycbar Ycbar]));
-L = L-2;
-
-r = [Xcbar Xcbar Ycbar Ycbar]+[-1 1 -1 1]*L;
-
-% Indeces of bounds
-ii = [find(n1 == r(1),1) find(n1 == r(2),1) find(n2 == r(3),1) find(n2 == r(4),1)];
-
-
-% Zrad 
-Npics = size(Z,3);
-
-Zsub = zeros(length(ii(3):ii(4)),length(ii(1):ii(2)));
-for nn = 1:Npics
-    Zsub(:,:,nn) = Z(ii(3):ii(4),ii(1):ii(2),nn);
-end
-
-
+    if nargin == 1
+        opts = struct;
+    end
+    
+    if ~isfield(opts,'RemoveOutliers')
+        opts.RemoveOutliers = 1;
+    end
+    
+    
+    %% Remove outliers
+    Z   = [digdata.Zdig];
+    P   = [digdata.Params];
+    Xc  = [digdata.Xc_site];
+    Yc  = [digdata.Yc_site];
+    
+    
+    if opts.RemoveOutliers
+        [Natoms,bad_inds] = rmoutliers([digdata.Natoms]);    
+        Z(:,:,bad_inds) = [];
+        P(bad_inds) = [];
+        Xc(bad_inds)=[];
+        Yc(bad_inds)=[];
+    end
+    %% Find Center
+    
+    
+    Xcbar = round(mean(Xc));
+    Ycbar = round(mean(Yc));
+    
+    n1 = digdata.n1;
+    n2 = digdata.n2;    
+    
+    nlimits = [min(n1) max(n1) min(n2) max(n2)];
+    %% Compute radial average
+    
+    L = min(abs(nlimits - [Xcbar Xcbar Ycbar Ycbar]));
+    L = L-2;
+    
+    r = [Xcbar Xcbar Ycbar Ycbar]+[-1 1 -1 1]*L;
+    
+    % Indeces of bounds
+    ii = [find(n1 == r(1),1) find(n1 == r(2),1) find(n2 == r(3),1) find(n2 == r(4),1)];
+    
+    
+    % Zrad 
+    Npics = size(Z,3);
+    
+    Zsub = zeros(length(ii(3):ii(4)),length(ii(1):ii(2)));
+    for nn = 1:Npics
+        Zsub(:,:,nn) = Z(ii(3):ii(4),ii(1):ii(2),nn);
+    end
+    
+    
     % Look at average
     ZsubBar = mean(Zsub,3);
     [Tics,Average,dev,n]=radial_profile(ZsubBar,1);
-
+    
     % Look at deviations
     ZsubDev = std(Zsub,0,3);
     [TicsDev,AverageDev,devDev,nDev]=radial_profile(ZsubDev,1);
+    
+    
+    %% Create radial potential vector
+    
+    % Constants
+    h = 6.62607015*10^-34;
+    m = 39.96399848*1.66053906660*10^-27;
+    lam = (1054*10^-9*1054*10^-9*1064*10^-9)^(1/3);
+    aL = lam/2;
+    
+    % 120mW XDT + 2.5ER request lattice trap frequencies - calibrated
+    % 02/29/24 (reanalyzed 04/11/24)
+    omega_x = 2*pi*67.3;
+    omega_y = 2*pi*60.2;
+    omega_bar = (omega_x*omega_y).^(1/2);
+    
+    % Harmonic potential in Hz
+    PotentialVector = 0.5*m*omega_bar^2*aL^2.*Tics.^2/h;
+    
+    %% Assign to output
+    
+    out = struct;
+    out.CroppedImages                  = Zsub;
+    out.AverageImage                   = ZsubBar;
+    out.SiteVector1                    = r(1):r(2);
+    out.SiteVector2                    = r(3):r(4);
+    out.RadialCenter                   = [Xcbar Ycbar];
+    out.RadialVector                   = Tics;
+    out.PotentialVector                = PotentialVector;
+    out.AverageOccupation              = Average;
+    out.AverageOccupationUncertainty   = dev./sqrt(n);
+    out.DeviationOccupation            = AverageDev;
+    out.DeviationOccupationUncertainty = devDev./sqrt(nDev);
 
-out = struct;
-out.CroppedImages = Zsub;
-out.SiteVector1 = r(1):r(2);
-out.SiteVector2 = r(3):r(4);
-out.RadialCenter = [Xcbar Ycbar];
-out.RadialVector = Tics;
-out.AverageOccupation = Average;
-out.AverageOccupationUncertainty = dev./sqrt(n);
-out.DeviationOccupation = AverageDev;
-out.DeviationOccupationUncertainty = devDev./sqrt(nDev);
+
+%% Plotting
 
     hF = figure;
     hF.Color='w';

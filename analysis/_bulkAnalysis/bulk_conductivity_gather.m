@@ -3,7 +3,7 @@
 clear composite_data
 composite_data = struct;
 
-% 190 G
+% 190 G - BAD SPIN MIXING
 % composite_data(1).Name = '190 G 02/21';
 % composite_data(1).Runs = [2024 02 21 08;
 %     2024 02 21 09;
@@ -24,7 +24,7 @@ composite_data = struct;
 %     2024 02 21 25;
 %     ];
 
-% 196.5 G
+% 196.5 G - BAD SPIN MIXING
 % composite_data(2).Name = '196.5 G 02/23';
 % composite_data(2).Runs = [
 %     2024 02 23 06;
@@ -48,7 +48,7 @@ composite_data = struct;
 %     2024 02 23 25;
 %     ];
 
-% 190 G
+% 190 G - BAD SPIN MIXING
 % composite_data(3).Name = '190 G 02/26';
 % composite_data(3).Runs = [
 %     2024 02 26 04;
@@ -73,7 +73,7 @@ composite_data = struct;
 %     2024 02 26 24;
 %     ];
 
-% 201 G
+% 201 G - BAD SPIN MIXING
 % composite_data(4).Name = '201 G 02/27';
 % composite_data(4).Runs = [
 %     2024 02 27 05;
