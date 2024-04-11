@@ -17,8 +17,8 @@ energies = h*(energies_Hz);
 
 %% Trap parameters
 wXDT = 2*pi*42.5; %2*pi*Hz
-T = 80e-9; %K
-G = 2*pi*25; %2*pi*Hz
+T = 95e-9; %K
+G = 2*pi*18; %2*pi*Hz
 amp_desired = 0.65; %um
 
 f = [20:1:150];
