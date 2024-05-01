@@ -82,7 +82,7 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
@@ -93,7 +93,7 @@ ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
 ixon_doBoxCount             = 1;
-ixon_doGaussFit             = 1;
+ixon_doGaussFit             = 0;
 
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
@@ -102,18 +102,18 @@ ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
-ixon_doAnalyzeQPD           = 0;    % Analyze QPD traces
+ixon_doAnalyzeQPD           = 1;    % Analyze QPD traces
 
 % QGM Single Plane Analysis
-ixon_doQGM                          = 0;
-doPSF                               = 0;
-ixon_doQGM_FindLattice              = 0;
-ixon_doQGM_Bin                      = 0;
+ixon_doQGM                          = 1;
+doPSF                               = 1;
+ixon_doQGM_FindLattice              = 1;
+ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
 
-ixon_doQGM_BinStandardAnalysis      = 0;
-ixon_doQGM_Digitize                 = 0;
-ixon_doQGM_DigitalStandardAnalysis  = 0;
+ixon_doQGM_BinStandardAnalysis      = 1;
+ixon_doQGM_Digitize                 = 1;
+ixon_doQGM_DigitalStandardAnalysis  = 1;
 
 
 %% Image Processing Options

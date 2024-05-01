@@ -65,7 +65,7 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 1;                % Auto detect changing variable?
+dig_opts.autoXVar       = 0;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'ExecutionDate';  % Variable Name
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this

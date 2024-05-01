@@ -28,6 +28,7 @@ runs=[
     2024 03 28 24;
     2024 03 28 32;
     ];
+
 %% Gather All Data
     clear digdata;
 
