@@ -93,7 +93,7 @@ ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
 ixon_doBoxCount             = 1;
-ixon_doGaussFit             = 1;
+ixon_doGaussFit             = 0;
 
 % Analysis to run
 ixon_doStandardAnalysis     = 1;
@@ -107,13 +107,13 @@ ixon_doAnalyzeQPD           = 0;    % Analyze QPD traces
 % QGM Single Plane Analysis
 ixon_doQGM                          = 0;
 doPSF                               = 0;
-ixon_doQGM_FindLattice              = 0;
-ixon_doQGM_Bin                      = 0;
+ixon_doQGM_FindLattice              = 1;
+ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
 
-ixon_doQGM_BinStandardAnalysis      = 0;
-ixon_doQGM_Digitize                 = 0;
-ixon_doQGM_DigitalStandardAnalysis  = 0;
+ixon_doQGM_BinStandardAnalysis      = 1;
+ixon_doQGM_Digitize                 = 1;
+ixon_doQGM_DigitalStandardAnalysis  = 1;
 
 
 %% Image Processing Options
@@ -373,7 +373,9 @@ ixon_animateOpts.Source = 'Z';
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
     ixon_animateOpts.CLim=[0 300];   % Color limits
 %     ixon_animateOpts.CLim=[0 1500];   % Color limits
-
+if ~ixon_doQGM
+%      ixon_animateOpts.CLim='auto';
+end
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end

@@ -82,7 +82,7 @@ N_outliers_theta2 = sum(i4);
 i4mat = reshape(i4,[length(data) length(data(1).LatticeK)]);
 
 %%
-
+% 
 hF = figure(5000);
 hF.Color='w';
 hF.Position = [100 100 600 400];
