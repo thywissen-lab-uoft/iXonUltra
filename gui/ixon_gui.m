@@ -1591,6 +1591,7 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             'YData',data.LatticeDig(imgnum).n2,...
             'CData',data.LatticeDig(imgnum).Zdig);  
         drawnow;
+%         updateDigitalGraphics;
         updateCoM_D;            
     end
 
@@ -2723,6 +2724,9 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         updateMomentumGraphics;          
         updateBinnedGraphics;
         updateBinnedHistogramGraphics;
+        
+        
+        updateDigitalGraphics;
     end
 
 %% Lattice Grid Callbacks
@@ -2788,18 +2792,12 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 
 %% Position Callbacks
 
-    function updatePositionGraphics        
-        % tbl_pos_analysis.Data={};
-        % updateDispPosImg;        
-        % if cAutoColor_X.Value;setClim('X');end                
+    function updatePositionGraphics  
         cCrossCB(cCross_X);
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
-        latticeTextCB(cTextLattice);
-        % updateBoxGraphics;
-        % updateSharpnessGraphics;
-        % cCoMCB(cCoMStr_X);        
-        % set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);        
+        latticeTextCB(cTextLattice);  
+        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);        
     end
 
     function updateSharpnessGraphics
@@ -3014,7 +3012,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
 %         updateCoM_D;   
     end
 
-
+%% Digital Callbacks
     function updateCoM_D
         if ~isfield(data,'LatticeDig') 
            tCoMDAnalysis.Visible='off';
