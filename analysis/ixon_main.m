@@ -84,7 +84,7 @@ end
 varType             = 'param'; % always select 'param' for now 
 ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'ExecutionDate'; % Variable Name
+ixon_xVar           = 'qgm_plane_uwave_time'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -105,8 +105,8 @@ ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in 
 ixon_doAnalyzeQPD           = 0;    % Analyze QPD traces
 
 % QGM Single Plane Analysis
-ixon_doQGM                          = 0;
-doPSF                               = 0;
+ixon_doQGM                          = 1;
+doPSF                               = 1;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;

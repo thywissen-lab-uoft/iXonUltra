@@ -37,9 +37,13 @@ end
 a1mag = sqrt(a1x.^2+a1y.^2);
 theta1 = atan2(a1y,a1x);
 
+a1mag = a1mag(:);
+theta1 = theta1(:);
+
 a2mag = sqrt(a2x.^2+a2y.^2);
 theta2 = atan2(a2y,a2x);
-
+a2mag = a2mag(:);
+theta2 = theta2(:);
 %%
 
 hF = figure(5001);

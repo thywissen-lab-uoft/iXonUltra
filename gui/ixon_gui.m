@@ -1284,7 +1284,7 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 %% Binning Panel
 hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
-hpBin.Position=[0 hpKspace.Position(2)-180 160 220];
+hpBin.Position=[0 hpKspace.Position(2)-180 160 225];
 
 
 ttstr='auto do bin analysis';
@@ -1546,7 +1546,7 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
     
     end
 %% Digitization Panel
-hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning and digitization');
+hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','digitization');
 hpDig.Position=[0 hpBin.Position(2)-80 160 100];
 
 ttstr='auto do digital analysis';
@@ -1584,10 +1584,13 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
     end
 
     function analyze_dig(src,evt)
+        imgnum = menuSelectImg.Value;
+
         data = ixon_digitize(data,tblDig.Data);
                 set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
             'YData',data.LatticeDig(imgnum).n2,...
-            'CData',data.LatticeDig(imgnum).Zdig);                
+            'CData',data.LatticeDig(imgnum).Zdig);  
+        drawnow;
         updateCoM_D;            
     end
 
@@ -2276,7 +2279,7 @@ tbl_fft_analysis=uitable(tabs(5),'units','normalized','RowName',{},'ColumnName',
     'Position',[0 0 1 1]);
 
 % Table for hopping analysis outputs
-tbl_hop_analysis=uitable(tabs(6),'units','normalized','RowName',{},'ColumnName',{},...
+tbl_fidelity_analysis=uitable(tabs(6),'units','normalized','RowName',{},'ColumnName',{},...
     'fontsize',8,'ColumnWidth',{100 85},'columneditable',false(ones(1,2)),...
     'Position',[0 0 1 1]);
 
@@ -2297,7 +2300,7 @@ tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
 tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
 tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
 tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
-tabHop=uitab(hp,'Title','hopping','units','pixels','backgroundcolor','w');
+tabFidelity=uitab(hp,'Title','fidelity','units','pixels','backgroundcolor','w');
 
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary
@@ -3018,13 +3021,14 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
            return
         end
         imgnum = menuSelectImg.Value;
-        bc = data.LatticeDig(imgnum);        
+        bc = data.LatticeDig(imgnum);  
+        
         % Update box count string
-        str=[ num2str(bc.Natoms,'%.2e') ' atoms' newline ...
-            '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(bc.Xc,1)) ',' ...
-            num2str(round(bc.Yc,1)) ')$' newline ...
-            '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs,1)) ',' ...
-            num2str(round(bc.Ys,1)) ')$']; 
+        str=[ num2str(bc.Natoms) ' atoms' newline ...
+            '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(bc.Xc_site,1)) ',' ...
+            num2str(round(bc.Yc_site,1)) ')$' newline ...
+            '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs_site,1)) ',' ...
+            num2str(round(bc.Ys_site,1)) ')$']; 
         %Update box count string object
         set(tCoMDAnalysis,'String',str);          
     end

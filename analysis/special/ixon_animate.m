@@ -19,26 +19,37 @@ ixondata=ixondata(inds);
 
 %% Average with unique x variable
 
-% Find and sor the unique values
-uxvals=unique(xvals);
+% % Find and sor the unique values
+% uxvals=unique(xvals);
+% 
+% if isequal(direction,'ascend')
+%     uxvals=sort(uxvals,'ascend');
+% else
+%     uxvals=sort(uxvals,'descend');
+% end
+% 
+% Zall=zeros(size(ixondata(1).Z,1),size(ixondata(1).Z,2),length(uxvals));
+% 
+% for kk=1:length(uxvals) % Iterate over unique x values    
+%     % Find the indeces which have this unique value
+%     inds=find(uxvals(kk)==xvals);    
+%     for ii=1:length(inds)
+%         ind=inds(ii);
+%         Z=ixondata(ind).(opts.Source)(:,:,1);
+%         Zall(:,:,kk)=Zall(:,:,kk)+Z;        
+%     end        
+%     Zall(:,:,kk)=Zall(:,:,kk)/length(inds);   
+% end
 
-if isequal(direction,'ascend')
-    uxvals=sort(uxvals,'ascend');
-else
-    uxvals=sort(uxvals,'descend');
-end
+%%
 
+uxvals = xvals;
+[uxvals,inds]=sort(uxvals,'ascend');
+ixondata= ixondata(inds);
 Zall=zeros(size(ixondata(1).Z,1),size(ixondata(1).Z,2),length(uxvals));
 
-for kk=1:length(uxvals) % Iterate over unique x values    
-    % Find the indeces which have this unique value
-    inds=find(uxvals(kk)==xvals);    
-    for ii=1:length(inds)
-        ind=inds(ii);
-        Z=ixondata(ind).(opts.Source)(:,:,1);
-        Zall(:,:,kk)=Zall(:,:,kk)+Z;        
-    end        
-    Zall(:,:,kk)=Zall(:,:,kk)/length(inds);   
+for kk=1:length(uxvals)
+    Zall(:,:,kk) = ixondata(kk).(opts.Source)(:,:,1);
 end
 
 %% Auto Clim
