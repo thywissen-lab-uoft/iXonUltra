@@ -4,6 +4,8 @@ if ~isfield(ixondata,'LatticeBin')
     return;
 end
 
+% if size(ixondata(1).Z,3)
+
 for kk=1:length(ixondata)
     LatticeDig = struct;
     for k = 1:length(ixondata(kk).LatticeBin)

@@ -4,7 +4,6 @@ function [digdata] = bin_makeDigData(bindata,opts)
     U = [bindata.Units];
     D = [bindata.LatticeDig];
 
-    
     Zdig = zeros(size(bindata(1).LatticeBin.Zbin,1),...
         size(bindata(1).LatticeBin.Zbin,2),length(bindata));
     n1 = bindata(1).LatticeBin.n1;

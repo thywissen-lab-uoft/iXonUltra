@@ -46,6 +46,7 @@ data=data.data;
 data.Z=data.RawImages(:,:,2)-data.RawImages(:,:,1);
 Z=data.Z;
 
+
 % default basis information
 defaultBasis  = [0.1923 0.3244 .3;
     .3208 -0.1862 0.3];
@@ -928,7 +929,7 @@ hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','f
     'ToolTipString',ttstr,'enable','on');
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
-    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 51 12],'columneditable',[true],...
+    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 51 31],'columneditable',[true],...
     'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
 tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];  
@@ -1121,12 +1122,12 @@ hc_anlX_Box=uicontrol(hpAnl,'style','checkbox','string','box','fontsize',7,...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
 % Checkbox for image sharpness
-ttstr='Calculate the image sharpness';
-hc_anlX_Sharpness=uicontrol(hpAnl,'style','checkbox','string','sharpness','fontsize',7,...
-    'backgroundcolor','w','Position',[5 62 120 15],...
-    'ToolTipString',ttstr,'enable','off','Value',1);
+% ttstr='Calculate the image sharpness';
+% hc_anlX_Sharpness=uicontrol(hpAnl,'style','checkbox','string','sharpness','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 62 120 15],...
+%     'ToolTipString',ttstr,'enable','off','Value',1);
 
-% Checkbox for image sharpness
+% Checkbox for image histogram
 ttstr='Calculate histgoram';
 hc_anlX_Histogram=uicontrol(hpAnl,'style','checkbox','string','histogram','fontsize',7,...
     'backgroundcolor','w','Position',[5 47 120 15],...
@@ -1523,6 +1524,7 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
 
         data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
         data = ixon_SharpnessBinned(data);  
+
 %         data = ixon_binnedHistogramFit(data);
         
         updateBinnedGraphics;     
@@ -1573,6 +1575,10 @@ tblDigPixel=uitable('parent',hpDig,'units','pixels',...
     'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
 tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
+% 
+% % Digitization Threshold Text
+hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','fidelity','fontsize',7,...
+    'backgroundcolor','w','Position',[5 10 100 15],'Value',0);
 
 % Refit button
 hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
@@ -1584,15 +1590,67 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
     end
 
     function analyze_dig(src,evt)
-        imgnum = menuSelectImg.Value;
+        if ~isfield(data,'LatticeBin')
+            warning('No binnined data to digitize');
+            return;
+        end
+        dig_threshold = tblDig.Data;
+        data = ixon_digitize(data,dig_threshold);
 
-        data = ixon_digitize(data,tblDig.Data);
-                set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
-            'YData',data.LatticeDig(imgnum).n2,...
-            'CData',data.LatticeDig(imgnum).Zdig);  
-        drawnow;
-%         updateDigitalGraphics;
-        updateCoM_D;            
+         if hcDigFidelity.Value
+            opts_fidelity = struct;
+            opts_fidelity.FigureNumber=4001;
+            
+
+            n1 = data.LatticeDig(1).n1;
+            n2 = data.LatticeDig(1).n2;
+
+            Zdig = zeros(length(n2),length(n1),length(data.LatticeDig));
+
+            
+            for jj = 1 :length(data.LatticeDig)
+                Zdig(:,:,jj) = data.LatticeDig(jj).Zdig;
+            end
+
+            out = dig_Fidelity(Zdig,n1,n2);
+            data.DigFideltiy = out;
+            % dig_showFidelty(out,[],
+
+            % opts_stripe.Threshold = stripe_threshold_tbl.Data;
+            % for ll = 1:length(data.LatticeBin)
+                % n1 = data.LatticeBin(ll).n1;
+                % n2 = data.LatticeBin(ll).n2;
+                % Zb = data.LatticeBin(ll).Zbin;    
+                % opts_stripe.LGuess = 26.62;
+                % out = bin_StripeFit(n1,n2,Zb,opts_stripe);                
+            % end            
+            % data.BinStripe = out;     
+            % bin_showStripeBin(data,[],opts_stripe);
+        end  
+
+        
+
+        updateDigitalGraphics;
+    end
+
+    function updateDigitalGraphics    
+         if ~isfield(data,'LatticeDig')
+            return;
+         end  
+        
+        imgnum = menuSelectImg.Value; % get image to analyze
+        dig = data.LatticeDig(imgnum);  
+        set(hImg_D,'XData',dig.n1,'YData',dig.n2,'CData',dig.Zdig);  
+        % Update box count string
+        str=[ num2str(dig.Natoms) ' atoms' newline ...
+            '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(dig.Xc_site,1)) ',' ...
+            num2str(round(dig.Yc_site,1)) ')$' newline ...
+            '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(dig.Xs_site,1)) ',' ...
+            num2str(round(dig.Ys_site,1)) ')$' newline ...
+            'thresh = ' num2str(dig.Threshold)]; 
+        %Update box count string object
+        set(tD_SE,'String',str); 
+        set(tD_SW,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);  
     end
 
 %% Image Number Selector
@@ -2169,10 +2227,10 @@ cCoMStr_D.Position=[2 2 125 15];
 
     function cCoMCB_D(src,~)       
         if ~isfield(data,'BoxCount')
-            tCoMDAnalysis.Visible='off';
+            tD_SE.Visible='off';
             return;
         end
-        set(tCoMDAnalysis,'Visible',src.Value);    
+        set(tD_SE,'Visible',src.Value);    
     end
 
     function cCrossCB(src,evt)                
@@ -2388,12 +2446,6 @@ tTopLeft=text(.01,.99,'FILENAME','units','normalized','fontsize',9,'fontweight',
     'horizontalalignment','left','verticalalignment','top','margin',1,...
     'interpreter','latex',...
     'color','k','backgroundcolor',[1 1 1 .7],'Visible','off');
-
-% Box Count Analysis String
-t_pos_TopRight=text(.99,.99,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
-    'horizontalalignment','right','verticalalignment','top','margin',1,...
-    'interpreter','latex',...
-    'color','k','backgroundcolor',[1 1 1 .7],'Visible','on');
 
 
 % Box for ROI (this will become an array later)
@@ -2714,10 +2766,17 @@ ylabel('lattice site (a_2)','fontsize',8);
 caxis([0 1]);
 
 % Box Count Analysis String
-tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
+tD_SE=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
     'horizontalalignment','right','verticalalignment','bottom','margin',1,...
     'interpreter','latex',...
     'color','k','backgroundcolor',[1 1 1 .7]);
+
+
+% file name string
+tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
+    'horizontalalignment','left','verticalalignment','bottom','margin',1,...
+    'interpreter','none','backgroundcolor',[1 1 1 .5]);
+
 
 %% Graphical Callbacks
     function updateGraphics  
@@ -2727,7 +2786,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         updateMomentumGraphics;          
         updateBinnedGraphics;
         updateBinnedHistogramGraphics;               
-        % updateDigitalGraphics;
+        updateDigitalGraphics;
     end
 
 %% Lattice Grid Callbacks
@@ -2798,20 +2857,22 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
         latticeTextCB(cTextLattice);  
-        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);        
+        set(tImageFile,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);  
+
+        
     end
 
-    function updateSharpnessGraphics
-        if ~isfield(data,'SharpnessScore')
-           t_pos_TopRight.Visible='off';
-           return
-        end
-        imgnum = menuSelectImg.Value;
-        sh1 = data.SharpnessScore(imgnum); 
-        sh2 = data.SharpnessScoreNoFilter(imgnum); 
-        str = ['sharpness scores $(' num2str(sh1,'%.4e') ',' num2str(sh2,'%.4e') ')$'];
-        set(t_pos_TopRight,'String',str); 
-    end
+    % function updateSharpnessGraphics
+    %     if ~isfield(data,'SharpnessScore')
+    %        t_pos_TopRight.Visible='off';
+    %        return
+    %     end
+    %     imgnum = menuSelectImg.Value;
+    %     sh1 = data.SharpnessScore(imgnum); 
+    %     sh2 = data.SharpnessScoreNoFilter(imgnum); 
+    %     str = ['sharpness scores $(' num2str(sh1,'%.4e') ',' num2str(sh2,'%.4e') ')$'];
+    %     set(t_pos_TopRight,'String',str); 
+    % end
 
     function updateBoxGraphics
         if ~isfield(data,'BoxCount')
@@ -3004,19 +3065,13 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         if cAutoColor_B.Value;setClim('B');end     
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
-        latticeTextCB(cTextLattice);
-   
-        
-        %         set(hImg_D,'XData',data.LatticeDig(imgnum).n1,...
-%             'YData',data.LatticeDig(imgnum).n2,...
-%             'CData',data.LatticeDig(imgnum).Zdig);                
-%         updateCoM_D;   
+        latticeTextCB(cTextLattice);   
     end
 
 %% Digital Callbacks
     function updateCoM_D
         if ~isfield(data,'LatticeDig') 
-           tCoMDAnalysis.Visible='off';
+           tD_SE.Visible='off';
            return
         end
         imgnum = menuSelectImg.Value;
@@ -3029,7 +3084,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
             '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(bc.Xs_site,1)) ',' ...
             num2str(round(bc.Ys_site,1)) ')$']; 
         %Update box count string object
-        set(tCoMDAnalysis,'String',str);          
+        set(tD_SE,'String',str);          
     end
 
 %% Binned Histgoram Callbacks
@@ -3133,10 +3188,10 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         if hc_anlX_Box.Value                    
             data=ixon_boxCount(data);
         end
-        %% Sharpness Analysis
-        if hc_anlX_Sharpness.Value    
-            data=ixon_Sharpness(data);
-        end
+        % %% Sharpness Analysis
+        % if hc_anlX_Sharpness.Value    
+        %     data=ixon_Sharpness(data);
+        % end
         %% Histogram Analysis
         if hc_anlX_Histogram.Value            
             data = ixon_PositionHistogram(data);
@@ -3254,8 +3309,9 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     % end       
         % updateGraphics;        
 
-
-        updatePositionAnalysisGraphics;
+        updateDispPosImg;   
+        updatePositionAnalysisGraphics
+        updatePositionGraphics;
     end
 
     function saveGUIData       
@@ -3316,7 +3372,7 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
     function updatePositionAnalysisGraphics
         tbl_pos_analysis.Data={};
         updateBoxGraphics;
-        updateSharpnessGraphics;
+        % updateSharpnessGraphics;
         updatePositionHistogramGraphics;
         updatePCAGraphics;    
         updateGaussGraphics; 
