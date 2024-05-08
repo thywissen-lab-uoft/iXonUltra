@@ -107,9 +107,10 @@ desc=acqDescription(acq);       % Get description of settings
 
 % Initialize the primary figure
 hF=figure;clf
-set(hF,'Color','w','units','pixels','Name',guiname,'toolbar','none',...
+set(hF,'Color','w','units','pixels','Name',guiname,...
     'Tag','GUI','CloseRequestFcn',@closeGUI,'NumberTitle','off',...
-    'Position',[50 50 1200 850],'SizeChangedFcn',@SizeChangedFcn);
+    'Position',[50 50 1200 850],'SizeChangedFcn',@SizeChangedFcn,...
+    'toolbar','none');
 
 % Callback for when the GUI is requested to be closed.
     function closeGUI(fig,~)
@@ -146,15 +147,20 @@ function SizeChangedFcn(~,~)
         x0=hpFit.Position(1)+hpFit.Position(3);
         W=hF.Position(3);H=hF.Position(4);                          % Figure size
         Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);  % Top Bar
+        Ht = 40;
         if (W>360 && H>55); hp.Position=[x0 1 W-x0 H-Ht]; end     % image panel             
         resizePlots;                                                % Resize plots                          
         
         % Resize Panels
-        hpCam.Position(2:3)     = [H-hpCam.Position(4) hF.Position(3)];        
-        hpSave.Position(2:3)    = [hpCam.Position(2)-hpSave.Position(4) hF.Position(3)];                 
-        hpNav.Position(2:3)     = [hpSave.Position(2)-hpSave.Position(4) hF.Position(3)];               
-        hpAcq.Position(2)       = hpNav.Position(2)-hpAcq.Position(4);
-        hpADV.Position(2)       = hpAcq.Position(2)-hpADV.Position(4);
+        hpCam.Position(2)     = H-hpCam.Position(4);        
+
+        hpAcq.Position(2)      = H-hpAcq.Position(4);
+        hpSave.Position(2) =    H-hpSave.Position(4);
+        hpNav.Position(2)     = hpCam.Position(2)-hpNav.Position(4);
+
+        hpADV.Position(2)       = hpNav.Position(2)-hpADV.Position(4);
+
+
         hpAnl.Position(2)       = hpADV.Position(2)-hpAnl.Position(4);        
         hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
         hpBin.Position(2)       = hpKspace.Position(2) - hpBin.Position(4);   
@@ -165,19 +171,270 @@ function SizeChangedFcn(~,~)
         hpDisp_B.Position(2)    = hpDisp_K.Position(2) - hpDisp_B.Position(4);    
         hpDisp_HB.Position(2)   = hpDisp_B.Position(2) - hpDisp_HB.Position(4); 
         hpDisp_D.Position(2)    = hpDisp_HB.Position(2) - hpDisp_D.Position(4);
-        hpFit.Position(4)       = H-Ht;                        
+        % hpFit.Position(4)       = H-Ht;     
+        hpFit.Position(4)       = hpNav.Position(2);                        
+
         strstatus.Position(1)   = hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;       
 end
+%% Image Acqusition Panel
+% Panel for image acquisition controls and settings.
+
+% hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
+    % 'Position',[0 hpCam.Position(2)-30 600 40],'title','Image Saving','fontsize',8);
+
+% hpAcq=uipanel(hF,'units','pixels','backgroundcolor','w',...
+    % 'Position',[0 hpCam.Position(2)-30 400 40],'title','acquisition',...
+    % 'fontsize', 6);
+hpAcq=uipanel(hF,'units','pixels','backgroundcolor','w',...
+    'Position',[0 hF.Position(4)-40 400 40],'title','acquisition',...
+    'fontsize', 6);
+
+% Start acquisition button
+ttstr='Start acquisition.';
+hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
+    'units','pixels','fontsize',10,'backgroundcolor',[80 200 120]/255,...
+    'Position',[2 hpAcq.Position(4)-35 40 20],...    
+    'Callback',@startCamCB,'ToolTipString',ttstr,'enable','off');
+
+    function startCamCB(src,evt)
+        disp('Starting acquisition');        
+        % Send acquistion start command
+        out=ixon_startCamera;
+        tic
+        start(acqTimer);        
+        % Enable/Disable Button/Tables
+        rbSingle.Enable='off';
+        rbLive.Enable='off';
+        hbstart.Enable='off';
+        hbstop.Enable='on';        
+        tbl_acq.ColumnEditable(2)=false;
+        tbl_acq.Enable='off';
+    end
+
+% Stop acquisition button
+ttstr='Abort acquisition.';
+hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
+    'units','pixels','fontsize',10,'backgroundcolor',[250 102 120]/255,...
+    'Position',[45 hpAcq.Position(4)-35 40 20], ...
+    'Callback',@stopCamCB,'ToolTipString',ttstr,'enable','off');
+
+
+    function stopCamCB(src,evt)
+        disp('Stopping acquisition');     
+        stop(acqTimer);
+        ixon_stopCamera;        
+        % Enable/Disable Button/Tables
+        hbstart.Enable='on';
+        hbstop.Enable='off';        
+        rbSingle.Enable='on';
+        rbLive.Enable='on';        
+        tbl_acq.ColumnEditable(2)=true;
+        tbl_acq.Enable='on';
+    end
+
+% Acquisition help button
+ttstr='Help on acquisition.';
+cdata=imresize(imread(fullfile(mpath,'icons','help.jpg')),[15 15]);
+hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,...
+    'enable','on','backgroundcolor','w','position',[88 hpAcq.Position(4)-35 20 20],...
+    'ToolTipString',ttstr,'enable','on');
+
+    function helpCB(~,~)
+       disp('Im helping you'); 
+    end
+
+% Continuous Acquisition checkbox
+ttstr='Reinitialize camera acquisition after image acquisition.';
+hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',6,...
+    'backgroundcolor','w','Position',[hbAcqInfo.Position(1)+hbAcqInfo.Position(3) 1 85 30],...
+    'ToolTipString',ttstr,'enable','on','value',1);
+
+% Button group for acquisition mode
+bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
+    'SelectionChangeFcn',@chAcqCB);  
+bgAcq.Position(3:4)=[120 30];
+bgAcq.Position(1:2)=[hcAcqRpt.Position(1)+hcAcqRpt.Position(3) 2];    
+
+% Radio buttons for triggered versus software acquisition
+rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','triggered',...
+    'Position',[0 0 60 30],'units','pixels','backgroundcolor','w','Value',1,...
+    'UserData','Normal','Enable','off','fontsize',7);
+rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
+    'Position',[60 0 60 30],'units','pixels','backgroundcolor','w',...
+    'UserData','Live','Enable','off','fontsize',7);
+
+% Change acqusition mode callback
+    function chAcqCB(~,evt)        
+        oldStr=evt.OldValue.UserData;
+        newStr=evt.NewValue.UserData;     
+        
+        disp(['Changing camera acquisition mode to "' newStr '"']);
+
+        if isequal(oldStr,newStr)
+           disp('The old and new setting are the same.  How did you get here?'); 
+           return
+        end  
+        
+        % Close the shutter
+        disp('Closing shutter in case you forgot.');                
+        ixon_setCameraShutter(0);        
+        hbCloseShutter.Enable='off';
+        hbOpenShutter.Enable='on';
+        
+        switch newStr
+            case 'Live'
+                msg=['Entering live mode. Verify your settings before ' ...
+                    'starting acquisition. You can break the camera.'];
+                msgbox(msg,'Live Mode','warn','modal');  
+                acq=defaultLiveAcqSettings;    
+                loadAcquisitionSettings
+            case 'Normal'
+                acq=defaultNormalAcqSettings;
+                loadAcquisitionSettings
+            otherwise
+                warning('Unexpected acqusition mode. What happened?');
+        end        
+        
+    end
+
+% Timer to check on acquisition
+% boop = struct;
+% boop.ReadTime = [];
+% boop.
+acqTimer.UserData=[0 0];
+acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
+    'TimerFcn',@acqTimerFcn,'ExecutionMode','FixedSpacing','StartFcn',@acqTimerStartFcn);
+
+    function acqTimerStartFcn(src,evt)
+        src.UserData = [0 0];
+    end
+
+% Timer function checks if acquisition is over and restarts it
+    function acqTimerFcn(src,evt)      
+        try
+        % Camera Status
+        [out,outstr]=ixon_getCameraStatus;  
+        % Check number of available images and post and upate
+        [ret,first,last] = GetNumberAvailableImages;                    
+        if last~=src.UserData(1)
+            src.UserData(1)=last;
+            disp([datestr(now) ' ixon image ' num2str(last)])
+        end
+                    
+        switch outstr
+            case 'DRV_IDLE'      
+                % Grab the images from the camera
+                imgs=ixon_grabRawImages; 
+                toc                
+                % Assign images metadata
+                mydata=makeImgDataStruct(imgs);
+                % Restart Acquisition if desired (auto-stopts)
+                if hcAcqRpt.Value
+                    ixon_startCamera;  
+                else
+                    stop(src);
+                    % Enable/Disable Button/Tables
+                    hbstart.Enable='on';
+                    hbstop.Enable='off';        
+                    rbSingle.Enable='on';
+                    rbLive.Enable='on';        
+                    tbl_acq.ColumnEditable(2)=true;
+                    tbl_acq.Enable='on';                    
+                end                  
+                % Save data to image history
+                % only save to history if not in live mode
+                if ~rbLive.Value
+                    saveData(mydata);
+                end
+                % Save images to save directory
+                if hcauto.Value
+                   saveData(mydata,tSaveDir.UserData); 
+                end              
+                % Update live preview if new                
+                if ~cAutoUpdate.Value
+                    currDir=defaultDir;
+                    data=mydata;   
+                    newDataCallback;                     
+                else                    
+                    % Just update index
+                    updateHistoryInd(data);   
+                end                  
+            case 'DRV_ACQUIRING'
+                % Acquisition is still going.  
+            otherwise
+                warning('Acuisition timer has unexpected result');
+                stopCamCB;
+        end        
+        catch ME
+            warning('Acqtimer failed.');
+            disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);        
+        end
+    end
+
+%% Save Panel
+hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
+    'Position',[hpAcq.Position(1)+hpAcq.Position(3) hF.Position(4)-40 600 40],...
+    'title','Image Saving','fontsize',6);
+
+% Auto Save check box
+ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
+    'not override saving to image history.'];
+hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',8,...
+    'backgroundcolor','w','Position',[0 0 90 25],'callback',@saveCheck,...
+    'ToolTipString',ttstr);
+
+% Save checkbox callback
+    function saveCheck(src,~)
+        if src.Value;
+            tSaveDir.Enable='on';
+            bBrowse.Enable='on';
+        else
+            tSaveDir.Enable='off';
+            bBrowse.Enable='off';
+        end
+    end
+
+
+% Browse button
+ttstr='Select directory to save images.';
+cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[20 20]);
+bBrowse=uicontrol(hpSave,'style','pushbutton','CData',cdata,'callback',@browseCB,...
+    'enable','off','backgroundcolor','w','position',[95 2 size(cdata,[1 2])],...
+    'tooltipstring',ttstr);
+
+% String for current save directory
+ttstr='The current save directory.';
+tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,...
+    'backgroundcolor','w','units','pixels','horizontalalignment','left',...
+    'enable','off','UserData','','Position',[115 0 hF.Position(3)-135 20],...
+    'tooltipstring',ttstr);
+
+% Browse button callback
+    function browseCB(~,~)
+        str=ixon_getDayDir;
+        str=uigetdir(str);        
+        if str
+            tSaveDir.UserData=str; % Full directory to save
+            str=strsplit(str,filesep);
+            str=[str{end-1} filesep str{end}];
+            tSaveDir.String=str; % display string
+        else
+            disp('no directory chosen!');
+        end
+    end
 
 %% Camera Panel
-hpCam=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hF.Position(4)-30 hF.Position(3) 30]);
+% hpCam=uipanel(hF,'units','pixels','backgroundcolor','w','title','camera',...
+%     'Position',[0 hF.Position(4)-30 700 40],'fontsize',6);
+
+hpCam=uipanel(hF,'units','pixels','backgroundcolor','w','title','camera',...
+    'Position',[hpSave.Position(1)+hpSave.Position(3) hF.Position(4)-40 700 40],'fontsize',6);
 
 % Connect camera
 ttstr='Connect to the iXon camera.';
 hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixels',...
-    'fontsize',10,'Position',[2 5 55 20],'backgroundcolor',[80 200 120]/255,...
+    'fontsize',8,'Position',[2 5 45 20],'backgroundcolor',[80 200 120]/255,...
     'Callback',@connectCB,'ToolTipString',ttstr);
 
 % Callback for the connect button
@@ -225,7 +482,7 @@ hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixel
 % Disconnect camera
 ttstr='Disconnect to the iXon camera.';
 hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units','pixels',...
-    'fontsize',10,'Position',[58 5 70 20],'backgroundcolor',[255 102 120]/255,...
+    'fontsize',8,'Position',[50 5 65 20],'backgroundcolor',[255 102 120]/255,...
     'Callback',@disconnectCB,'ToolTipString',ttstr,'enable','off');
 
 % Callback for the disconnect button
@@ -310,7 +567,7 @@ hbCamAbilities=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@ab
 % Start Cooling
 ttstr='Begin cooling the sensor to set point.';
 hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
-    'units','pixels','fontsize',10,'Position',...
+    'units','pixels','fontsize',8,'Position',...
     [175 5 60 20],'enable','off',...
     'backgroundcolor',[173 216 230]/255,'callback',{@coolCB ,1},...
     'ToolTipString',ttstr);
@@ -318,7 +575,7 @@ hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
 % Stop Cooling
 ttstr='Stop cooling the sensor to set point.';
 hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
-    'units','pixels','fontsize',10,'Position',...
+    'units','pixels','fontsize',8,'Position',...
     [238 5 60 20],'enable','off',...
     'backgroundcolor',[.8 .8 .8],'callback',{@coolCB, 0},...
     'ToolTipString',ttstr);
@@ -432,23 +689,23 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
 % Open camera shutter
 ttstr='Open camera shutter.';
 hbOpenShutter=uicontrol(hpCam,'style','pushbutton','string','open shutter',...
-    'units','pixels','fontsize',10,'Position',[385 5 80 20],'enable','off',...
+    'units','pixels','fontsize',8,'Position',[385 5 80 20],'enable','off',...
     'backgroundcolor',[255 204 0]/255,'callback',{@shutterCB,1},...
     'ToolTipString',ttstr);
 
 ttstr='Close camera shutter.';
 hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
-    'units','pixels','fontsize',10,'Position',[465 5 80 20],'enable','off',...
+    'units','pixels','fontsize',8,'Position',[465 5 80 20],'enable','off',...
     'backgroundcolor',[255 102 120]/255,'callback',{@shutterCB,0},...
     'ToolTipString',ttstr);
 
 % Text label for fit results output variable
 
 % Drop down menu for fit results output
-frslct=uicontrol('parent',hpCam','units','pixels','style','popupmenu',...
-    'String',{'a','b','c'},'fontsize',8);
-frslct.Position(3)=120;
-frslct.Position(1:2)=[600 5];
+% frslct=uicontrol('parent',hpCam','units','pixels','style','popupmenu',...
+%     'String',{'a','b','c'},'fontsize',8);
+% frslct.Position(3)=120;
+% frslct.Position(1:2)=[600 5];
 
 
     function shutterCB(~,~,state)        
@@ -471,67 +728,15 @@ frslct.Position(1:2)=[600 5];
         end
     end
 
-
-%% Save Panel
-hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpCam.Position(2)-30 hF.Position(3)-150 25]);
-
-% Auto Save check box
-ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
-    'not override saving to image history.'];
-hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',8,...
-    'backgroundcolor','w','Position',[0 0 90 25],'callback',@saveCheck,...
-    'ToolTipString',ttstr);
-
-% Save checkbox callback
-    function saveCheck(src,~)
-        if src.Value;
-            tSaveDir.Enable='on';
-            bBrowse.Enable='on';
-        else
-            tSaveDir.Enable='off';
-            bBrowse.Enable='off';
-        end
-    end
-
-
-% Browse button
-ttstr='Select directory to save images.';
-cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[20 20]);
-bBrowse=uicontrol(hpSave,'style','pushbutton','CData',cdata,'callback',@browseCB,...
-    'enable','off','backgroundcolor','w','position',[95 2 size(cdata,[1 2])],...
-    'tooltipstring',ttstr);
-
-% String for current save directory
-ttstr='The current save directory.';
-tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,...
-    'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'enable','off','UserData','','Position',[115 0 hF.Position(3)-135 20],...
-    'tooltipstring',ttstr);
-
-% Browse button callback
-    function browseCB(~,~)
-        str=ixon_getDayDir;
-        str=uigetdir(str);        
-        if str
-            tSaveDir.UserData=str; % Full directory to save
-            str=strsplit(str,filesep);
-            str=[str{end-1} filesep str{end}];
-            tSaveDir.String=str; % display string
-        else
-            disp('no directory chosen!');
-        end
-    end
-
 %% Navigator Panel 
 
-hpNav=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[hpSave.Position(1) hpSave.Position(2)-hpSave.Position(4) hF.Position(3) 25]);
+hpNav=uipanel(hF,'units','pixels','backgroundcolor','w','title','GUI Image Source',...
+    'Position',[0 hpSave.Position(2) 620 35],'fontsize',6);
 
 % Checkbox for auto updating when new images are taken
 ttstr='Automatically refresh to most recent image upon new image acquisition.';
 cAutoUpdate=uicontrol('parent',hpNav,'units','pixels','string',...
-    'hold preview?','value',0,'fontsize',8,'backgroundcolor','w',...
+    'hold image?','value',0,'fontsize',8,'backgroundcolor','w',...
     'Style','checkbox','ToolTipString',ttstr);
 cAutoUpdate.Position=[0 5 90 14];
 
@@ -679,212 +884,7 @@ tNavName=uicontrol(hpNav,'style','text','string','FILENAME','fontsize',7,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
     'Position',[235 2 hpNav.Position(3)-133 14],'tooltipstring',ttstr);
 tNavName.String=data.Name;
-%% Image Acqusition Panel
-% Panel for image acquisition controls and settings.
 
-hpAcq=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hF.Position(4)-55-100 160 70],'title','acquisition');
-
-% Start acquisition button
-ttstr='Start acquisition.';
-hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
-    'units','pixels','fontsize',10,'backgroundcolor',[80 200 120]/255,...
-    'Position',[2 hpAcq.Position(4)-35 40 20],...    
-    'Callback',@startCamCB,'ToolTipString',ttstr,'enable','off');
-
-    function startCamCB(src,evt)
-        disp('Starting acquisition');        
-        % Send acquistion start command
-        out=ixon_startCamera;
-        tic
-        start(acqTimer);        
-        % Enable/Disable Button/Tables
-        rbSingle.Enable='off';
-        rbLive.Enable='off';
-        hbstart.Enable='off';
-        hbstop.Enable='on';        
-        tbl_acq.ColumnEditable(2)=false;
-        tbl_acq.Enable='off';
-    end
-
-% Stop acquisition button
-ttstr='Abort acquisition.';
-hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
-    'units','pixels','fontsize',10,'backgroundcolor',[250 102 120]/255,...
-    'Position',[45 hpAcq.Position(4)-35 40 20], ...
-    'Callback',@stopCamCB,'ToolTipString',ttstr,'enable','off');
-
-
-    function stopCamCB(src,evt)
-        disp('Stopping acquisition');     
-        stop(acqTimer);
-        ixon_stopCamera;        
-        % Enable/Disable Button/Tables
-        hbstart.Enable='on';
-        hbstop.Enable='off';        
-        rbSingle.Enable='on';
-        rbLive.Enable='on';        
-        tbl_acq.ColumnEditable(2)=true;
-        tbl_acq.Enable='on';
-    end
-
-% Acquisition help button
-ttstr='Help on acquisition.';
-cdata=imresize(imread(fullfile(mpath,'icons','help.jpg')),[15 15]);
-hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,...
-    'enable','on','backgroundcolor','w','position',[88 hpAcq.Position(4)-35 20 20],...
-    'ToolTipString',ttstr,'enable','on');
-
-    function helpCB(~,~)
-       disp('Im helping you'); 
-    end
-
-% Continuous Acquisition checkbox
-ttstr='Reinitialize camera acquisition after image acquisition.';
-hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hpAcq.Position(4)-52 120 15],...
-    'ToolTipString',ttstr,'enable','on','value',1);
-
-% Button group for acquisition mode
-bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
-    'SelectionChangeFcn',@chAcqCB);  
-bgAcq.Position(3:4)=[175 15];
-bgAcq.Position(1:2)=[5 2];    
-
-% Radio buttons for cuts vs sum
-rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','triggered',...
-    'Position',[1 0 600 15],'units','pixels','backgroundcolor','w','Value',1,...
-    'UserData','Normal','Enable','off','fontsize',7);
-rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
-    'Position',[60 0 60 15],'units','pixels','backgroundcolor','w',...
-    'UserData','Live','Enable','off','fontsize',7);
-
-% Change acqusition mode callback
-    function chAcqCB(~,evt)        
-        oldStr=evt.OldValue.UserData;
-        newStr=evt.NewValue.UserData;     
-        
-        disp(['Changing camera acquisition mode to "' newStr '"']);
-
-        if isequal(oldStr,newStr)
-           disp('The old and new setting are the same.  How did you get here?'); 
-           return
-        end  
-        
-        % Close the shutter
-        disp('Closing shutter in case you forgot.');                
-        ixon_setCameraShutter(0);        
-        hbCloseShutter.Enable='off';
-        hbOpenShutter.Enable='on';
-        
-        switch newStr
-            case 'Live'
-                msg=['Entering live mode. Verify your settings before ' ...
-                    'starting acquisition. You can break the camera.'];
-                msgbox(msg,'Live Mode','warn','modal');  
-                acq=defaultLiveAcqSettings;    
-                loadAcquisitionSettings
-            case 'Normal'
-                acq=defaultNormalAcqSettings;
-                loadAcquisitionSettings
-            otherwise
-                warning('Unexpected acqusition mode. What happened?');
-        end        
-        
-    end
-
-% Timer to check on acquisition
-% boop = struct;
-% boop.ReadTime = [];
-% boop.
-acqTimer.UserData=[0 0];
-acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
-    'TimerFcn',@acqTimerFcn,'ExecutionMode','FixedSpacing','StartFcn',@acqTimerStartFcn);
-
-    function acqTimerStartFcn(src,evt)
-        src.UserData = [0 0];
-    end
-
-% Timer function checks if acquisition is over and restarts it
-    function acqTimerFcn(src,evt)      
-        try
-        % Camera Status
-        [out,outstr]=ixon_getCameraStatus;  
-%         disp(now)
-
-%         if src.UserData(2)==0
-%              [ret,camstatus] = GetCameraEventStatus;  
-%              if camstatus
-%                 disp([datestr(now) ' exposure start ' num2str(camstatus)])
-%                 src.UserData(2)=1;
-%              end
-%         end
-% %      
-
-        % Check number of available images and post and upate
-        [ret,first,last] = GetNumberAvailableImages;                    
-        if last~=src.UserData(1)
-            src.UserData(1)=last;
-            disp([datestr(now) ' ixon image ' num2str(last)])
-        end
-                    
-        switch outstr
-            case 'DRV_IDLE'
-                
-                
-                % Grab the images from the camera
-                imgs=ixon_grabRawImages; 
-                toc
-                
-                % Assign images metadata
-                mydata=makeImgDataStruct(imgs);
-
-                % Restart Acquisition if desired (auto-stopts)
-                if hcAcqRpt.Value
-                    ixon_startCamera;  
-                else
-                    stop(src);
-                    % Enable/Disable Button/Tables
-                    hbstart.Enable='on';
-                    hbstop.Enable='off';        
-                    rbSingle.Enable='on';
-                    rbLive.Enable='on';        
-                    tbl_acq.ColumnEditable(2)=true;
-                    tbl_acq.Enable='on';                    
-                end  
-                
-                % Save data to image history
-                % only save to history if not in live mode
-                if ~rbLive.Value
-                    saveData(mydata);
-                end
-                % Save images to save directory
-                if hcauto.Value
-                   saveData(mydata,tSaveDir.UserData); 
-                end              
-                % Update live preview if new                
-                if ~cAutoUpdate.Value
-                    currDir=defaultDir;
-                    data=mydata;   
-                    newDataCallback;                     
-                else                    
-                    % Just update index
-                    updateHistoryInd(data);   
-                end  
-                
-            case 'DRV_ACQUIRING'
-                % Acquisition is still going.
-                    
-
-            otherwise
-                warning('Acuisition timer has unexpected result');
-                stopCamCB;
-        end        
-        catch ME
-            warning('Acqtimer failed.');
-            disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);        
-        end
-    end
 
 %% Image Process Panel
 
@@ -2191,8 +2191,9 @@ cCoMStr_D.Position=[2 2 125 15];
 % Panel for parameters and analysis results.
 
 hpFit=uitabgroup(hF,'units','pixels');
-hpFit.Position=[320 0 300 ...
-    hF.Position(4)-(hpCam.Position(4)+hpSave.Position(4)+hpNav.Position(4))];
+% hpFit.Position=[320 0 300 ...
+    % hF.Position(4)-(hpCam.Position(4)+hpSave.Position(4)+hpNav.Position(4))];
+hpFit.Position=[320 0 300 hpNav.Position(2)];
 
 tabs(1)=uitab(hpFit,'Title','acq','units','pixels');
 tabs(2)=uitab(hpFit,'Title','param','units','pixels');
@@ -2288,8 +2289,10 @@ tbl_fidelity_analysis=uitable(tabs(6),'units','normalized','RowName',{},'ColumnN
 %% Initialize the image panel
 
 hp=uitabgroup(hF,'units','pixels','Position',...
-    [400 0 hF.Position(3)-200 hF.Position(4)-130]);
-hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-130];
+    [400 0 hF.Position(3)-200 hF.Position(4)-40]);
+% hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-40];
+hp.Position=[400 0 hF.Position(3)-200 hpNav.Position(2)];
+
 
 % Tab Groups for each display
 tabX=uitab(hp,'Title','position','units','pixels','backgroundcolor','w');
@@ -2723,10 +2726,8 @@ tCoMDAnalysis=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontwe
         updatePositionGraphics;
         updateMomentumGraphics;          
         updateBinnedGraphics;
-        updateBinnedHistogramGraphics;
-        
-        
-        updateDigitalGraphics;
+        updateBinnedHistogramGraphics;               
+        % updateDigitalGraphics;
     end
 
 %% Lattice Grid Callbacks
@@ -3741,54 +3742,54 @@ function data=updateAnalysis(data)
     end     
     
     %% Fit Results    
-    fr=tbl_pos_analysis.Data(:,2)';    
-    % Ensure fit results is a number
-    for n=1:length(fr)
-        % If value is empty, assign a zero
-        if isempty(fr{n})
-            fr{n}=0;
-        end
-        
-        % If string conver to number
-        if isstr(fr{n})
-            try
-                fr{n}=str2double(fr{n});
-            catch ME
-                fr{n}=NaN;
-            end
-        end
-    end
+    % fr=tbl_pos_analysis.Data(:,2)';    
+    % % Ensure fit results is a number
+    % for n=1:length(fr)
+    %     % If value is empty, assign a zero
+    %     if isempty(fr{n})
+    %         fr{n}=0;
+    %     end
+    % 
+    %     % If string conver to number
+    %     if isstr(fr{n})
+    %         try
+    %             fr{n}=str2double(fr{n});
+    %         catch ME
+    %             fr{n}=NaN;
+    %         end
+    %     end
+    % end
     
     % Get fit results variable
-    frVar=frslct.String{frslct.Value};    
-    val=data.Params.(frVar);
-    
-    % Convert execution date into a time
-    if isequal(frVar,'ExecutionDate') 
-       val=datenum(val); 
-       val=val-floor(val);
-       val=val*24*60;
-    end
-    
-    % Create fit results object
-    fr=[data.Name frVar val fr];   
+    % frVar=frslct.String{frslct.Value};    
+    % val=data.Params.(frVar);
+    % 
+    % % Convert execution date into a time
+    % if isequal(frVar,'ExecutionDate') 
+    %    val=datenum(val); 
+    %    val=val-floor(val);
+    %    val=val*24*60;
+    % end
+    % 
+    % % Create fit results object
+    % fr=[data.Name frVar val fr];   
     
     %%%%%% Output to fit results
     % Output some analysis to the main workspace, this is done to be
     % comptaible with old regimens for fitting and analysis
     
-    try
-        % Read in fitresults
-        ixon_fitresults=evalin('base','ixon_fitresults');        
-    catch ME
-        % Error means that it is probably undefined
-        ixon_fitresults={};
-    end
-    
-    M=size(ixon_fitresults,1)+1;                         % Find next row
-    ixon_fitresults(M:(M+size(fr,1)-1),1:size(fr,2))=fr; % Append data        
-    assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults
-    
+    % try
+    %     % Read in fitresults
+    %     ixon_fitresults=evalin('base','ixon_fitresults');        
+    % catch ME
+    %     % Error means that it is probably undefined
+    %     ixon_fitresults={};
+    % end
+    % 
+    % M=size(ixon_fitresults,1)+1;                         % Find next row
+    % ixon_fitresults(M:(M+size(fr,1)-1),1:size(fr,2))=fr; % Append data        
+    % assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults
+    % 
     
     if doSaveGUIAnalysis
         gui_saveData = struct;
@@ -4002,6 +4003,9 @@ enableDefaultInteractivity(axImg);
 enableDefaultInteractivity(axImg_K);
 enableDefaultInteractivity(axImg_B);
 enableDefaultInteractivity(axImg_D);
+enableDefaultInteractivity(axImg);
+
+
 end
 
 
