@@ -65,8 +65,8 @@ f1 = figure(111);
 clf(f1);
 % plot(T./tK,STB,'DisplayName', 'S_{TB}');
 hold on;
-plot(GG,fsum,'DisplayName','S_{xx}')
-plot(GG,fsum2,'DisplayName','S2_{xx}')
+plot(GG,fsum,'DisplayName','$m^*_0 \frac{2}{\pi}\int_0^{\infty} d\omega Re[\sigma(\omega)]$')
+plot(GG,fsum2,'DisplayName','$m^*_0 \omega_{\mathrm{Trap}}^2 \frac{2}{\pi}\int_0^{\infty} d\omega \frac{Re[\sigma(\omega)]}{\omega^2}$')
 % plot(TT./tK,fsum,'DisplayName','S_{xx}')
 % plot(TT./tK,fsum2,'DisplayName','S2_{xx}')
 % xlabel('T/t', FontSize=16);
@@ -75,4 +75,4 @@ ylabel('$\frac{m_0^*}{N}S_{XX}$','Interpreter','latex',FontSize=16);
 title('T/t = 3', FontSize=16)
 % title('\Gamma = 2\pi \times 30 Hz',FontSize=16)
 box on;
-legend(FontSize=12);
+legend(FontSize=12,Interpreter = 'Latex');
