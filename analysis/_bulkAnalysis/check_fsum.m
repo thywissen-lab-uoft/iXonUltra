@@ -37,41 +37,42 @@ end
 
 %% Susceptibility at omega = 0 fsum
 
-TT = [1:0.1:5]*tK;
-GG = 2*pi*30; %2*pi*Hz
-fsum = [];
-fsum2 = [];
-for loop = 1:length(TT)
-    fun = @(w) qfit_real(TT(loop),GG,w).*(aL^2)./hbar;
-    fun2 = @(w) qfit_real(TT(loop),GG,w).*(aL^2)./hbar./w.^2;
-    fsum(loop) = m0*(2/pi)*integral(fun,0,inf);
-    fsum2(loop) = (2*pi*64.4)^2*m0*(2/pi)*integral(fun2,0,inf);
-end
-
-% TT = [3]*tK;
-% GG = 2*pi*[10:5:80]; %2*pi*Hz
+% TT = [1:0.1:5]*tK;
+% GG = 2*pi*30; %2*pi*Hz
 % fsum = [];
 % fsum2 = [];
-% for loop = 1:length(GG)
-%     fun = @(w) qfit_real(TT,GG(loop),w).*(aL^2)./hbar;
-%     fun2 = @(w) qfit_real(TT,GG(loop),w).*(aL^2)./hbar./w.^2;
+% for loop = 1:length(TT)
+%     fun = @(w) qfit_real(TT(loop),GG,w).*(aL^2)./hbar;
+%     fun2 = @(w) qfit_real(TT(loop),GG,w).*(aL^2)./hbar./w.^2;
 %     fsum(loop) = m0*(2/pi)*integral(fun,0,inf);
 %     fsum2(loop) = (2*pi*64.4)^2*m0*(2/pi)*integral(fun2,0,inf);
 % end
+
+TT = [3]*tK;
+GG = 2*pi*[10:5:80]; %2*pi*Hz
+fsum = [];
+fsum2 = [];
+for loop = 1:length(GG)
+    fun = @(w) qfit_real(TT,GG(loop),w).*(aL^2)./hbar;
+    fun2 = @(w) qfit_real(TT,GG(loop),w).*(aL^2)./hbar./w.^2;
+    fsum(loop) = m0*(2/pi)*integral(fun,0,inf);
+    fsum2(loop) = (2*pi*64.4)^2*m0*(2/pi)*integral(fun2,0,inf);
+end
 
 %% Plot
 
 f1 = figure(111);
 clf(f1);
-plot(T./tK,STB,'DisplayName', 'S_{TB}');
+% plot(T./tK,STB,'DisplayName', 'S_{TB}');
 hold on;
-% plot(GG,fsum,'DisplayName','S_{xx}')
-% plot(GG,fsum2,'DisplayName','S2_{xx}')
-plot(TT./tK,fsum,'DisplayName','S_{xx}')
-plot(TT./tK,fsum2,'DisplayName','S2_{xx}')
-xlabel('T/t');
-ylabel('$\frac{m_0^*}{N}S_{XX}^{TB}$','Interpreter','latex');
-% title('T/t = 3', FontSize=16)
-title('\Gamma = 2\pi \times 30 Hz')
+plot(GG,fsum,'DisplayName','S_{xx}')
+plot(GG,fsum2,'DisplayName','S2_{xx}')
+% plot(TT./tK,fsum,'DisplayName','S_{xx}')
+% plot(TT./tK,fsum2,'DisplayName','S2_{xx}')
+% xlabel('T/t', FontSize=16);
+xlabel('\Gamma (s^{-1})', FontSize=16);
+ylabel('$\frac{m_0^*}{N}S_{XX}$','Interpreter','latex',FontSize=16);
+title('T/t = 3', FontSize=16)
+% title('\Gamma = 2\pi \times 30 Hz',FontSize=16)
 box on;
-legend();
+legend(FontSize=12);
