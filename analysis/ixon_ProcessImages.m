@@ -45,10 +45,14 @@ for kk=1:length(data)
 % Subtract digital bias of 200 counts
     if opts.doSubtractBias  
         fprintf(' biasing ...');
-        Z = Z - 200;
+%         Z = Z - 200;
+        Z = Z - 185;
+
     end      
     
 %% Remove wipe pics
+
+if size(Z,3)>1
 
     if isfield(data(kk).Params,'qgm_MultiExposures') && isfield(data(kk).Params,'qgm_MultiPiezos')
         wipePics = isnan([data(kk).Params.qgm_MultiExposures]);
@@ -62,7 +66,7 @@ for kk=1:length(data)
         size(data(kk).Z,3)>1        
             Z(:,:,1)=[]; 
     end
-
+end
     data(kk).Z = Z;
 
 %% Raw Data

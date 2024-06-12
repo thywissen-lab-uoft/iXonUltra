@@ -16,32 +16,7 @@ else
 end
 ixondata=ixondata(inds);
 
-
-%% Average with unique x variable
-
-% % Find and sor the unique values
-% uxvals=unique(xvals);
-% 
-% if isequal(direction,'ascend')
-%     uxvals=sort(uxvals,'ascend');
-% else
-%     uxvals=sort(uxvals,'descend');
-% end
-% 
-% Zall=zeros(size(ixondata(1).Z,1),size(ixondata(1).Z,2),length(uxvals));
-% 
-% for kk=1:length(uxvals) % Iterate over unique x values    
-%     % Find the indeces which have this unique value
-%     inds=find(uxvals(kk)==xvals);    
-%     for ii=1:length(inds)
-%         ind=inds(ii);
-%         Z=ixondata(ind).(opts.Source)(:,:,1);
-%         Zall(:,:,kk)=Zall(:,:,kk)+Z;        
-%     end        
-%     Zall(:,:,kk)=Zall(:,:,kk)/length(inds);   
-% end
-
-%%
+%% Get the First Values
 
 uxvals = xvals;
 [uxvals,inds]=sort(uxvals,'ascend');
@@ -167,12 +142,10 @@ for kk=1:length(uxvals)   % Iterate over all unique xvalues
     %%%% Update the graphics
     
     if isequal(xVar,'ExecutionDate')
-            t.String=[xVar ': ' datestr(uxvals(kk),'YYYY-mm-DD_HH-MM-SS')];          % Variable string
+        t.String=[xVar ': ' datestr(uxvals(kk),'YYYY-mm-DD_HH-MM-SS')];          % Variable string
     else
-            t.String=[xVar ': ' num2str(uxvals(kk))];          % Variable string
+        t.String=[xVar ': ' num2str(uxvals(kk))];          % Variable string
     end
-
-
     set(hImg,'XData',X,'YData',Y,'CData',Zall(:,:,kk));  % Image data
     set(gca,'XDir','normal','YDir','normal');
     

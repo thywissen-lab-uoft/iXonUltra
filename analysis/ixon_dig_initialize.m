@@ -19,9 +19,9 @@ addpath(a);addpath(genpath(a));
 
 %% Initialize Digdata
 
-dig_DigitizationThreshold               = 7000;
+dig_DigitizationThreshold               = 2000;
 bindata = ixon_digitize(bindata,dig_DigitizationThreshold);    
-digdata = bin_makeDigata(bindata,bin_opts);
+digdata = bin_makeDigData(bindata,bin_opts);
     
 if bin_opts.doSave 
     filename = fullfile(bin_opts.saveDir,'digdata.mat');

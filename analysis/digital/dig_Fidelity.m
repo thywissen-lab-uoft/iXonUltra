@@ -54,21 +54,25 @@ edges=0:dR:max(r);
 hF = figure(opts.FigureNumber) ;
 set(hF,'color','w','Name','Dig Fidelity');
 clf
-hF.Position=[100 100 800 800];
+hF.Position=[0 100 800 800];
 
+if isfield(opts,'Label') && ~isempty(opts.Label)
+uicontrol('style','text','string',opts.Label,'fontsize',7,...
+    'backgroundcolor','w','Position',[1 1 800 15],'horizontalalignment','center');
+end
 subplot(221);
 imagesc(n1,n2,img1);
 colormap bone
 caxis([0 1]);
 xlabel('site 1')
 ylabel('site 2');
-set(gca,'fontsize',12,'fontname','times','box','on','linewidth',1);
-title('image 1');
+set(gca,'fontsize',12,'fontname','times','box','on','linewidth',1,'ydir','normal');
+
+title_str = ['image 1 : $N=' num2str(N1) '$'];
+title(title_str,'interpreter','latex');
+
 axis equal tight
-s1 = ['$N=' num2str(N1) '$'];
-text(.01,.01,s1,'units','normalized','fontsize',14,'color','red',...
-    'verticalalignment','bottom','horizontalalignment','left',...
-    'interpreter','latex')
+
 hold on
 plot(xc,yc,'o','color','r','markersize',5,'markerfacecolor','r');
 
@@ -79,13 +83,11 @@ colormap bone
 caxis([0 1]);
 xlabel('site 1')
 ylabel('site 2');
-set(gca,'fontsize',12,'fontname','times','box','on','linewidth',1);
-title('image 2');
+set(gca,'fontsize',12,'fontname','times','box','on','linewidth',1,'ydir','normal');
+title_str = ['image 1 : $N=' num2str(N2) '$'];
+title(title_str,'interpreter','latex');
 axis equal tight
-s2 = ['$N=' num2str(N2) '$'];
-text(.01,.01,s2,'units','normalized','fontsize',14,'color','red',...
-    'verticalalignment','bottom','horizontalalignment','left',...
-    'interpreter','latex');
+
 hold on
 plot(xc,yc,'o','color','r','markersize',5,'markerfacecolor','r');
 
@@ -93,17 +95,20 @@ subplot(223);
 co=get(gca,'colororder');
 imagesc(n1,n2,dImg);
 colormap bone
-s3 = ['$N_\mathrm{lost}=' num2str(Nlost) '~(' num2str(round(Nlost_percent*100,1)) ' \%)$' newline ...
-    '$N_\mathrm{hop}=' num2str(Nhop) '~(' num2str(round(Nhop_percent*100,1)) ' \%)$'];
+s3 = ['$\mathrm{lost}:' num2str(Nlost) '~(' num2str(round(Nlost_percent*100,1)) ' \%),~'  ...
+    '\mathrm{hop}:' num2str(Nhop) '~(' num2str(round(Nhop_percent*100,1)) ' \%)$'];
 caxis([-1 1]);
 xlabel('site 1')
 ylabel('site 2');
-set(gca,'fontsize',12,'fontname','times','box','on','linewidth',1);
+set(gca,'fontsize',12,'fontname','times','box','on','linewidth',1,'ydir','normal');
 title('image 2 - image1');
+
+
+
 axis equal tight
-text(.01,.01,s3,'units','normalized','fontsize',14,'color','red',...
+text(.01,.01,s3,'units','normalized','fontsize',10,'color','black',...
     'verticalalignment','bottom','horizontalalignment','left',...
-    'interpreter','latex')
+    'interpreter','latex','backgroundcolor',[1 1 1 .8],'margin',1)
 hold on
 plot(xc,yc,'o','color','r','markersize',3,'markerfacecolor','r');
 

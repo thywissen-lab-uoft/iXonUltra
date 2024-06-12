@@ -28,7 +28,6 @@ for kk=1:length(figs)
 end
 disp(' ');
 %% Select image directory
-
     
 if ~exist('dig_auto_file')
    dig_auto_file = 1; 
@@ -67,7 +66,7 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 dig_opts.varType        = 'param';          % always select 'param' for now 
 dig_opts.autoXVar       = 0;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
-dig_opts.xVar           = 'ExecutionDate';  % Variable Name
+dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 dig_opts.doSave         = 1;                % Save Analysis?
 
@@ -77,7 +76,7 @@ dig_opts.doSave         = 1;                % Save Analysis?
 dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
-dig_ac_conductivity_fit                 = 0;
+dig_ac_conductivity_fit                 = 1;
 dig_doRadialAnalysis                    = 1;
 %% Show CLoud
 

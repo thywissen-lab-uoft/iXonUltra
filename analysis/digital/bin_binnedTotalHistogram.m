@@ -99,6 +99,7 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
     ylabel('n2 sites');
     c=colorbar;
     c.Label.String = 'counts/site';
+    caxis([0 2500]);
     axis equal tight
     set(gca,'box','on','linewidth',1,'fontsize',10,'ydir','normal');
     ca = [0 0 0];       

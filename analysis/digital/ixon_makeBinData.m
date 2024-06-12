@@ -1,4 +1,4 @@
-function bindata = ixon_makeBinData(ixondata)
+function bindata = ixon_makeBinData(ixondata,saveOpts)
 % Initialize outputs
 bindata = struct;
 

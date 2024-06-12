@@ -139,9 +139,9 @@ end
     %% Main Loop
 
     for nn = 1:length(bindata)
-        n1 = [bindata(nn).LatticeBin.n1];
-        n2 = [bindata(nn).LatticeBin.n2];
-        Zb = [bindata(nn).LatticeBin.Zbin];
+        n1 = [bindata(nn).LatticeBin(1).n1];
+        n2 = [bindata(nn).LatticeBin(1).n2];
+        Zb = [bindata(nn).LatticeBin(1).Zbin];
         Zb2 = Zb;
         Zb2(Zb<opts.Threshold(1)) = 0;
         Zb2(isnan(Zb)) = 0;
@@ -187,6 +187,8 @@ end
         for kk=1:length([BS.Separations])
             set(pSeps2(kk),'XData',get(ax2,'XLim'),'YData',[1 1]*BS.Separations(kk),'Visible','on');
         end
+        
+        
         set(tRs,'String',['$R^2 = ' num2str(BS.RSquareStripe,'%.3f') '$']);
 
         set(pZt,'YData',sum(Zb2,1)','XData',n1);

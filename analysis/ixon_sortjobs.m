@@ -1,7 +1,7 @@
 
 % Source directory of all data
 
-srcdir = 'X:\Data\2024\2024.04\04.11\04 overnight shake 190 G, heat at 201G for 500 ms first, 150 ms mod ramp time';
+srcdir = 'X:\Data\2024\2024.06\06.11\05 overnight';
 
 
 % Parent directory of data to sort
@@ -71,8 +71,8 @@ for kk=1:length(names)
         if m1
             A2  = P.conductivity_ODT2_mod_amp;
             f   = P.conductivity_mod_freq;  
-            B   = P.conductivity_FB_field;
-            U   = P.latt_depth_load(1);
+            B   = P.lattice_load_feshbach_field;
+            U   = P.lattice_load_depthX;
             tau = P.conductivity_mod_ramp_time; 
             dirname = ['shake plane ' num2str(f) ' Hz, ' ...
                 num2str(round(B,2)) ' G, ' ...

@@ -82,9 +82,9 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 0;      % Auto detect changing variable?
+ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'qgm_plane_uwave_time'; % Variable Name
+ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -102,7 +102,7 @@ ixon_doAnimate              = 1;    % Animate in position domain
 ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
-ixon_doAnalyzeQPD           = 1;    % Analyze QPD traces
+ixon_doAnalyzeQPD           = 0;    % Analyze QPD traces
 
 % QGM Single Plane Analysis
 ixon_doQGM                          = 1;
@@ -371,13 +371,37 @@ ixon_animateOpts.Source = 'ZNoFilter';
 ixon_animateOpts.Source = 'Z';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-    ixon_animateOpts.CLim=[0 300];   % Color limits
+%     ixon_animateOpts.CLim=[0 300];   % Color limits
 %     ixon_animateOpts.CLim=[0 1500];   % Color limits
+    ixon_animateOpts.CLim=[0 8000];
 if ~ixon_doQGM
 %      ixon_animateOpts.CLim='auto';
+     ixon_animateOpts.CLim=[0 4000];
+end
+    ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
 
-    ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
+%% Animate cloud 
+if ixon_doAnimate == 1 && ixon_doSave && size(ixondata(1).Z,3)==2
+    ixon_animateOpts=struct;
+    
+    ixon_animateOpts.xUnit=ixon_unit;
+    ixon_animateOpts.StartDelay=1; % Time to hold on first picture
+    ixon_animateOpts.MidDelay=.2;     % Time to hold in middle picutres
+    ixon_animateOpts.EndDelay=1;     % Time to hold final picture
+
+    % Animate in ascending or descending order?
+    % animateOpts.Order='descend';    % Asceneding or descending
+    ixon_animateOpts.Order='ascend';
+    
+    % Color limit for image
+    ixon_animateOpts.Source = 'ZNoFilter';
+    ixon_animateOpts.Source = 'Z';
+
+     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+ixon_animateOpts.filename='ixon_animate_2shot';
+
+    ixon_animate_2shot(ixondata,ixon_xVar,ixon_animateOpts);
 end
 
 %% Standard Cloud Analysis

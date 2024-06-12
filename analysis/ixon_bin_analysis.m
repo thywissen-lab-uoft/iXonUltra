@@ -130,7 +130,8 @@ end
 if bin_BinAcummulateHist
     opts = bin_opts;
     opts.Bins =  linspace(0,bin_BinAcummulateHist_Zmax,...
-        bin_BinAcummulateHist_Nbins);    
+        bin_BinAcummulateHist_Nbins);  
+    opts.Nthresh =3000;
     opts.saveDir = bin_opts.saveDir;
     
     opts.doAnimate = 1;
@@ -147,6 +148,7 @@ if bin_BinAcummulateHist
     % Center Cloud
     opts.ROI = [110 135 70 100];
     opts.ROI = [95 115 65 85];
+    opts.ROI = [90 110 80 100];
 
     opts.filename = 'bin_BinAnimateCenter.gif';    
     hF_BinHistogramFull = bin_binnedTotalHistogram(bindata,opts);    
@@ -171,7 +173,7 @@ if bin_BinStripe
             fprintf(['...' num2str(kk)]);
             n1 = bindata(n).LatticeBin(kk).n1;
             n2 = bindata(n).LatticeBin(kk).n2;
-            Zb = bindata(n).LatticeBin(kk).Zbin;    
+            Zb = bindata(n).LatticeBin(kk).Zbin(:,:,1);    
 
             opts_stripe.LGuess = bin_BinStripe_LGuess;
             opts_stripe.FigNum=3000+10*(n-1)+kk-1;

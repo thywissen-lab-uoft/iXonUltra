@@ -101,6 +101,25 @@ if isequal(xVar,'ExecutionDate')
 end
 yl=get(gca,'YLim');
 set(gca,'YLim',[0 yl(2)]);
+
+
+if size(N,2)==2    
+    yyaxis right
+    set(gca,'YColor',[.5 .5 .5]);
+    
+    
+    [XU, ~, subs] = unique(X);
+    
+    R = accumarray(subs, N(:,2)./N(:,1), [], @mean);
+    Rerr = accumarray(subs, N(:,2)./N(:,1), [], @std);
+
+
+       errorbar(XU,R,Rerr,'o','color','k','linewidth',1,'markersize',8,...
+       'markerfacecolor',[.7 .7 .7],'markeredgecolor','k');
+   ylabel('ratio');
+   yyaxis right
+   
+end
 ixon_resizeFig(hF,t,[hax]);
 
 

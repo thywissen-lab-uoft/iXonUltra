@@ -126,7 +126,7 @@ if ixon_doSave
 end
 
 %% Initialize bindata    
-bindata = ixon_makeBinData(ixondata);
+bindata = ixon_makeBinData(ixondata,saveOpts);
 %% Save QGM Data
 if ixon_doSave           
     try if ~exist(saveOpts.saveDir,'dir');mkdir(saveOpts.saveDir);end;end

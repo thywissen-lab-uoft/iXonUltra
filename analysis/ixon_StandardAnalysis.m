@@ -30,6 +30,17 @@ if ixon_doBoxCount
     hF_ixon_box_counts = ixon_showCounts(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
     if ixon_doSave;ixon_saveFigure2(hF_ixon_box_counts,'ixon_box_counts',saveOpts);end     
     
+    if ~isequal(ixon_xVar,'ExecutionDate')
+        ixon_plt_opts2 = ixon_plt_opts;
+        ixon_plt_opts2.xVar='ExecutionDate';
+    hF_ixon_box_counts_time = ixon_showCounts(ixon_boxdata,'ExecutionDate',ixon_plt_opts2,ixon_fit_opts);
+
+        hF_ixon_box_counts_time.Position(2)=700;
+        ylim([0 max(get(gca,'YLim'))]);    
+        if doSave;ixon_saveFigure2(hF_ixon_box_counts_time,'ixon_box_counts_time',saveOpts);end
+    end
+    
+    
     % Size
     hF_ixon_box_size = ixon_showSize(ixon_boxdata,ixon_xVar,ixon_plt_opts,ixon_fit_opts);
     if ixon_doSave;ixon_saveFigure2(hF_ixon_box_size,'ixon_box_size',saveOpts);end     

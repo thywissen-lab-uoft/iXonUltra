@@ -1473,6 +1473,11 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
                     a2 = data.LatticePhase(kk).a2;                        
                     p1 = data.LatticePhase(kk).p1;
                     p2 = data.LatticePhase(kk).p2;    
+                    
+                  a1 = data.LatticePhase(1).a1;
+                    a2 = data.LatticePhase(1).a2;                        
+                    p1 = data.LatticePhase(1).p1;
+                    p2 = data.LatticePhase(1).p2;   
                 else
                     errordlg('Lattice phase not calculated yet.');
                     beep
@@ -1534,13 +1539,16 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
             opts_stripe = struct;
             opts_stripe.FigureNumber=3000;
             opts_stripe.Threshold = stripe_threshold_tbl.Data;
-            for ll = 1:length(data.LatticeBin)
+            ll=1;
+%             for ll = 1:length(data.LatticeBin)
                 n1 = data.LatticeBin(ll).n1;
                 n2 = data.LatticeBin(ll).n2;
                 Zb = data.LatticeBin(ll).Zbin;    
                 opts_stripe.LGuess = 26.62;
-                out = bin_StripeFit(n1,n2,Zb,opts_stripe);                
-            end            
+                
+                out = bin_StripeFit(n1,n2,Zb,opts_stripe);  
+                
+%             end            
             data.BinStripe = out;     
             bin_showStripeBin(data,[],opts_stripe);
         end  
@@ -1598,34 +1606,27 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         data = ixon_digitize(data,dig_threshold);
 
          if hcDigFidelity.Value
-            opts_fidelity = struct;
-            opts_fidelity.FigureNumber=4001;
+             
+            opts=struct;
+            opts.threshold = dig_threshold;
+            opts.FigureNumber = 4001;      
             
-
+            opts.Label = data.Name;
             n1 = data.LatticeDig(1).n1;
             n2 = data.LatticeDig(1).n2;
 
-            Zdig = zeros(length(n2),length(n1),length(data.LatticeDig));
-
-            
+            Zdig = zeros(length(n2),length(n1),length(data.LatticeDig));            
             for jj = 1 :length(data.LatticeDig)
                 Zdig(:,:,jj) = data.LatticeDig(jj).Zdig;
             end
 
-            out = dig_Fidelity(Zdig,n1,n2);
+            out = dig_Fidelity(Zdig,n1,n2,opts);
+            
+            opts.FigureNumber = 4002; 
+            bin_Fidelity(data,opts);
+            
             data.DigFideltiy = out;
-            % dig_showFidelty(out,[],
-
-            % opts_stripe.Threshold = stripe_threshold_tbl.Data;
-            % for ll = 1:length(data.LatticeBin)
-                % n1 = data.LatticeBin(ll).n1;
-                % n2 = data.LatticeBin(ll).n2;
-                % Zb = data.LatticeBin(ll).Zbin;    
-                % opts_stripe.LGuess = 26.62;
-                % out = bin_StripeFit(n1,n2,Zb,opts_stripe);                
-            % end            
-            % data.BinStripe = out;     
-            % bin_showStripeBin(data,[],opts_stripe);
+ 
         end  
 
         
@@ -3423,6 +3424,8 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
     [~,inds] = sort(lower(fieldnames(data.Params)));
     params = orderfields(data.Params,inds);    
                 
+    tbl_params.Data={};
+
     fnames=fieldnames(params);
     for nn=1:length(fnames)
       tbl_params.Data{nn,1}=fnames{nn};
@@ -3436,6 +3439,7 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
         end  
     end        
 %% Update Flag Data
+    tbl_flags.Data={};
     if isfield(data,'Flags')
         flags = data.Flags;
         fnames=fieldnames(flags);

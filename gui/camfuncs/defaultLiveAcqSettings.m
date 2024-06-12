@@ -41,5 +41,6 @@ acq.xstart=1;           % hardware ROI is full 1:512
 acq.xend=512;           % hardware ROI is full 1:512
 acq.ystart=1;           % hardware ROI is full 1:512
 acq.yend=512;           % hardware ROI is full 1:512
+acq.FrameTransferMode=0;
 end
 
