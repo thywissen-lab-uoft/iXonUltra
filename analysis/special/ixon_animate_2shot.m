@@ -21,7 +21,7 @@ if isequal(clim,'auto')
   cL0=0;
   cH0=1;
     for kk=1:size(ixondata,3)
-       zH = max(ixondata(kk).Z,[],'all');
+       zH = max(ixondata(kk).(opts.Source),[],'all');
        cH0 = max([zH cH0]);    
     end
     cH0 = cH0*1.2;
@@ -32,7 +32,7 @@ end
 %% Get First Data Point
 
 % grab initial data
-Z=ixondata(1).Z(:,:,1);
+Z=ixondata(1).(opts.Source)(:,:,1);
 Y=ixondata(1).Y;
 X=ixondata(1).X;
 
@@ -140,8 +140,8 @@ for kk=1:length(ixondata)   % Iterate over all unique xvalues
 
     end
     
-    set(hImg1,'XData',X,'YData',Y,'CData',ixondata(kk).Z(:,:,1));  % Image data
-    set(hImg2,'XData',X,'YData',Y,'CData',ixondata(kk).Z(:,:,2));  % Image data
+    set(hImg1,'XData',X,'YData',Y,'CData',ixondata(kk).(opts.Source)(:,:,1));  % Image data
+    set(hImg2,'XData',X,'YData',Y,'CData',ixondata(kk).(opts.Source)(:,:,2));  % Image data
 
     drawnow % update graphcis
     

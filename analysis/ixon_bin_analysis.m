@@ -92,6 +92,7 @@ bin_BinStripe_ColorThreshold            = [1000 4500];
 
 % Digitzation
 bin_Digitize                            = 1; 
+dig_DigitizationThreshold               = 3500;
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and
@@ -124,14 +125,14 @@ if bin_BinRecenter
     bindata = bin_recenter(bindata);
 end
 
-
+ 
 %% Histogram
 
 if bin_BinAcummulateHist
     opts = bin_opts;
     opts.Bins =  linspace(0,bin_BinAcummulateHist_Zmax,...
         bin_BinAcummulateHist_Nbins);  
-    opts.Nthresh =3000;
+    opts.Nthresh =dig_DigitizationThreshold;
     opts.saveDir = bin_opts.saveDir;
     
     opts.doAnimate = 1;
@@ -148,7 +149,7 @@ if bin_BinAcummulateHist
     % Center Cloud
     opts.ROI = [110 135 70 100];
     opts.ROI = [95 115 65 85];
-    opts.ROI = [90 110 80 100];
+    opts.ROI = [85 105 95 115];
 
     opts.filename = 'bin_BinAnimateCenter.gif';    
     hF_BinHistogramFull = bin_binnedTotalHistogram(bindata,opts);    

@@ -82,7 +82,7 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
@@ -105,8 +105,8 @@ ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in 
 ixon_doAnalyzeQPD           = 0;    % Analyze QPD traces
 
 % QGM Single Plane Analysis
-ixon_doQGM                          = 1;
-doPSF                               = 1;
+ixon_doQGM                          = 0;
+doPSF                               = 0;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
@@ -126,7 +126,7 @@ ixon_mask=ixon_mask.BW;
 img_opt = struct;
 img_opt.doSubtractBias      = 1;        % Subtract 200 count electronic offset
 img_opt.doSubtractBG        = 1;
-img_opt.doScale             = 1;        % Scale up image? (good for single-site)
+img_opt.doScale             = 0;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
 % img_opt.Theta               = 59.64;  % Rotation amount (deg.)
@@ -368,16 +368,16 @@ if ixon_doAnimate == 1 && ixon_doSave
     
     % Color limit for image
 ixon_animateOpts.Source = 'ZNoFilter';
-ixon_animateOpts.Source = 'Z';
+% ixon_animateOpts.Source = 'Z';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 %     ixon_animateOpts.CLim=[0 300];   % Color limits
 %     ixon_animateOpts.CLim=[0 1500];   % Color limits
-    ixon_animateOpts.CLim=[0 8000];
-if ~ixon_doQGM
+    ixon_animateOpts.CLim=[0 500];
+% if ~ixon_doQGM
 %      ixon_animateOpts.CLim='auto';
-     ixon_animateOpts.CLim=[0 4000];
-end
+     ixon_animateOpts.CLim=[0 500];
+% end
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
 
@@ -396,9 +396,11 @@ if ixon_doAnimate == 1 && ixon_doSave && size(ixondata(1).Z,3)==2
     
     % Color limit for image
     ixon_animateOpts.Source = 'ZNoFilter';
-    ixon_animateOpts.Source = 'Z';
+%     ixon_animateOpts.Source = 'Z';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+%       ixon_animateOpts.CLim=[0 500];   % Automatically choose CLIM?
+
 ixon_animateOpts.filename='ixon_animate_2shot';
 
     ixon_animate_2shot(ixondata,ixon_xVar,ixon_animateOpts);

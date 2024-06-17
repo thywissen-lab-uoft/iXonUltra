@@ -55,11 +55,11 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     
     % Look at average
     ZsubBar = mean(Zsub,3);
-    [Tics,Average,dev,n]=radial_profile(ZsubBar,1);
+    [Tics,Average,dev,n]=radial_profile(ZsubBar,3);
     
     % Look at deviations
     ZsubDev = std(Zsub,0,3);
-    [TicsDev,AverageDev,devDev,nDev]=radial_profile(ZsubDev,1);
+    [TicsDev,AverageDev,devDev,nDev]=radial_profile(ZsubDev,3);
     
     
     %% Create radial potential vector
@@ -111,12 +111,14 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
         tFig.Position(1:2)=[5 hF.Position(4)-tFig.Position(4)];
     end    
 
+    % Plot radial average ndet
     subplot(221);
     errorbar(Tics(2:end),Average(2:end),dev(2:end)./sqrt(n(2:end)),'ko','markerfacecolor',[.5 .5 .5],...
         'markersize',10,'linewidth',1);
     xlabel('radial distance (sites)');
     ylabel('mean $N(r)$','interpreter','latex','fontsize',14);
     
+    % Plot 2D ndet
     subplot(222);
     imagesc(r(1):r(2),r(3):r(4),ZsubBar)
     xlabel('x (sites)');
@@ -130,13 +132,18 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     cc1=colorbar;
     cc1.Label.String = 'average of occupation';
 
+    % Plot radial average ndet std
     subplot(223);
     plot(TicsDev(2:end),AverageDev(2:end),'ko','markerfacecolor',[.5 .5 .5],...
+        'markersize',10,'linewidth',1);
+    hold on;
+    plot(Tics(2:end),sqrt(Average(2:end).*(1-Average(2:end))),'k.','markerfacecolor',[.25 .25 .25],...
         'markersize',10,'linewidth',1);
     xlabel('radial distance (sites)');
     ylabel('std $N(r)$','interpreter','latex','fontsize',14);
     % ylim([0 1])
 
+    % Plot 2D ndet std average
     subplot(224);
     imagesc(r(1):r(2),r(3):r(4),ZsubDev)
     xlabel('x (sites)');

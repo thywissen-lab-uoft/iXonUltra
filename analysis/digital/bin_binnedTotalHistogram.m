@@ -99,7 +99,8 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
     ylabel('n2 sites');
     c=colorbar;
     c.Label.String = 'counts/site';
-    caxis([0 2500]);
+    caxis([0 2*opts.Nthresh]);
+    
     axis equal tight
     set(gca,'box','on','linewidth',1,'fontsize',10,'ydir','normal');
     ca = [0 0 0];       
@@ -136,25 +137,21 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
                 otherwise
                     imwrite(A,map,filename,'gif','WriteMode',...
                         'append','DelayTime',.1);
-             end
-               
-        
-            
+            end
         end
-
-        
     end
     
     %% Last Image
     
-                [N,~] = histcounts(Zall(in2i:in2f,in1i:in1f,:),opts.Bins);  
-            set(pHistB1,'Xdata',centers(iL),'Ydata',N(iL));
-            set(pHistB2,'Xdata',centers(iH),'Ydata',N(iH));
-            Zc = Zall;
-            Zc(isnan(Zc)) = 0;
-            c.Label.String = 'average counts/site';
+    [N,~] = histcounts(Zall(in2i:in2f,in1i:in1f,:),opts.Bins);  
+    set(pHistB1,'Xdata',centers(iL),'Ydata',N(iL));
+    set(pHistB2,'Xdata',centers(iH),'Ydata',N(iH));
+    Zc = Zall;
+    Zc(isnan(Zc)) = 0;
+    c.Label.String = 'average counts/site';
 
-            set(hImg,'Cdata',mean(Zc,3));
+    set(hImg,'Cdata',mean(Zc,3));
+    set(get(hImg,'parent'),'CLIm',[0 opts.Nthresh]);
     str1 = ['ROI : [' num2str(R(1)) ' ' num2str(R(2)) ' ' ...
         num2str(R(3)) ' ' num2str(R(4)) ']' ...
         newline num2str(size(Zall,3)) ' images' ];
