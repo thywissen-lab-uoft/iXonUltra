@@ -90,6 +90,7 @@ ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
+
 %% Analysis Options
 % Fitting options
 ixon_doBoxCount             = 0;
@@ -103,6 +104,8 @@ ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
 ixon_doAnalyzeQPD           = 0;    % Analyze QPD traces
+
+%% QGM Single Plane Analysis
 
 % QGM Single Plane Analysis
 ixon_doQGM                          = 0;

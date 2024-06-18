@@ -108,6 +108,9 @@ end
 if dig_doRadialAnalysis
     opts = dig_opts;   
     opts.MoveCenter = 0;
+    opts.RadialBin = 3;
+    opts.ImageBin = 3;
+    
     [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);
     if dig_opts.doSave
         ixon_saveFigure2(hF_digRadial_2,...
