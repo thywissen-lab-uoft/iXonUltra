@@ -6,6 +6,8 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
         opts.RemoveOutliers = 1;
     end    
     
+  
+    
     %% Remove outliers
     Z   = [digdata.Zdig];
     P   = [digdata.Params];
@@ -42,36 +44,39 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     
     Npics = size(Z,3);    
     Zsub = zeros(length(ii(3):ii(4)),length(ii(1):ii(2)));
+    
     for nn = 1:Npics
         Zsub(:,:,nn) = Z(ii(3):ii(4),ii(1):ii(2),nn);
     end    
     ZsubBar = mean(Zsub,3);
     
-    [rVec,Average,dev,n]=radial_profile(ZsubBar,opts.RadialBin);
+    % Radial profile of average image
+    [rVec,radial_charge_mean,radial_charge_mean_dev,n]=radial_profile(ZsubBar,opts.BinStep);
 
     %% Compute Radial Profile of each Image
-    radial_charge = zeros(length(rVec),Npics);
-    radial_charge_variance = zeros(length(rVec),Npics);
+    radial_charge = zeros(length(rVec),Npics);      %  Radial Charge Matrix
+    radial_charge_err = zeros(length(rVec),Npics);  %  Radial Charge  Deviation Matrix
     
-    for ii = 1 :length(Npics)
-        [rVec,charge,charge_dev,n]=radial_profile(Zsub(:,:,ii),opts.RadialBin);
-        radial_charge_profile(:,ii) = charge;
-        radial_charge_variance(:,ii) = charge_dev;
-    end
-    
-    %%    
-    
-
-
-    devVec = zeros(length(rVec),Npics);
+    % Iterate over each each
     for ii = 1:Npics
-        ZsubThis = Zsub(:,:,ii);
-        [TicsDev,~,devThis,~]=radial_profile(ZsubThis,opts.RadialBin);
-        devVec(:,ii) = devThis;
-    end
-    AverageDev = mean(devVec,2);
-    StdDev = std(devVec,1,2); 
+        % Compute radial profile
+        [rVec,charge,charge_dev,n]=...
+            radial_profile(Zsub(:,:,ii),opts.BinStep);
+        radial_charge(:,ii) = charge;
+        radial_charge_err(:,ii) = charge_dev./sqrt(n);
+    end  
     
+    % Average Radial charge profile
+    radial_charge_mean      = mean(radial_charge,2);     
+    radial_charge_mean_std  = std(radial_charge,1,2);     
+
+    % Average Radial Deviation profile (and std of std)
+    radial_charge_std_mean  = mean(radial_charge_err,2);
+    radial_charge_std_std  = std(radial_charge_err,1,2);
+    
+    
+    
+
     %% Create radial potential vector
     
     % Constants
@@ -99,17 +104,16 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     out.RadialCenter                   = [Xcbar Ycbar];
     out.RadialVector                   = rVec;
     out.PotentialVector                = PotentialVector;
-    out.AverageOccupation              = Average;
-    out.AverageOccupationUncertainty   = dev./sqrt(n);
-    out.DeviationOccupation            = AverageDev;
+    out.AverageOccupation              = radial_charge_mean;
+    out.AverageOccupationUncertainty   = radial_charge_mean_dev./sqrt(n);
+    out.DeviationOccupation            = radial_charge_std_mean;
 %     out.DeviationOccupationUncertainty = devDev./sqrt(nDev);
-
 
 %% Plotting
 
     hF = figure;
     hF.Color='w';
-    hF.Position = [300 100 1400 350];
+    hF.Position = [300 100 1500 350];
     clf
 
     if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
@@ -117,44 +121,68 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
             'units','pixels','backgroundcolor',...
             'w','horizontalalignment','left');
         tFig.Position(4)=tFig.Extent(4);
-        tFig.Position(3)=hF.Position(3);
+        tFig.Position(3)=300;
         tFig.Position(1:2)=[5 hF.Position(4)-tFig.Position(4)];
     end    
     
     % 2D Image of Average Image
     subplot(131);
-    imagesc(r(1):r(2),r(3):r(4),ZsubBar)
+    imagesc(r(1):r(2),r(3):r(4),imboxfilt(ZsubBar,opts.BinStep))
     xlabel('x (sites)');
     ylabel('y (sites)');
-    str = [num2str(Npics) ' images'];
-    text(1,1,str,'units','pixels','fontsize',8,...
+    
+    strSummary = ['$n=' num2str(Npics) ' $ images' newline ...
+        '$N=' num2str(round(mean(digdata.Natoms))) '\pm' num2str(round(std(digdata.Natoms,1))) '$ atoms'];
+    text(1,1,strSummary,'units','pixels','fontsize',12,...
         'horizontalalignment','left','verticalalignment','bottom',...
-        'color','r');
+        'color','r','interpreter','latex');  
+    
     colormap bone
     axis equal tight
     cc1=colorbar;
     cc1.Label.String = 'charge occupation';
     title('average image');
     set(gca,'ydir','normal','box','on','linewidth',1);
+    
+    if isfield(opts,'nMaxShow')
+       caxis([0 opts.nMaxShow]); 
+    end
 
     % Average charge density
     subplot(132);
-    errorbar(rVec(2:end),Average(2:end),dev(2:end)./sqrt(n(2:end)),...
+    errorbar(rVec(2:end),radial_charge_mean(2:end),...
+        radial_charge_mean_std(2:end)/sqrt(Npics),...
         'ko','markerfacecolor',[.5 .5 .5],...
-        'markersize',10,'linewidth',1);
+        'markersize',8,'linewidth',1);
+    hold on      
     xlabel('radial distance (sites)');
-    ylabel('mean $N(r)$','interpreter','latex','fontsize',14);    
+    ylabel('mean $\{N(r)\}$','interpreter','latex','fontsize',14);    
+    title('average radial profile');        
+    text(.99,.99,strSummary,'units','normalized','fontsize',12,'horizontalalignment','right',...
+        'verticalalignment','top','interpreter','latex');
+    
+    if isfield(opts,'nMaxShow')
+       ylim([0 opts.nMaxShow]); 
+    end
+    
+    if isfield(opts,'rMaxShow')
+       xlim([0 opts.rMaxShow]); 
+    end
 
     % Plot radial average ndet std
-    subplot(133);
-    errorbar(TicsDev(2:end),AverageDev(2:end),StdDev(2:end),'ko','markerfacecolor',[.5 .5 .5],...
-        'markersize',10,'linewidth',1);
-    hold on;
-    plot(rVec(2:end),sqrt(Average(2:end).*(1-Average(2:end))),'k.','markerfacecolor',[.25 .25 .25],...
-        'markersize',10,'linewidth',1);
-    xlabel('radial distance (sites)');
-    ylabel('std $N(r)$','interpreter','latex','fontsize',14);
-    % ylim([0 1])
+    subplot(133);        
+    plot(rVec(2:end),radial_charge_mean_std(2:end)/sqrt(Npics),'ko','markerfacecolor',[.5 .5 .5],...
+        'markersize',8,'linewidth',1);
+    title('uncertainty of average');
+    ylabel('std $\{N(r)\}/\sqrt{n}$','interpreter','latex','fontsize',14);
+    xlabel('radial distance (sites)');    
+    text(.99,.99,strSummary,'units','normalized','fontsize',12,'horizontalalignment','right',...
+        'verticalalignment','top','interpreter','latex');
+    
+    if isfield(opts,'rMaxShow')
+       xlim([0 opts.rMaxShow]); 
+    end
+
 
 end
 
@@ -173,7 +201,8 @@ Tics=accumarray(Z_integer(:),abs(X(:)+1i*Y(:)),[],@mean);
 Average=accumarray(Z_integer(:),data(:),[],@mean);
 
 
-dev=accumarray(Z_integer(:),data(:),[],@std);
+% dev=accumarray(Z_integer(:),data(:),[],@std);
+dev=accumarray(Z_integer(:),data(:),[],@(x) std(x,1));
 
 n= accumarray(Z_integer(:),data(:),[],@(x) numel(x));
 

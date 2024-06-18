@@ -107,20 +107,30 @@ end
 
 if dig_doRadialAnalysis
     opts = dig_opts;   
-    opts.MoveCenter = 0;
-    opts.RadialBin = 3;
-    opts.ImageBin = 3;
+    opts.BinStep = 3;
+    opts.rMaxShow = 80;
+    opts.nMaxShow = 0.35;    
     
-    [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);
-    if dig_opts.doSave
-        ixon_saveFigure2(hF_digRadial_2,...
-         'dig_radial_center_mean',dig_opts);  
-    end
+    % Compute radial profile for all images
+    digdata = dig_compute_radial(digdata,opts);       
+     hFs=dig_showRadialProfile(digdata,opts);
+     
+     if dig_opts.doSave
+         for kk=1:length(hFs)
+             ixon_saveFigure2(hFs(kk),...
+                ['dig_radial_profile_' num2str(kk)],dig_opts);  
+         end
 
-    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
-    filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
-    disp(['Saving ' filename ' ...']);
-    save(filename, '-struct','dig_radial_data');
+     end
+     
+    [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);
+    
+    
+% 
+%     try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+%     filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
+%     disp(['Saving ' filename ' ...']);
+%     save(filename, '-struct','dig_radial_data');
 
 end
 
