@@ -58,8 +58,17 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     [Tics,Average,dev,n]=radial_profile(ZsubBar,3);
     
     % Look at deviations
-    ZsubDev = std(Zsub,0,3);
-    [TicsDev,AverageDev,devDev,nDev]=radial_profile(ZsubDev,3);
+%     ZsubDev = std(Zsub,0,3);
+    devVec = zeros(length(Tics),Npics);
+    for ii = 1:Npics
+    ZsubThis = Zsub(:,:,ii);
+    [TicsDev,~,devThis,~]=radial_profile(ZsubThis,3);
+    devVec(:,ii) = devThis;
+    end
+    AverageDev = mean(devVec,2);
+    StdDev = std(devVec,1,2);
+   
+    
     
     
     %% Create radial potential vector
@@ -92,7 +101,7 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     out.AverageOccupation              = Average;
     out.AverageOccupationUncertainty   = dev./sqrt(n);
     out.DeviationOccupation            = AverageDev;
-    out.DeviationOccupationUncertainty = devDev./sqrt(nDev);
+%     out.DeviationOccupationUncertainty = devDev./sqrt(nDev);
 
 
 %% Plotting
@@ -118,6 +127,7 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     xlabel('radial distance (sites)');
     ylabel('mean $N(r)$','interpreter','latex','fontsize',14);
     
+    
     % Plot 2D ndet
     subplot(222);
     imagesc(r(1):r(2),r(3):r(4),ZsubBar)
@@ -134,7 +144,7 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
 
     % Plot radial average ndet std
     subplot(223);
-    plot(TicsDev(2:end),AverageDev(2:end),'ko','markerfacecolor',[.5 .5 .5],...
+    errorbar(TicsDev(2:end),AverageDev(2:end),StdDev(2:end),'ko','markerfacecolor',[.5 .5 .5],...
         'markersize',10,'linewidth',1);
     hold on;
     plot(Tics(2:end),sqrt(Average(2:end).*(1-Average(2:end))),'k.','markerfacecolor',[.25 .25 .25],...
@@ -143,19 +153,19 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     ylabel('std $N(r)$','interpreter','latex','fontsize',14);
     % ylim([0 1])
 
-    % Plot 2D ndet std average
-    subplot(224);
-    imagesc(r(1):r(2),r(3):r(4),ZsubDev)
-    xlabel('x (sites)');
-    ylabel('y (sites)');
-    colormap bone
-    axis equal tight
-    cc=colorbar;
-    cc.Label.String = 'deviation of occupation';
-    % caxis(ax2.CLim);
-    text(1,1,str,'units','pixels','fontsize',8,...
-        'horizontalalignment','left','verticalalignment','bottom',...
-        'color','r');
+%     % Plot 2D ndet std average
+%     subplot(224);
+%     imagesc(r(1):r(2),r(3):r(4),ZsubDev)
+%     xlabel('x (sites)');
+%     ylabel('y (sites)');
+%     colormap bone
+%     axis equal tight
+%     cc=colorbar;
+%     cc.Label.String = 'deviation of occupation';
+%     % caxis(ax2.CLim);
+%     text(1,1,str,'units','pixels','fontsize',8,...
+%         'horizontalalignment','left','verticalalignment','bottom',...
+%         'color','r');
 end
 
 function [Tics,Average,dev,n]=radial_profile(data,radial_step)

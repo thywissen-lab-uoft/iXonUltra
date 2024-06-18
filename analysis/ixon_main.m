@@ -92,7 +92,7 @@ ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
-ixon_doBoxCount             = 1;
+ixon_doBoxCount             = 0;
 ixon_doGaussFit             = 0;
 
 % Analysis to run
@@ -109,11 +109,12 @@ ixon_doQGM                          = 0;
 doPSF                               = 0;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
+
 ixon_doQGM_BinStripe                = 0;
 
-ixon_doQGM_BinStandardAnalysis      = 1;
-ixon_doQGM_Digitize                 = 1;
-ixon_doQGM_DigitalStandardAnalysis  = 1;
+ixon_doQGM_BinStandardAnalysis      = 0;
+ixon_doQGM_Digitize                 = 0;
+ixon_doQGM_DigitalStandardAnalysis  = 0;
 
 
 %% Image Processing Options
