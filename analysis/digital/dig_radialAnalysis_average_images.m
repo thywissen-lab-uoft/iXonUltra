@@ -11,7 +11,18 @@ function [hFs,out] = dig_radialAnalysis_average_images(digdata,opts)
     else
         Ux = unique(X);
     end
-   
+    
+    animateFileName = fullfile(opts.saveDir,'radial_animation');            
+
+    
+            
+        
+        
+            
+        
+
+
+    
   
     
     %%
@@ -143,6 +154,23 @@ for kk = 1:length(Ux)
     text(.01,.99,strRadialBin,'units','normalized','horizontalalignment','left',...
         'verticalalignment','top','fontsize',10);
 
+    
+    if isfield(opts,'doAnimate') && opts.doAnimate
+        frame=getframe(hFs(kk));
+        im = frame2im(frame);
+        [A,map] = rgb2ind(im,256);              
+        switch kk
+            case 1
+                imwrite(A,map,animateFileName,'gif','LoopCount',...
+                    Inf,'DelayTime',1);
+            case length(Ux)
+                imwrite(A,map,animateFileName,'gif','WriteMode',...
+                    'append','DelayTime',1);
+            otherwise
+                imwrite(A,map,animateFileName,'gif','WriteMode',...
+                    'append','DelayTime',.2);
+         end
+    end
 end
 
   

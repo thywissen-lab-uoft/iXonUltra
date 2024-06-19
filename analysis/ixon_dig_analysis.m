@@ -130,10 +130,18 @@ if dig_doRadialAnalysis
      if isequal(digdata.xVar,'ExecutionDate')
         opts.ForceAverage = 1; 
      end
-%    opts.doAverageRepeats = 1;
+%     opts.ForceAverage = 0;
+    opts.doAnimate = 0;
+    
     [hFs_radial] = dig_radialAnalysis_average_images(digdata,opts);
+    if dig_opts.doSave
+       for kk=1:length(hFs_radial)
+           ixon_saveFigure2(hFs_radial(kk),...
+                ['dig_radial_' num2str(kk)],dig_opts);   
+       end
+    end
     
-    
+    doExportforDrut=0;
     if doExportforDrut    
        % Constants
         h = 6.62607015*10^-34;
