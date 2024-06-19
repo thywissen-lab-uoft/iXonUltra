@@ -74,8 +74,8 @@ for kk = 1:length(Ux)
     strBoxCar = ['boxcar avg: ' num2str(opts.BinStep) '\times' num2str(opts.BinStep)];
 
     strSummary = ['$n=' num2str(nImg) ' $ images' newline ...
-        '$N=' num2str(round(mean(digdata.Natoms))) '\pm' ...        
-        num2str(round(std(digdata.Natoms,1))) '$ atoms'];    
+        '$N=' num2str(round(mean(digdata.Natoms(inds)))) '\pm' ...        
+        num2str(round(std(digdata.Natoms(inds),1))) '$ atoms'];    
 
     text(1,1,strSummary,'units','pixels','fontsize',10,...
         'horizontalalignment','left','verticalalignment','bottom',...
@@ -86,6 +86,17 @@ for kk = 1:length(Ux)
         'color','r');
         ax1.XAxisLocation='Top';
         set(ax1,'FontSize',8);
+        
+        
+        
+    if ~opts.ForceAverage        
+        str= [digdata.xVar ': ' num2str(x)];
+        text(.99,.99,str,'units','normalized','fontsize',8,'color','r',...
+            'horizontalalignment','right','verticalalignment','top',...
+            'interpreter','none');            
+    end
+   
+           
 
     colormap bone
     axis equal tight
