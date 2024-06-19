@@ -132,18 +132,44 @@ if dig_doRadialAnalysis
      end
 %    opts.doAverageRepeats = 1;
     [hFs_radial] = dig_radialAnalysis_average_images(digdata,opts);
+    
+    
+    if doExportforDrut    
+       % Constants
+        h = 6.62607015*10^-34;
+        m = 39.96399848*1.66053906660*10^-27;
+        lam = (1054*10^-9*1054*10^-9*1064*10^-9)^(1/3);
+        aL = lam/2;
 
+        % 120mW XDT + 2.5ER request lattice trap frequencies - calibrated
+        % 02/29/24 (reanalyzed 04/11/24)
+        omega_x = 2*pi*67.3;
+        omega_y = 2*pi*60.2;
+        omega_bar = (omega_x*omega_y).^(1/2);
+
+        % Harmonic potential in Hz
+        PotentialVector = 0.5*m*omega_bar^2*aL^2.*rVec.^2/h;
+
+        kappa = 0.5*m*omega_bar^2*aL^2/h;
+
+        % Assign to output
+        out = struct;
+        out.Images                         = digdata.Z;
+        out.SiteVector1                    = digdata.n1;
+        out.SiteVector2                    = digdata.n2;            
+        out.RadialVector                   = digdata.r;
+        out.RadialOccupation               = digdata.Zr;
+        out.RadialPotential                = digdata.r.^2*kappa;                  
+
+        try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+        filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
+        disp(['Saving ' filename ' ...']);
+        save(filename, '-struct','dig_radial_data');
+    end
      
-    [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);
-%     
-    
-    
-    
-    
-    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
-    filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
-    disp(['Saving ' filename ' ...']);
-%     save(filename, '-struct','dig_radial_data');
+    % obsolte analysis
+%     [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);        
+
 
 end
 
