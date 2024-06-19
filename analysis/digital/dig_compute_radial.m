@@ -7,10 +7,18 @@ end
 if ~isfield(opts,'BinStep')
     opts.BinStep = 3;    
 end
+xcbar = round(mean(digdata.Xc_site));
+ycbar = round(mean(digdata.Yc_site));
+
 
 for nn=1:size(digdata.Zdig,3)
     % center of this image
     xc = round(digdata.Xc_site(nn));yc = round(digdata.Yc_site(nn));    
+    
+    if opts.useAverageCenter
+       xc = xcbar;
+       yc = ycbar;
+    end
     % Lattice site vectors
     n1 = digdata.n1;n2 = digdata.n2;        
     nlimits = [min(n1) max(n1) min(n2) max(n2)]; 
@@ -29,6 +37,8 @@ for nn=1:size(digdata.Zdig,3)
     % Compute radial profile
     [rVec,charge,charge_std,n]= radial_profile(Zsub,opts.BinStep);
     
+    digdata.rCenter(nn,1) = xc;
+    digdata.rCenter(nn,2) = yc;
     digdata.rBinStep = opts.BinStep;
     digdata.r(1:length(rVec),nn) = rVec;
     digdata.Zr(1:length(charge),nn) = charge;
