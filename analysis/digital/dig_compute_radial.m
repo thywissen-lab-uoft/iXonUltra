@@ -29,6 +29,7 @@ for nn=1:size(digdata.Zdig,3)
     % Compute radial profile
     [rVec,charge,charge_std,n]= radial_profile(Zsub,opts.BinStep);
     
+    digdata.rBinStep = opts.BinStep;
     digdata.r(1:length(rVec),nn) = rVec;
     digdata.Zr(1:length(charge),nn) = charge;
     digdata.Zr_std(1:length(charge),nn) = charge_std;    

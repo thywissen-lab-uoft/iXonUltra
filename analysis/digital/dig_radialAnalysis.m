@@ -4,9 +4,7 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     end    
     if ~isfield(opts,'RemoveOutliers')
         opts.RemoveOutliers = 1;
-    end    
-    
-  
+    end       
     
     %% Remove outliers
     Z   = [digdata.Zdig];
@@ -21,8 +19,6 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
         Xc(bad_inds)=[];
         Yc(bad_inds)=[];
     end
-    
-    %% Recenter every image to have the same mean?
     
     %% Find Center   
     
@@ -69,12 +65,6 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     % Average Radial charge profile
     radial_charge_mean      = mean(radial_charge,2);     
     radial_charge_mean_std  = std(radial_charge,1,2);     
-
-    % Average Radial Deviation profile (and std of std)
-    radial_charge_std_mean  = mean(radial_charge_err,2);
-    radial_charge_std_std  = std(radial_charge_err,1,2);
-    
-    
     
 
     %% Create radial potential vector
@@ -105,15 +95,15 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     out.RadialVector                   = rVec;
     out.PotentialVector                = PotentialVector;
     out.AverageOccupation              = radial_charge_mean;
-    out.AverageOccupationUncertainty   = radial_charge_mean_dev./sqrt(n);
-    out.DeviationOccupation            = radial_charge_std_mean;
-%     out.DeviationOccupationUncertainty = devDev./sqrt(nDev);
+    out.AverageOccupationUncertainty   = radial_charge_mean_std/sqrt(Npics);
 
 %% Plotting
 
     hF = figure;
     hF.Color='w';
-    hF.Position = [300 100 1500 350];
+    hF.Position = [300 100 1200 350];
+    W= hF.Position(3);
+    H = hF.Position(4);
     clf
 
     if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
@@ -121,22 +111,39 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
             'units','pixels','backgroundcolor',...
             'w','horizontalalignment','left');
         tFig.Position(4)=tFig.Extent(4);
-        tFig.Position(3)=300;
-        tFig.Position(1:2)=[5 hF.Position(4)-tFig.Position(4)];
+        tFig.Position(3)=tFig.Extent(3);
+%         tFig.Position(1:2)=[5 hF.Position(4)-tFig.Position(4)];
+        tFig.Position(1:2)=[1 1];
+
     end    
     
     % 2D Image of Average Image
-    subplot(131);
+    ax1=subplot(131);
+    ax1.Units='pixels';
+    [x0, y0, w, h]=getAxesPos(1,3,1,W,H);
+    ax1.Position = [x0 y0 w h];
+    
+    
     imagesc(r(1):r(2),r(3):r(4),imboxfilt(ZsubBar,opts.BinStep))
-    xlabel('x (sites)');
-    ylabel('y (sites)');
+    xlabel('position (sites)');
+    ylabel('position (sites)');
+    
+    strBoxCar = ['boxcar avg: ' num2str(opts.BinStep) '\times' num2str(opts.BinStep)];
     
     strSummary = ['$n=' num2str(Npics) ' $ images' newline ...
-        '$N=' num2str(round(mean(digdata.Natoms))) '\pm' num2str(round(std(digdata.Natoms,1))) '$ atoms'];
-    text(1,1,strSummary,'units','pixels','fontsize',12,...
+        '$N=' num2str(round(mean(digdata.Natoms))) '\pm' ...        
+        num2str(round(std(digdata.Natoms,1))) '$ atoms'];    
+    
+    text(1,1,strSummary,'units','pixels','fontsize',10,...
         'horizontalalignment','left','verticalalignment','bottom',...
         'color','r','interpreter','latex');  
     
+    text(.01,.99,strBoxCar,'units','normalized','fontsize',10,...
+        'verticalalignment','top','horizontalalignment','left',...
+        'color','r');
+        ax1.XAxisLocation='Top';
+        set(ax1,'FontSize',8);
+
     colormap bone
     axis equal tight
     cc1=colorbar;
@@ -149,7 +156,11 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     end
 
     % Average charge density
-    subplot(132);
+    ax2=subplot(132);
+    ax2.Units='pixels';
+    [x0, y0, w, h]=getAxesPos(1,3,2,W,H);
+    ax2.Position = [x0 y0 w h];
+    
     errorbar(rVec(2:end),radial_charge_mean(2:end),...
         radial_charge_mean_std(2:end)/sqrt(Npics),...
         'ko','markerfacecolor',[.5 .5 .5],...
@@ -168,12 +179,21 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     if isfield(opts,'rMaxShow')
        xlim([0 opts.rMaxShow]); 
     end
+    
+    strRadialBin = ['radial bin ' char(916) 'r:' num2str(opts.BinStep)];
+    text(.01,.99,strRadialBin,'units','normalized','horizontalalignment','left',...
+        'verticalalignment','top','fontsize',10);
 
     % Plot radial average ndet std
-    subplot(133);        
-    plot(rVec(2:end),radial_charge_mean_std(2:end)/sqrt(Npics),'ko','markerfacecolor',[.5 .5 .5],...
+    ax3=subplot(133);
+    ax3.Units='pixels';
+    [x0, y0, w, h]=getAxesPos(1,3,3,W,H);
+    ax3.Position = [x0 y0 w h];
+    
+    plot(rVec(2:end),radial_charge_mean_std(2:end)/sqrt(Npics),...
+        'ko','markerfacecolor',[.5 .5 .5],...
         'markersize',8,'linewidth',1);
-    title('uncertainty of average');
+    title('standard error');
     ylabel('std $\{N(r)\}/\sqrt{n}$','interpreter','latex','fontsize',14);
     xlabel('radial distance (sites)');    
     text(.99,.99,strSummary,'units','normalized','fontsize',12,'horizontalalignment','right',...
@@ -182,7 +202,8 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     if isfield(opts,'rMaxShow')
        xlim([0 opts.rMaxShow]); 
     end
-
+    text(.01,.99,strRadialBin,'units','normalized','horizontalalignment','left',...
+        'verticalalignment','top','fontsize',10);
 
 end
 
@@ -207,3 +228,26 @@ dev=accumarray(Z_integer(:),data(:),[],@(x) std(x,1));
 n= accumarray(Z_integer(:),data(:),[],@(x) numel(x));
 
 end
+
+
+function [axX,axY,axWidth,axHeight]=getAxesPos(num_rows,num_cols,index,figW,figH)
+yTop=30;
+yBot=50;
+
+xLeft=35;
+xRight=20;
+
+ySpace=35;
+xSpace=70;
+
+rowNumber = floor((index-1)/num_cols)+1;
+colNumber = mod(index-1,num_cols)+1;
+
+axHeight = (figH-yTop-yBot-ySpace*(num_rows-1))/num_rows;
+axWidth = (figW-xLeft-xRight-xSpace*(num_cols-1))/num_cols;
+
+axX = xLeft + (axWidth+xSpace)*(colNumber-1);
+axY=(figH-yTop-axHeight)-(rowNumber-1)*(axHeight+ySpace);
+
+end
+

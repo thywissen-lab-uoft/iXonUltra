@@ -81,6 +81,8 @@ for kk=1:(ceil(N/pMax))
             str = [str num2str(digdata.X(ii))];
         end        
         str = [str newline num2str(digdata.Natoms(ii)) ' atoms'];
+        
+        str = [str newline char(916) 'r:' num2str(digdata.rBinStep) 'sites'];
 
         % Draw the iteration number and variable value
         text(3, ax.Position(4)-2, ...
