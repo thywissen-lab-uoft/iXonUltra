@@ -131,7 +131,7 @@ if dig_doRadialAnalysis
         opts.ForceAverage = 1; 
      end
 %     opts.ForceAverage = 0;
-    opts.doAnimate = 0;
+    opts.doAnimate = 1;
     
     [hFs_radial] = dig_radialAnalysis_average_images(digdata,opts);
     if dig_opts.doSave
