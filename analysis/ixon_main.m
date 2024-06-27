@@ -82,7 +82,7 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 0;      % Auto detect changing variable?
+ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
@@ -92,7 +92,7 @@ ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 %% Analysis Options
 % Fitting options
-ixon_doBoxCount             = 0;
+ixon_doBoxCount             = 1;
 ixon_doGaussFit             = 0;
 
 % Analysis to run
@@ -105,16 +105,16 @@ ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in 
 ixon_doAnalyzeQPD           = 0;    % Analyze QPD traces
 
 % QGM Single Plane Analysis
-ixon_doQGM                          = 0;
-doPSF                               = 0;
+ixon_doQGM                          = 1;
+doPSF                               = 1;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
 
 ixon_doQGM_BinStripe                = 0;
 
-ixon_doQGM_BinStandardAnalysis      = 0;
-ixon_doQGM_Digitize                 = 0;
-ixon_doQGM_DigitalStandardAnalysis  = 0;
+ixon_doQGM_BinStandardAnalysis      = 1;
+ixon_doQGM_Digitize                 = 1;
+ixon_doQGM_DigitalStandardAnalysis  = 1;
 
 
 %% Image Processing Options
@@ -138,7 +138,7 @@ img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
 img_opt.doPSF               = doPSF;    % Deconvolve with PSF
-img_opt.PSF                 = [1.3163 51 21]; % PSF parameters [sigma, N, Niter]
+img_opt.PSF                 = [1.3163 51 31]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
 img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px
@@ -373,11 +373,11 @@ ixon_animateOpts.Source = 'ZNoFilter';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 %     ixon_animateOpts.CLim=[0 300];   % Color limits
-%     ixon_animateOpts.CLim=[0 1500];   % Color limits
-    ixon_animateOpts.CLim=[0 500];
+    ixon_animateOpts.CLim=[0 1000];   % Color limits
+%     ixon_animateOpts.CLim=[0 500];
 % if ~ixon_doQGM
 %      ixon_animateOpts.CLim='auto';
-     ixon_animateOpts.CLim=[0 500];
+%      ixon_animateOpts.CLim=[0 10000];
 % end
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
@@ -399,8 +399,8 @@ if ixon_doAnimate == 1 && ixon_doSave && size(ixondata(1).Z,3)==2
     ixon_animateOpts.Source = 'ZNoFilter';
 %     ixon_animateOpts.Source = 'Z';
 
-     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-%       ixon_animateOpts.CLim=[0 500];   % Automatically choose CLIM?
+%      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+      ixon_animateOpts.CLim=[0 1000];   % Automatically choose CLIM?
 
 ixon_animateOpts.filename='ixon_animate_2shot';
 

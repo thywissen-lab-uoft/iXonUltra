@@ -150,7 +150,7 @@ if bin_BinAcummulateHist
     % Center Cloud
     opts.ROI = [110 135 70 100];
     opts.ROI = [95 115 65 85];
-    opts.ROI = [85 105 95 115];
+    opts.ROI = [85 105 80 100];
 
     opts.filename = 'bin_BinAnimateCenter.gif';    
     hF_BinHistogramFull = bin_binnedTotalHistogram(bindata,opts);    
