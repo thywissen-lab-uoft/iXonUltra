@@ -92,7 +92,7 @@ bin_BinStripe_ColorThreshold            = [1000 4500];
 
 % Digitzation
 bin_Digitize                            = 1; 
-dig_DigitizationThreshold               = 3500;
+dig_DigitizationThreshold               = 3000;
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and

@@ -64,9 +64,10 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 1;                % Auto detect changing variable?
+dig_opts.autoXVar       = 0;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
+dig_opts.xVar           = 'ExecutionDate';  % Variable Name
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 dig_opts.doSave         = 1;                % Save Analysis?
 
@@ -114,7 +115,7 @@ if dig_doRadialAnalysis
 
     
     opts.rMaxShow = 80;                 % max r to plot
-    opts.nMaxShow = 0.35;               % max density to plot
+    opts.nMaxShow = 0.45;               % max density to plot
     opts.showDevParametrization  = 0;   % show standard deviation?
     
     % Show radial profiles
