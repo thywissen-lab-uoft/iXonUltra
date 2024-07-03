@@ -951,7 +951,7 @@ tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
 ttstr='scale up image';
 cScale=uicontrol('style','checkbox','string','scale factor',...
     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',1,'ToolTipString',ttstr,'fontsize',7);
+    'value',0,'ToolTipString',ttstr,'fontsize',7);
 cScale.Position=[5 cRotate.Position(2)+18 80 15];
 
 tblScale=uitable('parent',hpADV,'units','pixels',...
@@ -1613,14 +1613,14 @@ tblDig=uitable('parent',hpDig,'units','pixels',...
 tblDig.Position=[hpDig.Position(3)-55 hcDigThreshold.Position(2)+1 50 20];
 
 % Digitization Threshold Text
-hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
-    'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
+% hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
 
 % Digitization Threshold
-tblDigPixel=uitable('parent',hpDig,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
-    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
+% tblDigPixel=uitable('parent',hpDig,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
+%     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+% tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
 % 
 % % Digitization Threshold Text
 hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','fidelity','fontsize',7,...
@@ -1697,7 +1697,14 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         %Update box count string object
         set(tD_SE,'String',str); 
         set(tD_SW,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);  
+        
+        drawAtomsCB;
+        set(pAtoms,'XData',dig.Rn(1,:),'YData',dig.Rn(2,:));
+        drawnow;
+        
+        
     end
+
 
 %% Image Number Selector
 hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
@@ -1724,6 +1731,9 @@ menuSelectImg.Position(1:2)=[2 15];
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
                 pGrid.Color = [.5 .5 .5 .5];
+                pAtoms.Color=[255,215,0]/255;
+                pAtoms.MarkerFaceColor=pAtoms.Color;
+                pAtoms.MarkerSize=3;
 
                 stripe_pBar.Color='w';
                 stripe_pAngleCirc.Color='w';  
@@ -1735,6 +1745,9 @@ menuSelectImg.Position(1:2)=[2 15];
                 stripe_pBar.Color='w';
                 stripe_pAngleCirc.Color='w';  
                 stripe_pCloudEllipse.Color='w';
+                pAtoms.Color=[255,215,0]/255;
+     pAtoms.MarkerFaceColor=pAtoms.Color;
+                pAtoms.MarkerSize=3;
             case 3
                 pGrid.Color = [.3 .3 .3 .3];
                 colormap(hF,purplemap);
@@ -1746,6 +1759,9 @@ menuSelectImg.Position(1:2)=[2 15];
                 stripe_pBar.Color='k';
                 stripe_pAngleCirc.Color='k';  
                 stripe_pCloudEllipse.Color='k';
+                pAtoms.Color=[218,165,32]/255;
+     pAtoms.MarkerFaceColor=pAtoms.Color;
+                pAtoms.MarkerSize=3;
         end
     end
 
@@ -1829,7 +1845,7 @@ cAutoColor_X.Position=[climtbl_X.Position(1)+climtbl_X.Position(3)+1 climtbl_X.P
 bgPlot_X = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@foo);  
 bgPlot_X.Position(3:4)=[125 15];
-bgPlot_X.Position(1:2)=[2 47];
+bgPlot_X.Position(1:2)=[2 60];
     
 % Radio buttons for cuts vs sum
 rbCut_X=uicontrol(bgPlot_X,'Style','radiobutton','String','plot cut',...
@@ -1845,25 +1861,32 @@ rbSum_X=uicontrol(bgPlot_X,'Style','radiobutton','String','plot sum',...
 cCoMStr_X=uicontrol(hpDisp_X,'style','checkbox','string','center of mass text',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@cCoMCB,...
     'enable','on','value',1);
-cCoMStr_X.Position=[2 32 125 15];
+cCoMStr_X.Position=[2 47 125 15];
 
 % Checkbox for showing/hiding crosshair
 cCross_X=uicontrol(hpDisp_X,'style','checkbox','string','cross hair',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@cCrossCB,...
     'enable','on','value',1,'UserData','X');
-cCross_X.Position=[2 17 120 15];
+cCross_X.Position=[2 32 120 15];
 
 % Checkbox for showing/hiding lattice
 cDrawLattice=uicontrol(hpDisp_X,'style','checkbox','string','lattice grid',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@latticeGridCB,...
     'enable','on','value',1);
-cDrawLattice.Position=[2 2 80 15];
+cDrawLattice.Position=[2 17 80 15];
 
 % Checkbox for showing/hiding lattice
 cTextLattice=uicontrol(hpDisp_X,'style','checkbox','string','lattice text',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@latticeTextCB,...
     'enable','on','value',1);
-cTextLattice.Position=[cDrawLattice.Position(3)+cDrawLattice.Position(1)+5 2 120 15];
+cTextLattice.Position=[cDrawLattice.Position(3)+cDrawLattice.Position(1)+5 17 120 15];
+
+
+% Checkbox for showing/hiding digitization
+cDrawAtoms=uicontrol(hpDisp_X,'style','checkbox','string','draw atoms',...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@drawAtomsCB,...
+    'enable','on','value',1);
+cDrawAtoms.Position=[2 2 80 15];
 
 
 %% Display Options Panel
@@ -2476,6 +2499,11 @@ pGrid = line([1 512],[1 512],'linestyle','-',...
     'color',[.5 .5 .5 .5],'linewidth',1,'Visible','off','parent',axImg,...
     'hittest','off');
 
+% Initialize Atom Dots
+pAtoms = plot(5,5,'o',...
+    'color','w','linewidth',1,'Visible','off','parent',axImg,...
+    'hittest','off','markersize',8);
+
 % file name string
 tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
     'horizontalalignment','left','verticalalignment','bottom','margin',1,...
@@ -2873,7 +2901,23 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
         Y2 = [R1(2,:); R2(2,:); Q];Y2=Y2(:);
         
         set(pGrid,'XData',[X1; X2],'YData',[Y1; Y2]);
-  end              
+  end           
+
+
+function drawAtomsCB(~,~)
+    if ~isfield(data,'LatticeDig')
+       pAtoms.Visible='off';
+       return;
+    end
+    
+    
+   if cDrawAtoms.Value        
+        pAtoms.Visible='on';
+   else
+        pAtoms.Visible='off';
+   end  
+        
+end
 
     function latticeGridCB(src,~)      
         if ~isfield(data,'LatticeBin')
