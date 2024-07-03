@@ -1499,7 +1499,7 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
         for kk=1:size(data.Z,3)
             opts = struct;
             [a1, a2, p1, p2] = getLattice;
-            opts.ScaleFactor = 4;    
+            opts.ScaleFactor = 6;    
             opts.a1 = a1;
             opts.a2 = a2;
             opts.p1 = p1;
@@ -1516,19 +1516,26 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
             x = data.X(ix_1:ix_2);
             y = data.Y(iy_1:iy_2);   
             z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
-            znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
+%             znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
             tic;
             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
                 ') binning into lattice ...']);    
            
+            tic
             data.LatticeBin(kk) = binLattice(x,y,z,opts); 
-            data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
+%             toc
+            
+%             tic
+%             data.LatticeBin(kk) = binLattice2(x,y,z,opts); 
+% toc
+
+%             data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
         end 
 
         data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
-        data = ixon_SharpnessBinned(data);  
+%         data = ixon_SharpnessBinned(data);  
 
 %         data = ixon_binnedHistogramFit(data);
         
