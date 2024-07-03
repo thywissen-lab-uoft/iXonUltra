@@ -890,7 +890,7 @@ tNavName.String=data.Name;
 %% Image Process Panel
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-160 160 214],'title','processing');
+    'Position',[0 hpAcq.Position(2)-160 160 230],'title','processing');
 
 ttstr='Apply gaussian filter to smooth image';
 cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
@@ -925,14 +925,19 @@ hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',7,...
 % Checkbox for applying point spread function 
 ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
 hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hcFFT.Position(2)+60 155 20],...
+    'backgroundcolor','w','Position',[5 hcFFT.Position(2)+70 155 20],...
+    'ToolTipString',ttstr,'enable','on');
+
+ttstr='Calculate noise statistics from image?';
+hcPSF_noise=uicontrol(hpADV,'style','checkbox','string','auto detect noise?','fontsize',6,...
+    'backgroundcolor','w','Position',[15 hcPSF.Position(2)-10 155 14],'Value',1,...
     'ToolTipString',ttstr,'enable','on');
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
-    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 51 31],'columneditable',[true],...
-    'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
+    'columnname',{char(963),'size','iter','noise'},'rowname',{},'Data',[1.32 11 31 25],'columneditable',[true],...
+    'columnwidth',{35 25 25 35},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
-tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];  
+tblPSF.Position(1:2)=[20 hcPSF_noise.Position(2)-tblPSF.Extent(4)];  
 
 
 % Checkbox for enabling 2D gauss fitting
@@ -991,10 +996,10 @@ hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize'
 
 % process button
 hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
-    'units','pixels','callback',@processCB,'parent',hpADV,'backgroundcolor','w');
+    'units','pixels','callback',@processCB,'parent',hpADV,'backgroundcolor',[80 200 120]/255);
 hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
-    function processCB(~,~)
+    function processCB(src,evt)
         newDataCallback;
   end
 
@@ -1183,9 +1188,9 @@ hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize'
     'ToolTipString',ttstr);
 
 % Do Position space analysis
-uicontrol(hpAnl,'style','pushbutton','string','analyze',...
+hbposition=uicontrol(hpAnl,'style','pushbutton','string','analyze',...
     'units','pixels','callback',{@(~,~) updatePositionAnalysis},'parent',hpAnl,...
-    'backgroundcolor','w','position',[hpAnl.Position(3)-45 1 45 15]);
+    'backgroundcolor','w','position',[hpAnl.Position(3)-45 1 45 15],'backgroundcolor',[80 200 120]/255);
 
 
 %% Momentum Panel
@@ -1250,12 +1255,14 @@ hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 
 % Refit button
 hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@analyze_k,'parent',hpKspace,'backgroundcolor','w');
+    'units','pixels','callback',@analyze_k,'parent',hpKspace,'backgroundcolor',[80 200 120]/255);
 hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 % Callback function for redoing fits button
     function analyze_k(~,~)
         if hcFindLattice.Value && isfield(data,'Zf')
+            hb_Kanalyze.BackgroundColor=[255 219 88]/255;
+            drawnow;
             opts = data.ProcessOptions;            
             for kk=1:size(data.Zf,3)
                 tic;
@@ -1279,7 +1286,8 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
             updateReciprocalTextGraphics;
             reciprocalLatticeTextCB(cLat_K_text);
             
-        
+            hb_Kanalyze.BackgroundColor=[80 200 120]/255;
+            drawnow;
         end         
     end
 
@@ -1462,7 +1470,7 @@ stripe_threshold_tbl.Position(1:2)=[90 hc_anlB_stripe.Position(2)];
 
 % Refit button
 hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor','w');
+    'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor',[80 200 120]/255);
 hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
 
     function [a1, a2, p1, p2] = getLattice        
@@ -1494,8 +1502,11 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
     function analyze_bin(src,evt)
          if isfield(data,'LatticeBin')
             data = rmfield(data,'LatticeBin');
-        end
-
+         end
+        
+         hb_Binanalyze.BackgroundColor=[255 219 88]/255;
+        drawnow;
+        
         for kk=1:size(data.Z,3)
             opts = struct;
             [a1, a2, p1, p2] = getLattice;
@@ -1559,6 +1570,11 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
             data.BinStripe = out;     
             bin_showStripeBin(data,[],opts_stripe);
         end  
+        
+        
+                
+         hb_Binanalyze.BackgroundColor=[80 200 120]/255;
+        drawnow;
     
     
     end
@@ -1597,7 +1613,7 @@ hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','fidelity','fontsize',
 
 % Refit button
 hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor','w');
+    'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor',[80 200 120]/255);
 hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
 
     function chBasis(src,evt)
@@ -1609,6 +1625,10 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             warning('No binnined data to digitize');
             return;
         end
+        
+        hb_Diganalyze.BackgroundColor=[255 219 88]/255;
+        drawnow;
+        
         dig_threshold = tblDig.Data;
         data = ixon_digitize(data,dig_threshold);
 
@@ -1639,6 +1659,9 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         
 
         updateDigitalGraphics;
+        
+        hb_Diganalyze.BackgroundColor=[80 200 120]/255;
+        drawnow;
     end
 
     function updateDigitalGraphics    
@@ -3188,6 +3211,10 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
 
 %% 
     function updatePositionAnalysis
+    hbposition.BackgroundColor=	[255 219 88]/255;
+    drawnow;
+        
+        
         data.ROI=tblROI.Data;     
 
 
@@ -3232,94 +3259,15 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
         data.StripeFit = stripes;
         data.StripeFocus = foci;
         updateStripeGraphics;
-    end  
-     
-    
-    % %% Fit Results    
-    % fr=tbl_pos_analysis.Data(:,2)';    
-    % % Ensure fit results is a number
-    % for n=1:length(fr)
-    %     % If value is empty, assign a zero
-    %     if isempty(fr{n})
-    %         fr{n}=0;
-    %     end
-    % 
-    %     % If string conver to number
-    %     if isstr(fr{n})
-    %         try
-    %             fr{n}=str2double(fr{n});
-    %         catch ME
-    %             fr{n}=NaN;
-    %         end
-    %     end
-    % end
-    % 
-    % % Get fit results variable
-    % frVar=frslct.String{frslct.Value};    
-    % val=data.Params.(frVar);
-    % 
-    % % Convert execution date into a time
-    % if isequal(frVar,'ExecutionDate') 
-    %    val=datenum(val); 
-    %    val=val-floor(val);
-    %    val=val*24*60;
-    % end
-    % 
-    % % Create fit results object
-    % fr=[data.Name frVar val fr];   
-    % 
-    %%%%%% Output to fit results
-    % Output some analysis to the main workspace, this is done to be
-    % comptaible with old regimens for fitting and analysis
-    % 
-    % try
-    %     % Read in fitresults
-    %     ixon_fitresults=evalin('base','ixon_fitresults');        
-    % catch ME
-    %     % Error means that it is probably undefined
-    %     ixon_fitresults={};
-    % end
-    % 
-    % M=size(ixon_fitresults,1)+1;                         % Find next row
-    % ixon_fitresults(M:(M+size(fr,1)-1),1:size(fr,2))=fr; % Append data        
-    % assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults
-    % 
-    
-    % % This should happen only at end
-    % if doSaveGUIAnalysis
-    %     gui_saveData = struct;
-    %     gui_saveData.Date = data.Date;
-    %     gui_saveData.FileName = data.Name; 
-    %     gui_saveData.Params = data.Params;
-    %     gui_saveData.BoxCount = data.BoxCount;    
-    %     if hcStripe.Value  
-    %         gui_saveData.Stripe = stripe;
-    %     end
-    % 
-    %    filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
-    %    filenames={filenames.name};
-    %    filenames=sort(filenames);
-    % 
-    %    % Delete old images
-    %    if length(filenames)>200
-    %        f=[GUIAnalysisSaveDir filesep filenames{1}];
-    %        delete(f);
-    %    end               
-    % 
-    %     filename=[data.Name '.mat']; 
-    %     if ~exist(GUIAnalysisSaveDir,'dir')
-    %        mkdir(GUIAnalysisSaveDir);
-    %     end        
-    %     filename=fullfile(GUIAnalysisSaveDir,filename);
-    %     fprintf('%s',[filename ' ...']);
-    %     save(filename,'gui_saveData');
-    %     disp(' done');    
-    % end       
-        % updateGraphics;        
+    end          
 
         updateDispPosImg;   
         updatePositionAnalysisGraphics
         updatePositionGraphics;
+        
+        
+        hbposition.BackgroundColor=[80 200 120]/255;
+        drawnow;
     end
 
     function saveGUIData       
@@ -3408,6 +3356,8 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
     opt.PSF                = tblPSF.Data;    
     opt.doRotate           = cRotate.Value;
     opt.Theta              = tblTheta.Data;
+    opt.DetectNoise        = hcPSF_noise.Value;
+    opt.Noise             = tblPSF.Data(4);
         
     % Momentum Space
     opt.doFFT              = hcFFT.Value;
@@ -3417,7 +3367,12 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
     opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
     % Process the Images
+    hbprocess.BackgroundColor=	[255 219 88]/255;
+    drawnow;
     data = ixon_ProcessImages(data,opt);  
+    
+    tblPSF.Data(4) =  round(data.NoiseEstimation(1));
+    hbprocess.BackgroundColor=[80 200 120]/255;
 
     % Update history index
     updateHistoryInd(data); 
@@ -3479,27 +3434,12 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
   
 %% Update Fit Results (depreciated)
 
-    % % Update parameter for fit results
-    % frVar=frslct.String{frslct.Value};   % Old fitresults variable
-    % frslct.String=fieldnames(params); 
-    % ind=find(ismember(frslct.String,frVar));
-    % if ~isempty(ind)
-    %     frslct.Value=ind;
-    % else
-    %     ind=find(ismember(frslct.String,'ExecutionDate'));
-    %     frslct.Value=ind;
-    % end
-    % 
     
     drawnow;
     climtbl_X.Data=axImg.CLim;
 
     saveGUIData
 
-    % disp('')
-    % disp('Performing fits and analysis.');
-% %% Now do the fits?!?!
-%     data=updateAnalysis(data);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
