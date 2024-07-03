@@ -1700,8 +1700,20 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         
         drawAtomsCB;
         set(pAtoms,'XData',dig.Rn(1,:),'YData',dig.Rn(2,:));
-        drawnow;
         
+        pAtoms.DataTipTemplate.DataTipRows(3:end)=[];
+
+        row = dataTipTextRow('Counts',dig.Counts);
+        pAtoms.DataTipTemplate.DataTipRows(3) = row;
+        
+        row = dataTipTextRow('n1',dig.N(1,:));
+        pAtoms.DataTipTemplate.DataTipRows(4) = row;
+        
+         row = dataTipTextRow('n2',dig.N(2,:));
+        pAtoms.DataTipTemplate.DataTipRows(5) = row;
+        
+        drawnow;
+%         keyboard
         
     end
 
@@ -2495,6 +2507,7 @@ axis equal tight
 
 pxinfo = impixelinfo(hF,hImg);
 
+
 % Cross Hair Plots
 pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
 pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
@@ -2507,7 +2520,8 @@ pGrid = line([1 512],[1 512],'linestyle','-',...
 % Initialize Atom Dots
 pAtoms = plot(5,5,'o',...
     'color','w','linewidth',1,'Visible','off','parent',axImg,...
-    'hittest','off','markersize',8);
+    'hittest','on','markersize',8);
+
 
 % file name string
 tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...

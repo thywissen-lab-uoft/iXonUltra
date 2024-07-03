@@ -15,6 +15,7 @@ for kk=1:length(ixondata)
         n1 = ixondata(kk).LatticeBin(k).n1;
         n2 = ixondata(kk).LatticeBin(k).n2;
         Zdig = ixondata(kk).LatticeBin(k).Zbin>=threshold; 
+        Zb = ixondata(kk).LatticeBin(k).Zbin;
         Natoms = sum(sum(Zdig));        % Total number of atoms
 
         a1 =ixondata(kk).LatticeBin(k).a1;
@@ -32,6 +33,9 @@ for kk=1:length(ixondata)
         nn2=nn2(:);
         Zthere = Zdig(:);
         
+        Counts=Zb(Zthere==1);
+        Counts = Counts(:)';
+        
         nn1(Zthere==0)=[];
         nn2(Zthere==0)=[];
 
@@ -39,6 +43,7 @@ for kk=1:length(ixondata)
         p=[p1; p2];
         P = repmat(p,[1 length(N)]);        % Phase vector        
         Rn=A*(N+P);                                 % Positino of every atoms
+        
 
 
         
@@ -72,7 +77,8 @@ for kk=1:length(ixondata)
         Ys_px=sqrt(Y2_px-Yc_px.^2); % standard deviation Y        
         
         LatticeDig(k).Rn = Rn;
-
+        LatticeDig(k).N = N;
+        LatticeDig(k).Counts = Counts;
         LatticeDig(k).n1 = n1;
         LatticeDig(k).n2 = n2;
         LatticeDig(k).a1 = a1;
