@@ -1760,8 +1760,13 @@ menuSelectImg.Position(1:2)=[2 15];
                 stripe_pAngleCirc.Color='k';  
                 stripe_pCloudEllipse.Color='k';
                 pAtoms.Color=[218,165,32]/255;
-     pAtoms.MarkerFaceColor=pAtoms.Color;
-                pAtoms.MarkerSize=3;
+%                         pAtoms.Color=[0,128,128]/255;
+
+                pAtoms.MarkerFaceColor=pAtoms.Color;
+                pAtoms.Color='k';
+                pAtoms.MarkerFaceColor='y';
+
+                pAtoms.MarkerSize=4;
         end
     end
 
@@ -3471,6 +3476,9 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
     
     tblPSF.Data(4) =  round(data.NoiseEstimation(1));
     hbprocess.BackgroundColor=[80 200 120]/255;
+    
+    pAtoms.Visible='off';
+    set(pAtoms,'XData',[],'YData',[]);
 
     % Update history index
     updateHistoryInd(data); 
