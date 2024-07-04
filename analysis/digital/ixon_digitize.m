@@ -15,12 +15,38 @@ for kk=1:length(ixondata)
         n1 = ixondata(kk).LatticeBin(k).n1;
         n2 = ixondata(kk).LatticeBin(k).n2;
         Zdig = ixondata(kk).LatticeBin(k).Zbin>=threshold; 
+        Zb = ixondata(kk).LatticeBin(k).Zbin;
         Natoms = sum(sum(Zdig));        % Total number of atoms
 
-a1 =ixondata(kk).LatticeBin(k).a1;
-a2 =ixondata(kk).LatticeBin(k).a2;
-p1 =ixondata(kk).LatticeBin(k).p(1);
-p2 =ixondata(kk).LatticeBin(k).p(2);
+        a1 =ixondata(kk).LatticeBin(k).a1;
+        a2 =ixondata(kk).LatticeBin(k).a2;
+        p1 =ixondata(kk).LatticeBin(k).p(1);
+        p2 =ixondata(kk).LatticeBin(k).p(2);
+        
+        A = [a1 a2];                
+
+        
+        
+        [nn1,nn2]=meshgrid(n1,n2);
+        
+        nn1=nn1(:);
+        nn2=nn2(:);
+        Zthere = Zdig(:);
+        
+        Counts=Zb(Zthere==1);
+        Counts = Counts(:)';
+        
+        nn1(Zthere==0)=[];
+        nn2(Zthere==0)=[];
+
+        N=[nn1' ; nn2'];                      % All points
+        p=[p1; p2];
+        P = repmat(p,[1 length(N)]);        % Phase vector        
+        Rn=A*(N+P);                                 % Positino of every atoms
+        
+
+
+        
       
           zY=sum(Zdig,2)';zY = zY/sum(zY);
         zX=sum(Zdig,1); zX = zX/sum(zX);
@@ -49,7 +75,10 @@ p2 =ixondata(kk).LatticeBin(k).p(2);
         Y2_px = sum(Y.^2.*Zdig,'all')/sum(Zdig,'all');
         Xs_px=sqrt(X2_px-Xc_px.^2); % standard deviation X
         Ys_px=sqrt(Y2_px-Yc_px.^2); % standard deviation Y        
-
+        
+        LatticeDig(k).Rn = Rn;
+        LatticeDig(k).N = N;
+        LatticeDig(k).Counts = Counts;
         LatticeDig(k).n1 = n1;
         LatticeDig(k).n2 = n2;
         LatticeDig(k).a1 = a1;

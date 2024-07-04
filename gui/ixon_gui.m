@@ -890,7 +890,7 @@ tNavName.String=data.Name;
 %% Image Process Panel
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-160 160 214],'title','processing');
+    'Position',[0 hpAcq.Position(2)-160 160 230],'title','processing');
 
 ttstr='Apply gaussian filter to smooth image';
 cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
@@ -922,25 +922,12 @@ hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',7,...
     'backgroundcolor','w','Position',[5 33 80 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
-% Checkbox for applying point spread function 
-ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
-hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hcFFT.Position(2)+60 155 20],...
-    'ToolTipString',ttstr,'enable','on');
-
-tblPSF=uitable('parent',hpADV,'units','pixels',...
-    'columnname',{'sigma','Nsize','Niter',},'rowname',{},'Data',[1.3163 51 31],'columneditable',[true],...
-    'columnwidth',{40},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
-tblPSF.Position(3:4) = tblPSF.Extent(3:4);
-tblPSF.Position(1:2)=[20 hcPSF.Position(2)-tblPSF.Extent(4)];  
-
-
 % Checkbox for enabling 2D gauss fitting
 ttstr='Apply gaussian filter to smooth image';
 cGaussFilter=uicontrol('style','checkbox','string','gauss filter (px)',...
     'units','pixels','parent',hpADV,'backgroundcolor','w',...
     'value',0,'ToolTipString',ttstr,'fontsize',7);
-cGaussFilter.Position=[5 hcPSF.Position(2)+16 100 15];
+cGaussFilter.Position=[5 hcFFT.Position(2)+16 100 15];
 
 tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
     'rowname',{},'columnname',{},'Data',.25,'columneditable',[true],...
@@ -964,7 +951,7 @@ tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
 ttstr='scale up image';
 cScale=uicontrol('style','checkbox','string','scale factor',...
     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',1,'ToolTipString',ttstr,'fontsize',7);
+    'value',0,'ToolTipString',ttstr,'fontsize',7);
 cScale.Position=[5 cRotate.Position(2)+18 80 15];
 
 tblScale=uitable('parent',hpADV,'units','pixels',...
@@ -972,10 +959,30 @@ tblScale=uitable('parent',hpADV,'units','pixels',...
     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
 tblScale.Position=[hpADV.Position(3)-70 cScale.Position(2) 50 20];
 
+
+% Checkbox for applying point spread function 
+ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
+hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',7,...
+    'backgroundcolor','w','Position',[5 tblScale.Position(2)+70 155 20],...
+    'ToolTipString',ttstr,'enable','on');
+
+ttstr='Calculate noise statistics from image?';
+hcPSF_noise=uicontrol(hpADV,'style','checkbox','string','auto detect noise?','fontsize',6,...
+    'backgroundcolor','w','Position',[15 hcPSF.Position(2)-10 155 14],'Value',1,...
+    'ToolTipString',ttstr,'enable','on');
+
+tblPSF=uitable('parent',hpADV,'units','pixels',...
+    'columnname',{char(963),'size','iter','noise'},'rowname',{},'Data',[1.32 11 31 25],'columneditable',[true],...
+    'columnwidth',{35 25 25 35},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
+tblPSF.Position(3:4) = tblPSF.Extent(3:4);
+tblPSF.Position(1:2)=[20 hcPSF_noise.Position(2)-tblPSF.Extent(4)];  
+
+
+
 % Subtract background image
 ttstr='Subtract off background image from atoms images.';
 hcSubBG=uicontrol(hpADV,'style','checkbox','string','subtract bgd','fontsize',7,...
-    'backgroundcolor','w','Position',[5 cScale.Position(2)+15 80 15],...
+    'backgroundcolor','w','Position',[5 hcPSF.Position(2)+15 80 15],...
     'ToolTipString',ttstr,'enable','on','Value',1);
 
 ttstr='Apply mask to image to eliminate aperture clipping';
@@ -991,10 +998,10 @@ hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize'
 
 % process button
 hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
-    'units','pixels','callback',@processCB,'parent',hpADV,'backgroundcolor','w');
+    'units','pixels','callback',@processCB,'parent',hpADV,'backgroundcolor',[80 200 120]/255);
 hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
 
-    function processCB(~,~)
+    function processCB(src,evt)
         newDataCallback;
   end
 
@@ -1183,9 +1190,9 @@ hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize'
     'ToolTipString',ttstr);
 
 % Do Position space analysis
-uicontrol(hpAnl,'style','pushbutton','string','analyze',...
+hbposition=uicontrol(hpAnl,'style','pushbutton','string','analyze',...
     'units','pixels','callback',{@(~,~) updatePositionAnalysis},'parent',hpAnl,...
-    'backgroundcolor','w','position',[hpAnl.Position(3)-45 1 45 15]);
+    'backgroundcolor','w','position',[hpAnl.Position(3)-45 1 45 15],'backgroundcolor',[80 200 120]/255);
 
 
 %% Momentum Panel
@@ -1250,12 +1257,14 @@ hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 
 % Refit button
 hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@analyze_k,'parent',hpKspace,'backgroundcolor','w');
+    'units','pixels','callback',@analyze_k,'parent',hpKspace,'backgroundcolor',[80 200 120]/255);
 hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
 
 % Callback function for redoing fits button
     function analyze_k(~,~)
         if hcFindLattice.Value && isfield(data,'Zf')
+            hb_Kanalyze.BackgroundColor=[255 219 88]/255;
+            drawnow;
             opts = data.ProcessOptions;            
             for kk=1:size(data.Zf,3)
                 tic;
@@ -1279,19 +1288,46 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
             updateReciprocalTextGraphics;
             reciprocalLatticeTextCB(cLat_K_text);
             
-        
+            hb_Kanalyze.BackgroundColor=[80 200 120]/255;
+            drawnow;
         end         
     end
 
 %% Binning Panel
 hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
-hpBin.Position=[0 hpKspace.Position(2)-180 160 225];
-
+hpBin.Position=[0 hpKspace.Position(2)-180 160 260];
 
 ttstr='auto do bin analysis';
 hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
     'backgroundcolor','w','Position',[1 hpBin.Position(4)-35 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
+
+tblBin=uitable('parent',hpBin,'units','pixels',...
+    'columnname',{'scale','px. threshold'},'rowname',{},'Data',[8 100],'columneditable',[true],...
+    'columnwidth',{35 75},'fontsize',8,'ColumnFormat',{'numeric'});
+tblBin.Position(3:4) = tblBin.Extent(3:4);
+tblBin.Position(1:2)=[20 hc_anlB_auto.Position(2)-tblBin.Extent(4)];  
+
+% Button group for lattice basis
+bgBasis = uibuttongroup(hpBin,'units','pixels','backgroundcolor','w',...
+    'title','lattice basis (px)','fontsize',7);  
+bgBasis.Position(3:4)=[155 90];
+bgBasis.Position(1:2)=[1 tblBin.Position(2)-bgBasis.Position(4)];    
+
+% Lattice Basis from FFT or manual specification
+uicontrol(bgBasis,'Style','radiobutton','String','from fft',...
+    'Position',[5 60 65 20],'units','pixels','backgroundcolor','w','Value',1,'fontsize',7,...
+    'UserData','fft');
+uicontrol(bgBasis,'Style','radiobutton','String','manual',...
+    'Position',[65 60 65 20],'units','pixels','backgroundcolor','w','fontsize',7,...
+    'UserData','manual');
+
+tblBasis=uitable(bgBasis,'units','pixels','ColumnWidth',{30 30 50},...
+    'ColumnEditable',true(ones(1,4)),'ColumnName',{'x','y','phase'},...
+    'Data',defaultBasis,'FontSize',6,...
+    'CellEditCallback',@chBasis,'RowName',{'a1','a2'});
+tblBasis.Position(3:4)=tblBasis.Extent(3:4)+0*[18 0];
+tblBasis.Position(1:2)=[5 3];
 
 % Table of ROIs
 tblROIB=uitable(hpBin,'units','pixels','ColumnWidth',{30 30 30 30},...
@@ -1299,7 +1335,7 @@ tblROIB=uitable(hpBin,'units','pixels','ColumnWidth',{30 30 30 30},...
     'Data',[1 50 1 50],'FontSize',8,...
     'CellEditCallback',@chROIB,'RowName',{});
 tblROIB.Position(3:4)=tblROIB.Extent(3:4)+0*[18 0];
-tblROIB.Position(1:2)=[5 hc_anlB_auto.Position(2)-tblROIB.Position(4)];
+tblROIB.Position(1:2)=[5 bgBasis.Position(2)-tblROIB.Position(4)];
 
 % Callback function for changing ROI via table
     function chROIB(src,evt)
@@ -1376,8 +1412,10 @@ uicontrol(hpBin,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         if ~isfield(data,'LatticeBin')
            return; 
         end
-        ROI = [min(data.LatticeBin.n1) max(data.LatticeBin.n1) ...
-            min(data.LatticeBin.n2) max(data.LatticeBin.n2)];
+        imgnum = menuSelectImg.Value; % get image to analyze
+
+        ROI = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
+            data.LatticeBin(imgnum).n2(1) data.LatticeBin(imgnum).n2(end)];
         tblROIB.Data = ROI;
         pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
         set(pROIB,'Position',pos);
@@ -1420,32 +1458,12 @@ uicontrol(hpBin,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         delete(p1);delete(p2);                   % Delete markers
     end
 
-% Button group for lattice basis
-bgBasis = uibuttongroup(hpBin,'units','pixels','backgroundcolor','w',...
-    'title','lattice basis (px)','fontsize',7);  
-bgBasis.Position(3:4)=[155 90];
-bgBasis.Position(1:2)=[1 tblROIB.Position(2)-bgBasis.Position(4)];    
-
-% Lattice Basis from FFT or manual specification
-uicontrol(bgBasis,'Style','radiobutton','String','from fft',...
-    'Position',[5 60 65 20],'units','pixels','backgroundcolor','w','Value',1,'fontsize',7,...
-    'UserData','fft');
-uicontrol(bgBasis,'Style','radiobutton','String','manual',...
-    'Position',[65 60 65 20],'units','pixels','backgroundcolor','w','fontsize',7,...
-    'UserData','manual');
-
-tblBasis=uitable(bgBasis,'units','pixels','ColumnWidth',{30 30 50},...
-    'ColumnEditable',true(ones(1,4)),'ColumnName',{'x','y','phase'},...
-    'Data',defaultBasis,'FontSize',6,...
-    'CellEditCallback',@chBasis,'RowName',{'a1','a2'});
-tblBasis.Position(3:4)=tblBasis.Extent(3:4)+0*[18 0];
-tblBasis.Position(1:2)=[5 3];
 
 
 % Checkbox for image sharpness
 ttstr='Calculate histgoram';
 hc_anlB_Histogram=uicontrol(hpBin,'style','checkbox','string','histogram','fontsize',7,...
-    'backgroundcolor','w','Position',[1 bgBasis.Position(2)-15 hpBin.Position(3)-1 15],...
+    'backgroundcolor','w','Position',[1 tblROIB.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
 ttstr='bin stripe focus';
@@ -1462,7 +1480,7 @@ stripe_threshold_tbl.Position(1:2)=[90 hc_anlB_stripe.Position(2)];
 
 % Refit button
 hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor','w');
+    'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor',[80 200 120]/255);
 hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
 
     function [a1, a2, p1, p2] = getLattice        
@@ -1494,12 +1512,20 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
     function analyze_bin(src,evt)
          if isfield(data,'LatticeBin')
             data = rmfield(data,'LatticeBin');
-        end
-
+         end
+        
+         hb_Binanalyze.BackgroundColor=[255 219 88]/255;
+        drawnow;
+        
+        bin_px_thresh = tblBin.Data(2);
+        bin_scale = tblBin.Data(1);
+        
         for kk=1:size(data.Z,3)
             opts = struct;
             [a1, a2, p1, p2] = getLattice;
-            opts.ScaleFactor = 4;    
+            opts.ScaleFactor = bin_scale;    
+            opts.PixelThreshold = bin_px_thresh;    
+
             opts.a1 = a1;
             opts.a2 = a2;
             opts.p1 = p1;
@@ -1516,19 +1542,26 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
             x = data.X(ix_1:ix_2);
             y = data.Y(iy_1:iy_2);   
             z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
-            znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
+%             znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
             tic;
             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
                 ') binning into lattice ...']);    
            
+            tic
             data.LatticeBin(kk) = binLattice(x,y,z,opts); 
-            data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
+%             toc
+            
+%             tic
+%             data.LatticeBin(kk) = binLattice2(x,y,z,opts); 
+% toc
+
+%             data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
         end 
 
         data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
-        data = ixon_SharpnessBinned(data);  
+%         data = ixon_SharpnessBinned(data);  
 
 %         data = ixon_binnedHistogramFit(data);
         
@@ -1552,6 +1585,11 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
             data.BinStripe = out;     
             bin_showStripeBin(data,[],opts_stripe);
         end  
+        
+        
+                
+         hb_Binanalyze.BackgroundColor=[80 200 120]/255;
+        drawnow;
     
     
     end
@@ -1575,14 +1613,14 @@ tblDig=uitable('parent',hpDig,'units','pixels',...
 tblDig.Position=[hpDig.Position(3)-55 hcDigThreshold.Position(2)+1 50 20];
 
 % Digitization Threshold Text
-hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
-    'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
+% hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
 
 % Digitization Threshold
-tblDigPixel=uitable('parent',hpDig,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
-    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
+% tblDigPixel=uitable('parent',hpDig,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
+%     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+% tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
 % 
 % % Digitization Threshold Text
 hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','fidelity','fontsize',7,...
@@ -1590,7 +1628,7 @@ hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','fidelity','fontsize',
 
 % Refit button
 hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor','w');
+    'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor',[80 200 120]/255);
 hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
 
     function chBasis(src,evt)
@@ -1602,6 +1640,10 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
             warning('No binnined data to digitize');
             return;
         end
+        
+        hb_Diganalyze.BackgroundColor=[255 219 88]/255;
+        drawnow;
+        
         dig_threshold = tblDig.Data;
         data = ixon_digitize(data,dig_threshold);
 
@@ -1632,6 +1674,9 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         
 
         updateDigitalGraphics;
+        
+        hb_Diganalyze.BackgroundColor=[80 200 120]/255;
+        drawnow;
     end
 
     function updateDigitalGraphics    
@@ -1652,7 +1697,26 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         %Update box count string object
         set(tD_SE,'String',str); 
         set(tD_SW,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);  
+        
+        drawAtomsCB;
+        set(pAtoms,'XData',dig.Rn(1,:),'YData',dig.Rn(2,:));
+        
+        pAtoms.DataTipTemplate.DataTipRows(3:end)=[];
+
+        row = dataTipTextRow('Counts',dig.Counts);
+        pAtoms.DataTipTemplate.DataTipRows(3) = row;
+        
+        row = dataTipTextRow('n1',dig.N(1,:));
+        pAtoms.DataTipTemplate.DataTipRows(4) = row;
+        
+         row = dataTipTextRow('n2',dig.N(2,:));
+        pAtoms.DataTipTemplate.DataTipRows(5) = row;
+        
+        drawnow;
+%         keyboard
+        
     end
+
 
 %% Image Number Selector
 hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
@@ -1679,6 +1743,9 @@ menuSelectImg.Position(1:2)=[2 15];
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
                 pGrid.Color = [.5 .5 .5 .5];
+                pAtoms.Color=[255,215,0]/255;
+                pAtoms.MarkerFaceColor=pAtoms.Color;
+                pAtoms.MarkerSize=3;
 
                 stripe_pBar.Color='w';
                 stripe_pAngleCirc.Color='w';  
@@ -1690,6 +1757,9 @@ menuSelectImg.Position(1:2)=[2 15];
                 stripe_pBar.Color='w';
                 stripe_pAngleCirc.Color='w';  
                 stripe_pCloudEllipse.Color='w';
+                pAtoms.Color=[255,215,0]/255;
+     pAtoms.MarkerFaceColor=pAtoms.Color;
+                pAtoms.MarkerSize=3;
             case 3
                 pGrid.Color = [.3 .3 .3 .3];
                 colormap(hF,purplemap);
@@ -1701,6 +1771,14 @@ menuSelectImg.Position(1:2)=[2 15];
                 stripe_pBar.Color='k';
                 stripe_pAngleCirc.Color='k';  
                 stripe_pCloudEllipse.Color='k';
+                pAtoms.Color=[218,165,32]/255;
+%                         pAtoms.Color=[0,128,128]/255;
+
+                pAtoms.MarkerFaceColor=pAtoms.Color;
+                pAtoms.Color='k';
+                pAtoms.MarkerFaceColor='y';
+
+                pAtoms.MarkerSize=4;
         end
     end
 
@@ -1784,7 +1862,7 @@ cAutoColor_X.Position=[climtbl_X.Position(1)+climtbl_X.Position(3)+1 climtbl_X.P
 bgPlot_X = uibuttongroup(hpDisp_X,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@foo);  
 bgPlot_X.Position(3:4)=[125 15];
-bgPlot_X.Position(1:2)=[2 47];
+bgPlot_X.Position(1:2)=[2 60];
     
 % Radio buttons for cuts vs sum
 rbCut_X=uicontrol(bgPlot_X,'Style','radiobutton','String','plot cut',...
@@ -1800,25 +1878,32 @@ rbSum_X=uicontrol(bgPlot_X,'Style','radiobutton','String','plot sum',...
 cCoMStr_X=uicontrol(hpDisp_X,'style','checkbox','string','center of mass text',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@cCoMCB,...
     'enable','on','value',1);
-cCoMStr_X.Position=[2 32 125 15];
+cCoMStr_X.Position=[2 47 125 15];
 
 % Checkbox for showing/hiding crosshair
 cCross_X=uicontrol(hpDisp_X,'style','checkbox','string','cross hair',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@cCrossCB,...
     'enable','on','value',1,'UserData','X');
-cCross_X.Position=[2 17 120 15];
+cCross_X.Position=[2 32 120 15];
 
 % Checkbox for showing/hiding lattice
 cDrawLattice=uicontrol(hpDisp_X,'style','checkbox','string','lattice grid',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@latticeGridCB,...
     'enable','on','value',1);
-cDrawLattice.Position=[2 2 80 15];
+cDrawLattice.Position=[2 17 80 15];
 
 % Checkbox for showing/hiding lattice
 cTextLattice=uicontrol(hpDisp_X,'style','checkbox','string','lattice text',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@latticeTextCB,...
     'enable','on','value',1);
-cTextLattice.Position=[cDrawLattice.Position(3)+cDrawLattice.Position(1)+5 2 120 15];
+cTextLattice.Position=[cDrawLattice.Position(3)+cDrawLattice.Position(1)+5 17 120 15];
+
+
+% Checkbox for showing/hiding digitization
+cDrawAtoms=uicontrol(hpDisp_X,'style','checkbox','string','draw atoms',...
+    'units','pixels','fontsize',7,'backgroundcolor','w','callback',@drawAtomsCB,...
+    'enable','on','value',1);
+cDrawAtoms.Position=[2 2 80 15];
 
 
 %% Display Options Panel
@@ -2422,6 +2507,7 @@ axis equal tight
 
 pxinfo = impixelinfo(hF,hImg);
 
+
 % Cross Hair Plots
 pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
 pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
@@ -2430,6 +2516,12 @@ pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'hittest
 pGrid = line([1 512],[1 512],'linestyle','-',...
     'color',[.5 .5 .5 .5],'linewidth',1,'Visible','off','parent',axImg,...
     'hittest','off');
+
+% Initialize Atom Dots
+pAtoms = plot(5,5,'o',...
+    'color','w','linewidth',1,'Visible','off','parent',axImg,...
+    'hittest','on','markersize',8);
+
 
 % file name string
 tImageFile=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
@@ -2828,7 +2920,23 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
         Y2 = [R1(2,:); R2(2,:); Q];Y2=Y2(:);
         
         set(pGrid,'XData',[X1; X2],'YData',[Y1; Y2]);
-  end              
+  end           
+
+
+function drawAtomsCB(~,~)
+    if ~isfield(data,'LatticeDig')
+       pAtoms.Visible='off';
+       return;
+    end
+    
+    
+   if cDrawAtoms.Value        
+        pAtoms.Visible='on';
+   else
+        pAtoms.Visible='off';
+   end  
+        
+end
 
     function latticeGridCB(src,~)      
         if ~isfield(data,'LatticeBin')
@@ -3063,6 +3171,45 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
         set(hImg_B,'XData',data.LatticeBin(imgnum).n1,...
             'YData',data.LatticeBin(imgnum).n2,...
             'CData',data.LatticeBin(imgnum).Zbin);  
+        
+%         theta1 = atan2d(data.LatticeBin(1).a1(1),data.LatticeBin(1).a1(2));        
+%         theta2 = atan2d(data.LatticeBin(1).a2(1),data.LatticeBin(1).a2(2));
+
+        
+%         view(hImg_B.Parent,theta2, 90);
+%         camorbit(hImg_B.Parent,theta2,0)
+
+
+
+RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
+           data.LatticeBin(imgnum).n2(1) data.LatticeBin(imgnum).n2(end)];
+        
+        
+        ROI=tblROIB.Data;     
+        
+        ROI=round(ROI);      % Make sure this ROI are integers   
+        % Check that limits go from low to high
+        if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
+           warning('Bad ROI specification given.');
+           ROI(evt.Indices(2))=evt.PreviousData;
+        end               
+        % Check that ROI is within image bounds
+        if ROI(1)<RL(1); ROI(1)=RL(1); end       
+        if ROI(3)<RL(3); ROI(3)=RL(3); end   
+        if ROI(4)>RL(4); ROI(4)=RL(4); end       
+        if ROI(2)>RL(2); ROI(2)=RL(2); end      
+        
+        tblROIB.Data = ROI;
+        try
+            pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
+            set(pROIB(1),'Position',pos);
+        end
+
+
+
+
+
+
         if cAutoColor_B.Value;setClim('B');end     
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
@@ -3181,6 +3328,10 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
 
 %% 
     function updatePositionAnalysis
+    hbposition.BackgroundColor=	[255 219 88]/255;
+    drawnow;
+        
+        
         data.ROI=tblROI.Data;     
 
 
@@ -3225,94 +3376,15 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
         data.StripeFit = stripes;
         data.StripeFocus = foci;
         updateStripeGraphics;
-    end  
-     
-    
-    % %% Fit Results    
-    % fr=tbl_pos_analysis.Data(:,2)';    
-    % % Ensure fit results is a number
-    % for n=1:length(fr)
-    %     % If value is empty, assign a zero
-    %     if isempty(fr{n})
-    %         fr{n}=0;
-    %     end
-    % 
-    %     % If string conver to number
-    %     if isstr(fr{n})
-    %         try
-    %             fr{n}=str2double(fr{n});
-    %         catch ME
-    %             fr{n}=NaN;
-    %         end
-    %     end
-    % end
-    % 
-    % % Get fit results variable
-    % frVar=frslct.String{frslct.Value};    
-    % val=data.Params.(frVar);
-    % 
-    % % Convert execution date into a time
-    % if isequal(frVar,'ExecutionDate') 
-    %    val=datenum(val); 
-    %    val=val-floor(val);
-    %    val=val*24*60;
-    % end
-    % 
-    % % Create fit results object
-    % fr=[data.Name frVar val fr];   
-    % 
-    %%%%%% Output to fit results
-    % Output some analysis to the main workspace, this is done to be
-    % comptaible with old regimens for fitting and analysis
-    % 
-    % try
-    %     % Read in fitresults
-    %     ixon_fitresults=evalin('base','ixon_fitresults');        
-    % catch ME
-    %     % Error means that it is probably undefined
-    %     ixon_fitresults={};
-    % end
-    % 
-    % M=size(ixon_fitresults,1)+1;                         % Find next row
-    % ixon_fitresults(M:(M+size(fr,1)-1),1:size(fr,2))=fr; % Append data        
-    % assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults
-    % 
-    
-    % % This should happen only at end
-    % if doSaveGUIAnalysis
-    %     gui_saveData = struct;
-    %     gui_saveData.Date = data.Date;
-    %     gui_saveData.FileName = data.Name; 
-    %     gui_saveData.Params = data.Params;
-    %     gui_saveData.BoxCount = data.BoxCount;    
-    %     if hcStripe.Value  
-    %         gui_saveData.Stripe = stripe;
-    %     end
-    % 
-    %    filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
-    %    filenames={filenames.name};
-    %    filenames=sort(filenames);
-    % 
-    %    % Delete old images
-    %    if length(filenames)>200
-    %        f=[GUIAnalysisSaveDir filesep filenames{1}];
-    %        delete(f);
-    %    end               
-    % 
-    %     filename=[data.Name '.mat']; 
-    %     if ~exist(GUIAnalysisSaveDir,'dir')
-    %        mkdir(GUIAnalysisSaveDir);
-    %     end        
-    %     filename=fullfile(GUIAnalysisSaveDir,filename);
-    %     fprintf('%s',[filename ' ...']);
-    %     save(filename,'gui_saveData');
-    %     disp(' done');    
-    % end       
-        % updateGraphics;        
+    end          
 
         updateDispPosImg;   
         updatePositionAnalysisGraphics
         updatePositionGraphics;
+        
+        
+        hbposition.BackgroundColor=[80 200 120]/255;
+        drawnow;
     end
 
     function saveGUIData       
@@ -3401,6 +3473,8 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
     opt.PSF                = tblPSF.Data;    
     opt.doRotate           = cRotate.Value;
     opt.Theta              = tblTheta.Data;
+    opt.DetectNoise        = hcPSF_noise.Value;
+    opt.Noise             = tblPSF.Data(4);
         
     % Momentum Space
     opt.doFFT              = hcFFT.Value;
@@ -3410,7 +3484,15 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
     opt.FFTFilterRadius    = tblKGaussFilter.Data;      
     
     % Process the Images
+    hbprocess.BackgroundColor=	[255 219 88]/255;
+    drawnow;
     data = ixon_ProcessImages(data,opt);  
+    
+    tblPSF.Data(4) =  round(data.NoiseEstimation(1));
+    hbprocess.BackgroundColor=[80 200 120]/255;
+    
+    pAtoms.Visible='off';
+    set(pAtoms,'XData',[],'YData',[]);
 
     % Update history index
     updateHistoryInd(data); 
@@ -3472,27 +3554,12 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
   
 %% Update Fit Results (depreciated)
 
-    % % Update parameter for fit results
-    % frVar=frslct.String{frslct.Value};   % Old fitresults variable
-    % frslct.String=fieldnames(params); 
-    % ind=find(ismember(frslct.String,frVar));
-    % if ~isempty(ind)
-    %     frslct.Value=ind;
-    % else
-    %     ind=find(ismember(frslct.String,'ExecutionDate'));
-    %     frslct.Value=ind;
-    % end
-    % 
     
     drawnow;
     climtbl_X.Data=axImg.CLim;
 
     saveGUIData
 
-    % disp('')
-    % disp('Performing fits and analysis.');
-% %% Now do the fits?!?!
-%     data=updateAnalysis(data);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
