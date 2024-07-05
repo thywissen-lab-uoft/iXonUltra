@@ -130,6 +130,8 @@ if opts.doSubtractBG
             data(kk).NoiseEstimation(n) = 0;
         end
     end
+else
+    data(kk).NoiseEstimation = 0;
 end
   
 %% Image Mask
@@ -177,6 +179,7 @@ end
 
 %% Scale Image
     if isfield(opts,'doScale') && opts.doScale         
+    
         data(kk).X = linspace(1,data(kk).X(end),length(data(kk).X)*opts.ScaleFactor);
        data(kk).Y = linspace(1,data(kk).Y(end),length(data(kk).Y)*opts.ScaleFactor);
        data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor)/(opts.ScaleFactor)^2;

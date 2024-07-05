@@ -890,137 +890,144 @@ tNavName.String=data.Name;
 %% Image Process Panel
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-160 160 230],'title','processing');
+    'Position',[0 hpAcq.Position(2)-160 160 270],'title','processing');
 % 
-% tbl_process_1 = uitable('parent',hpADV,'columnformat',{'logical','char'},...
-%     'columnname',{},'rowname',{},'columnwidth',{15,135},'columneditable',[true false],...
-%     'fontsize',7);
-% tbl_process_1.Position(1:2)=[1 10];
-% tbl_process_1.Data={true 'subtract bias';
-%     false 'subtract background';
-%     false 'apply image mask';
-%     false 'deconvolve psf Rich-Lucy';
-%     true 'auto-detect PSF noise?'};
-% tbl_process_1.Position(3:4)=tbl_process_1.Extent(3:4);
+tbl_process_1 = uitable('parent',hpADV,'columnformat',{'logical','char'},...
+    'columnname',{},'rowname',{},'columnwidth',{15,135},'columneditable',[true false],...
+    'fontsize',7);
+tbl_process_1.Data={true 'subtract bias';
+    false 'subtract background';
+    false 'apply image mask';
+    false 'deconvolve psf Rich-Lucy';
+    true 'auto-detect PSF noise?'};
+tbl_process_1.Position(3:4)=tbl_process_1.Extent(3:4);
+tbl_process_1.Position(1:2)=[1 hpADV.Position(4)-tbl_process_1.Position(4)-15];
+
+
+
 % 
 % 
-% tbl_process_2 = uitable('parent',hpADV,'columnformat',{'logical','char'},...
-%     'columnname',{},'rowname',{},'columnwidth',{15,95, 40},'columneditable',[true false true],...
-%     'fontsize',7);
-% tbl_process_2.Position(1:2)=[1 30];
-% tbl_process_2.Data={false 'fft filter (px)' 1;
-%     false 'fft ir mask (1/px)' 1;
-%     false 'gauss filter (px)' 1;
-%     false 'rotate (deg)' 0;
-%     false 'scale (factor)' 2};
-% tbl_process_2.Position(3:4)=tbl_process_2.Extent(3:4);
-
-
-
-
-
-ttstr='Apply gaussian filter to smooth image';
-cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
-    'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',1,'ToolTipString',ttstr,'fontsize',7);
-cKGaussFilter.Position=[5 1 80 15];
-
-% Fitlering the FFT
-tblKGaussFilter=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',1,'columneditable',[true],...
-    'columnwidth',{25},'fontsize',7,'ColumnFormat',{'numeric'});
-tblKGaussFilter.Position=[80 cKGaussFilter.Position(2)-3 30 20];
-
-% Mask IR Checkbox
-hcIRMask=uicontrol(hpADV,'style','checkbox','string','mask IR (1/px)','fontsize',7,...
-    'backgroundcolor','w','Position',[5 18 100 15],...
-    'ToolTipString',ttstr,'enable','on','value',1);
-
-% IR Mask Value
-tblIRMask=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',.01,'columneditable',[true],...
-    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-tblIRMask.Position=[hpADV.Position(3)-55 hcIRMask.Position(2)+1 50 20];
-
-
-% Checkbox for computing FFT
-ttstr='compute fft';
-hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',7,...
-    'backgroundcolor','w','Position',[5 33 80 15],...
-    'ToolTipString',ttstr,'enable','off','Value',1);
-
-% Checkbox for enabling 2D gauss fitting
-ttstr='Apply gaussian filter to smooth image';
-cGaussFilter=uicontrol('style','checkbox','string','gauss filter (px)',...
-    'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',0,'ToolTipString',ttstr,'fontsize',7);
-cGaussFilter.Position=[5 hcFFT.Position(2)+16 100 15];
-
-tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',.25,'columneditable',[true],...
-    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
-tblGaussFilter.Position=[hpADV.Position(3)-50 cGaussFilter.Position(2)-2 45 20];
-
-% Rotate data (makes it easier for lattice grid stuff)
-ttstr='Rotate data';
-cRotate=uicontrol('style','checkbox','string','rotate (deg.)',...
-    'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',0,'ToolTipString',ttstr,'fontsize',7);
-cRotate.Position=[5 cGaussFilter.Position(2)+15 80 15];
-
-tblTheta=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',59.81,'columneditable',[true],...
-    'columnwidth',{60},'fontsize',8,'ColumnFormat',{'numeric'});
-tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
-
-
-% Rotate data (makes it easier for lattice grid stuff)
-ttstr='scale up image';
-cScale=uicontrol('style','checkbox','string','scale factor',...
-    'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',0,'ToolTipString',ttstr,'fontsize',7);
-cScale.Position=[5 cRotate.Position(2)+18 80 15];
-
-tblScale=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',2,'columneditable',[true],...
-    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
-tblScale.Position=[hpADV.Position(3)-70 cScale.Position(2) 50 20];
-
-
-% Checkbox for applying point spread function 
-ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
-hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',7,...
-    'backgroundcolor','w','Position',[5 tblScale.Position(2)+70 155 20],...
-    'ToolTipString',ttstr,'enable','on');
-
-ttstr='Calculate noise statistics from image?';
-hcPSF_noise=uicontrol(hpADV,'style','checkbox','string','auto detect noise?','fontsize',6,...
-    'backgroundcolor','w','Position',[15 hcPSF.Position(2)-10 155 14],'Value',1,...
-    'ToolTipString',ttstr,'enable','on');
+% 
+% 
+% 
+% ttstr='Apply gaussian filter to smooth image';
+% cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
+%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
+%     'value',1,'ToolTipString',ttstr,'fontsize',7);
+% cKGaussFilter.Position=[5 1 80 15];
+% 
+% % Fitlering the FFT
+% tblKGaussFilter=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',1,'columneditable',[true],...
+%     'columnwidth',{25},'fontsize',7,'ColumnFormat',{'numeric'});
+% tblKGaussFilter.Position=[80 cKGaussFilter.Position(2)-3 30 20];
+% 
+% % Mask IR Checkbox
+% hcIRMask=uicontrol(hpADV,'style','checkbox','string','mask IR (1/px)','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 18 100 15],...
+%     'ToolTipString',ttstr,'enable','on','value',1);
+% 
+% % IR Mask Value
+% tblIRMask=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',.01,'columneditable',[true],...
+%     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+% tblIRMask.Position=[hpADV.Position(3)-55 hcIRMask.Position(2)+1 50 20];
+% 
+% 
+% % Checkbox for computing FFT
+% ttstr='compute fft';
+% hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 33 80 15],...
+%     'ToolTipString',ttstr,'enable','off','Value',1);
+% 
+% % Checkbox for enabling 2D gauss fitting
+% ttstr='Apply gaussian filter to smooth image';
+% cGaussFilter=uicontrol('style','checkbox','string','gauss filter (px)',...
+%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
+%     'value',0,'ToolTipString',ttstr,'fontsize',7);
+% cGaussFilter.Position=[5 hcFFT.Position(2)+16 100 15];
+% 
+% tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',.25,'columneditable',[true],...
+%     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
+% tblGaussFilter.Position=[hpADV.Position(3)-50 cGaussFilter.Position(2)-2 45 20];
+% 
+% % Rotate data (makes it easier for lattice grid stuff)
+% ttstr='Rotate data';
+% cRotate=uicontrol('style','checkbox','string','rotate (deg.)',...
+%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
+%     'value',0,'ToolTipString',ttstr,'fontsize',7);
+% cRotate.Position=[5 cGaussFilter.Position(2)+15 80 15];
+% 
+% tblTheta=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',59.81,'columneditable',[true],...
+%     'columnwidth',{60},'fontsize',8,'ColumnFormat',{'numeric'});
+% tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
+% 
+% 
+% % Rotate data (makes it easier for lattice grid stuff)
+% ttstr='scale up image';
+% cScale=uicontrol('style','checkbox','string','scale factor',...
+%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
+%     'value',0,'ToolTipString',ttstr,'fontsize',7);
+% cScale.Position=[5 cRotate.Position(2)+18 80 15];
+% 
+% tblScale=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',2,'columneditable',[true],...
+%     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
+% tblScale.Position=[hpADV.Position(3)-70 cScale.Position(2) 50 20];
+% 
+% 
+% % Checkbox for applying point spread function 
+% ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
+% hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 tblScale.Position(2)+70 155 20],...
+%     'ToolTipString',ttstr,'enable','on');
+% 
+% ttstr='Calculate noise statistics from image?';
+% hcPSF_noise=uicontrol(hpADV,'style','checkbox','string','auto detect noise?','fontsize',6,...
+%     'backgroundcolor','w','Position',[15 hcPSF.Position(2)-10 155 14],'Value',1,...
+%     'ToolTipString',ttstr,'enable','on');
 
 tblPSF=uitable('parent',hpADV,'units','pixels',...
     'columnname',{char(963),'size','iter','noise'},'rowname',{},'Data',[1.32 11 31 25],'columneditable',[true],...
     'columnwidth',{35 25 25 35},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
-tblPSF.Position(1:2)=[20 hcPSF_noise.Position(2)-tblPSF.Extent(4)];  
+% tblPSF.Position(1:2)=[20 hcPSF_noise.Position(2)-tblPSF.Extent(4)];  
+tblPSF.Position(1:2)=[10 tbl_process_1.Position(2)-tblPSF.Extent(4)-2];  
+
+tbl_process_2 = uitable('parent',hpADV,'columnformat',{'logical','char'},...
+    'columnname',{},'rowname',{},'columnwidth',{15,95, 40},'columneditable',[true false true],...
+    'fontsize',7);
+tbl_process_2.Data={
+    false 'gauss filter (px)' 1;
+     false 'scale (factor)' 2;
+    false 'rotate (deg)' 0;
+    false 'fft filter (px)' 1;
+    false 'fft ir mask (1/px)' 1;
+   };
+tbl_process_2.Position(3:4)=tbl_process_2.Extent(3:4);
+tbl_process_2.Position(1:2)=[1 tblPSF.Position(2)-tbl_process_2.Position(4)-5];
 
 
-% Subtract background image
-ttstr='Subtract off background image from atoms images.';
-hcSubBG=uicontrol(hpADV,'style','checkbox','string','subtract bgd','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hcPSF.Position(2)+15 80 15],...
-    'ToolTipString',ttstr,'enable','on','Value',1);
+% % Subtract background image
+% ttstr='Subtract off background image from atoms images.';
+% hcSubBG=uicontrol(hpADV,'style','checkbox','string','subtract bgd','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 hcPSF.Position(2)+15 80 15],...
+%     'ToolTipString',ttstr,'enable','on','Value',1);
+% 
+% ttstr='Apply mask to image to eliminate aperture clipping';
+% hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 hcSubBG.Position(2)+15 120 13],...
+%     'ToolTipString',ttstr,'enable','on','Value',0);
+% 
+% % Subtract bias
+% ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
+% hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 hcMask.Position(2)+13 80 15],...
+%     'ToolTipString',ttstr,'enable','on','Value',1);
 
-ttstr='Apply mask to image to eliminate aperture clipping';
-hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hcSubBG.Position(2)+15 120 13],...
-    'ToolTipString',ttstr,'enable','on','Value',0);
 
-% Subtract bias
-ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
-hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hcMask.Position(2)+13 80 15],...
-    'ToolTipString',ttstr,'enable','on','Value',1);
 
 % process button
 hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
@@ -3492,27 +3499,32 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
     %% Image Processing
     % Grab the RawImages and process them into usable data
     opt = struct;    
-    opt.doSubtractBias     = hcSubBias.Value;
-    opt.doSubtractBG       = hcSubBG.Value;
-    opt.doScale            = cScale.Value;
-    opt.ScaleFactor        = tblScale.Data;
-    opt.doGaussFilter      = cGaussFilter.Value;
-    opt.GaussFilterRadius  = tblGaussFilter.Data;
-    opt.doMask             = hcMask.Value;
+    opt.doSubtractBias     = tbl_process_1.Data{1,1};%hcSubBias.Value;
+    opt.doSubtractBG       = tbl_process_1.Data{2,1};%hcSubBG.Value;
+    opt.doMask             = tbl_process_1.Data{3,1};%hcMask.Value;
     opt.Mask               = ixon_mask;
-    opt.doPSF              = hcPSF.Value ;    
+    
+    opt.doPSF              = tbl_process_1.Data{4,1};%hcPSF.Value ;    
     opt.PSF                = tblPSF.Data;    
-    opt.doRotate           = cRotate.Value;
-    opt.Theta              = tblTheta.Data;
-    opt.DetectNoise        = hcPSF_noise.Value;
-    opt.Noise             = tblPSF.Data(4);
-        
+    opt.DetectNoise        = tbl_process_1.Data{5,1};%hcPSF_noise.Value;
+    opt.Noise              = tblPSF.Data(4);
+    
+    opt.doGaussFilter      = tbl_process_2.Data{1,1};%cGaussFilter.Value;
+    opt.GaussFilterRadius  = tbl_process_2.Data{1,3};%tblGaussFilter.Data;
+    
+    opt.doScale      = tbl_process_2.Data{2,1};%cScale.Value;
+    opt.ScaleFactor  = tbl_process_2.Data{2,3};%tblScale.Data;   
+
+    opt.doRotate           = tbl_process_2.Data{3,1};%cRotate.Value;
+    opt.Theta              = tbl_process_2.Data{3,3};%tblTheta.Data;
+    
     % Momentum Space
-    opt.doFFT              = hcFFT.Value;
-    opt.doMaskIR           = hcIRMask.Value;
-    opt.IRMaskRadius       = tblIRMask.Data;
-    opt.doFFTFilter        = cKGaussFilter.Value;
-    opt.FFTFilterRadius    = tblKGaussFilter.Data;      
+    opt.doFFT              = 1;%hcFFT.Value;
+    opt.doFFTFilter        = tbl_process_2.Data{4,1};%cKGaussFilter.Value;
+    opt.FFTFilterRadius    = tbl_process_2.Data{4,3};%tblKGaussFilter.Data;         
+    opt.doMaskIR           = tbl_process_2.Data{5,1};%hcIRMask.Value;
+    opt.IRMaskRadius       = tbl_process_2.Data{5,3};%tblIRMask.Data;        
+
     
     % Process the Images
     hbprocess.BackgroundColor=	[255 219 88]/255;
