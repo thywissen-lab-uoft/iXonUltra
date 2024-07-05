@@ -891,6 +891,33 @@ tNavName.String=data.Name;
 
 hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
     'Position',[0 hpAcq.Position(2)-160 160 230],'title','processing');
+% 
+% tbl_process_1 = uitable('parent',hpADV,'columnformat',{'logical','char'},...
+%     'columnname',{},'rowname',{},'columnwidth',{15,135},'columneditable',[true false],...
+%     'fontsize',7);
+% tbl_process_1.Position(1:2)=[1 10];
+% tbl_process_1.Data={true 'subtract bias';
+%     false 'subtract background';
+%     false 'apply image mask';
+%     false 'deconvolve psf Rich-Lucy';
+%     true 'auto-detect PSF noise?'};
+% tbl_process_1.Position(3:4)=tbl_process_1.Extent(3:4);
+% 
+% 
+% tbl_process_2 = uitable('parent',hpADV,'columnformat',{'logical','char'},...
+%     'columnname',{},'rowname',{},'columnwidth',{15,95, 40},'columneditable',[true false true],...
+%     'fontsize',7);
+% tbl_process_2.Position(1:2)=[1 30];
+% tbl_process_2.Data={false 'fft filter (px)' 1;
+%     false 'fft ir mask (1/px)' 1;
+%     false 'gauss filter (px)' 1;
+%     false 'rotate (deg)' 0;
+%     false 'scale (factor)' 2};
+% tbl_process_2.Position(3:4)=tbl_process_2.Extent(3:4);
+
+
+
+
 
 ttstr='Apply gaussian filter to smooth image';
 cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
@@ -976,7 +1003,6 @@ tblPSF=uitable('parent',hpADV,'units','pixels',...
     'columnwidth',{35 25 25 35},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
 tblPSF.Position(1:2)=[20 hcPSF_noise.Position(2)-tblPSF.Extent(4)];  
-
 
 
 % Subtract background image
@@ -2501,16 +2527,21 @@ hImg=imagesc(data.X,data.Y,data.Z);
 set(axImg,'box','on','linewidth',.1,'fontsize',10,'units','pixels',...
     'XAxisLocation','top','colormap',colormap(cmap),...
     'xcolor',co(4,:),'ycolor',co(4,:),'YDir','normal','UserData','X');
+
 hold on
 axImg.Position=[50 150 tabX.Position(3)-200 tabX.Position(4)-200];
 axis equal tight
 
-pxinfo = impixelinfo(hF,hImg);
+% This seems to mess with axis interactivity in certain versions of matlab
+% pxinfo = impixelinfo(hF,hImg);
+enableDefaultInteractivity(axImg);
 
 
 % Cross Hair Plots
-pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
-pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
+pCrossX=plot([1 512],[512/2 512/2],'-',...
+    'color',[1 0 0 .2],'linewidth',1,'hittest','off','parent',axImg);
+pCrossY=plot([512/2 512/2],[1 512],'-',...
+    'color',[1 0 0 .2],'linewidth',1,'hittest','off','parent',axImg);
 
 % Initialize Grid Objects
 pGrid = line([1 512],[1 512],'linestyle','-',...
@@ -4131,6 +4162,7 @@ enableDefaultInteractivity(axImg_K);
 enableDefaultInteractivity(axImg_B);
 enableDefaultInteractivity(axImg_D);
 enableDefaultInteractivity(axImg);
+
 
 
 end
