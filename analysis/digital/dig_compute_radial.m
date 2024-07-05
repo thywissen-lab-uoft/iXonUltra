@@ -31,9 +31,11 @@ for nn=1:size(digdata.Zdig,3)
     
     % Indeces of bounds
     ii = [find(n1 == r(1),1) find(n1 == r(2),1) find(n2 == r(3),1) find(n2 == r(4),1)];
-    
+    try
     Zsub = Z(ii(3):ii(4),ii(1):ii(2));
-    
+    catch ME
+        keyboard
+    end
     % Compute radial profile
     [rVec,charge,charge_std,n]= radial_profile(Zsub,opts.BinStep);
     

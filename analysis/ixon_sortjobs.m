@@ -1,7 +1,7 @@
 
 % Source directory of all data
 
-srcdir = 'X:\Data\2024\2024.06\06.11\05 overnight';
+srcdir = 'X:\Data\2024\2024.07\07.03\03 overnight';
 
 
 % Parent directory of data to sort
@@ -57,18 +57,20 @@ for kk=1:length(names)
     F = data.Flags;
     
     dotilt = F.plane_selection.dotilt;
-    pow = 1e3*P.xdt_evap1_power;
+    pow = 1e3*P.xdtB_evap_power;
     
     % ODT mode (0: off, 1: shake);
     m1 = F.conductivity_ODT1_mode;
     m2 = F.conductivity_ODT2_mode;    
+    
+    doshake = F.lattice_conductivity_new;
     
     if dotilt
         [~,dirname,~]=fileparts(dirtilt);
         disp(dirname);
         movefile(filename,dirtilt);
     else
-        if m1
+        if doshake
             A2  = P.conductivity_ODT2_mod_amp;
             f   = P.conductivity_mod_freq;  
             B   = P.lattice_load_feshbach_field;
@@ -81,10 +83,11 @@ for kk=1:length(names)
                 num2str(A2,'%.1f') ' V ODT2, ' ...
                 num2str(tau) ' ms ramp time'];   
         else 
-            B   = P.conductivity_FB_field;
-            U   = P.latt_depth_load(1);
-            dirname = ['single plane ' num2str(round(B,2)) ...
-               ' G,' num2str(round(U,2)) ' Er'];
+            B   = P.lattice_load_feshbach_field;
+            U   = P.lattice_load_depthX;
+            dirname = ['single plane ' num2str(round(B,2)) ' G,' ...
+                num2str(round(U,2)) ' Er' ...
+                num2str(round(pow,2)) ' mW '];
         end
     
         fulldir = fullfile(daydir,[num2str(ind,'%02.0f') ' ' dirname]);

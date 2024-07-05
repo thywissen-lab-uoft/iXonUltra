@@ -93,7 +93,7 @@ ixon_PixelSize = 16;            % Pixel size in um
 
 %% Analysis Options
 % Fitting options
-ixon_doBoxCount             = 1;
+ixon_doBoxCount             = 0;
 ixon_doGaussFit             = 0;
 
 % Analysis to run
@@ -135,7 +135,7 @@ img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
 % img_opt.Theta               = 59.64;  % Rotation amount (deg.)
 img_opt.Theta               = 59.81;  % Rotation amount (deg.)
-
+img_opt.DetectNoise = 1;
 img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)

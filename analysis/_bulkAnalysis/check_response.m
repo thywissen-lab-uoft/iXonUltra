@@ -17,9 +17,9 @@ energies = h*(energies_Hz);
 
 %% Trap parameters
 wXDT = 2*pi*42.5; %2*pi*Hz
-T = 95e-9; %K
-G = 2*pi*18; %2*pi*Hz
-amp_desired = 0.65; %um
+T = 80e-9; %K
+G = 2*pi*35; %2*pi*Hz
+amp_desired = 0.8; %um
 
 f = [20:1:150];
 
@@ -62,7 +62,7 @@ WL = [f<=f0]';
 myfit = fittype(@(a8,a6,a4,a2,x) d0 + a2*(x-f0).^2 + a4*(x-f0).^4+ a6*(x-f0).^6+ a8*(x-f0).^8,...
     'independent',{'x'},'coefficients',{'a8','a6','a4','a2'});
 opt = fitoptions(myfit);
-opt.StartPoint = [0 0 pp(1) pp(2)];
+opt.StartPoint = [0 0 pp(1) pp(3)];
 opt.Weights = WH;
 opt.Robust = 'bisquare';
 
