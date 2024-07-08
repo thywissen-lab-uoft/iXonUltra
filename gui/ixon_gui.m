@@ -161,8 +161,8 @@ function SizeChangedFcn(~,~)
 
         hpCam.Position(2) = hpControl.Position(4)-hpCam.Position(4);
         hpAcq.Position(2) = hpCam.Position(2)-hpAcq.Position(4);
-        hpSave.Position(2) = hpAcq.Position(2)-hpSave.Position(4);
-        hpNav.Position(2)       = hpSave.Position(2)-hpNav.Position(4);
+        % hpSave.Position(2) = hpAcq.Position(2)-hpSave.Position(4);
+        hpNav.Position(2)       = hpAcq.Position(2)-hpNav.Position(4);
 
  
         hpProcess.Position(2)           = hpNav.Position(2)-hpProcess.Position(4);
@@ -520,7 +520,7 @@ statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
 hpAcq=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','acquisition','fontsize', 6);
 hpAcq.Position(3) = hpControl.Position(3);
-hpAcq.Position(4) = 30;
+hpAcq.Position(4) = 50;
 hpAcq.Position(1) = 0;
 hpAcq.Position(2) = hpCam.Position(2) - hpAcq.Position(4);
 
@@ -530,7 +530,7 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
     'units','pixels','fontsize',8,'backgroundcolor',[80 200 120]/255,...
     'Position',[1 1 40 18],...    
     'Callback',@startCamCB,'ToolTipString',ttstr,'enable','off');
-
+hbstart.Position(2) = hpAcq.Position(4)-hbstart.Position(4)-10;
     function startCamCB(src,evt)
         disp('Starting acquisition');        
         % Send acquistion start command
@@ -550,7 +550,7 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
 ttstr='Abort acquisition.';
 hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
     'units','pixels','fontsize',7,'backgroundcolor',[250 102 120]/255,...
-    'Position',[45 1 40 18], ...
+    'Position',[45 hbstart.Position(2) 40 18], ...
     'Callback',@stopCamCB,'ToolTipString',ttstr,'enable','off');
 hbstop.Position(1) = hbstart.Position(1)+hbstart.Position(3);
 
@@ -571,7 +571,7 @@ hbstop.Position(1) = hbstart.Position(1)+hbstart.Position(3);
 ttstr='Help on acquisition.';
 cdata=imresize(imread(fullfile(mpath,'icons','help.jpg')),[15 15]);
 hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,...
-    'enable','on','backgroundcolor','w','position',[88 1 18 18],...
+    'enable','on','backgroundcolor','w','position',[88 hbstart.Position(2) 18 18],...
     'ToolTipString',ttstr,'enable','on');
 hbAcqInfo.Position(1) =hbstop.Position(1) + hbstop.Position(3);
 
@@ -581,14 +581,14 @@ hbAcqInfo.Position(1) =hbstop.Position(1) + hbstop.Position(3);
 % Continuous Acquisition checkbox
 ttstr='Reinitialize camera acquisition after image acquisition.';
 hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',6,...
-    'backgroundcolor','w','Position',[hbAcqInfo.Position(1)+hbAcqInfo.Position(3) 1 85 18],...
+    'backgroundcolor','w','Position',[hbAcqInfo.Position(1)+hbAcqInfo.Position(3) hbstart.Position(2) 85 18],...
     'ToolTipString',ttstr,'enable','on','value',1);
 
 % Button group for acquisition mode
 bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chAcqCB);  
 bgAcq.Position(3:4)=[120 18];
-bgAcq.Position(1:2)=[hcAcqRpt.Position(1)+hcAcqRpt.Position(3) 2];    
+bgAcq.Position(1:2)=[hcAcqRpt.Position(1)+hcAcqRpt.Position(3) hbstart.Position(2)];    
 
 % Radio buttons for triggered versus software acquisition
 rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','triggered',...
@@ -705,20 +705,12 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
             disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);        
         end
     end
-%% Save Panel
-hpSave=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
-    'title','Image Saving','fontsize',6);
-hpSave.Position(3) = hpControl.Position(3);
-hpSave.Position(4) = 30;
-hpSave.Position(1) = 0;
-hpSave.Position(2) = hpAcq.Position(2) - hpSave.Position(4);
-
 
 % Auto Save check box
 ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
     'not override saving to image history.'];
-hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',8,...
-    'backgroundcolor','w','Position',[0 0 90 25],'callback',@saveCheck,...
+hcauto=uicontrol(hpAcq,'style','checkbox','string','save?','fontsize',7,...
+    'backgroundcolor','w','Position',[0 hbstart.Position(2)-18 50 18],'callback',@saveCheck,...
     'ToolTipString',ttstr);
 
 % Save checkbox callback
@@ -735,16 +727,16 @@ hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',8,
 
 % Browse button
 ttstr='Select directory to save images.';
-cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[20 20]);
-bBrowse=uicontrol(hpSave,'style','pushbutton','CData',cdata,'callback',@browseCB,...
-    'enable','off','backgroundcolor','w','position',[95 2 size(cdata,[1 2])],...
+cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[15 15]);
+bBrowse=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@browseCB,...
+    'enable','off','backgroundcolor','w','position',[95 hcauto.Position(2) 18 18],...
     'tooltipstring',ttstr);
-
+bBrowse.Position(1) = hcauto.Position(1) + hcauto.Position(3);
 % String for current save directory
 ttstr='The current save directory.';
-tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,...
+tSaveDir=uicontrol(hpAcq,'style','text','string','save directory','fontsize',8,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'enable','off','UserData','','Position',[115 0 hF.Position(3)-135 20],...
+    'enable','off','UserData','','Position',[bBrowse.Position(1)+bBrowse.Position(3) hcauto.Position(2)-5 hF.Position(3)-135 20],...
     'tooltipstring',ttstr);
 
 % Browse button callback
@@ -768,24 +760,16 @@ tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,
 hpNav=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','GUI Image Source','fontsize',6);
 hpNav.Position(3) = hpControl.Position(3);
-hpNav.Position(4) = 30;
+hpNav.Position(4) = 50;
 hpNav.Position(1) = 0;
-hpNav.Position(2) = hpSave.Position(2) - hpNav.Position(4);
-
-
-% Checkbox for auto updating when new images are taken
-ttstr='Automatically refresh to most recent image upon new image acquisition.';
-cAutoUpdate=uicontrol('parent',hpNav,'units','pixels','string',...
-    'hold image?','value',0,'fontsize',8,'backgroundcolor','w',...
-    'Style','checkbox','ToolTipString',ttstr);
-cAutoUpdate.Position=[0 5 90 14];
+hpNav.Position(2) = hpAcq.Position(2) - hpNav.Position(4);
 
 % Button to change navigator directory to default
 ttstr='Revert previewer source directory to default location.';
 cdata=imresize(imread('icons/home.jpg'),[17 17]);
-uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+hbhome=uicontrol(hpNav,'style','pushbutton','CData',cdata,...
     'callback',@defaultDirCB,'enable','on','backgroundcolor','w',...
-    'position',[95 2 20 20],'ToolTipString',ttstr);
+    'position',[1 18 20 20],'ToolTipString',ttstr);
 
 % Change directory to default
     function defaultDirCB(~,~)
@@ -797,8 +781,8 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,...
 % Button to change preview source directory
 ttstr='Change previwer source directory.';
 cdata=imresize(imread('icons/browse.jpg'),[20 20]);
-uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@chDirCB,...
-    'enable','on','backgroundcolor','w','position',[115 2 20 20],...
+hbchdir=uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@chDirCB,...
+    'enable','on','backgroundcolor','w','position',[hbhome.Position(1)+hbhome.Position(3) 18 20 20],...
     'ToolTipString',ttstr);
 
 % Get directory from user and load first image in the folder
@@ -815,9 +799,9 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@chDirCB,...
 % Button to load an image into the acquisition
 ttstr='Load an image into the previer and change the source directory.';
 cdata=imresize(imread('icons/file.jpg'),[17 17]);
-uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+hbload=uicontrol(hpNav,'style','pushbutton','CData',cdata,...
     'callback',@browseImageCB,'enable','on','backgroundcolor','w',...
-    'position',[135 2 20 20],'ToolTipString',ttstr);
+    'position',[hbchdir.Position(1)+hbchdir.Position(3) 18 20 20],'ToolTipString',ttstr);
 
     function browseImageCB(~,~)
        loadImage; 
@@ -826,32 +810,48 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,...
 % Button to delete image
 ttstr='Delete this image from the source directory';
 cdata=imresize(imread('icons/garbage.jpg'),[17 17]);
-uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+hbdelete=uicontrol(hpNav,'style','pushbutton','CData',cdata,...
     'callback',@browseImageCB,'enable','on','backgroundcolor','w',...
-    'position',[155 2 20 20],'ToolTipString',ttstr);
-
+    'position',[hbload.Position(1)+hbload.Position(3) 18 20 20],'ToolTipString',ttstr);
 
 ttstr='Jump to most recent image acquired.';
 hbNavNow=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',[char(10094) char(10094)],'fontsize',10,...
     'callback',{@chData, 0},'ToolTipString',ttstr);
-hbNavNow.Position=[175 2 24 20];
+hbNavNow.Position=[hbdelete.Position(1)+hbdelete.Position(3) 18 24 20];
 
 ttstr='Step to next more recent image';
 hbNavLeft=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10094),'fontsize',10,...
     'callback',{@chData, -1},'ToolTipString',ttstr);
-hbNavLeft.Position=[199 2 12 20];
+hbNavLeft.Position=[hbNavNow.Position(1)+hbNavNow.Position(3) 18 12 20];
 
-tNavInd=uicontrol(hpNav,'Style','text','units','pixels',...
-    'backgroundcolor','w','string','000','fontsize',12);
-tNavInd.Position=[211 2 30 20];
+tNavInd=uitable('parent',hpNav,'units','pixels','columnformat',{'numeric'},...
+    'fontsize',8,'columnwidth',{25},'rowname',{},'columnname',{},...
+    'columneditable',[true]);
+tNavInd.Data=[200];
+tNavInd.Position(1:2)=[hbNavLeft.Position(1)+hbNavLeft.Position(3)  18];
+tNavInd.Position(3:4)=tNavInd.Extent(3:4);
+
+
+% Text for total number of images in directory
+ttstr='Total number of images in the directory';
+tNavMax=uicontrol(hpNav,'style','text','string','of 2001','fontsize',7,...
+    'backgroundcolor','w','units','pixels','horizontalalignment','center',...
+    'Position',[tNavInd.Position(1)+tNavInd.Position(3) 18 35 14],'tooltipstring',ttstr);
 
 ttstr='Step to later image.';
 hbNavRight=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10095),'fontsize',10,...
     'callback',{@chData, 1},'ToolTipString',ttstr);
-hbNavRight.Position=[241 2 12 20];
+hbNavRight.Position=[tNavMax.Position(1)+tNavMax.Position(3) 18 12 20];
+
+ttstr='Jump to first image acquired.';
+hbNavLast=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
+    'backgroundcolor','w','String',[char(10095) char(10095)],'fontsize',10,...
+    'callback',{@chData, NaN},'ToolTipString',ttstr);
+hbNavLast.Position=[hbNavRight.Position(1)+hbNavRight.Position(3) 18 24 20];
+
 
     function loadImage(filename)
         if nargin<1
@@ -915,24 +915,38 @@ hbNavRight.Position=[241 2 12 20];
             case 1
                 i1=min([i0+1 length(filenames)]);
             case 0
-                i1=1;        
+                i1=1;    
+            case nan
+                i1 = length(filename);
         end   
         
         newfilename=fullfile(currDir,filenames{i1});
-        tNavInd.String=sprintf('%03d',i1);
+        % tNavInd.String=sprintf('%03d',i1);
+        tNavInd.Data(1)=i1;
+
+
         [a,b,~]=fileparts(newfilename);
         tNavName.String=fullfile(a,b);  
+        tNavMax.String=['of' num2str(length(filenames))];        
+
         drawnow;   
         loadImage(newfilename);
     end
+
+
+% Checkbox for auto updating when new images are taken
+ttstr='Automatically refresh to most recent image upon new image acquisition.';
+cAutoUpdate=uicontrol('parent',hpNav,'units','pixels','string',...
+    'hold image?','value',0,'fontsize',8,'backgroundcolor','w',...
+    'Style','checkbox','ToolTipString',ttstr);
+cAutoUpdate.Position=[hbNavLast.Position(1)+hbNavLast.Position(3) 20 90 14];
 
 % Text for string of full file name
 ttstr='Name of current image';
 tNavName=uicontrol(hpNav,'style','text','string','FILENAME','fontsize',7,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'Position',[235 2 hpNav.Position(3)-133 14],'tooltipstring',ttstr);
+    'Position',[1 1 hpNav.Position(3) 14],'tooltipstring',ttstr);
 tNavName.String=data.Name;
-
 
 
 %% Image Process Panel
@@ -4212,8 +4226,13 @@ end
         end
 
         % Update string
-        tNavInd.String=sprintf('%03d',ind); 
+        % tNavInd.String=sprintf('%03d',ind); 
+
+        tNavMax.String=['of ' num2str(length(filenames))];        
+
         tNavName.String=fullfile(currDir,data.Name);        
+
+        tNavInd.Data(1)=ind;
     end
     
     %% FINISH
