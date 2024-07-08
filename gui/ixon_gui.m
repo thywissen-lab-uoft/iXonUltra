@@ -927,7 +927,7 @@ hbNavLast.Position=[hbNavRight.Position(1)+hbNavRight.Position(3) 18 24 20];
 
         [a,b,~]=fileparts(newfilename);
         tNavName.String=fullfile(a,b);  
-        tNavMax.String=['of' num2str(length(filenames))];        
+        tNavMax.String=['of ' num2str(length(filenames))];        
 
         drawnow;   
         loadImage(newfilename);
