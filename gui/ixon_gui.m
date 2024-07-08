@@ -811,28 +811,64 @@ hbload=uicontrol(hpNav,'style','pushbutton','CData',cdata,...
 ttstr='Delete this image from the source directory';
 cdata=imresize(imread('icons/garbage.jpg'),[17 17]);
 hbdelete=uicontrol(hpNav,'style','pushbutton','CData',cdata,...
-    'callback',@browseImageCB,'enable','on','backgroundcolor','w',...
+    'callback',@deleteImageCB,'enable','on','backgroundcolor','w',...
     'position',[hbload.Position(1)+hbload.Position(3) 18 20 20],'ToolTipString',ttstr);
+
+    function deleteImageCB(src,evt)
+        filename = tNavName.String;
+        str = ['delete ' filename '?'];
+         answer = questdlg('Send image to recyle bin?',str,...
+            'Yes','No','No') ;        
+        switch answer
+            case 'Yes'
+                disp(['deleting' filename  ' ...'])
+                
+                if exist(filename,'file')                    
+                    previousState = recycle('on');
+                    delete(filename);
+                    recycle(previousState);
+                    disp('deleted');
+                    chData([],[],tNavInd.Data);
+                else
+                    disp('no file to delete?')
+                end
+            case 'No'
+                disp('cancel delete')
+            otherwise
+                disp('cancel delete')
+        end        
+     
+
+    end
+      
 
 ttstr='Jump to most recent image acquired.';
 hbNavNow=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',[char(10094) char(10094)],'fontsize',10,...
-    'callback',{@chData, 0},'ToolTipString',ttstr);
+    'callback',{@chData, 1},'ToolTipString',ttstr,'UserData','absolute');
 hbNavNow.Position=[hbdelete.Position(1)+hbdelete.Position(3) 18 24 20];
 
 ttstr='Step to next more recent image';
 hbNavLeft=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10094),'fontsize',10,...
-    'callback',{@chData, -1},'ToolTipString',ttstr);
+    'callback',{@chData, -1},'ToolTipString',ttstr,'UserData','increment');
 hbNavLeft.Position=[hbNavNow.Position(1)+hbNavNow.Position(3) 18 12 20];
 
 tNavInd=uitable('parent',hpNav,'units','pixels','columnformat',{'numeric'},...
     'fontsize',8,'columnwidth',{25},'rowname',{},'columnname',{},...
-    'columneditable',[true]);
+    'columneditable',[true],'CellEditCallback',@tblch,'UserData','absolute');
 tNavInd.Data=[200];
 tNavInd.Position(1:2)=[hbNavLeft.Position(1)+hbNavLeft.Position(3)  18];
 tNavInd.Position(3:4)=tNavInd.Extent(3:4);
 
+    function tblch(src,evt)
+        n=evt.NewData;        
+        if isnumeric(n) && n > 0 && floor(n) == n
+            chData(src,evt,n)% n is a natural number
+        else
+            src.Data = evt.PreviousData;
+        end
+    end
 
 % Text for total number of images in directory
 ttstr='Total number of images in the directory';
@@ -843,13 +879,13 @@ tNavMax=uicontrol(hpNav,'style','text','string','of 2001','fontsize',7,...
 ttstr='Step to later image.';
 hbNavRight=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10095),'fontsize',10,...
-    'callback',{@chData, 1},'ToolTipString',ttstr);
+    'callback',{@chData, 1},'ToolTipString',ttstr,'UserData','increment');
 hbNavRight.Position=[tNavMax.Position(1)+tNavMax.Position(3) 18 12 20];
 
 ttstr='Jump to first image acquired.';
 hbNavLast=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',[char(10095) char(10095)],'fontsize',10,...
-    'callback',{@chData, NaN},'ToolTipString',ttstr);
+    'callback',{@chData, inf},'ToolTipString',ttstr,'UserData','absolute');
 hbNavLast.Position=[hbNavRight.Position(1)+hbNavRight.Position(3) 18 24 20];
 
 
@@ -880,7 +916,12 @@ hbNavLast.Position=[hbNavRight.Position(1)+hbNavRight.Position(3) 18 24 20];
     end
 
 % Callback function for changing number of ROIs
-    function chData(~,~,state)        
+    function chData(src,evt,state)     
+        if isempty(src)
+            index_type='absolute';
+        else
+            index_type = src.UserData;
+        end
        % Get mat files in history directory          
        filenames=dir([currDir  filesep '*.mat']);
        filenames={filenames.name};       
@@ -901,32 +942,46 @@ hbNavLast.Position=[hbNavRight.Position(1)+hbNavRight.Position(3) 18 24 20];
 %         end        
     
         % Current data mat  
-       myname=[data.Name '.mat'];           	     
+       myname=[data.Name '.mat'];        
 
-       % Find current filename in directory
+      % Find current filename in directory
        i0=find(strcmp(filenames,myname),1);
        if isempty(i0)
           i0=1; 
        end
 
-        switch state
-            case -1
-                i1=max([i0-1 1]);            
-            case 1
-                i1=min([i0+1 length(filenames)]);
-            case 0
-                i1=1;    
-            case nan
-                i1 = length(filename);
-        end   
+       switch index_type
+           case 'increment'
+               if isequal(state,-1)
+                    i1=max([i0-1 1]); 
+               elseif isequal(state,1)
+                    i1=min([i0+1 length(filenames)]);
+               end
+           case  'absolute'               
+               i1 = max([min([state length(filenames)]) 1]); 
+       end
+
+ 
+
+        % switch state
+        %     case -1
+        %         i1=max([i0-1 1]);            
+        %     case 1
+        %         i1=min([i0+1 length(filenames)]);
+        %     case 0
+        %         i1=1;    
+        %     case nan
+        %         i1 = length(filename);
+        % end   
         
         newfilename=fullfile(currDir,filenames{i1});
         % tNavInd.String=sprintf('%03d',i1);
         tNavInd.Data(1)=i1;
 
 
-        [a,b,~]=fileparts(newfilename);
-        tNavName.String=fullfile(a,b);  
+        % [a,b,ext]=fileparts(newfilename);
+        % tNavName.String=fullfile(a,[b ext]); 
+        tNavName.String = newfilename;
         tNavMax.String=['of ' num2str(length(filenames))];        
 
         drawnow;   
@@ -4230,7 +4285,7 @@ end
 
         tNavMax.String=['of ' num2str(length(filenames))];        
 
-        tNavName.String=fullfile(currDir,data.Name);        
+        tNavName.String=fullfile(currDir,[data.Name '.mat']);        
 
         tNavInd.Data(1)=ind;
     end
@@ -4238,7 +4293,7 @@ end
     %% FINISH
 newDataCallback;
 % Go to most recent image
-chData([],[],0);   
+chData([],[],1);   
 drawnow;
 SizeChangedFcn
 axes(axImg);
