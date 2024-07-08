@@ -110,7 +110,7 @@ desc=acqDescription(acq);       % Get description of settings
 hF=figure;clf
 set(hF,'Color','w','units','pixels','Name',guiname,...
     'Tag','GUI','CloseRequestFcn',@closeGUI,'NumberTitle','off',...
-    'Position',[50 50 1200 850],'SizeChangedFcn',@SizeChangedFcn,...
+    'Position',[50 50 1300 750],'SizeChangedFcn',@SizeChangedFcn,...
     'toolbar','none');
 
 topBarHeight = 40;
@@ -147,41 +147,40 @@ warning on
 function SizeChangedFcn(~,~)
         % This resize fucntion ensures that the X and Y cut/sum plot has
         % commenserate positioning with respect the actual image shown
-        x0=hpFit.Position(1)+hpFit.Position(3);
+        x0=hpControl.Position(1)+hpControl.Position(3);
         Wfig=hF.Position(3);Hfig=hF.Position(4);                          % Figure size
         % Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);  % Top Bar
         Ht = 40;
-        if (Wfig>360 && Hfig>55); hp.Position=[x0 1 Wfig-x0 Hfig]; end     % image panel             
-        resizePlots;                                                % Resize plots                          
         
-    
+        if (Wfig>360 && Hfig>55); hp.Position=[x0 1 hF.Position(3)-x0 Hfig]; end     % image panel             
+        resizePlots;                                                % Resize plots                          
+        drawnow;
+
         % Control Panel
-        hpControl.Position = [1 1 x0 Hfig];
+        hpControl.Position(4) = hF.Position(4);
 
         hpCam.Position(2) = hpControl.Position(4)-hpCam.Position(4);
         hpAcq.Position(2) = hpCam.Position(2)-hpAcq.Position(4);
         hpSave.Position(2) = hpAcq.Position(2)-hpSave.Position(4);
-        hpNav.Position(2)       = hpSave.Position(4)-hpNav.Position(4);
-
+        hpNav.Position(2)       = hpSave.Position(2)-hpNav.Position(4);
 
  
-        hpADV.Position(2)       = hpNav.Position(2)-hpADV.Position(4);
-        % hpAnl.Position(2)       = hpADV.Position(2)-hpAnl.Position(4);        
-        % hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
-        % 
-        % 
-        % 
-        % hpBin.Position(2)       = hpNav.Position(2) - hpBin.Position(4);   
-        % hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
+        hpProcess.Position(2)           = hpNav.Position(2)-hpProcess.Position(4);
+        hpAnl.Position(2)       = hpProcess.Position(2)-hpAnl.Position(4);   
 
+        hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
 
-        % hpDisp_X.Position(2)    = hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
+  
+        hpBin.Position(2)       = hpNav.Position(2) - hpBin.Position(4);   
+        hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
 
-% hpDisp_X.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
-        % hpDisp_K.Position(2)    = hpDisp_X.Position(2) - hpDisp_K.Position(4);     
-        % hpDisp_B.Position(2)    = hpDisp_K.Position(2) - hpDisp_B.Position(4);    
-        % hpDisp_HB.Position(2)   = hpDisp_B.Position(2) - hpDisp_HB.Position(4); 
-        % hpDisp_D.Position(2)    = hpDisp_HB.Position(2) - hpDisp_D.Position(4);
+        hpDisp_Select.Position(2)=hpNav.Position(2)-hpDisp_Select.Position(4);
+        hpDispOpt.Position(2)=hpDisp_Select.Position(2)-hpDispOpt.Position(4);
+        if hpDispOpt.Position(2)>0
+            hpFit.Position(4)=hpDispOpt.Position(2);
+        else
+            hpFit.Position(4) = 1;
+        end
 
 
         % hpFit.Position(4)       = H-Ht;     
@@ -1828,7 +1827,7 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
 
 hpDisp_Select = uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','image selector');
-hpDisp_Select.Position=[320 hpNav.Position(2)-50 300 50];
+hpDisp_Select.Position=[320 hpNav.Position(2)-50 280 50];
 
 menuSelectCMAP=uicontrol('style','popupmenu','string',...
     {'black-purple','black-purple-white','white-purple'},'units','pixels','parent',hpDisp_Select,...
@@ -2495,7 +2494,7 @@ hpFit=uitabgroup(hpControl,'units','pixels');
 % hpFit.Position=[320 0 300 hpNav.Position(2)-200];
 
 hpFit.Position(1) = hpDispOpt.Position(1);
-hpFit.Position(3) = hpDispOpt.Position(4);
+hpFit.Position(3) = hpDispOpt.Position(3);
 hpFit.Position(2) = 0;
 hpFit.Position(4) = hpDispOpt.Position(2);
 
@@ -2595,7 +2594,7 @@ tbl_fidelity_analysis=uitable(tabs(6),'units','normalized','RowName',{},'ColumnN
 hp=uitabgroup(hF,'units','pixels','Position',...
     [400 0 hF.Position(3)-200 hF.Position(4)-40],...
     'SelectionChangedFcn',@hp_tab_cb);
-hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)];
+hp.Position=[hpControl.Position(3) 0 hF.Position(3)-hpControl.Position(3) hF.Position(4)];
 
     function hp_tab_cb(src,evt)
         newTitle = evt.NewValue.Title;
