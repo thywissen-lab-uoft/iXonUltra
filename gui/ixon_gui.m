@@ -934,12 +934,13 @@ tNavName.String=data.Name;
 
 %% Image Process Panel
 
-% hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    % 'Position',[0 hpAcq.Position(2)-160 160 270],'title','processing');
 hpProcess=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'Position',[0 hpControl.Position(4)-270 160 270],'title','processing');
+hpProcess.Position(3) = 160;
+hpProcess.Position(4) = 270;
+hpProcess.Position(1) = 0;
+hpProcess.Position(2) = hpNav.Position(2) - hpProcess.Position(4);
 
-% 
 tbl_process_1 = uitable('parent',hpProcess,'columnformat',{'logical','char'},...
     'columnname',{},'rowname',{},'columnwidth',{15,135},'columneditable',[true false],...
     'fontsize',7);
@@ -1383,18 +1384,13 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
     end
 
 %% Binning Panel
-
-
-
-% hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
-% hpBin.Position=[0 hpKspace.Position(2)-180 160 260];
-
 hpBin=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','binned analysis');
-hpBin.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
-hpBin.Position(2)=hpNav.Position(2)-hpBin.Position(4);
 hpBin.Position(3)=160;
 hpBin.Position(4)=260;
+hpBin.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
+hpBin.Position(2)=hpNav.Position(2)-hpBin.Position(4);
+
 
 ttstr='auto do bin analysis';
 hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
@@ -1821,7 +1817,6 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         drawnow;
         
     end
-
 
 %% Image Number Selector
 % hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
