@@ -1017,7 +1017,7 @@ tbl_process_1 = uitable('parent',hpProcess,'columnformat',{'logical','char'},...
     'columnname',{},'rowname',{},'columnwidth',{15,135},'columneditable',[true false],...
     'fontsize',7);
 tbl_process_1.Data={true 'subtract bias';
-    false 'subtract background';
+    true 'subtract background';
     false 'apply image mask';
     false 'deconvolve psf Rich-Lucy';
     true 'auto-detect PSF noise?'};
@@ -1123,7 +1123,7 @@ tbl_process_2 = uitable('parent',hpProcess,'columnformat',{'logical','char'},...
 tbl_process_2.Data={
     false 'gauss filter (px)' 1;
      false 'scale (factor)' 2;
-    false 'rotate (deg)' 0;
+    false 'rotate (deg)' 60;
     false 'fft filter (px)' 1;
     false 'fft ir mask (1/px)' 1;
    };
@@ -1289,7 +1289,7 @@ hc_anlX_Box=uicontrol(hpPosition,'style','checkbox','string','box','fontsize',7,
     'ToolTipString',ttstr,'enable','off','Value',1);
 
 % Checkbox for image histogram
-ttstr='Calculate histgoram';
+ttstr='Calculate histogram';
 hc_anlX_Histogram=uicontrol(hpPosition,'style','checkbox','string','histogram','fontsize',7,...
     'backgroundcolor','w','Position',[5 hc_anlX_Box.Position(2)-15 120 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
@@ -1765,7 +1765,7 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
 
 hpDig=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','digital analysis');
-hpDig.Position(3:4) = [160 120];
+hpDig.Position(3:4) = [160 140];
 hpDig.Position(1) = hpBin.Position(1);
 hpDig.Position(2) = hpBin.Position(2)-hpDig.Position(4);
 
@@ -1796,6 +1796,10 @@ hcSmartThreshold=uicontrol(hpDig,'style','checkbox','string','smart thresholding
 % Maximum Liklihood Algorithm
 hcDigLikelihood=uicontrol(hpDig,'style','checkbox','string','maximum likelihood','fontsize',7,...
     'backgroundcolor','w','Position',[1 hcSmartThreshold.Position(2)-15 120 15],'Value',0,'enable','off');
+
+% Maximum Liklihood Algorithm
+hcDigRadial=uicontrol(hpDig,'style','checkbox','string','radial analysis','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hcDigLikelihood.Position(2)-15 120 15],'Value',0);
 
 
 % Refit button
@@ -1982,8 +1986,8 @@ disp_opt_tabs(2)=uitab(hpDispOpt,'Title','stripe','units','pixels');
 disp_opt_tabs(3)=uitab(hpDispOpt,'Title','histogram','units','pixels');
 disp_opt_tabs(4)=uitab(hpDispOpt,'Title','momentum','units','pixels');
 disp_opt_tabs(5)=uitab(hpDispOpt,'Title','binned','units','pixels');
-disp_opt_tabs(5)=uitab(hpDispOpt,'Title','binned histgoram','units','pixels');
-disp_opt_tabs(6)=uitab(hpDispOpt,'Title','digitized','units','pixels');
+disp_opt_tabs(6)=uitab(hpDispOpt,'Title','binned histogram','units','pixels');
+disp_opt_tabs(7)=uitab(hpDispOpt,'Title','digitized','units','pixels');
 
 
 %% Display Options Panel
@@ -2258,13 +2262,25 @@ histBtbl=uitable('parent',hpDisp_HB,'units','pixels','RowName',{},'ColumnName',{
     'Data',[3000 100],'ColumnWidth',{70,80},'ColumnEditable',[true true],...
     'CellEditCallback',@binnedHistCB,'fontsize',7);
 histBtbl.Position(3:4)=histBtbl.Extent(3:4);
-histBtbl.Position(1:2)=[2 20];
-    
+histBtbl.Position(1:2)=[2 1];
+
+
+% Checkbox for enabling display of the CoM analysis
+hchistBautothresh=uicontrol(hpDisp_HB,'style','checkbox','string','auto-threshold?',...
+    'units','pixels','fontsize',7,'backgroundcolor','w',...
+    'enable','on','value',1);
+hchistBautothresh.Position=[2 histBtbl.Position(2)+histBtbl.Position(4)+1 125 15];
+
+% Checkbox for enabling display of the CoM analysis
+hchistBthreshnoise=uicontrol(hpDisp_HB,'style','checkbox','string','threshold noise?',...
+    'units','pixels','fontsize',7,'backgroundcolor','w',...
+    'enable','on','value',1);
+hchistBthreshnoise.Position=[2 hchistBautothresh.Position(2)+hchistBautothresh.Position(4)+1 125 15];
+
+     
     function binnedHistCB(src,evt)
-        ind = evt.Indices(2);    
-        if ind == 2
-            updateBinnedHistogram;    
-        end
+        data=ixon_binnedHistogram(data,histBtbl.Data(1,2));
+
         updateBinnedHistogramGraphics;       
     end
 
@@ -3492,7 +3508,13 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
         imgnum = menuSelectImg.Value;        
         x = data.LatticeHistogram(imgnum).Centers;
         xe = data.LatticeHistogram(imgnum).Edges;
-        y = data.LatticeHistogram(imgnum).N;        
+        y = data.LatticeHistogram(imgnum).N;      
+
+
+        if hchistBautothresh.Value
+            histBtbl.Data(1,1) = data.LatticeBin(imgnum).ClusterThreshold(1);
+        end
+
         Nthresh = histBtbl.Data(1,1);           
 
         xL = x<=Nthresh;
