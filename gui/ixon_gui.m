@@ -157,12 +157,15 @@ function SizeChangedFcn(~,~)
     
         % Control Panel
         hpControl.Position = [1 1 x0 Hfig];
-        % 
-        % 
-        % hpNav.Position(2)       = hpControl.Position(4)-35;
-        % hpNav.Position(3)       = hpControl.Position(3);
-        % 
-        % hpADV.Position(2)       = hpNav.Position(2)-hpADV.Position(4);
+
+        hpCam.Position(2) = hpControl.Position(4)-hpCam.Position(4);
+        hpAcq.Position(2) = hpCam.Position(2)-hpAcq.Position(4);
+        hpSave.Position(2) = hpAcq.Position(2)-hpSave.Position(4);
+        hpNav.Position(2)       = hpSave.Position(4)-hpNav.Position(4);
+
+
+ 
+        hpADV.Position(2)       = hpNav.Position(2)-hpADV.Position(4);
         % hpAnl.Position(2)       = hpADV.Position(2)-hpAnl.Position(4);        
         % hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
         % 
@@ -191,6 +194,7 @@ function SizeChangedFcn(~,~)
         % hpDispOpt.Position(2)=  hpDisp_Select.Position(2)-250;
         % hpFit.Position(4)       = hpDispOpt.Position(2);
 
+        hpFit.Position(4) = hpDispOpt.Position(2);
 
         % strstatus.Position(1)   = hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;       
@@ -1824,7 +1828,7 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
 
 hpDisp_Select = uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','image selector');
-hpDisp_Select.Position=[320 hpControl.Position(4)-60 300 50];
+hpDisp_Select.Position=[320 hpNav.Position(2)-50 300 50];
 
 menuSelectCMAP=uicontrol('style','popupmenu','string',...
     {'black-purple','black-purple-white','white-purple'},'units','pixels','parent',hpDisp_Select,...
@@ -1902,9 +1906,10 @@ menuSelectImg.Position(2)=15;
 % hpDispOpt=uipanel(hF,'units','pixels','title','display');
 
 hpDispOpt=uitabgroup(hpControl,'units','pixels');
-
-hpDispOpt.Position=[320 hpDisp_Select.Position(2)-hpDisp_Select.Position(4) 300 250];
-
+hpDispOpt.Position(1) = hpDisp_Select.Position(1);
+hpDispOpt.Position(3) = hpDisp_Select.Position(3);
+hpDispOpt.Position(4) = 250;
+hpDispOpt.Position(2) = hpDisp_Select.Position(2);
 
 disp_opt_tabs(1)=uitab(hpDispOpt,'Title','position','units','pixels');
 disp_opt_tabs(2)=uitab(hpDispOpt,'Title','stripe','units','pixels');
@@ -2488,6 +2493,12 @@ hpFit=uitabgroup(hpControl,'units','pixels');
 % hpFit.Position=[320 0 300 hpNav.Position(2)];
 
 % hpFit.Position=[320 0 300 hpNav.Position(2)-200];
+
+hpFit.Position(1) = hpDispOpt.Position(1);
+hpFit.Position(3) = hpDispOpt.Position(4);
+hpFit.Position(2) = 0;
+hpFit.Position(4) = hpDispOpt.Position(2);
+
 tabs(1)=uitab(hpFit,'Title','acq','units','pixels');
 tabs(2)=uitab(hpFit,'Title','param','units','pixels');
 tabs(3)=uitab(hpFit,'Title','flags','units','pixels');
