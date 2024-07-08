@@ -113,6 +113,8 @@ set(hF,'Color','w','units','pixels','Name',guiname,...
     'Position',[50 50 1200 850],'SizeChangedFcn',@SizeChangedFcn,...
     'toolbar','none');
 
+topBarHeight = 40;
+
 % Callback for when the GUI is requested to be closed.
     function closeGUI(fig,~)
         answer = questdlg('Close the iXon GUI?','Close iXon?',...
@@ -146,56 +148,384 @@ function SizeChangedFcn(~,~)
         % This resize fucntion ensures that the X and Y cut/sum plot has
         % commenserate positioning with respect the actual image shown
         x0=hpFit.Position(1)+hpFit.Position(3);
-        W=hF.Position(3);H=hF.Position(4);                          % Figure size
-        Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);  % Top Bar
+        Wfig=hF.Position(3);Hfig=hF.Position(4);                          % Figure size
+        % Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);  % Top Bar
         Ht = 40;
-        if (W>360 && H>55); hp.Position=[x0 1 W-x0 H-Ht]; end     % image panel             
+        if (Wfig>360 && Hfig>55); hp.Position=[x0 1 Wfig-x0 Hfig]; end     % image panel             
         resizePlots;                                                % Resize plots                          
         
-        % Resize Panels
-        hpCam.Position(2)     = H-hpCam.Position(4);        
+    
+        % Control Panel
+        hpControl.Position = [1 1 x0 Hfig];
+        % 
+        % 
+        % hpNav.Position(2)       = hpControl.Position(4)-35;
+        % hpNav.Position(3)       = hpControl.Position(3);
+        % 
+        % hpADV.Position(2)       = hpNav.Position(2)-hpADV.Position(4);
+        % hpAnl.Position(2)       = hpADV.Position(2)-hpAnl.Position(4);        
+        % hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
+        % 
+        % 
+        % 
+        % hpBin.Position(2)       = hpNav.Position(2) - hpBin.Position(4);   
+        % hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
 
-        hpAcq.Position(2)      = H-hpAcq.Position(4);
-        hpSave.Position(2) =    H-hpSave.Position(4);
-        hpNav.Position(2)     = hpCam.Position(2)-hpNav.Position(4);
 
-        hpADV.Position(2)       = hpNav.Position(2)-hpADV.Position(4);
+        % hpDisp_X.Position(2)    = hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
+
+% hpDisp_X.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+        % hpDisp_K.Position(2)    = hpDisp_X.Position(2) - hpDisp_K.Position(4);     
+        % hpDisp_B.Position(2)    = hpDisp_K.Position(2) - hpDisp_B.Position(4);    
+        % hpDisp_HB.Position(2)   = hpDisp_B.Position(2) - hpDisp_HB.Position(4); 
+        % hpDisp_D.Position(2)    = hpDisp_HB.Position(2) - hpDisp_D.Position(4);
 
 
-        hpAnl.Position(2)       = hpADV.Position(2)-hpAnl.Position(4);        
-        hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
-        hpBin.Position(2)       = hpKspace.Position(2) - hpBin.Position(4);   
-        hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
-        hpDisp_Select.Position(2) =hpNav.Position(2) - hpDisp_Select.Position(4);
-        hpDisp_X.Position(2)    = hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
-        hpDisp_K.Position(2)    = hpDisp_X.Position(2) - hpDisp_K.Position(4);     
-        hpDisp_B.Position(2)    = hpDisp_K.Position(2) - hpDisp_B.Position(4);    
-        hpDisp_HB.Position(2)   = hpDisp_B.Position(2) - hpDisp_HB.Position(4); 
-        hpDisp_D.Position(2)    = hpDisp_HB.Position(2) - hpDisp_D.Position(4);
         % hpFit.Position(4)       = H-Ht;     
-        hpFit.Position(4)       = hpNav.Position(2);                        
+        % hpFit.Position(4)       = hpNav.Position(2);       
+        % hpFit.Position(4)       = hpNav.Position(2)-200;
 
-        strstatus.Position(1)   = hpCam.Position(3)-strstatus.Position(3)-2;        
+        % 
+        % 
+        % hpDisp_Select.Position(2) = hpNav.Position(2)-hpDisp_Select.Position(4);
+        % hpDispOpt.Position(2)=  hpDisp_Select.Position(2)-250;
+        % hpFit.Position(4)       = hpDispOpt.Position(2);
+
+
+        % strstatus.Position(1)   = hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;       
 end
+%% Control Panel Container
+hpControl = uipanel(hF,'units','pixels');
+hpControl.Position = [0 0 600 hF.Position(4)];
+
+%% Camera Panel
+
+hpCam=uipanel(hpControl,'units','pixels','backgroundcolor','w','title','camera',...
+    'fontsize',6);
+hpCam.Position(3) = hpControl.Position(3);
+hpCam.Position(4) = 30;
+hpCam.Position(1) = 0;
+hpCam.Position(2) = hpControl.Position(4) - hpCam.Position(4);
+
+% Connect camera
+ttstr='Connect to the iXon camera.';
+hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixels',...
+    'fontsize',7,'Position',[2 1 45 18],'backgroundcolor',[80 200 120]/255,...
+    'Callback',@connectCB,'ToolTipString',ttstr);
+
+% Callback for the connect button
+    function connectCB(~,~)
+        strstatus.String='CONNECTING';
+        drawnow;
+        out=ixon_connectCam;                 % Connect to the camera       
+        if ~out && ~doDebug             % Give warning if connection fails
+           warning('Unable to connect to camera');
+           return;
+        end     
+        strstatus.String='CONNECTED';
+        drawnow;       
+        cam_status.isConnected=1;       
+        ixon_setCameraShutter(0);            % Close the shutter
+        loadAcquisitionSettings;        % Load default acquisition settings      
+        ixon_setCameraShutter(0);            % Close the shutter (again to be safe)
+        hbOpenShutter.Enable='on';      % allow shutter to be opened
+        cam_info=getCamInfo;            % Get the camera information
+        disp(' ');
+        disp(cam_info);        
+        
+        % Set the temperature set point
+        ixon_setTemperature(tblTemp.Data);
+        hbCamInfo.Enable='on';       
+        hbCamAbilities.Enable='on';
+        
+        % Enable/Disable connect
+        hbDisconnect.Enable='on';
+        hbConnect.Enable='off';   
+
+        % Enable/Disable temperature
+        hbCool.Enable='on';
+        tblTemp.Enable='on';
+        strtemp.Enable='on';
+        start(statusTimer);
+
+        % Enable acquisition
+        hbstart.Enable='on';
+        rbSingle.Enable='on';
+        rbLive.Enable='on';
+        tbl_acq.Enable='on';        
+    end
+
+% Disconnect camera
+ttstr='Disconnect to the iXon camera.';
+hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units','pixels',...
+    'fontsize',7,'Position',[hbConnect.Position(1)+hbConnect.Position(3) 1 55 18],'backgroundcolor',[255 102 120]/255,...
+    'Callback',@disconnectCB,'ToolTipString',ttstr,'enable','off');
+
+% Callback for the disconnect button
+    function disconnectCB(~,~)
+        % Stop temperature monitor
+        stop(statusTimer);
+        
+        strstatus.String='DISCONNECTING';
+        drawnow;
+        % Disconnect from camera
+        out=ixon_disconnectCamera; 
+       
+        if ~out && ~doDebug
+           return;
+        end
+        
+        strstatus.String='DRV_NOT_INITIALIZED';
+        drawnow;
+          
+        cam_status.isConnected=0;
+        cam_status.isCooling=0;
+        cam_status.isTempStable=0;
+        cam_status.Temperature=NaN;
+        
+        hbDisconnect.Enable='off';
+        hbConnect.Enable='on'; 
+        hbCool.Enable='off';
+        hbCoolOff.Enable='off';
+        tblTemp.Enable='off';
+        hbCamInfo.Enable='off';
+        hbCamAbilities.Enable='off';
+        
+        hbOpenShutter.Enable='off';
+        hbCloseShutter.Enable='off';
+        rbSingle.Enable='off';
+        rbLive.Enable='off';
+        
+        hbstart.Enable='off';
+        hbstop.Enable='off';
+        tbl_acq.Enable='off';
+
+        set(strtemp,'ForegroundColor','r','String','NaN','Enable','off');
+    end
+
+% Info button
+ttstr='Display camera info';
+cdata=imresize(imread(fullfile(mpath,'icons','info.jpg')),[16 16]);
+hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,...
+    'enable','on','backgroundcolor','w','position',[130 1 18 18],...
+    'ToolTipString',ttstr,'enable','off');
+hbCamInfo.Position(1)= hbDisconnect.Position(1)+hbDisconnect.Position(3);
+
+    function infoCB(~,~)        
+        cam_info=getCamInfo;        
+        disp(cam_info); 
+        disp(cam_info.NumHSSpeeds)
+        disp(cam_info.AvailableHSSpeeds{1});
+        disp(cam_info.AvailableHSSpeeds{2});
+    end
+
+% Capabilities button
+ttstr='Display camera capabilities';
+cdata=imresize(imread(fullfile(mpath,'icons','infob.jpg')),[16 16]);
+hbCamAbilities=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@abilitiesCB,...
+    'enable','on','backgroundcolor','w','position',[152 1 18 18],...
+    'ToolTipString',ttstr,'enable','off');
+hbCamAbilities.Position(1)= hbCamInfo.Position(1)+hbCamInfo.Position(3);
+
+    function abilitiesCB(~,~)  
+        % Read Camera Capabilities
+        cam_skills=getCameraCapabilities;
+        % Dont display camera capabilities
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+        disp('Displaying Camera Capabilities');        
+        fnames=fieldnames(cam_skills);
+        for nn=1:length(fnames)
+           disp(fnames{nn});
+           disp(cam_skills.(fnames{nn})); 
+           disp(' ');
+        end
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+    end
+
+% Start Cooling
+ttstr='Begin cooling the sensor to set point.';
+hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
+    'units','pixels','fontsize',7,'Position',...
+    [175 1 50 18],'enable','off',...
+    'backgroundcolor',[173 216 230]/255,'callback',{@coolCB ,1},...
+    'ToolTipString',ttstr);
+hbCool.Position(1)= hbCamAbilities.Position(1)+hbCamAbilities.Position(3);
+
+
+% Stop Cooling
+ttstr='Stop cooling the sensor to set point.';
+hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
+    'units','pixels','fontsize',7,'Position',...
+    [238 1 50 18],'enable','off',...
+    'backgroundcolor',[.8 .8 .8],'callback',{@coolCB, 0},...
+    'ToolTipString',ttstr);
+hbCoolOff.Position(1)= hbCool.Position(1)+hbCool.Position(3);
+
+    function coolCB(~,~,state)  
+        out=ixon_setTEC(state);        
+        if ~out && ~doDebug
+           return; 
+        end        
+        % Enable/Disable buttons
+        if state
+            hbCool.Enable='off';
+            hbCoolOff.Enable='on';
+            cam_status.isCooling=1;
+        else
+            hbCool.Enable='on';
+            hbCoolOff.Enable='off';
+            cam_status.isCooling=0;
+        end        
+    end
+
+% Table set point
+ttstr='Change the sensor temperature set point.';
+tblTemp=uitable(hpCam,'units','pixels','ColumnWidth',{30},...
+    'ColumnEditable',[true],'ColumnName',{},...
+    'Data',cam_status.TemperatureSP,'FontSize',8,...
+    'CellEditCallback',@chTempCB,'RowName',{},'ToolTipString',ttstr,...
+    'enable','off');
+% tblTemp.Position(3:4)=tblTemp.Extent(3:4);
+tblTemp.Position(3:4)=[35 20];
+
+tblTemp.Position(1:2)=[300 1];
+tblTemp.Position(1)= hbCoolOff.Position(1)+hbCoolOff.Position(3);
+
+    function chTempCB(src,evt)
+        disp('Changing temperature set point');
+        Told=evt.PreviousData;
+        Tnew=evt.NewData;        
+        % Check that the data is numeric
+        if ~isnumeric(Tnew) || isinf(Tnew) || isnan(Tnew)
+            warning('Incorrect data type provided for temperature.');
+            src.Data=Told;
+            return;
+        end            
+        Tnew=round(Tnew);        
+        if Tnew<-120 || Tnew>20
+            warning('Temperature set point out of bounds. Resetting.');
+            src.Data=Told; 
+           return; 
+        end
+        out=ixon_setTemperature(Tnew);        
+        if ~out  && ~doDebug
+           src.Data=Told; 
+        end            
+        src.Data=Tnew;        
+    end
+
+% Text
+ttstr='Camera sensor temperature. (green: stable; yellow: unstable; red: set point not reached)';
+strtemp=uicontrol(hpCam,'style','text','string','NaN','units','pixels',...
+    'backgroundcolor','w','fontsize',12,'horizontalalignment','center',...
+    'foregroundcolor','r','enable','off','fontweight','bold',...
+    'ToolTipString',ttstr);
+strtemp.Position(3:4)=[40 20];
+strtemp.Position(1:2)=[340 1];
+strtemp.Position(1)= tblTemp.Position(1)+tblTemp.Position(3);
+
+
+% Open camera shutter
+ttstr='Open camera shutter.';
+hbOpenShutter=uicontrol(hpCam,'style','pushbutton','string','open shutter',...
+    'units','pixels','fontsize',7,'Position',[385 1 65 18],'enable','off',...
+    'backgroundcolor',[255 204 0]/255,'callback',{@shutterCB,1},...
+    'ToolTipString',ttstr);
+hbOpenShutter.Position(1)= strtemp.Position(1)+strtemp.Position(3);
+
+ttstr='Close camera shutter.';
+hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
+    'units','pixels','fontsize',7,'Position',[465 1 65 18],'enable','off',...
+    'backgroundcolor',[255 102 120]/255,'callback',{@shutterCB,0},...
+    'ToolTipString',ttstr);
+hbCloseShutter.Position(1)= hbOpenShutter.Position(1)+hbOpenShutter.Position(3);
+
+
+    function shutterCB(~,~,state)        
+        if state && cam_status.Temperature>-60
+            warning('Denying your request to open the shutter above -60C.');
+            return;
+        end        
+        out=ixon_setCameraShutter(state);        
+        % Exit if bad return
+        if ~out && ~doDebug
+           return; 
+        end        
+        % Enable/Disable buttons
+        if state
+            hbOpenShutter.Enable='off';
+            hbCloseShutter.Enable='on';
+        else
+            hbOpenShutter.Enable='on';
+            hbCloseShutter.Enable='off';
+        end
+    end
+
+
+% Text
+ttstr='Camera status.';
+strstatus=uicontrol(hpCam,'style','text','string','DRV_NOT_INITIALIZED','units','pixels',...
+    'backgroundcolor','w','fontsize',8,'horizontalalignment','left',...
+    'foregroundcolor','k','enable','on','fontweight','bold',...
+    'ToolTipString',ttstr);
+strstatus.Position(3:4)=[157 16];
+strstatus.Position(1) = hbCloseShutter.Position(1) +hbCloseShutter.Position(3);
+strstatus.Position(2)=1;
+
+% Timer to update temperature
+statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
+    'TimerFcn',@statusTimerFcn,'ExecutionMode','FixedSpacing');
+
+    function statusTimerFcn(~,~)
+        try
+        % Get the temperature
+        [out,temp,outstr]=ixon_getTemperature;
+        strtemp.String=[num2str(temp) ' C'];        
+        cam_status.Temperature=temp;   
+        
+        if cam_status.Temperature>-60 && isequal(hbCloseShutter.Enable,'on')
+            warning('Shutter is open and temperature above -60. Closing shutter');
+            shutterCB([],[],0);
+        end
+        
+        switch outstr
+            case 'DRV_TEMPERATURE_STABILIZED'
+                cam_status.isTempStable=1;
+                strtemp.ForegroundColor=[80 200 120]/255;
+            case 'DRV_TEMP_NOT_STABILIZED'
+                cam_status.isTempStable=0;
+                strtemp.ForegroundColor=[255 204 0]/255;
+            otherwise
+                cam_status.isTempStable=0;
+                strtemp.ForegroundColor='r';
+        end     
+        
+        % Camera Status
+        [out,outstr]=ixon_getCameraStatus;
+        strstatus.String=outstr;
+        drawnow;
+        catch ME
+            warning('status timer failed');
+            warning(ME.message);
+        end
+    end
+
+
 %% Image Acqusition Panel
 % Panel for image acquisition controls and settings.
-
-% hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    % 'Position',[0 hpCam.Position(2)-30 600 40],'title','Image Saving','fontsize',8);
-
-% hpAcq=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    % 'Position',[0 hpCam.Position(2)-30 400 40],'title','acquisition',...
-    % 'fontsize', 6);
-hpAcq=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hF.Position(4)-40 400 40],'title','acquisition',...
-    'fontsize', 6);
+hpAcq=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'title','acquisition','fontsize', 6);
+hpAcq.Position(3) = hpControl.Position(3);
+hpAcq.Position(4) = 30;
+hpAcq.Position(1) = 0;
+hpAcq.Position(2) = hpCam.Position(2) - hpAcq.Position(4);
 
 % Start acquisition button
 ttstr='Start acquisition.';
 hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
-    'units','pixels','fontsize',10,'backgroundcolor',[80 200 120]/255,...
-    'Position',[2 hpAcq.Position(4)-35 40 20],...    
+    'units','pixels','fontsize',8,'backgroundcolor',[80 200 120]/255,...
+    'Position',[1 1 40 18],...    
     'Callback',@startCamCB,'ToolTipString',ttstr,'enable','off');
 
     function startCamCB(src,evt)
@@ -216,10 +546,10 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
 % Stop acquisition button
 ttstr='Abort acquisition.';
 hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
-    'units','pixels','fontsize',10,'backgroundcolor',[250 102 120]/255,...
-    'Position',[45 hpAcq.Position(4)-35 40 20], ...
+    'units','pixels','fontsize',7,'backgroundcolor',[250 102 120]/255,...
+    'Position',[45 1 40 18], ...
     'Callback',@stopCamCB,'ToolTipString',ttstr,'enable','off');
-
+hbstop.Position(1) = hbstart.Position(1)+hbstart.Position(3);
 
     function stopCamCB(src,evt)
         disp('Stopping acquisition');     
@@ -238,31 +568,31 @@ hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
 ttstr='Help on acquisition.';
 cdata=imresize(imread(fullfile(mpath,'icons','help.jpg')),[15 15]);
 hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,...
-    'enable','on','backgroundcolor','w','position',[88 hpAcq.Position(4)-35 20 20],...
+    'enable','on','backgroundcolor','w','position',[88 1 18 18],...
     'ToolTipString',ttstr,'enable','on');
+hbAcqInfo.Position(1) =hbstop.Position(1) + hbstop.Position(3);
 
     function helpCB(~,~)
        disp('Im helping you'); 
     end
-
 % Continuous Acquisition checkbox
 ttstr='Reinitialize camera acquisition after image acquisition.';
 hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',6,...
-    'backgroundcolor','w','Position',[hbAcqInfo.Position(1)+hbAcqInfo.Position(3) 1 85 30],...
+    'backgroundcolor','w','Position',[hbAcqInfo.Position(1)+hbAcqInfo.Position(3) 1 85 18],...
     'ToolTipString',ttstr,'enable','on','value',1);
 
 % Button group for acquisition mode
 bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chAcqCB);  
-bgAcq.Position(3:4)=[120 30];
+bgAcq.Position(3:4)=[120 18];
 bgAcq.Position(1:2)=[hcAcqRpt.Position(1)+hcAcqRpt.Position(3) 2];    
 
 % Radio buttons for triggered versus software acquisition
 rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','triggered',...
-    'Position',[0 0 60 30],'units','pixels','backgroundcolor','w','Value',1,...
+    'Position',[0 0 60 18],'units','pixels','backgroundcolor','w','Value',1,...
     'UserData','Normal','Enable','off','fontsize',7);
 rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
-    'Position',[60 0 60 30],'units','pixels','backgroundcolor','w',...
+    'Position',[60 0 60 18],'units','pixels','backgroundcolor','w',...
     'UserData','Live','Enable','off','fontsize',7);
 
 % Change acqusition mode callback
@@ -372,11 +702,14 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
             disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);        
         end
     end
-
 %% Save Panel
-hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[hpAcq.Position(1)+hpAcq.Position(3) hF.Position(4)-40 600 40],...
+hpSave=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','Image Saving','fontsize',6);
+hpSave.Position(3) = hpControl.Position(3);
+hpSave.Position(4) = 30;
+hpSave.Position(1) = 0;
+hpSave.Position(2) = hpAcq.Position(2) - hpSave.Position(4);
+
 
 % Auto Save check box
 ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
@@ -425,314 +758,17 @@ tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,
         end
     end
 
-%% Camera Panel
-% hpCam=uipanel(hF,'units','pixels','backgroundcolor','w','title','camera',...
-%     'Position',[0 hF.Position(4)-30 700 40],'fontsize',6);
 
-hpCam=uipanel(hF,'units','pixels','backgroundcolor','w','title','camera',...
-    'Position',[hpSave.Position(1)+hpSave.Position(3) hF.Position(4)-40 700 40],'fontsize',6);
-
-% Connect camera
-ttstr='Connect to the iXon camera.';
-hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixels',...
-    'fontsize',8,'Position',[2 5 45 20],'backgroundcolor',[80 200 120]/255,...
-    'Callback',@connectCB,'ToolTipString',ttstr);
-
-% Callback for the connect button
-    function connectCB(~,~)
-        strstatus.String='CONNECTING';
-        drawnow;
-        out=ixon_connectCam;                 % Connect to the camera       
-        if ~out && ~doDebug             % Give warning if connection fails
-           warning('Unable to connect to camera');
-           return;
-        end     
-        strstatus.String='CONNECTED';
-        drawnow;       
-        cam_status.isConnected=1;       
-        ixon_setCameraShutter(0);            % Close the shutter
-        loadAcquisitionSettings;        % Load default acquisition settings      
-        ixon_setCameraShutter(0);            % Close the shutter (again to be safe)
-        hbOpenShutter.Enable='on';      % allow shutter to be opened
-        cam_info=getCamInfo;            % Get the camera information
-        disp(' ');
-        disp(cam_info);        
-        
-        % Set the temperature set point
-        ixon_setTemperature(tblTemp.Data);
-        hbCamInfo.Enable='on';       
-        hbCamAbilities.Enable='on';
-        
-        % Enable/Disable connect
-        hbDisconnect.Enable='on';
-        hbConnect.Enable='off';   
-
-        % Enable/Disable temperature
-        hbCool.Enable='on';
-        tblTemp.Enable='on';
-        strtemp.Enable='on';
-        start(statusTimer);
-
-        % Enable acquisition
-        hbstart.Enable='on';
-        rbSingle.Enable='on';
-        rbLive.Enable='on';
-        tbl_acq.Enable='on';        
-    end
-
-% Disconnect camera
-ttstr='Disconnect to the iXon camera.';
-hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units','pixels',...
-    'fontsize',8,'Position',[50 5 65 20],'backgroundcolor',[255 102 120]/255,...
-    'Callback',@disconnectCB,'ToolTipString',ttstr,'enable','off');
-
-% Callback for the disconnect button
-    function disconnectCB(~,~)
-        % Stop temperature monitor
-        stop(statusTimer);
-        
-        strstatus.String='DISCONNECTING';
-        drawnow;
-        % Disconnect from camera
-        out=ixon_disconnectCamera; 
-       
-        if ~out && ~doDebug
-           return;
-        end
-        
-        strstatus.String='DRV_NOT_INITIALIZED';
-        drawnow;
-          
-        cam_status.isConnected=0;
-        cam_status.isCooling=0;
-        cam_status.isTempStable=0;
-        cam_status.Temperature=NaN;
-        
-        hbDisconnect.Enable='off';
-        hbConnect.Enable='on'; 
-        hbCool.Enable='off';
-        hbCoolOff.Enable='off';
-        tblTemp.Enable='off';
-        hbCamInfo.Enable='off';
-        hbCamAbilities.Enable='off';
-        
-        hbOpenShutter.Enable='off';
-        hbCloseShutter.Enable='off';
-        rbSingle.Enable='off';
-        rbLive.Enable='off';
-        
-        hbstart.Enable='off';
-        hbstop.Enable='off';
-        tbl_acq.Enable='off';
-
-        set(strtemp,'ForegroundColor','r','String','NaN','Enable','off');
-    end
-
-% Info button
-ttstr='Display camera info';
-cdata=imresize(imread(fullfile(mpath,'icons','info.jpg')),[18 18]);
-hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,...
-    'enable','on','backgroundcolor','w','position',[130 5 20 20],...
-    'ToolTipString',ttstr,'enable','off');
-
-    function infoCB(~,~)        
-        cam_info=getCamInfo;        
-        disp(cam_info); 
-        disp(cam_info.NumHSSpeeds)
-        disp(cam_info.AvailableHSSpeeds{1});
-        disp(cam_info.AvailableHSSpeeds{2});
-    end
-
-% Capabilities button
-ttstr='Display camera capabilities';
-cdata=imresize(imread(fullfile(mpath,'icons','infob.jpg')),[18 18]);
-hbCamAbilities=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@abilitiesCB,...
-    'enable','on','backgroundcolor','w','position',[152 5 20 20],...
-    'ToolTipString',ttstr,'enable','off');
-
-    function abilitiesCB(~,~)  
-        % Read Camera Capabilities
-        cam_skills=getCameraCapabilities;
-        % Dont display camera capabilities
-        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-        disp('Displaying Camera Capabilities');        
-        fnames=fieldnames(cam_skills);
-        for nn=1:length(fnames)
-           disp(fnames{nn});
-           disp(cam_skills.(fnames{nn})); 
-           disp(' ');
-        end
-        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-    end
-
-% Start Cooling
-ttstr='Begin cooling the sensor to set point.';
-hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
-    'units','pixels','fontsize',8,'Position',...
-    [175 5 60 20],'enable','off',...
-    'backgroundcolor',[173 216 230]/255,'callback',{@coolCB ,1},...
-    'ToolTipString',ttstr);
-
-% Stop Cooling
-ttstr='Stop cooling the sensor to set point.';
-hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
-    'units','pixels','fontsize',8,'Position',...
-    [238 5 60 20],'enable','off',...
-    'backgroundcolor',[.8 .8 .8],'callback',{@coolCB, 0},...
-    'ToolTipString',ttstr);
-
-    function coolCB(~,~,state)  
-        out=ixon_setTEC(state);        
-        if ~out && ~doDebug
-           return; 
-        end        
-        % Enable/Disable buttons
-        if state
-            hbCool.Enable='off';
-            hbCoolOff.Enable='on';
-            cam_status.isCooling=1;
-        else
-            hbCool.Enable='on';
-            hbCoolOff.Enable='off';
-            cam_status.isCooling=0;
-        end        
-    end
-
-% Table set point
-ttstr='Change the sensor temperature set point.';
-tblTemp=uitable(hpCam,'units','pixels','ColumnWidth',{30},...
-    'ColumnEditable',[true],'ColumnName',{},...
-    'Data',cam_status.TemperatureSP,'FontSize',8,...
-    'CellEditCallback',@chTempCB,'RowName',{},'ToolTipString',ttstr,...
-    'enable','off');
-tblTemp.Position(3:4)=tblTemp.Extent(3:4);
-tblTemp.Position(1:2)=[300 4];
-
-    function chTempCB(src,evt)
-        disp('Changing temperature set point');
-        Told=evt.PreviousData;
-        Tnew=evt.NewData;        
-        % Check that the data is numeric
-        if ~isnumeric(Tnew) || isinf(Tnew) || isnan(Tnew)
-            warning('Incorrect data type provided for temperature.');
-            src.Data=Told;
-            return;
-        end            
-        Tnew=round(Tnew);        
-        if Tnew<-120 || Tnew>20
-            warning('Temperature set point out of bounds. Resetting.');
-            src.Data=Told; 
-           return; 
-        end
-        out=ixon_setTemperature(Tnew);        
-        if ~out  && ~doDebug
-           src.Data=Told; 
-        end            
-        src.Data=Tnew;        
-    end
-
-% Text
-ttstr='Camera sensor temperature. (green: stable; yellow: unstable; red: set point not reached)';
-strtemp=uicontrol(hpCam,'style','text','string','NaN','units','pixels',...
-    'backgroundcolor','w','fontsize',12,'horizontalalignment','left',...
-    'foregroundcolor','r','enable','off','fontweight','bold',...
-    'ToolTipString',ttstr);
-strtemp.Position(3:4)=[45 20];
-strtemp.Position(1:2)=[340 5];
-
-% Text
-ttstr='Camera status.';
-strstatus=uicontrol(hpCam,'style','text','string','DRV_NOT_INITIALIZED','units','pixels',...
-    'backgroundcolor','w','fontsize',10,'horizontalalignment','right',...
-    'foregroundcolor','k','enable','on','fontweight','bold',...
-    'ToolTipString',ttstr);
-strstatus.Position(3:4)=[157 20];
-strstatus.Position(1:2)=[hpCam.Position(3)-155 5];
-
-% Timer to update temperature
-statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
-    'TimerFcn',@statusTimerFcn,'ExecutionMode','FixedSpacing');
-
-    function statusTimerFcn(~,~)
-        try
-        % Get the temperature
-        [out,temp,outstr]=ixon_getTemperature;
-        strtemp.String=[num2str(temp) ' C'];        
-        cam_status.Temperature=temp;   
-        
-        if cam_status.Temperature>-60 && isequal(hbCloseShutter.Enable,'on')
-            warning('Shutter is open and temperature above -60. Closing shutter');
-            shutterCB([],[],0);
-        end
-        
-        switch outstr
-            case 'DRV_TEMPERATURE_STABILIZED'
-                cam_status.isTempStable=1;
-                strtemp.ForegroundColor=[80 200 120]/255;
-            case 'DRV_TEMP_NOT_STABILIZED'
-                cam_status.isTempStable=0;
-                strtemp.ForegroundColor=[255 204 0]/255;
-            otherwise
-                cam_status.isTempStable=0;
-                strtemp.ForegroundColor='r';
-        end     
-        
-        % Camera Status
-        [out,outstr]=ixon_getCameraStatus;
-        strstatus.String=outstr;
-        drawnow;
-        catch ME
-            warning('status timer failed');
-            warning(ME.message);
-        end
-    end
-
-% Open camera shutter
-ttstr='Open camera shutter.';
-hbOpenShutter=uicontrol(hpCam,'style','pushbutton','string','open shutter',...
-    'units','pixels','fontsize',8,'Position',[385 5 80 20],'enable','off',...
-    'backgroundcolor',[255 204 0]/255,'callback',{@shutterCB,1},...
-    'ToolTipString',ttstr);
-
-ttstr='Close camera shutter.';
-hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
-    'units','pixels','fontsize',8,'Position',[465 5 80 20],'enable','off',...
-    'backgroundcolor',[255 102 120]/255,'callback',{@shutterCB,0},...
-    'ToolTipString',ttstr);
-
-% Text label for fit results output variable
-
-% Drop down menu for fit results output
-% frslct=uicontrol('parent',hpCam','units','pixels','style','popupmenu',...
-%     'String',{'a','b','c'},'fontsize',8);
-% frslct.Position(3)=120;
-% frslct.Position(1:2)=[600 5];
-
-
-    function shutterCB(~,~,state)        
-        if state && cam_status.Temperature>-60
-            warning('Denying your request to open the shutter above -60C.');
-            return;
-        end        
-        out=ixon_setCameraShutter(state);        
-        % Exit if bad return
-        if ~out && ~doDebug
-           return; 
-        end        
-        % Enable/Disable buttons
-        if state
-            hbOpenShutter.Enable='off';
-            hbCloseShutter.Enable='on';
-        else
-            hbOpenShutter.Enable='on';
-            hbCloseShutter.Enable='off';
-        end
-    end
 
 %% Navigator Panel 
 
-hpNav=uipanel(hF,'units','pixels','backgroundcolor','w','title','GUI Image Source',...
-    'Position',[0 hpSave.Position(2) 620 35],'fontsize',6);
+hpNav=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'title','GUI Image Source','fontsize',6);
+hpNav.Position(3) = hpControl.Position(3);
+hpNav.Position(4) = 30;
+hpNav.Position(1) = 0;
+hpNav.Position(2) = hpSave.Position(2) - hpNav.Position(4);
+
 
 % Checkbox for auto updating when new images are taken
 ttstr='Automatically refresh to most recent image upon new image acquisition.';
@@ -784,27 +820,35 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,...
        loadImage; 
     end
 
+% Button to delete image
+ttstr='Delete this image from the source directory';
+cdata=imresize(imread('icons/garbage.jpg'),[17 17]);
+uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+    'callback',@browseImageCB,'enable','on','backgroundcolor','w',...
+    'position',[155 2 20 20],'ToolTipString',ttstr);
+
+
 ttstr='Jump to most recent image acquired.';
 hbNavNow=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',[char(10094) char(10094)],'fontsize',10,...
     'callback',{@chData, 0},'ToolTipString',ttstr);
-hbNavNow.Position=[155 2 24 20];
+hbNavNow.Position=[175 2 24 20];
 
 ttstr='Step to next more recent image';
 hbNavLeft=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10094),'fontsize',10,...
     'callback',{@chData, -1},'ToolTipString',ttstr);
-hbNavLeft.Position=[179 2 12 20];
+hbNavLeft.Position=[199 2 12 20];
 
 tNavInd=uicontrol(hpNav,'Style','text','units','pixels',...
     'backgroundcolor','w','string','000','fontsize',12);
-tNavInd.Position=[191 2 30 20];
+tNavInd.Position=[211 2 30 20];
 
 ttstr='Step to later image.';
 hbNavRight=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10095),'fontsize',10,...
     'callback',{@chData, 1},'ToolTipString',ttstr);
-hbNavRight.Position=[221 2 12 20];
+hbNavRight.Position=[241 2 12 20];
 
     function loadImage(filename)
         if nargin<1
@@ -887,12 +931,16 @@ tNavName=uicontrol(hpNav,'style','text','string','FILENAME','fontsize',7,...
 tNavName.String=data.Name;
 
 
+
 %% Image Process Panel
 
-hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-160 160 270],'title','processing');
+% hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
+    % 'Position',[0 hpAcq.Position(2)-160 160 270],'title','processing');
+hpProcess=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'Position',[0 hpControl.Position(4)-270 160 270],'title','processing');
+
 % 
-tbl_process_1 = uitable('parent',hpADV,'columnformat',{'logical','char'},...
+tbl_process_1 = uitable('parent',hpProcess,'columnformat',{'logical','char'},...
     'columnname',{},'rowname',{},'columnwidth',{15,135},'columneditable',[true false],...
     'fontsize',7);
 tbl_process_1.Data={true 'subtract bias';
@@ -901,7 +949,7 @@ tbl_process_1.Data={true 'subtract bias';
     false 'deconvolve psf Rich-Lucy';
     true 'auto-detect PSF noise?'};
 tbl_process_1.Position(3:4)=tbl_process_1.Extent(3:4);
-tbl_process_1.Position(1:2)=[1 hpADV.Position(4)-tbl_process_1.Position(4)-15];
+tbl_process_1.Position(1:2)=[1 hpProcess.Position(4)-tbl_process_1.Position(4)-15];
 
 
 
@@ -989,14 +1037,14 @@ tbl_process_1.Position(1:2)=[1 hpADV.Position(4)-tbl_process_1.Position(4)-15];
 %     'backgroundcolor','w','Position',[15 hcPSF.Position(2)-10 155 14],'Value',1,...
 %     'ToolTipString',ttstr,'enable','on');
 
-tblPSF=uitable('parent',hpADV,'units','pixels',...
+tblPSF=uitable('parent',hpProcess,'units','pixels',...
     'columnname',{char(963),'size','iter','noise'},'rowname',{},'Data',[1.32 11 31 25],'columneditable',[true],...
     'columnwidth',{35 25 25 35},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
 % tblPSF.Position(1:2)=[20 hcPSF_noise.Position(2)-tblPSF.Extent(4)];  
 tblPSF.Position(1:2)=[10 tbl_process_1.Position(2)-tblPSF.Extent(4)-2];  
 
-tbl_process_2 = uitable('parent',hpADV,'columnformat',{'logical','char'},...
+tbl_process_2 = uitable('parent',hpProcess,'columnformat',{'logical','char'},...
     'columnname',{},'rowname',{},'columnwidth',{15,95, 40},'columneditable',[true false true],...
     'fontsize',7);
 tbl_process_2.Data={
@@ -1030,17 +1078,22 @@ tbl_process_2.Position(1:2)=[1 tblPSF.Position(2)-tbl_process_2.Position(4)-5];
 
 
 % process button
-hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
-    'units','pixels','callback',@processCB,'parent',hpADV,'backgroundcolor',[80 200 120]/255);
-hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
-
+hbprocess=uicontrol(hpProcess,'style','pushbutton','string','process',...
+    'units','pixels','callback',@processCB,'parent',hpProcess,'backgroundcolor',[80 200 120]/255);
+hbprocess.Position=[hpProcess.Position(3)-45 1 45 15];
+% hbprocess.Position=[hpADV.Position(3)-45 hpADV.Position(4)-30 45 15];
+hbprocess.Position=[3 1 hpProcess.Position(3)-8 18];
+hbprocess.String = 'process images';
     function processCB(src,evt)
         newDataCallback;
   end
 
 %% Analysis Panel
-hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
-hpAnl.Position=[0 hpADV.Position(2)-130 160 180];
+% hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
+% hpAnl.Position=[0 hpADV.Position(2)-130 160 180];
+
+hpAnl=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'Position',[0 hpProcess.Position(2)-130 160 180],'title','position analysis');
 
 
 % Checkbox for center of mass and sigma 
@@ -1229,8 +1282,11 @@ hbposition=uicontrol(hpAnl,'style','pushbutton','string','analyze',...
 
 
 %% Momentum Panel
-hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
-hpKspace.Position=[0 hpAnl.Position(2)-90 160 105];
+% hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
+% hpKspace.Position=[0 hpAnl.Position(2)-90 160 105];
+
+hpKspace=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'Position',[0 hpAnl.Position(2)-105 160 105],'title','momentum analysis');
 
 % Checkbox for center of mass and sigma 
 ttstr='Automatically perform analysis on new image';
@@ -1327,8 +1383,18 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
     end
 
 %% Binning Panel
-hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
-hpBin.Position=[0 hpKspace.Position(2)-180 160 260];
+
+
+
+% hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
+% hpBin.Position=[0 hpKspace.Position(2)-180 160 260];
+
+hpBin=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'title','binned analysis');
+hpBin.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
+hpBin.Position(2)=hpNav.Position(2)-hpBin.Position(4);
+hpBin.Position(3)=160;
+hpBin.Position(4)=260;
 
 ttstr='auto do bin analysis';
 hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
@@ -1627,8 +1693,15 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
     
     end
 %% Digitization Panel
-hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','digitization');
-hpDig.Position=[0 hpBin.Position(2)-80 160 100];
+% hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','digitization');
+% hpDig.Position=[0 hpBin.Position(2)-80 160 100];
+
+
+hpDig=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'Position',[0 hpBin.Position(2)-100 160 100],'title','digital analysis');
+hpDig.Position(3:4) = [160 100];
+hpDig.Position(1) = hpBin.Position(1);
+hpDig.Position(2) = hpBin.Position(2)-hpDig.Position(4);
 
 ttstr='auto do digital analysis';
 hc_anlD_auto=uicontrol(hpDig,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
@@ -1746,26 +1819,31 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         pAtoms.DataTipTemplate.DataTipRows(5) = row;
         
         drawnow;
-%         keyboard
         
     end
 
 
 %% Image Number Selector
-hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
-hpDisp_Select.Position=[160 500 160 80];
+% hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
+% hpDisp_Select.Position=[160 500 160 80];
+
+hpDisp_Select = uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'title','image selector');
+hpDisp_Select.Position=[320 hpControl.Position(4)-60 300 50];
 
 menuSelectCMAP=uicontrol('style','popupmenu','string',...
     {'black-purple','black-purple-white','white-purple'},'units','pixels','parent',hpDisp_Select,...
     'Callback',@updateCMAP,'fontsize',12,'Value',3);
-menuSelectCMAP.Position(3:4)=[150 18];
-menuSelectCMAP.Position(1:2)=[2 45];   
+menuSelectCMAP.Position(3:4)=[125 18];
+menuSelectCMAP.Position(1:2)=[2 15];   
 
 menuSelectImg=uicontrol('style','popupmenu','string',...
     {'image 1 of 1','image 1 of 2'},'units','pixels','parent',hpDisp_Select,...
     'Callback',{@(a,b) updateGraphics},'fontsize',12);
-menuSelectImg.Position(3:4)=[150 18];
-menuSelectImg.Position(1:2)=[2 15];   
+menuSelectImg.Position(3:4)=[125 18];
+% menuSelectImg.Position(1:2)=[2 15];   
+menuSelectImg.Position(1)=menuSelectCMAP.Position(1)+menuSelectCMAP.Position(3)+2;
+menuSelectImg.Position(2)=15;   
 
     function updateCMAP(src,evt)
         switch src.Value
@@ -1825,14 +1903,38 @@ menuSelectImg.Position(1:2)=[2 15];
 
 %% Display Options Panel
 
-hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
+% hpDispOpt=uitabgroup(hF,'units','pixels');
+% hpDispOpt=uipanel(hF,'units','pixels','title','display');
+
+hpDispOpt=uitabgroup(hpControl,'units','pixels');
+
+hpDispOpt.Position=[320 hpDisp_Select.Position(2)-hpDisp_Select.Position(4) 300 250];
+
+
+disp_opt_tabs(1)=uitab(hpDispOpt,'Title','position','units','pixels');
+disp_opt_tabs(2)=uitab(hpDispOpt,'Title','stripe','units','pixels');
+disp_opt_tabs(3)=uitab(hpDispOpt,'Title','histogram','units','pixels');
+disp_opt_tabs(4)=uitab(hpDispOpt,'Title','momentum','units','pixels');
+disp_opt_tabs(5)=uitab(hpDispOpt,'Title','binned','units','pixels');
+disp_opt_tabs(5)=uitab(hpDispOpt,'Title','binned histgoram','units','pixels');
+disp_opt_tabs(6)=uitab(hpDispOpt,'Title','digitized','units','pixels');
+
+
+%% Display Options Panel
+
+hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_X.Position=[160 500 160 190];
+
+set(hpDisp_X,'parent',hpDispOpt.Children(1))
+
+hpDisp_X.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+
 
 menuSelectImgType=uicontrol('style','popupmenu','string',...
     {'processed','no filter'},'units','pixels','parent',hpDisp_X,...
     'Callback',{@ (src,evt) updateDispPosImg},'fontsize',8,'Value',1);
 menuSelectImgType.Position(3:4)=[140 18];
-menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Position(4)-15];   
+menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Position(4)-35];   
 
     function updateDispPosImg
         imgnum = menuSelectImg.Value;
@@ -1941,8 +2043,11 @@ cDrawAtoms.Position=[2 2 80 15];
 
 %% Display Options Panel
 
-hpDisp_K = uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum display');
+hpDisp_K = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 180];
+
+set(hpDisp_K,'parent',hpDispOpt.Children(4));
+hpDisp_K.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
 
 % Table for changing display limits
 tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
@@ -2027,8 +2132,13 @@ cLat_K_text.Position=[2 2 120 15];
 
 %% Bin and Digital Plot Display Options
 
-hpDisp_B = uipanel(hF,'units','pixels','backgroundcolor','w','title','binned display');
+hpDisp_B = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_B.Position=[160 hpDisp_K.Position(2)-120 160 120];
+
+set(hpDisp_B,'parent',hpDispOpt.Children(5));
+hpDisp_B.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+
+
 
 % Table for changing display limits
 tbl_dROI_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},...
@@ -2069,8 +2179,13 @@ cAutoColor_B.Position=[climtbl_B.Position(1)+climtbl_B.Position(3)+1 climtbl_B.P
 
 %% Count Histogram
 
-hpDisp_HB = uipanel(hF,'units','pixels','backgroundcolor','w','title','binned histogram display');
+hpDisp_HB = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_HB.Position=[160 hpDisp_B.Position(2)-80 160 80];
+
+set(hpDisp_HB,'parent',hpDispOpt.Children(6));
+hpDisp_HB.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+
+
 
 % Table to adjust color limits on image
 histBtbl=uitable('parent',hpDisp_HB,'units','pixels','RowName',{},'ColumnName',{'threshold','number bins'},...
@@ -2089,8 +2204,13 @@ histBtbl.Position(1:2)=[2 20];
 
 %% Digitized Display
 
-hpDisp_D = uipanel(hF,'units','pixels','backgroundcolor','w','title','digital display');
+hpDisp_D = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_D.Position=[160 hpDisp_HB.Position(2)-110 160 110];
+
+set(hpDisp_D,'parent',hpDispOpt.Children(7));
+hpDisp_D.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+
+
 
 % Table for changing display limits
 tbl_dROI_D=uitable('parent',hpDisp_D,'units','pixels','RowName',{},...
@@ -2367,11 +2487,12 @@ cCoMStr_D.Position=[2 2 125 15];
 %% Tabular Data Results Panel
 % Panel for parameters and analysis results.
 
-hpFit=uitabgroup(hF,'units','pixels');
+hpFit=uitabgroup(hpControl,'units','pixels');
 % hpFit.Position=[320 0 300 ...
     % hF.Position(4)-(hpCam.Position(4)+hpSave.Position(4)+hpNav.Position(4))];
-hpFit.Position=[320 0 300 hpNav.Position(2)];
+% hpFit.Position=[320 0 300 hpNav.Position(2)];
 
+% hpFit.Position=[320 0 300 hpNav.Position(2)-200];
 tabs(1)=uitab(hpFit,'Title','acq','units','pixels');
 tabs(2)=uitab(hpFit,'Title','param','units','pixels');
 tabs(3)=uitab(hpFit,'Title','flags','units','pixels');
@@ -2466,9 +2587,25 @@ tbl_fidelity_analysis=uitable(tabs(6),'units','normalized','RowName',{},'ColumnN
 %% Initialize the image panel
 
 hp=uitabgroup(hF,'units','pixels','Position',...
-    [400 0 hF.Position(3)-200 hF.Position(4)-40]);
-% hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-40];
-hp.Position=[400 0 hF.Position(3)-200 hpNav.Position(2)];
+    [400 0 hF.Position(3)-200 hF.Position(4)-40],...
+    'SelectionChangedFcn',@hp_tab_cb);
+hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)];
+
+    function hp_tab_cb(src,evt)
+        newTitle = evt.NewValue.Title;
+
+        ind = 0;
+        for jj=1:length(hpDispOpt.Children)
+            if isequal(hpDispOpt.Children(jj).Title,newTitle)
+                ind = jj;
+            end
+        end
+        if ind
+            hpDispOpt.SelectedTab=hpDispOpt.Children(ind);
+        end
+
+       
+    end
 
 
 % Tab Groups for each display
@@ -2480,8 +2617,8 @@ tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
 
 tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
 tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
-tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
-tabFidelity=uitab(hp,'Title','fidelity','units','pixels','backgroundcolor','w');
+% tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
+% tabFidelity=uitab(hp,'Title','fidelity','units','pixels','backgroundcolor','w');
 
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary
