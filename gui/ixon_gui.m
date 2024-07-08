@@ -1166,7 +1166,7 @@ hbprocess.String = 'process images';
 % hpAnl.Position=[0 hpADV.Position(2)-130 160 180];
 
 hpPosition=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpProcess.Position(2)-130 160 180],'title','position analysis');
+    'Position',[0 hpProcess.Position(2)-170 160 170],'title','position analysis');
 
 
 % Checkbox for center of mass and sigma 
@@ -1281,28 +1281,23 @@ uicontrol(hpPosition,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         delete(p1);delete(p2);                   % Delete markers
     end
 
+
 % Checkbox for center of mass and sigma 
 ttstr='Find 1st and 2nd moments in the ROI box.';
 hc_anlX_Box=uicontrol(hpPosition,'style','checkbox','string','box','fontsize',7,...
-    'backgroundcolor','w','Position',[5 77 120 15],...
+    'backgroundcolor','w','Position',[5 tblROI.Position(2)-15 120 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
-
-% Checkbox for image sharpness
-% ttstr='Calculate the image sharpness';
-% hc_anlX_Sharpness=uicontrol(hpAnl,'style','checkbox','string','sharpness','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 62 120 15],...
-%     'ToolTipString',ttstr,'enable','off','Value',1);
 
 % Checkbox for image histogram
 ttstr='Calculate histgoram';
 hc_anlX_Histogram=uicontrol(hpPosition,'style','checkbox','string','histogram','fontsize',7,...
-    'backgroundcolor','w','Position',[5 47 120 15],...
+    'backgroundcolor','w','Position',[5 hc_anlX_Box.Position(2)-15 120 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
 % Checkbox for principal component analysis
 ttstr='Principal component analysis to determine cloud axes..';
 hc_anlX_PCA=uicontrol(hpPosition,'style','checkbox','string','find principal axes','fontsize',7,...
-    'backgroundcolor','w','Position',[5 32 120 15],...
+    'backgroundcolor','w','Position',[5 hc_anlX_Histogram.Position(2)-15 120 15],...
     'ToolTipString',ttstr,'enable','off','callback',@hcpcaCB);
 
     function hcpcaCB(src,~)
@@ -1322,7 +1317,7 @@ hc_anlX_PCA=uicontrol(hpPosition,'style','checkbox','string','find principal axe
 
 
 hc_anlX_Gauss=uicontrol(hpPosition,'style','checkbox','string','gaussian','fontsize',7,...
-    'backgroundcolor','w','Position',[5 17 60 15],...
+    'backgroundcolor','w','Position',[5 hc_anlX_PCA.Position(2)-15 60 15],...
     'ToolTipString',ttstr,'enable','on','callback',@hcgaussCB);
 
     function hcgaussCB(src,~)
@@ -1345,13 +1340,14 @@ hc_anlX_GaussRot=uicontrol(hpPosition,'style','checkbox','string','rotatable?','
 
 ttstr='Analyze stripe pattern in image to measure field stability';
 hcStripe=uicontrol(hpPosition,'style','checkbox','string','stripe pattern','fontsize',7,...
-    'backgroundcolor','w','Position',[5 2 100 15],...
+    'backgroundcolor','w','Position',[5 hc_anlX_Gauss.Position(2)-15 100 15],...
     'ToolTipString',ttstr);
 
 % Do Position space analysis
-hbposition=uicontrol(hpPosition,'style','pushbutton','string','analyze',...
+hbposition=uicontrol(hpPosition,'style','pushbutton','string','position analysis',...
     'units','pixels','callback',{@(~,~) updatePositionAnalysis},'parent',hpPosition,...
-    'backgroundcolor','w','position',[hpPosition.Position(3)-45 1 45 15],'backgroundcolor',[80 200 120]/255);
+    'backgroundcolor','w','position',[3 1 hpPosition.Position(3)-8 18],'backgroundcolor',[80 200 120]/255);
+
 
 
 %% Momentum Panel
@@ -1359,7 +1355,7 @@ hbposition=uicontrol(hpPosition,'style','pushbutton','string','analyze',...
 % hpKspace.Position=[0 hpAnl.Position(2)-90 160 105];
 
 hpKspace=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpPosition.Position(2)-105 160 105],'title','momentum analysis');
+    'Position',[0 hpPosition.Position(2)-110 160 110],'title','momentum analysis');
 
 % Checkbox for center of mass and sigma 
 ttstr='Automatically perform analysis on new image';
@@ -1418,9 +1414,11 @@ hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','lattice basis and 
 hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 
 % Refit button
-hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','analyze',...
+hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','momentum analysis',...
     'units','pixels','callback',@analyze_k,'parent',hpKspace,'backgroundcolor',[80 200 120]/255);
-hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
+hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
+
+
 
 % Callback function for redoing fits button
     function analyze_k(~,~)
@@ -1646,9 +1644,9 @@ stripe_threshold_tbl.Position(1:2)=[90 hc_anlB_stripe.Position(2)];
 
 
 % Refit button
-hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','analyze',...
+hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','binned analysis',...
     'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor',[80 200 120]/255);
-hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
+hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
 
     function [a1, a2, p1, p2] = getLattice        
         switch bgBasis.SelectedObject.UserData
@@ -1766,8 +1764,8 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
 
 
 hpDig=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpBin.Position(2)-100 160 100],'title','digital analysis');
-hpDig.Position(3:4) = [160 100];
+    'title','digital analysis');
+hpDig.Position(3:4) = [160 120];
 hpDig.Position(1) = hpBin.Position(1);
 hpDig.Position(2) = hpBin.Position(2)-hpDig.Position(4);
 
@@ -1778,32 +1776,32 @@ hc_anlD_auto=uicontrol(hpDig,'style','checkbox','string','auto-analyze on new im
 
 % Digitization Threshold Text
 hcDigThreshold=uicontrol(hpDig,'style','text','string','digitization threshold','fontsize',7,...
-    'backgroundcolor','w','Position',[5 40 100 15],'horizontalalignment','left');
-
+    'backgroundcolor','w','Position',[1 hc_anlD_auto.Position(2)-20 100 15],'horizontalalignment','left');
+hcDigThreshold.Position(3)=hcDigThreshold.Extent(3);
 % Digitization Threshold
 tblDig=uitable('parent',hpDig,'units','pixels',...
     'rowname',{},'columnname',{},'Data',3000,'columneditable',[true],...
     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-tblDig.Position=[hpDig.Position(3)-55 hcDigThreshold.Position(2)+1 50 20];
+tblDig.Position=[hcDigThreshold.Position(1)+hcDigThreshold.Position(3) hcDigThreshold.Position(2)+1 50 20];
 
-% Digitization Threshold Text
-% hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
 
-% Digitization Threshold
-% tblDigPixel=uitable('parent',hpDig,'units','pixels',...
-%     'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
-%     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-% tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
-% 
-% % Digitization Threshold Text
-hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','fidelity','fontsize',7,...
-    'backgroundcolor','w','Position',[5 10 100 15],'Value',0);
+% Thresholding Fidelity
+hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','threshold fidelity','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hcDigThreshold.Position(2)-15 100 15],'Value',0);
+
+% Smart Thresholding
+hcSmartThreshold=uicontrol(hpDig,'style','checkbox','string','smart thresholding','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hcDigFidelity.Position(2)-15 100 15],'Value',0,'enable','off');
+
+% Maximum Liklihood Algorithm
+hcDigLikelihood=uicontrol(hpDig,'style','checkbox','string','maximum likelihood','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hcSmartThreshold.Position(2)-15 120 15],'Value',0,'enable','off');
+
 
 % Refit button
-hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
+hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','digital analysis',...
     'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor',[80 200 120]/255);
-hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
+hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
 
     function chBasis(src,evt)
        defaultBasis = src.Data;
@@ -2000,7 +1998,7 @@ hpDisp_X.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
 
 menuSelectImgType=uicontrol('style','popupmenu','string',...
     {'processed','no filter'},'units','pixels','parent',hpDisp_X,...
-    'Callback',{@ (src,evt) updateDispPosImg},'fontsize',8,'Value',1);
+    'Callback',{@ (src,evt) updateDispPosImg},'fontsize',8,'Value',2);
 menuSelectImgType.Position(3:4)=[140 18];
 menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Position(4)-35];   
 
