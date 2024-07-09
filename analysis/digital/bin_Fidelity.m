@@ -23,7 +23,7 @@ cc = [linspace(ca(1),cb(1),1000)' ...
 hF = figure(opts.FigureNumber);
 set(hF,'color','w','Name','Bin Fidelity');
 clf
-hF.Position=[800 100 1100 800];
+hF.Position=[0 450 1100 250];
 
 if isfield(opts,'Label') && ~isempty(opts.Label)
 uicontrol('style','text','string',opts.Label,'fontsize',7,...
@@ -35,16 +35,17 @@ Z1b = Z1;
 Z1b(isnan(Z1)) = 0;
 N1 = sum(Z1b,'all');
 
-subplot(2,2,1);
+subplot(1,3,1);
 imagesc(data.LatticeBin(1).n1,data.LatticeBin(1).n2,Z1);
 colormap(cc);
 axis equal tight
 title('image 1');
 caxis([0 2*Nthresh]);
 title('image 1');
-set(gca,'ydir','normal','box','on','linewidth',1);
+set(gca,'ydir','normal','box','on','linewidth',1,'fontsize',8);
+colorbar
 
-ax_hB1=subplot(2,2,2);
+ax_hB1=subplot(2,3,3);
 pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none',...
     'facecolor','k');
 hold on
@@ -52,7 +53,7 @@ pHistBdivide = plot([1 1]*50,[0 100],'k-','parent',ax_hB1);
 ylabel('occurences');
 xlabel('counts per lattice site');
 set(ax_hB1,'box','on','linewidth',.1,'fontsize',12,'units','normalized',...
-    'XAxisLocation','bottom','YDir','normal','UserData','H1');
+    'XAxisLocation','bottom','YDir','normal','UserData','H1','fontsize',8);
 yyaxis right
 pHistB2 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none',...
     'FaceColor',[0.6 0 0.5]);
@@ -69,14 +70,17 @@ pHistBdivide.Parent.YAxis(1).Limits = [0 max(pHistB1.YData)*1.1];
 pHistBdivide.Parent.YAxis(2).Limits = [0 max(pHistB2.YData)*1.1];        
 pHistBdivide.Parent.XAxis.Limits = [0 max(x)*1.1];
 set(pHistBdivide,'Xdata',[1 1]*Nthresh,'Ydata',pHistBdivide.Parent.YAxis(1).Limits);
-title('image 1');
+% title('image 1');
 Nlow = sum(y(xL));
 Nhigh = sum(y(xH));
 str = ['threshold : ' num2str(Nthresh) newline ...
     '$~N_>:' num2str(Nhigh) '$' newline ...
     'total counts : ' num2str(round(N1),'%.3g') ];
-text(.98,.98,str,'units','normalized','fontsize',14,'horizontalalignment','right',...
+text(.98,.98,str,'units','normalized','fontsize',8,'horizontalalignment','right',...
     'verticalalignment','top','interpreter','latex');
+text(.01,.98,'image 1','units','normalized','fontsize',8,'horizontalalignment','left',...
+    'verticalalignment','top','interpreter','latex');
+
 
 
 Z2 = data.LatticeBin(2).Zbin;
@@ -84,16 +88,17 @@ Z2b = Z2;
 Z2b(isnan(Z2)) = 0;
 N2 = sum(Z2b,'all');
 
-subplot(2,2,3);
+subplot(1,3,2);
 imagesc(data.LatticeBin(2).n1,data.LatticeBin(2).n2,data.LatticeBin(2).Zbin);
 colormap(cc);
 axis equal tight
 title('image 1');
 caxis([0 2*Nthresh]);
 title('image 2');
-set(gca,'ydir','normal','box','on','linewidth',1);
+set(gca,'ydir','normal','box','on','linewidth',1,'fontsize',8);
+colorbar
 
-ax_hB2=subplot(2,2,4);
+ax_hB2=subplot(2,3,6);
 pHistB12 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none',...
     'facecolor','k');
 hold on
@@ -101,7 +106,7 @@ pHistBdivide2 = plot([1 1]*50,[0 100],'k-','parent',ax_hB2);
 ylabel('occurences');
 xlabel('counts per lattice site');
 set(ax_hB2,'box','on','linewidth',.1,'fontsize',12,'units','normalized',...
-    'XAxisLocation','bottom','YDir','normal','UserData','H1');
+    'XAxisLocation','bottom','YDir','normal','UserData','H1','fontsize',8);
 yyaxis right
 pHistB22 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none',...
     'FaceColor',[0.6 0 0.5]);
@@ -118,13 +123,15 @@ pHistBdivide2.Parent.YAxis(1).Limits = [0 max(pHistB12.YData)*1.1];
 pHistBdivide2.Parent.YAxis(2).Limits = [0 max(pHistB22.YData)*1.1];        
 pHistBdivide2.Parent.XAxis.Limits = [0 max(x)*1.1];
 set(pHistBdivide2,'Xdata',[1 1]*Nthresh,'Ydata',pHistBdivide2.Parent.YAxis(1).Limits);
-title('image 2');
+% title('image 2');
 Nlow = sum(y(xL));
 Nhigh = sum(y(xH));
 str = ['threshold : ' num2str(Nthresh) newline ...
     '$N_>:' num2str(Nhigh) '$' newline ...
     'total counts : ' num2str(round(N2),'%.3g') ];
-text(.98,.98,str,'units','normalized','fontsize',14,'horizontalalignment','right',...
+text(.98,.98,str,'units','normalized','fontsize',8,'horizontalalignment','right',...
+    'verticalalignment','top','interpreter','latex');
+text(.01,.98,'image 2','units','normalized','fontsize',8,'horizontalalignment','left',...
     'verticalalignment','top','interpreter','latex');
 
 

@@ -110,7 +110,7 @@ desc=acqDescription(acq);       % Get description of settings
 hF=figure;clf
 set(hF,'Color','w','units','pixels','Name',guiname,...
     'Tag','GUI','CloseRequestFcn',@closeGUI,'NumberTitle','off',...
-    'Position',[50 50 1300 750],'SizeChangedFcn',@SizeChangedFcn,...
+    'Position',[50 50 1300 700],'SizeChangedFcn',@SizeChangedFcn,...
     'toolbar','none');
 
 topBarHeight = 40;
@@ -149,10 +149,10 @@ function SizeChangedFcn(~,~)
         % commenserate positioning with respect the actual image shown
         x0=hpControl.Position(1)+hpControl.Position(3);
         Wfig=hF.Position(3);Hfig=hF.Position(4);                          % Figure size
-        % Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);  % Top Bar
-        Ht = 40;
         
-        if (Wfig>360 && Hfig>55); hp.Position=[x0 1 hF.Position(3)-x0 Hfig]; end     % image panel             
+        if (Wfig>360 && Hfig>55)
+            hp.Position=[x0 1 max([hF.Position(3)-x0 5]) Hfig]; 
+        end             
         resizePlots;                                                % Resize plots                          
         drawnow;
 
@@ -183,17 +183,7 @@ function SizeChangedFcn(~,~)
         end
 
 
-        % hpFit.Position(4)       = H-Ht;     
-        % hpFit.Position(4)       = hpNav.Position(2);       
-        % hpFit.Position(4)       = hpNav.Position(2)-200;
-
-        % 
-        % 
-        % hpDisp_Select.Position(2) = hpNav.Position(2)-hpDisp_Select.Position(4);
-        % hpDispOpt.Position(2)=  hpDisp_Select.Position(2)-250;
-        % hpFit.Position(4)       = hpDispOpt.Position(2);
-
-        hpFit.Position(4) = hpDispOpt.Position(2);
+        hpFit.Position(4) = max([hpDispOpt.Position(2) 5]);
 
         % strstatus.Position(1)   = hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;       
@@ -1260,8 +1250,12 @@ uicontrol(hpPosition,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         x1=round(x1);y1=round(y1);  % Round to interger       
         p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it        
         [x2,y2]=ginputMe(1);          % Get a mouse click
+        enableInteractivity;
+
         x2=round(x2);y2=round(y2);  % Round it        
         p2=plot(x2,y2,'+','color','r','linewidth',1,'markersize',10,'hittest','off');  % Plot it
+
+        
         % Create the ROI
         ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
         % Constrain ROI to image
@@ -1601,6 +1595,8 @@ uicontrol(hpBin,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         x1=round(x1);y1=round(y1);  % Round to interger       
         p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it        
         [x2,y2]=ginputMe(1);          % Get a mouse click
+        enableInteractivity;
+
         x2=round(x2);y2=round(y2);  % Round it        
         p2=plot(x2,y2,'+','color','r','linewidth',1,'markersize',10,'hittest','off');  % Plot it
         % Create the ROI
@@ -1712,35 +1708,26 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
             x = data.X(ix_1:ix_2);
             y = data.Y(iy_1:iy_2);   
             z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
-%             znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
             tic;
             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
-                ') binning into lattice ...']);    
-           
+                ') binning into lattice ...']);   
             tic
-            data.LatticeBin(kk) = binLattice(x,y,z,opts); 
-%             toc
-            
-%             tic
-%             data.LatticeBin(kk) = binLattice2(x,y,z,opts); 
-% toc
-
-%             data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
+             data.LatticeBin(kk) = binLattice(x,y,z,opts); 
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
         end 
 
         data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
-%         data = ixon_SharpnessBinned(data);  
 
-%         data = ixon_binnedHistogramFit(data);
         
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
 
          if hc_anlB_Radial.Value
+             ropts=struct;
+             ropts.FigureNumber = 3001;
             data=bin_radialHistogram(data);
-            keyboard
+            bin_showRadialHistogram(data,ropts);
          end
         
         if hc_anlB_stripe.Value
@@ -1837,7 +1824,6 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
              
             opts=struct;
             opts.threshold = dig_threshold;
-            opts.FigureNumber = 4001;      
             
             opts.Label = data.Name;
             n1 = data.LatticeDig(1).n1;
@@ -1848,11 +1834,13 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
                 Zdig(:,:,jj) = data.LatticeDig(jj).Zdig;
             end
 
-            out = dig_Fidelity(Zdig,n1,n2,opts);
-            
-            opts.FigureNumber = 4002; 
+            opts.FigureNumber = 4001; 
             bin_Fidelity(data,opts);
             
+            opts.FigureNumber = 4002; 
+            out = dig_Fidelity(Zdig,n1,n2,opts);
+            
+
             data.DigFideltiy = out;
  
         end  
@@ -2465,6 +2453,7 @@ cCoMStr_D.Position=[2 2 125 15];
         [x2,y2]=ginputMe(1);                                    % Get a mouse click
         if isequal(img_type,'X') || isequal(img_type,'B');x2=round(x2);y2=round(y2);end  % Round Pos.      
         p2=plot(x2,y2,'+','color','k','linewidth',1);           % Marker 2
+enableInteractivity;
 
         delete(p1);delete(p2);                                  % Delete markers
 
@@ -3462,10 +3451,10 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
         
         ROI=round(ROI);      % Make sure this ROI are integers   
         % Check that limits go from low to high
-        if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
-           warning('Bad ROI specification given.');
-           ROI(evt.Indices(2))=evt.PreviousData;
-        end               
+        % if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
+        %    % warning('Bad ROI specification given.');
+        %    % ROI(evt.Indices(2))=evt.PreviousData;
+        % end               
         % Check that ROI is within image bounds
         if ROI(1)<RL(1); ROI(1)=RL(1); end       
         if ROI(3)<RL(3); ROI(3)=RL(3); end   
@@ -4415,15 +4404,19 @@ addlistener(axImg_D,'YLim','PostSet',@foo5);
 
 axes(axImg);
 set(axImg,'XLim',[1 512],'YLim',[ 1 512]); 
-enableDefaultInteractivity(axImg);
-enableDefaultInteractivity(axImg_K);
-enableDefaultInteractivity(axImg_B);
-enableDefaultInteractivity(axImg_D);
-enableDefaultInteractivity(axImg);
 
+enableInteractivity;
 
+function enableInteractivity
+    enableDefaultInteractivity(axImg);
+    enableDefaultInteractivity(axImg_K);
+    enableDefaultInteractivity(axImg_B);
+    enableDefaultInteractivity(axImg_D);
+    enableDefaultInteractivity(axImg);
+end
 
 end
+
 
 
 function savePosAnalysis(tbl,execdate,src)
