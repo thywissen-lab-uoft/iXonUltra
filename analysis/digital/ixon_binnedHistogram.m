@@ -38,7 +38,7 @@ for nn = 1:length(data)
             Zall = Zall(:);
             
             % Zall(Zall==0) = []; 
-                    Zall(Zall<=noise_threshold) = [];                     
+            Zall(Zall<=noise_threshold) = [];                     
 
 % keyboard
 %             Zbb{end+1} = Zall;

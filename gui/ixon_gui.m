@@ -1737,6 +1737,11 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
         
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
+
+         if hc_anlB_Radial.Value
+            data=bin_radialHistogram(data);
+            keyboard
+         end
         
         if hc_anlB_stripe.Value
             opts_stripe = struct;
