@@ -1457,10 +1457,9 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
 hpBin=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','binned analysis');
 hpBin.Position(3)=160;
-hpBin.Position(4)=260;
+hpBin.Position(4)=275;
 hpBin.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
 hpBin.Position(2)=hpNav.Position(2)-hpBin.Position(4);
-
 
 ttstr='auto do bin analysis';
 hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
@@ -1631,9 +1630,15 @@ hc_anlB_Histogram=uicontrol(hpBin,'style','checkbox','string','histogram','fonts
     'backgroundcolor','w','Position',[1 tblROIB.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
+ttstr='radial binned histgoram analysis';
+hc_anlB_Radial=uicontrol(hpBin,'style','checkbox','string','radial analysis','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-15 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',1);
+
+
 ttstr='bin stripe focus';
 hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe; Threshold :','fontsize',7,...
-    'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-15 hpBin.Position(3)-1 15],...
+    'backgroundcolor','w','Position',[1 hc_anlB_Radial.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
 stripe_threshold_tbl=uitable('parent',hpBin,'units','pixels','RowName',{},'ColumnName',{},...
@@ -1790,7 +1795,7 @@ hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','threshold fidelity','
     'backgroundcolor','w','Position',[1 hcDigThreshold.Position(2)-15 100 15],'Value',0);
 
 % Smart Thresholding
-hcSmartThreshold=uicontrol(hpDig,'style','checkbox','string','smart thresholding','fontsize',7,...
+hcSmartThreshold=uicontrol(hpDig,'style','checkbox','string','radial thresholding','fontsize',7,...
     'backgroundcolor','w','Position',[1 hcDigFidelity.Position(2)-15 100 15],'Value',0,'enable','off');
 
 % Maximum Liklihood Algorithm

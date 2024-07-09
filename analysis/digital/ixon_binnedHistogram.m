@@ -36,11 +36,11 @@ for nn = 1:length(data)
         for kk=2:length(data(nn).LatticeBin)
             Zall = data(nn).LatticeBin(kk).Zbin;
             Zall = Zall(:);
-            keyboard
+            
             % Zall(Zall==0) = []; 
                     Zall(Zall<=noise_threshold) = [];                     
 
-% 
+% keyboard
 %             Zbb{end+1} = Zall;
 
 %             Zbb = [Zbb; Zall];
