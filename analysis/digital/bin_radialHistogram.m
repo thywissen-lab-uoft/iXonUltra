@@ -188,8 +188,17 @@ end
                 thresh_map = reshape(thresh_map,[size(Zb0,1) size(Zb0,2)]);
                 thresh_min = 850;
                 thresh_map(thresh_map<thresh_min)=thresh_min;
-                
                 LatticeRadialHistogram(jj).ZbinScale = Zb0./thresh_map;
+
+                % 
+                thresh_scale = feval(fout,r0)./fout.A;
+                thresh_scale = reshape(thresh_scale,[size(Zb0,1) size(Zb0,2)]);
+                thresh_min = 0.5;
+                thresh_scale(thresh_scale<thresh_min)=thresh_min;
+                LatticeRadialHistogram(jj).ZbinScale = Zb0./thresh_scale;
+
+                % ZbinScaler
+                
             end
        end
        bindata(ii).LatticeRadialHistogram=LatticeRadialHistogram;

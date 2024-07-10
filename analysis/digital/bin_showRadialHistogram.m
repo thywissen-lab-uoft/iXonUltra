@@ -111,7 +111,8 @@ end
                 xlabel('$\mathrm{counts}/N_{\mathrm{thresh}}(r)$',...
                     'interpreter','latex');
                 ylabel('occurences');   
-                xlim([.75 4])
+                % xlim([.75 3]);
+                xlim([1000 8000])
                 title('scaled histgoram')
 
         end
