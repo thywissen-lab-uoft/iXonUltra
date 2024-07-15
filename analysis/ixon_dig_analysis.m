@@ -64,9 +64,10 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 1;                % Auto detect changing variable?
+dig_opts.autoXVar       = 0;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
+dig_opts.xVar           = 'ExecutionDate';  % Variable Name
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 dig_opts.doSave         = 0;                % Save Analysis?
 
@@ -107,13 +108,15 @@ end
 
 if dig_doRadialAnalysis
     opts = dig_opts;   
-    opts.BinStep = 3;                   % delta r bin size
-    opts.rMaxShow = 80;                 % max r to plot
-    opts.nMaxShow = 0.35;               % max density to plot
-    opts.showDevParametrization  = 0;   % show standard deviation?
+    opts.BinStep = 3;                   % delta r bin size    
 
-    % Compute radial profile for all images
-    digdata = dig_compute_radial(digdata,opts); 
+    opts.useAverageCenter = 0;
+    digdata = dig_compute_radial(digdata,opts);     % Compute radial profile for all images
+
+    
+    opts.rMaxShow = 80;                 % max r to plot
+    opts.nMaxShow = 0.45;               % max density to plot
+    opts.showDevParametrization  = 0;   % show standard deviation?
     
     % Show radial profiles
     hFs=dig_showRadialProfile(digdata,opts);     
@@ -122,16 +125,60 @@ if dig_doRadialAnalysis
              ixon_saveFigure2(hFs(kk),...
                 ['dig_radial_profile_' num2str(kk)],dig_opts);  
          end
-     end     
+     end        
      
-    [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);
+      opts.ForceAverage = 0;
+     if isequal(digdata.xVar,'ExecutionDate')
+        opts.ForceAverage = 1; 
+     end
+%     opts.ForceAverage = 0;
+    opts.doAnimate = 1;
     
+    [hFs_radial] = dig_radialAnalysis_average_images(digdata,opts);
+    if dig_opts.doSave
+       for kk=1:length(hFs_radial)
+           ixon_saveFigure2(hFs_radial(kk),...
+                ['dig_radial_' num2str(kk)],dig_opts);   
+       end
+    end
     
-% 
-    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
-    filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
-    disp(['Saving ' filename ' ...']);
-%     save(filename, '-struct','dig_radial_data');
+    doExportforDrut=0;
+    if doExportforDrut    
+       % Constants
+        h = 6.62607015*10^-34;
+        m = 39.96399848*1.66053906660*10^-27;
+        lam = (1054*10^-9*1054*10^-9*1064*10^-9)^(1/3);
+        aL = lam/2;
+
+        % 120mW XDT + 2.5ER request lattice trap frequencies - calibrated
+        % 02/29/24 (reanalyzed 04/11/24)
+        omega_x = 2*pi*67.3;
+        omega_y = 2*pi*60.2;
+        omega_bar = (omega_x*omega_y).^(1/2);
+
+        % Harmonic potential in Hz
+        PotentialVector = 0.5*m*omega_bar^2*aL^2.*rVec.^2/h;
+
+        kappa = 0.5*m*omega_bar^2*aL^2/h;
+
+        % Assign to output
+        out = struct;
+        out.Images                         = digdata.Z;
+        out.SiteVector1                    = digdata.n1;
+        out.SiteVector2                    = digdata.n2;            
+        out.RadialVector                   = digdata.r;
+        out.RadialOccupation               = digdata.Zr;
+        out.RadialPotential                = digdata.r.^2*kappa;                  
+
+        try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+        filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
+        disp(['Saving ' filename ' ...']);
+        save(filename, '-struct','dig_radial_data');
+    end
+     
+    % obsolte analysis
+%     [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);        
+
 
 end
 

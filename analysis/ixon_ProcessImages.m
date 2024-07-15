@@ -12,9 +12,13 @@ if nargin == 1
     opts.doGaussFilter      = 0;
     opts.GaussFilterRadius  = 1;
     opts.doMask             = 0;
-    opts.Mask               = ones(512,512);
+%     opts.Mask               = ones(512,512);
+load('C:\Users\Sephora\Documents\GitHub\iXonUltra\analysis\ixon_mask.mat');
+opts.Mask = BW;
     opts.doPSF              = 0;    
     opts.PSF                = [1.3 50 5];    
+    opts.DetectNoise        = 1;
+
     opts.doRotate           = 0;
     opts.Theta              = 0;    
         
@@ -94,15 +98,34 @@ if opts.doSubtractBG
     for n = 1:L/2
         try
             Zthis = Z(:,:,n);
-            Zneg = Zthis(Zthis<0);
-            [N,edges] = histcounts(Zneg);
-            % iZero = find(edges>=0,1);
-            centers = (edges(1:end-1) + edges(2:end))/2;
+            
+            d=load('ixon_mask.mat');
+            BW = d.BW;
+            BW=double(BW);
+            BW(BW==0)=nan;
+            Zb = Zthis.*BW;
+            Zc = Zb(:);
+            Zc(isnan(Zc)) = [];
+            
+            Zd = Zc;
+            Zd(Zd>0)=[];
+            Zd = [Zd; -Zd];
+            
+            s = std(Zd);
+            
+            data(kk).NoiseEstimation(n) = s ;
 
-            vals = cumsum(N,'reverse')/sum(N);
-            ind = find(vals<=.5,1);
-            thresh = -centers(ind);
-            data(kk).NoiseEstimation(n) = thresh;      
+            
+%             Zneg = Zthis(Zthis<0);
+%             [N,edges] = histcounts(Zneg);
+%             % iZero = find(edges>=0,1);
+%             centers = (edges(1:end-1) + edges(2:end))/2;
+% 
+%             vals = cumsum(N,'reverse')/sum(N);
+%             ind = find(vals<=.5,1);
+%             thresh = -centers(ind);
+%             data(kk).NoiseEstimation(n) = thresh;      
+%             keyboard
         catch ME
             data(kk).NoiseEstimation(n) = 0;
         end
@@ -116,23 +139,61 @@ end
             data(kk).Z(:,:,ii) = data(kk).Z(:,:,ii).*opts.Mask;        
         end
     end
+    
+%% No Filter
+    data(kk).ZNoFilter = data(kk).Z; 
+
+    %% Deconvolve Point Spread Function
+    if opts.doPSF       
+        fprintf('PSF ...');
+        s       = opts.PSF(1);    
+%         if opts.doScale;s = s*opts.ScaleFactor;end
+        N       = opts.PSF(2);
+        Niter   = opts.PSF(3);
+        psf     = fspecial('gaussian',N,s);  
+        for ii = 1:size(data(kk).Z,3) 
+            
+            if  opts.DetectNoise  && opts.doSubtractBG
+                Nnoise=data(kk).NoiseEstimation(ii);
+                
+            else
+                Nnoise = opts.Noise;
+                data(kk).NoiseEstimation(ii) = Nnoise;
+            end
+            
+            noise_variance = Nnoise^2;
+            Zpre = data(kk).Z(:,:,ii);
+            Zpre(Zpre<=0)=0;
+            
+%             psf2     = fspecial('gaussian',N,3*s);  
+%             psf = psf*.9+psf2*.1;
+
+            Zsharp = deconvlucy(Zpre,...
+                psf,Niter,0,1,noise_variance);             
+            data(kk).Z(:,:,ii) =    Zsharp;
+        end        
+    end      
+  
 
 %% Scale Image
     if isfield(opts,'doScale') && opts.doScale         
         data(kk).X = linspace(1,data(kk).X(end),length(data(kk).X)*opts.ScaleFactor);
        data(kk).Y = linspace(1,data(kk).Y(end),length(data(kk).Y)*opts.ScaleFactor);
        data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor)/(opts.ScaleFactor)^2;
+       
+       data(kk).ZNoFilter = imresize(data(kk).ZNoFilter,opts.ScaleFactor)/(opts.ScaleFactor)^2;
+
     end    
 %% Rotate Image
     if opts.doRotate  
         theta = opts.Theta;
         fprintf([' rotating (' num2str(theta) ' deg)...']);
         data(kk).Z = imrotate(data(kk).Z,theta,'bicubic','crop');
+        data(kk).ZNoFilter = imrotate(data(kk).ZNoFilter,theta,'bicubic','crop');
+
         data(kk).RotationMask = imrotate(ones(size(data(kk).Z,1),size(data(kk).Z,2)),theta,'bicubic','crop');
-        data(kk).RotationMask = logical(round(data(kk).RotationMask));
+        data(kk).RotationMask = logical(round(data(kk).RotationMask));        
     end           
-%% No Filter
-    data(kk).ZNoFilter = data(kk).Z; 
 
 %% Gaussian Fitler
     if opts.doGaussFilter  
@@ -142,30 +203,7 @@ end
                 opts.GaussFilterRadius,'FilterDomain','frequency');
         end
     end        
-%% Deconvolve Point Spread Function
-    if opts.doPSF       
-        fprintf('PSF ...');
-        s       = opts.PSF(1);    
-        if opts.doScale;s = s*opts.ScaleFactor;end
-        N       = opts.PSF(2);
-        Niter   = opts.PSF(3);
-        psf     = fspecial('gaussian',N,s);  
-        for ii = 1:size(data(kk).Z,3) 
-            if opts.doSubtractBG 
-                Nnoise=data(kk).NoiseEstimation(ii);
-            else
-                Nnoise = 50;
-            end           
-            noise_variance = Nnoise^2;        
-            Zpre = data(kk).Z(:,:,ii);
-            Zpre(Zpre<=0)=0;
-            psf2     = fspecial('gaussian',N,3*s);  
-            psf = psf*.85+psf2*.15;
-            Zsharp = deconvlucy(Zpre,...
-                psf,Niter,0,1,noise_variance);             
-            data(kk).Z(:,:,ii) =    Zsharp;
-        end        
-    end  
+
 %% Fast Fourier Transform (FFT)
     if opts.doFFT
         fprintf('FFT ...');

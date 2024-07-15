@@ -8,21 +8,34 @@ function out=binLattice(x,y,z,opts)
 % The phase is found my optizing the total contrast of the image which is
 % gotten from the 
 
-% Matrix which defines lattice basis
-A = [opts.a1 opts.a2];                  % lattice vectors
+% Matrix which defines lattice basis in units of camera pixels
+A = [opts.a1 opts.a2];                
+
+% Image pixel size in units of camera pixels
+% dX = x(2)-x(1);
+% dY = y(2)-y(1);
+
+if ~isfield(opts,'PixelThreshold')
+   opts.PixelThreshold = 100; 
+end
+
+z(z<opts.PixelThreshold)=0;
 
 %% Image preparation
 
 % Rescale the image to avoid rounding errors when moving pixels
-z2 = imresize(z,opts.ScaleFactor,'method','bilinear')/(opts.ScaleFactor^2); % scale amplitude to preserve norm
+% scale amplitude to preserve norm
+
+z2 = imresize(z,opts.ScaleFactor,'method','bilinear')/(opts.ScaleFactor^2); 
 x2 = linspace(x(1),x(end),size(z2,2));
 y2 = linspace(y(1),y(end),size(z2,1));
 
-
 % Create 2xN vectors of all pixels positions
+% tic
 [X,Y]=meshgrid(x2,y2);                  % matrix of X and Y
-R=[X(:)' ; Y(:)'];                      % All points
-
+R = [X(:) Y(:)]'; % long part, becaues of transpose?
+% toc
+% 
 if isfield(opts,'PixelThreshold') && isfield(opts,'UsePixelThreshold')
     z2(z2<(opts.PixelThreshold/opts.ScaleFactor^2))=0;    
 end
@@ -30,20 +43,23 @@ end
 % 1xN vector all counts per pixel
 Z = z2(:);                              % counts per re-scaled pixel
 
+%% Convert Pixels to Lattice Sites
+% Takes 0.18 seconds at scale factor 10
+
 % Solve for all position in terms of the lattice basis
 N0 = inv(A)*R;
 
-p = [opts.p1; opts.p2];                       % Phase        
-P = repmat(p,[1 length(Z)]);        % Phase vector        
+
+p = [opts.p1; opts.p2];             % Phase        
+P = repmat(p,[1 length(Z)]);        % Phase vector      
+
+% Remove phase from calculated bin positions and round to the nearest
+% lattice site
 M = round(N0-P);                    % round pixel to lattice site
 
-% aa = reshape(M(1,:),[size(X,1) size(X,2)]);
-% bb = reshape(M(2,:),[size(X,1) size(X,2)]);
-% cc = mod(bb+aa,2);
-% 
-% dd = z2.*cc;
-% keyboard
+
 %% Find bounds on lattice indeces
+
 % Given the lattice basis and the image bounds, determine some reasonable
 % bounds on the extremal lattice indeces.
 
@@ -68,42 +84,73 @@ n2 = n2i:n2f;
 
 %% Final Binning
 
+% Takes 0.3 seconds at x10 scale
+
 % Remove points outside of the desired ROI.
 ibad = logical((M(1,:)<n1i) + (M(1,:)>n1f) + (M(2,:)>n2f) + (M(2,:)<n2i));
 M(:,ibad) = [];
 Z(ibad) = [];
 
-% CF I forget what this part of the code does with M0
-% M0 = N0-P;
-% M0(:,ibad)=[];
+
 
 Zbin = zeros(n2f-n2i+1,n1f-n1i+1);
 Znum = zeros(n2f-n2i+1,n1f-n1i+1);
 for ii=1:size(M,2)    
     m1 = M(1,ii)-n1i+1;
-    m2 = M(2,ii)-n2i+1;
-    
+    m2 = M(2,ii)-n2i+1;    
     Znum(m2,m1) = Znum(m2,m1)+1;
     Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);  
 end
 
-Zall = Zbin;
-Zall = Zall(:);
-Zbin2 = Zbin;
-Zpercent = Znum/max(Znum,[],'all');
-Zbin2(Zpercent<.9)=NaN;
 
-Zbin = Zbin2;
+% Zall = Zbin;
+% Zall = Zall(:);
+% Zbin2 = Zbin;
+% Zpercent = Znum/max(Znum,[],'all');
+% Zbin2(Zpercent<.9)=NaN;
+% % Zbin = Zbin2;
+
+% keyboard
+% toc
+%% Debugging
+doDebug=0;
+if doDebug
+    [N1,N2]=meshgrid(n1,n2);
+    x_site = opts.a1(1).*(N1+opts.p1) + opts.a2(1).*(N2+opts.p2);
+    y_site = opts.a1(2).*(N1+opts.p1) + opts.a2(2).*(N2+opts.p2);
+    
+    hF = figure;
+    hF.Color='w';
+    
+    subplot(121);
+    imagesc(x2,y2,z2);   
+    hold on
+   z3 = zeros(numel(y2),numel(x2));
 
 
-% [cc,rr]=meshgrid(1:size(Zbin,1),size(Zbin,2))
-% min(cc(isnan(Zbin)))
-% m
-
+    plot(x_site(:),y_site(:),'r.');
+    
+    % For every pixel
+    % for every pixel want to figure out which lattice site it is
+    for ii=1:numel(z3)   
+        m1 = M(1,ii)-n1i+1;
+        m2 = M(2,ii)-n2i+1;        
+        ind=(m1-1)*numel(n2)+m2;              
+        z3(ii) = ind;
+        z3(ii) = mod(ind,2);
+    end
+    
+    subplot(122);
+    imagesc(x2,y2,z3);
+    hold on
+    plot(x_site(:),y_site(:),'r.');
+    
+end
 
 
 
 %%
+
 [nn1,nn2]=meshgrid(n1,n2);
 
 N=[nn1(:)' ; nn2(:)'];                      % All points
@@ -143,53 +190,6 @@ out.lattice_spacing_um = lattice_spacing_um;
 out.lattice_spacing_px = lattice_spacing_px;
 out.site2um = @(n1,n2) ((n1+p1)*a1 + (n2+p2)*a2)*(lattice_spacing_um/lattice_spacing_px);
 
-
-
-
-
-
-% out.R0 = [Xn(1) Yn(1)];     % Position of first lattice site in pixels
-% out.N0 = [N(1,1) N(2,1)];   % Value of n1 n2 corresponding to the first lattice site
-
-% Dont store these for space considerations
-% out.Xn = Xn;
-% out.Yn = Yn;
-
-
-% 
-% if isfield(opts, 'DigitizationThreshold')
-%     
-%    out.Zdig = Zbin>=opts.DigitizationThreshold; 
-%    
-%   
-% 
-% end
-
-%% Digital Box Count
-
-%   
-%             Natoms = sum(sum(Zdig));        % Total number of atoms
-%             Nsites = length(Zdig(:));       % Total number of sites        
-% %             filling = Natoms/Nsites;        % Average filling fraction
-%             
-%   
-% 
-%             % Calculate center of mass
-%             Xc=sum(zX.*x);
-%             Yc=sum(zY.*y);          
-% 
-%             % Calculate central second moment/variance and the standard
-%             % deviation
-%             X2=sum(zX.*(x-Xc).^2); % x variance
-%             Xs=sqrt(X2); % standard deviation X
-%             Y2=sum(zY.*(y-Yc).^2); % x variance
-%             Ys=sqrt(Y2); % standard deviation Y               
-% 
-%             LatticeDig(k).Natoms = Natoms;
-% %             LatticeDig(k).Filling = filling;
-%             LatticeDig(k).Xc = Xc;
-%             LatticeDig(k).Yc = Yc;
-%             LatticeDig(k).Xs = Xs;
-%             LatticeDig(k).Ys = Ys;   
+%%
 
 end
