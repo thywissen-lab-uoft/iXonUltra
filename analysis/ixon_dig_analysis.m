@@ -69,7 +69,7 @@ dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
 dig_opts.xVar           = 'ExecutionDate';  % Variable Name
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
-dig_opts.doSave         = 0;                % Save Analysis?
+dig_opts.doSave         = 1;                % Save Analysis?
 
 %% Flags
 

@@ -1,7 +1,7 @@
 
 % Source directory of all data
 
-srcdir = 'X:\Data\2024\2024.07\07.03\03 overnight';
+srcdir = 'X:\Data\2024\2024.07\07.05\07 overnight';
 
 
 % Parent directory of data to sort

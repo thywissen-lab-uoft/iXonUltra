@@ -12,8 +12,8 @@ ixon_plt_opts.PositionUnit = 'px';
 ixon_fit_opts = struct;
 
 % Number of counts fit
-ixon_fit_opts.Number_Exp          = 0;
-ixon_fit_opts.Number_Exp2Sum      = 0;
+ixon_fit_opts.NumberExpFit          = 0;
+ixon_fit_opts.NumberExpOffsetFit      = 0;
 ixon_fit_opts.Number_Lorentzian   = 0;
 
 % Center position fit
@@ -37,7 +37,7 @@ if ixon_doBoxCount
 
         hF_ixon_box_counts_time.Position(2)=700;
         ylim([0 max(get(gca,'YLim'))]);    
-        if doSave;ixon_saveFigure2(hF_ixon_box_counts_time,'ixon_box_counts_time',saveOpts);end
+        if ixon_doSave;ixon_saveFigure2(hF_ixon_box_counts_time,'ixon_box_counts_time',saveOpts);end
     end
     
     

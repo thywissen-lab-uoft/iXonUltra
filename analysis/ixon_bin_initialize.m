@@ -91,7 +91,7 @@ if ixon_doQGM_Bin
             a2 = ixondata(n).LatticePhase(kk).a2;                        
             p1 = ixondata(n).LatticePhase(kk).p1;
             p2 = ixondata(n).LatticePhase(kk).p2;        
-            opts.ScaleFactor = 1;
+            opts.ScaleFactor = 8;
             opts.a1 = a1;
             opts.a2 = a2;
             opts.p1 = p1;
