@@ -146,12 +146,9 @@ if bin_BinAcummulateHist
         ixon_saveFigure2(hF_BinHistogramFull,...
          'bin_BinHistogramFull',bin_opts);  
     end
-    
+       
     % Center Cloud
-    opts.ROI = [110 135 70 100];
-    opts.ROI = [95 115 65 85];
     opts.ROI = [85 105 80 100];
-
     opts.filename = 'bin_BinAnimateCenter.gif';    
     hF_BinHistogramFull = bin_binnedTotalHistogram(bindata,opts);    
     if bin_opts.doSave
@@ -159,6 +156,13 @@ if bin_BinAcummulateHist
          'bin_BinHistogramCenter',bin_opts);  
     end
     
+    % Partition
+    opts.NumGrid = [5 5];
+    hF_BinGridHistgoram = bin_gridHistogram(bindata,opts);    
+    if bin_opts.doSave
+        ixon_saveFigure2(hF_BinGridHistgoram,...
+         'bin_GridHistgoram',bin_opts);  
+    end
 end
 
 %% Bin Stripe

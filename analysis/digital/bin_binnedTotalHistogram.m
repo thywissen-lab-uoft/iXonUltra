@@ -13,7 +13,7 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
     end   
    
     if ~isfield(opts,'Nthresh')
-       opts.Nthresh = 1000; 
+       opts.Nthresh = 2000; 
     end
     
     if ~isfield(opts,'Bins')
