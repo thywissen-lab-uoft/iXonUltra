@@ -63,7 +63,7 @@ if ixon_doAnalyzeStripes2D
     stripe_2d_opts.Theta=[10 190]; % Specify the domain (MUST BE 180 DEGREES)
     
     stripe_2d_opts.Theta=[-70 110]; % Specify the domain (MUST BE 180 DEGREES)
-    stripe_2d_opts.Theta=[85 95]; % Specify the domain (MUST BE 180 DEGREES)
+%     stripe_2d_opts.Theta=[85 95]; % Specify the domain (MUST BE 180 DEGREES)
 %     stripe_2d_opts.Theta=[45 135]; % Specify the domain (MUST BE 180 DEGREES)
   
 

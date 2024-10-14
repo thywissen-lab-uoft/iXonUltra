@@ -375,13 +375,15 @@ ixon_animateOpts.Source = 'ZNoFilter';
 % ixon_animateOpts.Source = 'Z';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-    ixon_animateOpts.CLim=[0 1500];   % Color limits
+%     ixon_animateOpts.CLim=[0 1500];   % Color limits
 %     ixon_animateOpts.CLim=[0 1000];   % Color limits
 %     ixon_animateOpts.CLim=[0 500];
 % if ~ixon_doQGM
 %      ixon_animateOpts.CLim='auto';
 %      ixon_animateOpts.CLim=[0 10000];
 % end
+      ixon_animateOpts.CLim=[0 1000];   % Automatically choose CLIM?
+
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
 
@@ -402,8 +404,8 @@ if ixon_doAnimate == 1 && ixon_doSave && size(ixondata(1).Z,3)==2
     ixon_animateOpts.Source = 'ZNoFilter';
 %     ixon_animateOpts.Source = 'Z';
 
-%      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-      ixon_animateOpts.CLim=[0 3000];   % Automatically choose CLIM?
+     ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
+      ixon_animateOpts.CLim=[0 500];   % Automatically choose CLIM?
 
 ixon_animateOpts.filename='ixon_animate_2shot';
 

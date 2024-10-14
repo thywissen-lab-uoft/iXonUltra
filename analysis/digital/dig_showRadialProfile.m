@@ -16,7 +16,7 @@ end
   
   
   if ~isfield(opts,'nMaxShow')
-        opts.nMaxShow = .5;
+        opts.nMaxShow = .6;
   end
     
 if  isfield(opts,'FigLabel') 
