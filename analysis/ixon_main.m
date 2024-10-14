@@ -108,8 +108,8 @@ ixon_doAnalyzeQPD           = 0;    % Analyze QPD traces
 %% QGM Single Plane Analysis
 
 % QGM Single Plane Analysis
-ixon_doQGM                          = 0;
-doPSF                               = 0;
+ixon_doQGM                          = 1;
+doPSF                               = 1;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
 
@@ -141,7 +141,7 @@ img_opt.Mask                = ixon_mask;% Mask File 512x512
 img_opt.doGaussFilter       = 0;        % Filter the image? (bad for single-site)
 img_opt.GaussFilterRadius   = 1;        % Filter radius
 img_opt.doPSF               = doPSF;    % Deconvolve with PSF
-img_opt.PSF                 = [1.3163 51 31]; % PSF parameters [sigma, N, Niter]
+img_opt.PSF                 = [1.3163 51 51]; % PSF parameters [sigma, N, Niter]
 img_opt.doFFT               = 1;        % Compute FFT?
 img_opt.doMaskIR            = 1;        % Mask long distance in FFT (useful)
 img_opt.IRMaskRadius        = 0.01;     % Mask radius in 1/px

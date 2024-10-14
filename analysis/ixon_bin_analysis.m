@@ -157,7 +157,7 @@ if bin_BinAcummulateHist
     end
     
     % Partition
-    opts.NumGrid = [5 5];
+    opts.NumGrid = [3 3];
     hF_BinGridHistgoram = bin_gridHistogram(bindata,opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinGridHistgoram,...
