@@ -20,7 +20,7 @@ else
 end
 
     hF.Color='w';
-    hF.Position= [0 50 800 400];
+    hF.Position= [0 50 800 800];
     hF.Name = 'Binned Histogram';
     
     if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
@@ -45,7 +45,7 @@ end
             r = bindata(ii).LatticeRadialHistogram(jj).RadialVector;
             c = bindata(ii).LatticeRadialHistogram(jj).Centers;
         
-            nmax = 4;
+            nmax = 6;
             cmap = jet(nmax);
 
             % nMax = max([])
