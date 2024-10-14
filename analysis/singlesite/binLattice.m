@@ -189,7 +189,53 @@ lattice_spacing_um = 0.527;
 out.lattice_spacing_um = lattice_spacing_um;
 out.lattice_spacing_px = lattice_spacing_px;
 out.site2um = @(n1,n2) ((n1+p1)*a1 + (n2+p2)*a2)*(lattice_spacing_um/lattice_spacing_px);
+%% Threshold Detection
 
+
+Zest=Zbin(:);
+Zest(Zest==0)=[];
+cluster_number=2;
+[idx,c,sumD,D]=kmeans(Zest,cluster_number);
+
+[c,inds]=sort(c,'ascend');
+sumD=sumD(inds);
+
+dd = zeros(numel(c),1);
+thresh = zeros(numel(c),1);
+for kk=1:numel(c)
+    ind = inds(kk);
+    nThis = sum(idx==ind);
+    dd(kk) = sqrt(sumD(kk)/nThis);
+    thresh(kk) = round(max(Zest(idx==ind)));
+end
+thresh(end)=[];
+
+cluster_overlap = zeros(numel(thresh),1);
+
+for kk=1:numel(thresh)
+    cluster_overlap(kk)=dd(kk);
+end
+% 
+% indLow = inds(1);
+% nlow = sum(idx==indLow);
+% low_average_distance = sqrt(sumD(1)/nlow);
+% 
+% 
+% indHigh = inds(2);
+% nhigh = sum(idx==indHigh);
+% high_average_distance = sqrt(sumD(2)/nhigh);
+% 
+% thresh=round(max(Zest(idx==indLow)));
+
+out.ClusterNumber = cluster_number;
+out.ClusterThreshold = thresh;
+out.ClusterCentroid = c;
+out.ClusterRadius = dd;
+
+% for kk=1:(cluster_number-1)
+% out.ClusterContrast(kk) = 
+
+% keyboard
 %%
 
 end

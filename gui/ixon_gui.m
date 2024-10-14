@@ -110,8 +110,10 @@ desc=acqDescription(acq);       % Get description of settings
 hF=figure;clf
 set(hF,'Color','w','units','pixels','Name',guiname,...
     'Tag','GUI','CloseRequestFcn',@closeGUI,'NumberTitle','off',...
-    'Position',[50 50 1200 850],'SizeChangedFcn',@SizeChangedFcn,...
+    'Position',[50 50 1300 700],'SizeChangedFcn',@SizeChangedFcn,...
     'toolbar','none');
+
+topBarHeight = 40;
 
 % Callback for when the GUI is requested to be closed.
     function closeGUI(fig,~)
@@ -145,59 +147,380 @@ warning on
 function SizeChangedFcn(~,~)
         % This resize fucntion ensures that the X and Y cut/sum plot has
         % commenserate positioning with respect the actual image shown
-        x0=hpFit.Position(1)+hpFit.Position(3);
-        W=hF.Position(3);H=hF.Position(4);                          % Figure size
-        Ht=hpSave.Position(4)+hpCam.Position(4)+hpNav.Position(4);  % Top Bar
-        Ht = 40;
-        if (W>360 && H>55); hp.Position=[x0 1 W-x0 H-Ht]; end     % image panel             
-        resizePlots;                                                % Resize plots                          
+        x0=hpControl.Position(1)+hpControl.Position(3);
+        Wfig=hF.Position(3);Hfig=hF.Position(4);                          % Figure size
         
-        % Resize Panels
-        hpCam.Position(2)     = H-hpCam.Position(4);        
+        if (Wfig>360 && Hfig>55)
+            hp.Position=[x0 1 max([hF.Position(3)-x0 5]) Hfig]; 
+        end             
+        resizePlots;                                                % Resize plots                          
+        drawnow;
 
-        hpAcq.Position(2)      = H-hpAcq.Position(4);
-        hpSave.Position(2) =    H-hpSave.Position(4);
-        hpNav.Position(2)     = hpCam.Position(2)-hpNav.Position(4);
+        % Control Panel
+        hpControl.Position(4) = hF.Position(4);
 
-        hpADV.Position(2)       = hpNav.Position(2)-hpADV.Position(4);
+        hpCam.Position(2) = hpControl.Position(4)-hpCam.Position(4);
+        hpAcq.Position(2) = hpCam.Position(2)-hpAcq.Position(4);
+        % hpSave.Position(2) = hpAcq.Position(2)-hpSave.Position(4);
+        hpNav.Position(2)       = hpAcq.Position(2)-hpNav.Position(4);
 
+ 
+        hpProcess.Position(2)           = hpNav.Position(2)-hpProcess.Position(4);
+        hpPosition.Position(2)       = hpProcess.Position(2)-hpPosition.Position(4);   
 
-        hpAnl.Position(2)       = hpADV.Position(2)-hpAnl.Position(4);        
-        hpKspace.Position(2)    = hpAnl.Position(2)-hpKspace.Position(4);
-        hpBin.Position(2)       = hpKspace.Position(2) - hpBin.Position(4);   
+        hpKspace.Position(2)    = hpPosition.Position(2)-hpKspace.Position(4);
+
+  
+        hpBin.Position(2)       = hpNav.Position(2) - hpBin.Position(4);   
         hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
-        hpDisp_Select.Position(2) =hpNav.Position(2) - hpDisp_Select.Position(4);
-        hpDisp_X.Position(2)    = hpDisp_Select.Position(2) - hpDisp_X.Position(4);        
-        hpDisp_K.Position(2)    = hpDisp_X.Position(2) - hpDisp_K.Position(4);     
-        hpDisp_B.Position(2)    = hpDisp_K.Position(2) - hpDisp_B.Position(4);    
-        hpDisp_HB.Position(2)   = hpDisp_B.Position(2) - hpDisp_HB.Position(4); 
-        hpDisp_D.Position(2)    = hpDisp_HB.Position(2) - hpDisp_D.Position(4);
-        % hpFit.Position(4)       = H-Ht;     
-        hpFit.Position(4)       = hpNav.Position(2);                        
 
-        strstatus.Position(1)   = hpCam.Position(3)-strstatus.Position(3)-2;        
+        hpDisp_Select.Position(2)=hpNav.Position(2)-hpDisp_Select.Position(4);
+        hpDispOpt.Position(2)=hpDisp_Select.Position(2)-hpDispOpt.Position(4);
+        if hpDispOpt.Position(2)>0
+            hpFit.Position(4)=hpDispOpt.Position(2);
+        else
+            hpFit.Position(4) = 1;
+        end
+
+
+        hpFit.Position(4) = max([hpDispOpt.Position(2) 5]);
+
+        % strstatus.Position(1)   = hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;       
 end
+%% Control Panel Container
+hpControl = uipanel(hF,'units','pixels');
+hpControl.Position = [0 0 600 hF.Position(4)];
+
+%% Camera Panel
+
+hpCam=uipanel(hpControl,'units','pixels','backgroundcolor','w','title','camera',...
+    'fontsize',6);
+hpCam.Position(3) = hpControl.Position(3);
+hpCam.Position(4) = 30;
+hpCam.Position(1) = 0;
+hpCam.Position(2) = hpControl.Position(4) - hpCam.Position(4);
+
+% Connect camera
+ttstr='Connect to the iXon camera.';
+hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixels',...
+    'fontsize',7,'Position',[2 1 45 18],'backgroundcolor',[80 200 120]/255,...
+    'Callback',@connectCB,'ToolTipString',ttstr);
+
+% Callback for the connect button
+    function connectCB(~,~)
+        strstatus.String='CONNECTING';
+        drawnow;
+        out=ixon_connectCam;                 % Connect to the camera       
+        if ~out && ~doDebug             % Give warning if connection fails
+           warning('Unable to connect to camera');
+           return;
+        end     
+        strstatus.String='CONNECTED';
+        drawnow;       
+        cam_status.isConnected=1;       
+        ixon_setCameraShutter(0);            % Close the shutter
+        loadAcquisitionSettings;        % Load default acquisition settings      
+        ixon_setCameraShutter(0);            % Close the shutter (again to be safe)
+        hbOpenShutter.Enable='on';      % allow shutter to be opened
+        cam_info=getCamInfo;            % Get the camera information
+        disp(' ');
+        disp(cam_info);        
+        
+        % Set the temperature set point
+        ixon_setTemperature(tblTemp.Data);
+        hbCamInfo.Enable='on';       
+        hbCamAbilities.Enable='on';
+        
+        % Enable/Disable connect
+        hbDisconnect.Enable='on';
+        hbConnect.Enable='off';   
+
+        % Enable/Disable temperature
+        hbCool.Enable='on';
+        tblTemp.Enable='on';
+        strtemp.Enable='on';
+        start(statusTimer);
+
+        % Enable acquisition
+        hbstart.Enable='on';
+        rbSingle.Enable='on';
+        rbLive.Enable='on';
+        tbl_acq.Enable='on';        
+    end
+
+% Disconnect camera
+ttstr='Disconnect to the iXon camera.';
+hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units','pixels',...
+    'fontsize',7,'Position',[hbConnect.Position(1)+hbConnect.Position(3) 1 55 18],'backgroundcolor',[255 102 120]/255,...
+    'Callback',@disconnectCB,'ToolTipString',ttstr,'enable','off');
+
+% Callback for the disconnect button
+    function disconnectCB(~,~)
+        % Stop temperature monitor
+        stop(statusTimer);
+        
+        strstatus.String='DISCONNECTING';
+        drawnow;
+        % Disconnect from camera
+        out=ixon_disconnectCamera; 
+       
+        if ~out && ~doDebug
+           return;
+        end
+        
+        strstatus.String='DRV_NOT_INITIALIZED';
+        drawnow;
+          
+        cam_status.isConnected=0;
+        cam_status.isCooling=0;
+        cam_status.isTempStable=0;
+        cam_status.Temperature=NaN;
+        
+        hbDisconnect.Enable='off';
+        hbConnect.Enable='on'; 
+        hbCool.Enable='off';
+        hbCoolOff.Enable='off';
+        tblTemp.Enable='off';
+        hbCamInfo.Enable='off';
+        hbCamAbilities.Enable='off';
+        
+        hbOpenShutter.Enable='off';
+        hbCloseShutter.Enable='off';
+        rbSingle.Enable='off';
+        rbLive.Enable='off';
+        
+        hbstart.Enable='off';
+        hbstop.Enable='off';
+        tbl_acq.Enable='off';
+
+        set(strtemp,'ForegroundColor','r','String','NaN','Enable','off');
+    end
+
+% Info button
+ttstr='Display camera info';
+cdata=imresize(imread(fullfile(mpath,'icons','info.jpg')),[16 16]);
+hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,...
+    'enable','on','backgroundcolor','w','position',[130 1 18 18],...
+    'ToolTipString',ttstr,'enable','off');
+hbCamInfo.Position(1)= hbDisconnect.Position(1)+hbDisconnect.Position(3);
+
+    function infoCB(~,~)        
+        cam_info=getCamInfo;        
+        disp(cam_info); 
+        disp(cam_info.NumHSSpeeds)
+        disp(cam_info.AvailableHSSpeeds{1});
+        disp(cam_info.AvailableHSSpeeds{2});
+    end
+
+% Capabilities button
+ttstr='Display camera capabilities';
+cdata=imresize(imread(fullfile(mpath,'icons','infob.jpg')),[16 16]);
+hbCamAbilities=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@abilitiesCB,...
+    'enable','on','backgroundcolor','w','position',[152 1 18 18],...
+    'ToolTipString',ttstr,'enable','off');
+hbCamAbilities.Position(1)= hbCamInfo.Position(1)+hbCamInfo.Position(3);
+
+    function abilitiesCB(~,~)  
+        % Read Camera Capabilities
+        cam_skills=getCameraCapabilities;
+        % Dont display camera capabilities
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+        disp('Displaying Camera Capabilities');        
+        fnames=fieldnames(cam_skills);
+        for nn=1:length(fnames)
+           disp(fnames{nn});
+           disp(cam_skills.(fnames{nn})); 
+           disp(' ');
+        end
+        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+    end
+
+% Start Cooling
+ttstr='Begin cooling the sensor to set point.';
+hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
+    'units','pixels','fontsize',7,'Position',...
+    [175 1 50 18],'enable','off',...
+    'backgroundcolor',[173 216 230]/255,'callback',{@coolCB ,1},...
+    'ToolTipString',ttstr);
+hbCool.Position(1)= hbCamAbilities.Position(1)+hbCamAbilities.Position(3);
+
+
+% Stop Cooling
+ttstr='Stop cooling the sensor to set point.';
+hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
+    'units','pixels','fontsize',7,'Position',...
+    [238 1 50 18],'enable','off',...
+    'backgroundcolor',[.8 .8 .8],'callback',{@coolCB, 0},...
+    'ToolTipString',ttstr);
+hbCoolOff.Position(1)= hbCool.Position(1)+hbCool.Position(3);
+
+    function coolCB(~,~,state)  
+        out=ixon_setTEC(state);        
+        if ~out && ~doDebug
+           return; 
+        end        
+        % Enable/Disable buttons
+        if state
+            hbCool.Enable='off';
+            hbCoolOff.Enable='on';
+            cam_status.isCooling=1;
+        else
+            hbCool.Enable='on';
+            hbCoolOff.Enable='off';
+            cam_status.isCooling=0;
+        end        
+    end
+
+% Table set point
+ttstr='Change the sensor temperature set point.';
+tblTemp=uitable(hpCam,'units','pixels','ColumnWidth',{30},...
+    'ColumnEditable',[true],'ColumnName',{},...
+    'Data',cam_status.TemperatureSP,'FontSize',8,...
+    'CellEditCallback',@chTempCB,'RowName',{},'ToolTipString',ttstr,...
+    'enable','off');
+% tblTemp.Position(3:4)=tblTemp.Extent(3:4);
+tblTemp.Position(3:4)=[35 20];
+
+tblTemp.Position(1:2)=[300 1];
+tblTemp.Position(1)= hbCoolOff.Position(1)+hbCoolOff.Position(3);
+
+    function chTempCB(src,evt)
+        disp('Changing temperature set point');
+        Told=evt.PreviousData;
+        Tnew=evt.NewData;        
+        % Check that the data is numeric
+        if ~isnumeric(Tnew) || isinf(Tnew) || isnan(Tnew)
+            warning('Incorrect data type provided for temperature.');
+            src.Data=Told;
+            return;
+        end            
+        Tnew=round(Tnew);        
+        if Tnew<-120 || Tnew>20
+            warning('Temperature set point out of bounds. Resetting.');
+            src.Data=Told; 
+           return; 
+        end
+        out=ixon_setTemperature(Tnew);        
+        if ~out  && ~doDebug
+           src.Data=Told; 
+        end            
+        src.Data=Tnew;        
+    end
+
+% Text
+ttstr='Camera sensor temperature. (green: stable; yellow: unstable; red: set point not reached)';
+strtemp=uicontrol(hpCam,'style','text','string','NaN','units','pixels',...
+    'backgroundcolor','w','fontsize',12,'horizontalalignment','center',...
+    'foregroundcolor','r','enable','off','fontweight','bold',...
+    'ToolTipString',ttstr);
+strtemp.Position(3:4)=[40 20];
+strtemp.Position(1:2)=[340 1];
+strtemp.Position(1)= tblTemp.Position(1)+tblTemp.Position(3);
+
+
+% Open camera shutter
+ttstr='Open camera shutter.';
+hbOpenShutter=uicontrol(hpCam,'style','pushbutton','string','open shutter',...
+    'units','pixels','fontsize',7,'Position',[385 1 65 18],'enable','off',...
+    'backgroundcolor',[255 204 0]/255,'callback',{@shutterCB,1},...
+    'ToolTipString',ttstr);
+hbOpenShutter.Position(1)= strtemp.Position(1)+strtemp.Position(3);
+
+ttstr='Close camera shutter.';
+hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
+    'units','pixels','fontsize',7,'Position',[465 1 65 18],'enable','off',...
+    'backgroundcolor',[255 102 120]/255,'callback',{@shutterCB,0},...
+    'ToolTipString',ttstr);
+hbCloseShutter.Position(1)= hbOpenShutter.Position(1)+hbOpenShutter.Position(3);
+
+
+    function shutterCB(~,~,state)        
+        if state && cam_status.Temperature>-60
+            warning('Denying your request to open the shutter above -60C.');
+            return;
+        end        
+        out=ixon_setCameraShutter(state);        
+        % Exit if bad return
+        if ~out && ~doDebug
+           return; 
+        end        
+        % Enable/Disable buttons
+        if state
+            hbOpenShutter.Enable='off';
+            hbCloseShutter.Enable='on';
+        else
+            hbOpenShutter.Enable='on';
+            hbCloseShutter.Enable='off';
+        end
+    end
+
+
+% Text
+ttstr='Camera status.';
+strstatus=uicontrol(hpCam,'style','text','string','DRV_NOT_INITIALIZED','units','pixels',...
+    'backgroundcolor','w','fontsize',8,'horizontalalignment','left',...
+    'foregroundcolor','k','enable','on','fontweight','bold',...
+    'ToolTipString',ttstr);
+strstatus.Position(3:4)=[157 16];
+strstatus.Position(1) = hbCloseShutter.Position(1) +hbCloseShutter.Position(3);
+strstatus.Position(2)=1;
+
+% Timer to update temperature
+statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
+    'TimerFcn',@statusTimerFcn,'ExecutionMode','FixedSpacing');
+
+    function statusTimerFcn(~,~)
+        try
+        % Get the temperature
+        [out,temp,outstr]=ixon_getTemperature;
+        strtemp.String=[num2str(temp) ' C'];        
+        cam_status.Temperature=temp;   
+        
+        if cam_status.Temperature>-60 && isequal(hbCloseShutter.Enable,'on')
+            warning('Shutter is open and temperature above -60. Closing shutter');
+            shutterCB([],[],0);
+        end
+        
+        switch outstr
+            case 'DRV_TEMPERATURE_STABILIZED'
+                cam_status.isTempStable=1;
+                strtemp.ForegroundColor=[80 200 120]/255;
+            case 'DRV_TEMP_NOT_STABILIZED'
+                cam_status.isTempStable=0;
+                strtemp.ForegroundColor=[255 204 0]/255;
+            otherwise
+                cam_status.isTempStable=0;
+                strtemp.ForegroundColor='r';
+        end     
+        
+        % Camera Status
+        [out,outstr]=ixon_getCameraStatus;
+        strstatus.String=outstr;
+        drawnow;
+        catch ME
+            warning('status timer failed');
+            warning(ME.message);
+        end
+    end
+
+
 %% Image Acqusition Panel
 % Panel for image acquisition controls and settings.
-
-% hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    % 'Position',[0 hpCam.Position(2)-30 600 40],'title','Image Saving','fontsize',8);
-
-% hpAcq=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    % 'Position',[0 hpCam.Position(2)-30 400 40],'title','acquisition',...
-    % 'fontsize', 6);
-hpAcq=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hF.Position(4)-40 400 40],'title','acquisition',...
-    'fontsize', 6);
+hpAcq=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'title','acquisition','fontsize', 6);
+hpAcq.Position(3) = hpControl.Position(3);
+hpAcq.Position(4) = 50;
+hpAcq.Position(1) = 0;
+hpAcq.Position(2) = hpCam.Position(2) - hpAcq.Position(4);
 
 % Start acquisition button
 ttstr='Start acquisition.';
 hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
-    'units','pixels','fontsize',10,'backgroundcolor',[80 200 120]/255,...
-    'Position',[2 hpAcq.Position(4)-35 40 20],...    
+    'units','pixels','fontsize',8,'backgroundcolor',[80 200 120]/255,...
+    'Position',[1 1 40 18],...    
     'Callback',@startCamCB,'ToolTipString',ttstr,'enable','off');
-
+hbstart.Position(2) = hpAcq.Position(4)-hbstart.Position(4)-10;
     function startCamCB(src,evt)
         disp('Starting acquisition');        
         % Send acquistion start command
@@ -216,10 +539,10 @@ hbstart=uicontrol(hpAcq,'style','pushbutton','string','start',...
 % Stop acquisition button
 ttstr='Abort acquisition.';
 hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
-    'units','pixels','fontsize',10,'backgroundcolor',[250 102 120]/255,...
-    'Position',[45 hpAcq.Position(4)-35 40 20], ...
+    'units','pixels','fontsize',7,'backgroundcolor',[250 102 120]/255,...
+    'Position',[45 hbstart.Position(2) 40 18], ...
     'Callback',@stopCamCB,'ToolTipString',ttstr,'enable','off');
-
+hbstop.Position(1) = hbstart.Position(1)+hbstart.Position(3);
 
     function stopCamCB(src,evt)
         disp('Stopping acquisition');     
@@ -238,31 +561,31 @@ hbstop=uicontrol(hpAcq,'style','pushbutton','string','stop',...
 ttstr='Help on acquisition.';
 cdata=imresize(imread(fullfile(mpath,'icons','help.jpg')),[15 15]);
 hbAcqInfo=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@helpCB,...
-    'enable','on','backgroundcolor','w','position',[88 hpAcq.Position(4)-35 20 20],...
+    'enable','on','backgroundcolor','w','position',[88 hbstart.Position(2) 18 18],...
     'ToolTipString',ttstr,'enable','on');
+hbAcqInfo.Position(1) =hbstop.Position(1) + hbstop.Position(3);
 
     function helpCB(~,~)
        disp('Im helping you'); 
     end
-
 % Continuous Acquisition checkbox
 ttstr='Reinitialize camera acquisition after image acquisition.';
 hcAcqRpt=uicontrol(hpAcq,'style','checkbox','string','repeat acquisition?','fontsize',6,...
-    'backgroundcolor','w','Position',[hbAcqInfo.Position(1)+hbAcqInfo.Position(3) 1 85 30],...
+    'backgroundcolor','w','Position',[hbAcqInfo.Position(1)+hbAcqInfo.Position(3) hbstart.Position(2) 85 18],...
     'ToolTipString',ttstr,'enable','on','value',1);
 
 % Button group for acquisition mode
 bgAcq = uibuttongroup(hpAcq,'units','pixels','backgroundcolor','w','BorderType','None',...
     'SelectionChangeFcn',@chAcqCB);  
-bgAcq.Position(3:4)=[120 30];
-bgAcq.Position(1:2)=[hcAcqRpt.Position(1)+hcAcqRpt.Position(3) 2];    
+bgAcq.Position(3:4)=[120 18];
+bgAcq.Position(1:2)=[hcAcqRpt.Position(1)+hcAcqRpt.Position(3) hbstart.Position(2)];    
 
 % Radio buttons for triggered versus software acquisition
 rbSingle=uicontrol(bgAcq,'Style','radiobutton','String','triggered',...
-    'Position',[0 0 60 30],'units','pixels','backgroundcolor','w','Value',1,...
+    'Position',[0 0 60 18],'units','pixels','backgroundcolor','w','Value',1,...
     'UserData','Normal','Enable','off','fontsize',7);
 rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
-    'Position',[60 0 60 30],'units','pixels','backgroundcolor','w',...
+    'Position',[60 0 60 18],'units','pixels','backgroundcolor','w',...
     'UserData','Live','Enable','off','fontsize',7);
 
 % Change acqusition mode callback
@@ -373,16 +696,11 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
         end
     end
 
-%% Save Panel
-hpSave=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[hpAcq.Position(1)+hpAcq.Position(3) hF.Position(4)-40 600 40],...
-    'title','Image Saving','fontsize',6);
-
 % Auto Save check box
 ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
     'not override saving to image history.'];
-hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',8,...
-    'backgroundcolor','w','Position',[0 0 90 25],'callback',@saveCheck,...
+hcauto=uicontrol(hpAcq,'style','checkbox','string','save?','fontsize',7,...
+    'backgroundcolor','w','Position',[0 hbstart.Position(2)-18 50 18],'callback',@saveCheck,...
     'ToolTipString',ttstr);
 
 % Save checkbox callback
@@ -399,16 +717,16 @@ hcauto=uicontrol(hpSave,'style','checkbox','string','save images?','fontsize',8,
 
 % Browse button
 ttstr='Select directory to save images.';
-cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[20 20]);
-bBrowse=uicontrol(hpSave,'style','pushbutton','CData',cdata,'callback',@browseCB,...
-    'enable','off','backgroundcolor','w','position',[95 2 size(cdata,[1 2])],...
+cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[15 15]);
+bBrowse=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@browseCB,...
+    'enable','off','backgroundcolor','w','position',[95 hcauto.Position(2) 18 18],...
     'tooltipstring',ttstr);
-
+bBrowse.Position(1) = hcauto.Position(1) + hcauto.Position(3);
 % String for current save directory
 ttstr='The current save directory.';
-tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,...
+tSaveDir=uicontrol(hpAcq,'style','text','string','save directory','fontsize',8,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'enable','off','UserData','','Position',[115 0 hF.Position(3)-135 20],...
+    'enable','off','UserData','','Position',[bBrowse.Position(1)+bBrowse.Position(3) hcauto.Position(2)-5 hF.Position(3)-135 20],...
     'tooltipstring',ttstr);
 
 % Browse button callback
@@ -425,328 +743,23 @@ tSaveDir=uicontrol(hpSave,'style','text','string','save directory','fontsize',8,
         end
     end
 
-%% Camera Panel
-% hpCam=uipanel(hF,'units','pixels','backgroundcolor','w','title','camera',...
-%     'Position',[0 hF.Position(4)-30 700 40],'fontsize',6);
 
-hpCam=uipanel(hF,'units','pixels','backgroundcolor','w','title','camera',...
-    'Position',[hpSave.Position(1)+hpSave.Position(3) hF.Position(4)-40 700 40],'fontsize',6);
-
-% Connect camera
-ttstr='Connect to the iXon camera.';
-hbConnect=uicontrol(hpCam,'style','pushbutton','string','connect','units','pixels',...
-    'fontsize',8,'Position',[2 5 45 20],'backgroundcolor',[80 200 120]/255,...
-    'Callback',@connectCB,'ToolTipString',ttstr);
-
-% Callback for the connect button
-    function connectCB(~,~)
-        strstatus.String='CONNECTING';
-        drawnow;
-        out=ixon_connectCam;                 % Connect to the camera       
-        if ~out && ~doDebug             % Give warning if connection fails
-           warning('Unable to connect to camera');
-           return;
-        end     
-        strstatus.String='CONNECTED';
-        drawnow;       
-        cam_status.isConnected=1;       
-        ixon_setCameraShutter(0);            % Close the shutter
-        loadAcquisitionSettings;        % Load default acquisition settings      
-        ixon_setCameraShutter(0);            % Close the shutter (again to be safe)
-        hbOpenShutter.Enable='on';      % allow shutter to be opened
-        cam_info=getCamInfo;            % Get the camera information
-        disp(' ');
-        disp(cam_info);        
-        
-        % Set the temperature set point
-        ixon_setTemperature(tblTemp.Data);
-        hbCamInfo.Enable='on';       
-        hbCamAbilities.Enable='on';
-        
-        % Enable/Disable connect
-        hbDisconnect.Enable='on';
-        hbConnect.Enable='off';   
-
-        % Enable/Disable temperature
-        hbCool.Enable='on';
-        tblTemp.Enable='on';
-        strtemp.Enable='on';
-        start(statusTimer);
-
-        % Enable acquisition
-        hbstart.Enable='on';
-        rbSingle.Enable='on';
-        rbLive.Enable='on';
-        tbl_acq.Enable='on';        
-    end
-
-% Disconnect camera
-ttstr='Disconnect to the iXon camera.';
-hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units','pixels',...
-    'fontsize',8,'Position',[50 5 65 20],'backgroundcolor',[255 102 120]/255,...
-    'Callback',@disconnectCB,'ToolTipString',ttstr,'enable','off');
-
-% Callback for the disconnect button
-    function disconnectCB(~,~)
-        % Stop temperature monitor
-        stop(statusTimer);
-        
-        strstatus.String='DISCONNECTING';
-        drawnow;
-        % Disconnect from camera
-        out=ixon_disconnectCamera; 
-       
-        if ~out && ~doDebug
-           return;
-        end
-        
-        strstatus.String='DRV_NOT_INITIALIZED';
-        drawnow;
-          
-        cam_status.isConnected=0;
-        cam_status.isCooling=0;
-        cam_status.isTempStable=0;
-        cam_status.Temperature=NaN;
-        
-        hbDisconnect.Enable='off';
-        hbConnect.Enable='on'; 
-        hbCool.Enable='off';
-        hbCoolOff.Enable='off';
-        tblTemp.Enable='off';
-        hbCamInfo.Enable='off';
-        hbCamAbilities.Enable='off';
-        
-        hbOpenShutter.Enable='off';
-        hbCloseShutter.Enable='off';
-        rbSingle.Enable='off';
-        rbLive.Enable='off';
-        
-        hbstart.Enable='off';
-        hbstop.Enable='off';
-        tbl_acq.Enable='off';
-
-        set(strtemp,'ForegroundColor','r','String','NaN','Enable','off');
-    end
-
-% Info button
-ttstr='Display camera info';
-cdata=imresize(imread(fullfile(mpath,'icons','info.jpg')),[18 18]);
-hbCamInfo=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@infoCB,...
-    'enable','on','backgroundcolor','w','position',[130 5 20 20],...
-    'ToolTipString',ttstr,'enable','off');
-
-    function infoCB(~,~)        
-        cam_info=getCamInfo;        
-        disp(cam_info); 
-        disp(cam_info.NumHSSpeeds)
-        disp(cam_info.AvailableHSSpeeds{1});
-        disp(cam_info.AvailableHSSpeeds{2});
-    end
-
-% Capabilities button
-ttstr='Display camera capabilities';
-cdata=imresize(imread(fullfile(mpath,'icons','infob.jpg')),[18 18]);
-hbCamAbilities=uicontrol(hpCam,'style','pushbutton','CData',cdata,'callback',@abilitiesCB,...
-    'enable','on','backgroundcolor','w','position',[152 5 20 20],...
-    'ToolTipString',ttstr,'enable','off');
-
-    function abilitiesCB(~,~)  
-        % Read Camera Capabilities
-        cam_skills=getCameraCapabilities;
-        % Dont display camera capabilities
-        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-        disp('Displaying Camera Capabilities');        
-        fnames=fieldnames(cam_skills);
-        for nn=1:length(fnames)
-           disp(fnames{nn});
-           disp(cam_skills.(fnames{nn})); 
-           disp(' ');
-        end
-        disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-    end
-
-% Start Cooling
-ttstr='Begin cooling the sensor to set point.';
-hbCool=uicontrol(hpCam,'style','pushbutton','string','cooler on',...
-    'units','pixels','fontsize',8,'Position',...
-    [175 5 60 20],'enable','off',...
-    'backgroundcolor',[173 216 230]/255,'callback',{@coolCB ,1},...
-    'ToolTipString',ttstr);
-
-% Stop Cooling
-ttstr='Stop cooling the sensor to set point.';
-hbCoolOff=uicontrol(hpCam,'style','pushbutton','string','cooler off',...
-    'units','pixels','fontsize',8,'Position',...
-    [238 5 60 20],'enable','off',...
-    'backgroundcolor',[.8 .8 .8],'callback',{@coolCB, 0},...
-    'ToolTipString',ttstr);
-
-    function coolCB(~,~,state)  
-        out=ixon_setTEC(state);        
-        if ~out && ~doDebug
-           return; 
-        end        
-        % Enable/Disable buttons
-        if state
-            hbCool.Enable='off';
-            hbCoolOff.Enable='on';
-            cam_status.isCooling=1;
-        else
-            hbCool.Enable='on';
-            hbCoolOff.Enable='off';
-            cam_status.isCooling=0;
-        end        
-    end
-
-% Table set point
-ttstr='Change the sensor temperature set point.';
-tblTemp=uitable(hpCam,'units','pixels','ColumnWidth',{30},...
-    'ColumnEditable',[true],'ColumnName',{},...
-    'Data',cam_status.TemperatureSP,'FontSize',8,...
-    'CellEditCallback',@chTempCB,'RowName',{},'ToolTipString',ttstr,...
-    'enable','off');
-tblTemp.Position(3:4)=tblTemp.Extent(3:4);
-tblTemp.Position(1:2)=[300 4];
-
-    function chTempCB(src,evt)
-        disp('Changing temperature set point');
-        Told=evt.PreviousData;
-        Tnew=evt.NewData;        
-        % Check that the data is numeric
-        if ~isnumeric(Tnew) || isinf(Tnew) || isnan(Tnew)
-            warning('Incorrect data type provided for temperature.');
-            src.Data=Told;
-            return;
-        end            
-        Tnew=round(Tnew);        
-        if Tnew<-120 || Tnew>20
-            warning('Temperature set point out of bounds. Resetting.');
-            src.Data=Told; 
-           return; 
-        end
-        out=ixon_setTemperature(Tnew);        
-        if ~out  && ~doDebug
-           src.Data=Told; 
-        end            
-        src.Data=Tnew;        
-    end
-
-% Text
-ttstr='Camera sensor temperature. (green: stable; yellow: unstable; red: set point not reached)';
-strtemp=uicontrol(hpCam,'style','text','string','NaN','units','pixels',...
-    'backgroundcolor','w','fontsize',12,'horizontalalignment','left',...
-    'foregroundcolor','r','enable','off','fontweight','bold',...
-    'ToolTipString',ttstr);
-strtemp.Position(3:4)=[45 20];
-strtemp.Position(1:2)=[340 5];
-
-% Text
-ttstr='Camera status.';
-strstatus=uicontrol(hpCam,'style','text','string','DRV_NOT_INITIALIZED','units','pixels',...
-    'backgroundcolor','w','fontsize',10,'horizontalalignment','right',...
-    'foregroundcolor','k','enable','on','fontweight','bold',...
-    'ToolTipString',ttstr);
-strstatus.Position(3:4)=[157 20];
-strstatus.Position(1:2)=[hpCam.Position(3)-155 5];
-
-% Timer to update temperature
-statusTimer=timer('Name','iXonTemperatureTimer','Period',1,...
-    'TimerFcn',@statusTimerFcn,'ExecutionMode','FixedSpacing');
-
-    function statusTimerFcn(~,~)
-        try
-        % Get the temperature
-        [out,temp,outstr]=ixon_getTemperature;
-        strtemp.String=[num2str(temp) ' C'];        
-        cam_status.Temperature=temp;   
-        
-        if cam_status.Temperature>-60 && isequal(hbCloseShutter.Enable,'on')
-            warning('Shutter is open and temperature above -60. Closing shutter');
-            shutterCB([],[],0);
-        end
-        
-        switch outstr
-            case 'DRV_TEMPERATURE_STABILIZED'
-                cam_status.isTempStable=1;
-                strtemp.ForegroundColor=[80 200 120]/255;
-            case 'DRV_TEMP_NOT_STABILIZED'
-                cam_status.isTempStable=0;
-                strtemp.ForegroundColor=[255 204 0]/255;
-            otherwise
-                cam_status.isTempStable=0;
-                strtemp.ForegroundColor='r';
-        end     
-        
-        % Camera Status
-        [out,outstr]=ixon_getCameraStatus;
-        strstatus.String=outstr;
-        drawnow;
-        catch ME
-            warning('status timer failed');
-            warning(ME.message);
-        end
-    end
-
-% Open camera shutter
-ttstr='Open camera shutter.';
-hbOpenShutter=uicontrol(hpCam,'style','pushbutton','string','open shutter',...
-    'units','pixels','fontsize',8,'Position',[385 5 80 20],'enable','off',...
-    'backgroundcolor',[255 204 0]/255,'callback',{@shutterCB,1},...
-    'ToolTipString',ttstr);
-
-ttstr='Close camera shutter.';
-hbCloseShutter=uicontrol(hpCam,'style','pushbutton','string','close shutter',...
-    'units','pixels','fontsize',8,'Position',[465 5 80 20],'enable','off',...
-    'backgroundcolor',[255 102 120]/255,'callback',{@shutterCB,0},...
-    'ToolTipString',ttstr);
-
-% Text label for fit results output variable
-
-% Drop down menu for fit results output
-% frslct=uicontrol('parent',hpCam','units','pixels','style','popupmenu',...
-%     'String',{'a','b','c'},'fontsize',8);
-% frslct.Position(3)=120;
-% frslct.Position(1:2)=[600 5];
-
-
-    function shutterCB(~,~,state)        
-        if state && cam_status.Temperature>-60
-            warning('Denying your request to open the shutter above -60C.');
-            return;
-        end        
-        out=ixon_setCameraShutter(state);        
-        % Exit if bad return
-        if ~out && ~doDebug
-           return; 
-        end        
-        % Enable/Disable buttons
-        if state
-            hbOpenShutter.Enable='off';
-            hbCloseShutter.Enable='on';
-        else
-            hbOpenShutter.Enable='on';
-            hbCloseShutter.Enable='off';
-        end
-    end
 
 %% Navigator Panel 
 
-hpNav=uipanel(hF,'units','pixels','backgroundcolor','w','title','GUI Image Source',...
-    'Position',[0 hpSave.Position(2) 620 35],'fontsize',6);
-
-% Checkbox for auto updating when new images are taken
-ttstr='Automatically refresh to most recent image upon new image acquisition.';
-cAutoUpdate=uicontrol('parent',hpNav,'units','pixels','string',...
-    'hold image?','value',0,'fontsize',8,'backgroundcolor','w',...
-    'Style','checkbox','ToolTipString',ttstr);
-cAutoUpdate.Position=[0 5 90 14];
+hpNav=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'title','GUI Image Source','fontsize',6);
+hpNav.Position(3) = hpControl.Position(3);
+hpNav.Position(4) = 50;
+hpNav.Position(1) = 0;
+hpNav.Position(2) = hpAcq.Position(2) - hpNav.Position(4);
 
 % Button to change navigator directory to default
 ttstr='Revert previewer source directory to default location.';
 cdata=imresize(imread('icons/home.jpg'),[17 17]);
-uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+hbhome=uicontrol(hpNav,'style','pushbutton','CData',cdata,...
     'callback',@defaultDirCB,'enable','on','backgroundcolor','w',...
-    'position',[95 2 20 20],'ToolTipString',ttstr);
+    'position',[1 18 20 20],'ToolTipString',ttstr);
 
 % Change directory to default
     function defaultDirCB(~,~)
@@ -758,8 +771,8 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,...
 % Button to change preview source directory
 ttstr='Change previwer source directory.';
 cdata=imresize(imread('icons/browse.jpg'),[20 20]);
-uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@chDirCB,...
-    'enable','on','backgroundcolor','w','position',[115 2 20 20],...
+hbchdir=uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@chDirCB,...
+    'enable','on','backgroundcolor','w','position',[hbhome.Position(1)+hbhome.Position(3) 18 20 20],...
     'ToolTipString',ttstr);
 
 % Get directory from user and load first image in the folder
@@ -776,35 +789,95 @@ uicontrol(hpNav,'style','pushbutton','CData',cdata,'callback',@chDirCB,...
 % Button to load an image into the acquisition
 ttstr='Load an image into the previer and change the source directory.';
 cdata=imresize(imread('icons/file.jpg'),[17 17]);
-uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+hbload=uicontrol(hpNav,'style','pushbutton','CData',cdata,...
     'callback',@browseImageCB,'enable','on','backgroundcolor','w',...
-    'position',[135 2 20 20],'ToolTipString',ttstr);
+    'position',[hbchdir.Position(1)+hbchdir.Position(3) 18 20 20],'ToolTipString',ttstr);
 
     function browseImageCB(~,~)
        loadImage; 
     end
 
+% Button to delete image
+ttstr='Delete this image from the source directory';
+cdata=imresize(imread('icons/garbage.jpg'),[17 17]);
+hbdelete=uicontrol(hpNav,'style','pushbutton','CData',cdata,...
+    'callback',@deleteImageCB,'enable','on','backgroundcolor','w',...
+    'position',[hbload.Position(1)+hbload.Position(3) 18 20 20],'ToolTipString',ttstr);
+
+    function deleteImageCB(src,evt)
+        filename = tNavName.String;
+        str = ['delete ' filename '?'];
+         answer = questdlg('Send image to recyle bin?',str,...
+            'Yes','No','No') ;        
+        switch answer
+            case 'Yes'
+                disp(['deleting' filename  ' ...'])
+                
+                if exist(filename,'file')                    
+                    previousState = recycle('on');
+                    delete(filename);
+                    recycle(previousState);
+                    disp('deleted');
+                    chData([],[],tNavInd.Data);
+                else
+                    disp('no file to delete?')
+                end
+            case 'No'
+                disp('cancel delete')
+            otherwise
+                disp('cancel delete')
+        end        
+     
+
+    end
+      
+
 ttstr='Jump to most recent image acquired.';
 hbNavNow=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',[char(10094) char(10094)],'fontsize',10,...
-    'callback',{@chData, 0},'ToolTipString',ttstr);
-hbNavNow.Position=[155 2 24 20];
+    'callback',{@chData, 1},'ToolTipString',ttstr,'UserData','absolute');
+hbNavNow.Position=[hbdelete.Position(1)+hbdelete.Position(3) 18 24 20];
 
 ttstr='Step to next more recent image';
 hbNavLeft=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10094),'fontsize',10,...
-    'callback',{@chData, -1},'ToolTipString',ttstr);
-hbNavLeft.Position=[179 2 12 20];
+    'callback',{@chData, -1},'ToolTipString',ttstr,'UserData','increment');
+hbNavLeft.Position=[hbNavNow.Position(1)+hbNavNow.Position(3) 18 12 20];
 
-tNavInd=uicontrol(hpNav,'Style','text','units','pixels',...
-    'backgroundcolor','w','string','000','fontsize',12);
-tNavInd.Position=[191 2 30 20];
+tNavInd=uitable('parent',hpNav,'units','pixels','columnformat',{'numeric'},...
+    'fontsize',8,'columnwidth',{25},'rowname',{},'columnname',{},...
+    'columneditable',[true],'CellEditCallback',@tblch,'UserData','absolute');
+tNavInd.Data=[200];
+tNavInd.Position(1:2)=[hbNavLeft.Position(1)+hbNavLeft.Position(3)  18];
+tNavInd.Position(3:4)=tNavInd.Extent(3:4);
+
+    function tblch(src,evt)
+        n=evt.NewData;        
+        if isnumeric(n) && n > 0 && floor(n) == n
+            chData(src,evt,n)% n is a natural number
+        else
+            src.Data = evt.PreviousData;
+        end
+    end
+
+% Text for total number of images in directory
+ttstr='Total number of images in the directory';
+tNavMax=uicontrol(hpNav,'style','text','string','of 2001','fontsize',7,...
+    'backgroundcolor','w','units','pixels','horizontalalignment','center',...
+    'Position',[tNavInd.Position(1)+tNavInd.Position(3) 18 35 14],'tooltipstring',ttstr);
 
 ttstr='Step to later image.';
 hbNavRight=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
     'backgroundcolor','w','String',char(10095),'fontsize',10,...
-    'callback',{@chData, 1},'ToolTipString',ttstr);
-hbNavRight.Position=[221 2 12 20];
+    'callback',{@chData, 1},'ToolTipString',ttstr,'UserData','increment');
+hbNavRight.Position=[tNavMax.Position(1)+tNavMax.Position(3) 18 12 20];
+
+ttstr='Jump to first image acquired.';
+hbNavLast=uicontrol(hpNav,'Style','pushbutton','units','pixels',...
+    'backgroundcolor','w','String',[char(10095) char(10095)],'fontsize',10,...
+    'callback',{@chData, inf},'ToolTipString',ttstr,'UserData','absolute');
+hbNavLast.Position=[hbNavRight.Position(1)+hbNavRight.Position(3) 18 24 20];
+
 
     function loadImage(filename)
         if nargin<1
@@ -833,7 +906,12 @@ hbNavRight.Position=[221 2 12 20];
     end
 
 % Callback function for changing number of ROIs
-    function chData(~,~,state)        
+    function chData(src,evt,state)     
+        if isempty(src)
+            index_type='absolute';
+        else
+            index_type = src.UserData;
+        end
        % Get mat files in history directory          
        filenames=dir([currDir  filesep '*.mat']);
        filenames={filenames.name};       
@@ -854,170 +932,241 @@ hbNavRight.Position=[221 2 12 20];
 %         end        
     
         % Current data mat  
-       myname=[data.Name '.mat'];           	     
+       myname=[data.Name '.mat'];        
 
-       % Find current filename in directory
+      % Find current filename in directory
        i0=find(strcmp(filenames,myname),1);
        if isempty(i0)
           i0=1; 
        end
 
-        switch state
-            case -1
-                i1=max([i0-1 1]);            
-            case 1
-                i1=min([i0+1 length(filenames)]);
-            case 0
-                i1=1;        
-        end   
+       switch index_type
+           case 'increment'
+               if isequal(state,-1)
+                    i1=max([i0-1 1]); 
+               elseif isequal(state,1)
+                    i1=min([i0+1 length(filenames)]);
+               end
+           case  'absolute'               
+               i1 = max([min([state length(filenames)]) 1]); 
+       end
+
+ 
+
+        % switch state
+        %     case -1
+        %         i1=max([i0-1 1]);            
+        %     case 1
+        %         i1=min([i0+1 length(filenames)]);
+        %     case 0
+        %         i1=1;    
+        %     case nan
+        %         i1 = length(filename);
+        % end   
         
         newfilename=fullfile(currDir,filenames{i1});
-        tNavInd.String=sprintf('%03d',i1);
-        [a,b,~]=fileparts(newfilename);
-        tNavName.String=fullfile(a,b);  
+        % tNavInd.String=sprintf('%03d',i1);
+        tNavInd.Data(1)=i1;
+
+
+        % [a,b,ext]=fileparts(newfilename);
+        % tNavName.String=fullfile(a,[b ext]); 
+        tNavName.String = newfilename;
+        tNavMax.String=['of ' num2str(length(filenames))];        
+
         drawnow;   
         loadImage(newfilename);
     end
+
+
+% Checkbox for auto updating when new images are taken
+ttstr='Automatically refresh to most recent image upon new image acquisition.';
+cAutoUpdate=uicontrol('parent',hpNav,'units','pixels','string',...
+    'hold image?','value',0,'fontsize',8,'backgroundcolor','w',...
+    'Style','checkbox','ToolTipString',ttstr);
+cAutoUpdate.Position=[hbNavLast.Position(1)+hbNavLast.Position(3) 20 90 14];
 
 % Text for string of full file name
 ttstr='Name of current image';
 tNavName=uicontrol(hpNav,'style','text','string','FILENAME','fontsize',7,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'Position',[235 2 hpNav.Position(3)-133 14],'tooltipstring',ttstr);
+    'Position',[1 1 hpNav.Position(3) 14],'tooltipstring',ttstr);
 tNavName.String=data.Name;
 
 
 %% Image Process Panel
 
-hpADV=uipanel(hF,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpAcq.Position(2)-160 160 230],'title','processing');
+hpProcess=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'Position',[0 hpControl.Position(4)-270 160 270],'title','processing');
+hpProcess.Position(3) = 160;
+hpProcess.Position(4) = 270;
+hpProcess.Position(1) = 0;
+hpProcess.Position(2) = hpNav.Position(2) - hpProcess.Position(4);
 
-ttstr='Apply gaussian filter to smooth image';
-cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
-    'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',1,'ToolTipString',ttstr,'fontsize',7);
-cKGaussFilter.Position=[5 1 80 15];
-
-% Fitlering the FFT
-tblKGaussFilter=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',1,'columneditable',[true],...
-    'columnwidth',{25},'fontsize',7,'ColumnFormat',{'numeric'});
-tblKGaussFilter.Position=[80 cKGaussFilter.Position(2)-3 30 20];
-
-% Mask IR Checkbox
-hcIRMask=uicontrol(hpADV,'style','checkbox','string','mask IR (1/px)','fontsize',7,...
-    'backgroundcolor','w','Position',[5 18 100 15],...
-    'ToolTipString',ttstr,'enable','on','value',1);
-
-% IR Mask Value
-tblIRMask=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',.01,'columneditable',[true],...
-    'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-tblIRMask.Position=[hpADV.Position(3)-55 hcIRMask.Position(2)+1 50 20];
+tbl_process_1 = uitable('parent',hpProcess,'columnformat',{'logical','char'},...
+    'columnname',{},'rowname',{},'columnwidth',{15,135},'columneditable',[true false],...
+    'fontsize',7);
+tbl_process_1.Data={true 'subtract bias';
+    true 'subtract background';
+    false 'apply image mask';
+    false 'deconvolve psf Rich-Lucy';
+    true 'auto-detect PSF noise?'};
+tbl_process_1.Position(3:4)=tbl_process_1.Extent(3:4);
+tbl_process_1.Position(1:2)=[1 hpProcess.Position(4)-tbl_process_1.Position(4)-15];
 
 
-% Checkbox for computing FFT
-ttstr='compute fft';
-hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',7,...
-    'backgroundcolor','w','Position',[5 33 80 15],...
-    'ToolTipString',ttstr,'enable','off','Value',1);
 
-% Checkbox for enabling 2D gauss fitting
-ttstr='Apply gaussian filter to smooth image';
-cGaussFilter=uicontrol('style','checkbox','string','gauss filter (px)',...
-    'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',0,'ToolTipString',ttstr,'fontsize',7);
-cGaussFilter.Position=[5 hcFFT.Position(2)+16 100 15];
+% 
+% 
+% 
+% 
+% 
+% ttstr='Apply gaussian filter to smooth image';
+% cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
+%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
+%     'value',1,'ToolTipString',ttstr,'fontsize',7);
+% cKGaussFilter.Position=[5 1 80 15];
+% 
+% % Fitlering the FFT
+% tblKGaussFilter=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',1,'columneditable',[true],...
+%     'columnwidth',{25},'fontsize',7,'ColumnFormat',{'numeric'});
+% tblKGaussFilter.Position=[80 cKGaussFilter.Position(2)-3 30 20];
+% 
+% % Mask IR Checkbox
+% hcIRMask=uicontrol(hpADV,'style','checkbox','string','mask IR (1/px)','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 18 100 15],...
+%     'ToolTipString',ttstr,'enable','on','value',1);
+% 
+% % IR Mask Value
+% tblIRMask=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',.01,'columneditable',[true],...
+%     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
+% tblIRMask.Position=[hpADV.Position(3)-55 hcIRMask.Position(2)+1 50 20];
+% 
+% 
+% % Checkbox for computing FFT
+% ttstr='compute fft';
+% hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 33 80 15],...
+%     'ToolTipString',ttstr,'enable','off','Value',1);
+% 
+% % Checkbox for enabling 2D gauss fitting
+% ttstr='Apply gaussian filter to smooth image';
+% cGaussFilter=uicontrol('style','checkbox','string','gauss filter (px)',...
+%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
+%     'value',0,'ToolTipString',ttstr,'fontsize',7);
+% cGaussFilter.Position=[5 hcFFT.Position(2)+16 100 15];
+% 
+% tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',.25,'columneditable',[true],...
+%     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
+% tblGaussFilter.Position=[hpADV.Position(3)-50 cGaussFilter.Position(2)-2 45 20];
+% 
+% % Rotate data (makes it easier for lattice grid stuff)
+% ttstr='Rotate data';
+% cRotate=uicontrol('style','checkbox','string','rotate (deg.)',...
+%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
+%     'value',0,'ToolTipString',ttstr,'fontsize',7);
+% cRotate.Position=[5 cGaussFilter.Position(2)+15 80 15];
+% 
+% tblTheta=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',59.81,'columneditable',[true],...
+%     'columnwidth',{60},'fontsize',8,'ColumnFormat',{'numeric'});
+% tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
+% 
+% 
+% % Rotate data (makes it easier for lattice grid stuff)
+% ttstr='scale up image';
+% cScale=uicontrol('style','checkbox','string','scale factor',...
+%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
+%     'value',0,'ToolTipString',ttstr,'fontsize',7);
+% cScale.Position=[5 cRotate.Position(2)+18 80 15];
+% 
+% tblScale=uitable('parent',hpADV,'units','pixels',...
+%     'rowname',{},'columnname',{},'Data',2,'columneditable',[true],...
+%     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
+% tblScale.Position=[hpADV.Position(3)-70 cScale.Position(2) 50 20];
+% 
+% 
+% % Checkbox for applying point spread function 
+% ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
+% hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 tblScale.Position(2)+70 155 20],...
+%     'ToolTipString',ttstr,'enable','on');
+% 
+% ttstr='Calculate noise statistics from image?';
+% hcPSF_noise=uicontrol(hpADV,'style','checkbox','string','auto detect noise?','fontsize',6,...
+%     'backgroundcolor','w','Position',[15 hcPSF.Position(2)-10 155 14],'Value',1,...
+%     'ToolTipString',ttstr,'enable','on');
 
-tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',.25,'columneditable',[true],...
-    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
-tblGaussFilter.Position=[hpADV.Position(3)-50 cGaussFilter.Position(2)-2 45 20];
-
-% Rotate data (makes it easier for lattice grid stuff)
-ttstr='Rotate data';
-cRotate=uicontrol('style','checkbox','string','rotate (deg.)',...
-    'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',0,'ToolTipString',ttstr,'fontsize',7);
-cRotate.Position=[5 cGaussFilter.Position(2)+15 80 15];
-
-tblTheta=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',59.81,'columneditable',[true],...
-    'columnwidth',{60},'fontsize',8,'ColumnFormat',{'numeric'});
-tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
-
-
-% Rotate data (makes it easier for lattice grid stuff)
-ttstr='scale up image';
-cScale=uicontrol('style','checkbox','string','scale factor',...
-    'units','pixels','parent',hpADV,'backgroundcolor','w',...
-    'value',0,'ToolTipString',ttstr,'fontsize',7);
-cScale.Position=[5 cRotate.Position(2)+18 80 15];
-
-tblScale=uitable('parent',hpADV,'units','pixels',...
-    'rowname',{},'columnname',{},'Data',2,'columneditable',[true],...
-    'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
-tblScale.Position=[hpADV.Position(3)-70 cScale.Position(2) 50 20];
-
-
-% Checkbox for applying point spread function 
-ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
-hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',7,...
-    'backgroundcolor','w','Position',[5 tblScale.Position(2)+70 155 20],...
-    'ToolTipString',ttstr,'enable','on');
-
-ttstr='Calculate noise statistics from image?';
-hcPSF_noise=uicontrol(hpADV,'style','checkbox','string','auto detect noise?','fontsize',6,...
-    'backgroundcolor','w','Position',[15 hcPSF.Position(2)-10 155 14],'Value',1,...
-    'ToolTipString',ttstr,'enable','on');
-
-tblPSF=uitable('parent',hpADV,'units','pixels',...
+tblPSF=uitable('parent',hpProcess,'units','pixels',...
     'columnname',{char(963),'size','iter','noise'},'rowname',{},'Data',[1.32 11 31 25],'columneditable',[true],...
     'columnwidth',{35 25 25 35},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
-tblPSF.Position(1:2)=[20 hcPSF_noise.Position(2)-tblPSF.Extent(4)];  
+% tblPSF.Position(1:2)=[20 hcPSF_noise.Position(2)-tblPSF.Extent(4)];  
+tblPSF.Position(1:2)=[10 tbl_process_1.Position(2)-tblPSF.Extent(4)-2];  
+
+tbl_process_2 = uitable('parent',hpProcess,'columnformat',{'logical','char'},...
+    'columnname',{},'rowname',{},'columnwidth',{15,95, 40},'columneditable',[true false true],...
+    'fontsize',7);
+tbl_process_2.Data={
+    false 'gauss filter (px)' 1;
+     false 'scale (factor)' 2;
+    false 'rotate (deg)' 60;
+    false 'fft filter (px)' 1;
+    false 'fft ir mask (1/px)' 1;
+   };
+tbl_process_2.Position(3:4)=tbl_process_2.Extent(3:4);
+tbl_process_2.Position(1:2)=[1 tblPSF.Position(2)-tbl_process_2.Position(4)-5];
 
 
+% % Subtract background image
+% ttstr='Subtract off background image from atoms images.';
+% hcSubBG=uicontrol(hpADV,'style','checkbox','string','subtract bgd','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 hcPSF.Position(2)+15 80 15],...
+%     'ToolTipString',ttstr,'enable','on','Value',1);
+% 
+% ttstr='Apply mask to image to eliminate aperture clipping';
+% hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 hcSubBG.Position(2)+15 120 13],...
+%     'ToolTipString',ttstr,'enable','on','Value',0);
+% 
+% % Subtract bias
+% ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
+% hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',7,...
+%     'backgroundcolor','w','Position',[5 hcMask.Position(2)+13 80 15],...
+%     'ToolTipString',ttstr,'enable','on','Value',1);
 
-% Subtract background image
-ttstr='Subtract off background image from atoms images.';
-hcSubBG=uicontrol(hpADV,'style','checkbox','string','subtract bgd','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hcPSF.Position(2)+15 80 15],...
-    'ToolTipString',ttstr,'enable','on','Value',1);
 
-ttstr='Apply mask to image to eliminate aperture clipping';
-hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hcSubBG.Position(2)+15 120 13],...
-    'ToolTipString',ttstr,'enable','on','Value',0);
-
-% Subtract bias
-ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
-hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',7,...
-    'backgroundcolor','w','Position',[5 hcMask.Position(2)+13 80 15],...
-    'ToolTipString',ttstr,'enable','on','Value',1);
 
 % process button
-hbprocess=uicontrol(hpADV,'style','pushbutton','string','process',...
-    'units','pixels','callback',@processCB,'parent',hpADV,'backgroundcolor',[80 200 120]/255);
-hbprocess.Position=[hpADV.Position(3)-45 1 45 15];
-
+hbprocess=uicontrol(hpProcess,'style','pushbutton','string','process',...
+    'units','pixels','callback',@processCB,'parent',hpProcess,'backgroundcolor',[80 200 120]/255);
+hbprocess.Position=[hpProcess.Position(3)-45 1 45 15];
+% hbprocess.Position=[hpADV.Position(3)-45 hpADV.Position(4)-30 45 15];
+hbprocess.Position=[3 1 hpProcess.Position(3)-8 18];
+hbprocess.String = 'process images';
     function processCB(src,evt)
         newDataCallback;
   end
 
 %% Analysis Panel
-hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
-hpAnl.Position=[0 hpADV.Position(2)-130 160 180];
+% hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
+% hpAnl.Position=[0 hpADV.Position(2)-130 160 180];
+
+hpPosition=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'Position',[0 hpProcess.Position(2)-170 160 170],'title','position analysis');
 
 
 % Checkbox for center of mass and sigma 
 ttstr='Automatically perform analysis on new image';
-hc_anlX_auto=uicontrol(hpAnl,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
-    'backgroundcolor','w','Position',[1 hpAnl.Position(4)-35 hpAnl.Position(3)-1 15],...
+hc_anlX_auto=uicontrol(hpPosition,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hpPosition.Position(4)-35 hpPosition.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
 % Table of ROIs
-tblROI=uitable(hpAnl,'units','pixels','ColumnWidth',{30 30 30 30},...
+tblROI=uitable(hpPosition,'units','pixels','ColumnWidth',{30 30 30 30},...
     'ColumnEditable',true(ones(1,4)),'ColumnName',{'X1','X2','Y1','Y2'},...
     'Data',[1 512 1 512],'FontSize',8,...
     'CellEditCallback',@chROI,'RowName',{});
@@ -1061,13 +1210,13 @@ tblROI.Position(1:2)=[5 hc_anlX_auto.Position(2)-tblROI.Position(4)];
 
 % Button to enable GUI selection of analysis ROI
 ttstr='Select the analysis ROI.';
-uicontrol(hpAnl,'style','pushbutton','Cdata',img_Select,'Fontsize',10,...
+uicontrol(hpPosition,'style','pushbutton','Cdata',img_Select,'Fontsize',10,...
     'Backgroundcolor','w','Position',[130 tblROI.Position(2)+25 18 18],...
     'Callback',@slctROICB,'ToolTipString',ttstr);
 
 % % Button to snap display ROI to the data ROI
 ttstr='Snap analysis ROI to display ROI.';
-uicontrol(hpAnl,'style','pushbutton','Cdata',img_Snap,'Fontsize',10,...
+uicontrol(hpPosition,'style','pushbutton','Cdata',img_Snap,'Fontsize',10,...
     'Backgroundcolor','w','Position',[130 tblROI.Position(2)+7 18 18],...
     'Callback',@snapPosAnalysisROI,'ToolTipString',ttstr);
 
@@ -1080,7 +1229,7 @@ uicontrol(hpAnl,'style','pushbutton','Cdata',img_Snap,'Fontsize',10,...
 
 % Button for maximizing the display limits
 ttstr='Max analysis ROI to full image size.';
-uicontrol(hpAnl,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
+uicontrol(hpPosition,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
     'Backgroundcolor','w','Callback',@maxPosAnalysisROI,...
     'ToolTipString',ttstr,'Position',[130 tblROI.Position(2)-11 18 18]);
 
@@ -1101,8 +1250,12 @@ uicontrol(hpAnl,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         x1=round(x1);y1=round(y1);  % Round to interger       
         p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it        
         [x2,y2]=ginputMe(1);          % Get a mouse click
+        enableInteractivity;
+
         x2=round(x2);y2=round(y2);  % Round it        
         p2=plot(x2,y2,'+','color','r','linewidth',1,'markersize',10,'hittest','off');  % Plot it
+
+        
         % Create the ROI
         ROI=[min([x1 x2]) max([x1 x2]) min([y1 y2]) max([y1 y2])];
         % Constrain ROI to image
@@ -1122,28 +1275,23 @@ uicontrol(hpAnl,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         delete(p1);delete(p2);                   % Delete markers
     end
 
+
 % Checkbox for center of mass and sigma 
 ttstr='Find 1st and 2nd moments in the ROI box.';
-hc_anlX_Box=uicontrol(hpAnl,'style','checkbox','string','box','fontsize',7,...
-    'backgroundcolor','w','Position',[5 77 120 15],...
+hc_anlX_Box=uicontrol(hpPosition,'style','checkbox','string','box','fontsize',7,...
+    'backgroundcolor','w','Position',[5 tblROI.Position(2)-15 120 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
-% Checkbox for image sharpness
-% ttstr='Calculate the image sharpness';
-% hc_anlX_Sharpness=uicontrol(hpAnl,'style','checkbox','string','sharpness','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 62 120 15],...
-%     'ToolTipString',ttstr,'enable','off','Value',1);
-
 % Checkbox for image histogram
-ttstr='Calculate histgoram';
-hc_anlX_Histogram=uicontrol(hpAnl,'style','checkbox','string','histogram','fontsize',7,...
-    'backgroundcolor','w','Position',[5 47 120 15],...
+ttstr='Calculate histogram';
+hc_anlX_Histogram=uicontrol(hpPosition,'style','checkbox','string','histogram','fontsize',7,...
+    'backgroundcolor','w','Position',[5 hc_anlX_Box.Position(2)-15 120 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
 % Checkbox for principal component analysis
 ttstr='Principal component analysis to determine cloud axes..';
-hc_anlX_PCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','fontsize',7,...
-    'backgroundcolor','w','Position',[5 32 120 15],...
+hc_anlX_PCA=uicontrol(hpPosition,'style','checkbox','string','find principal axes','fontsize',7,...
+    'backgroundcolor','w','Position',[5 hc_anlX_Histogram.Position(2)-15 120 15],...
     'ToolTipString',ttstr,'enable','off','callback',@hcpcaCB);
 
     function hcpcaCB(src,~)
@@ -1162,8 +1310,8 @@ hc_anlX_PCA=uicontrol(hpAnl,'style','checkbox','string','find principal axes','f
     end
 
 
-hc_anlX_Gauss=uicontrol(hpAnl,'style','checkbox','string','gaussian','fontsize',7,...
-    'backgroundcolor','w','Position',[5 17 60 15],...
+hc_anlX_Gauss=uicontrol(hpPosition,'style','checkbox','string','gaussian','fontsize',7,...
+    'backgroundcolor','w','Position',[5 hc_anlX_PCA.Position(2)-15 60 15],...
     'ToolTipString',ttstr,'enable','on','callback',@hcgaussCB);
 
     function hcgaussCB(src,~)
@@ -1180,24 +1328,28 @@ hc_anlX_Gauss=uicontrol(hpAnl,'style','checkbox','string','gaussian','fontsize',
        if src.Value;hc_anlX_GaussRot.Value=0;end
     end
 
-hc_anlX_GaussRot=uicontrol(hpAnl,'style','checkbox','string','rotatable?','fontsize',7,...
+hc_anlX_GaussRot=uicontrol(hpPosition,'style','checkbox','string','rotatable?','fontsize',7,...
     'backgroundcolor','w','Position',[65 hc_anlX_Gauss.Position(2) 100 15],'callback',@(~,~) disp('hi'),...
     'ToolTipString',ttstr,'enable','off');
 
 ttstr='Analyze stripe pattern in image to measure field stability';
-hcStripe=uicontrol(hpAnl,'style','checkbox','string','stripe pattern','fontsize',7,...
-    'backgroundcolor','w','Position',[5 2 100 15],...
+hcStripe=uicontrol(hpPosition,'style','checkbox','string','stripe pattern','fontsize',7,...
+    'backgroundcolor','w','Position',[5 hc_anlX_Gauss.Position(2)-15 100 15],...
     'ToolTipString',ttstr);
 
 % Do Position space analysis
-hbposition=uicontrol(hpAnl,'style','pushbutton','string','analyze',...
-    'units','pixels','callback',{@(~,~) updatePositionAnalysis},'parent',hpAnl,...
-    'backgroundcolor','w','position',[hpAnl.Position(3)-45 1 45 15],'backgroundcolor',[80 200 120]/255);
+hbposition=uicontrol(hpPosition,'style','pushbutton','string','position analysis',...
+    'units','pixels','callback',{@(~,~) updatePositionAnalysis},'parent',hpPosition,...
+    'backgroundcolor','w','position',[3 1 hpPosition.Position(3)-8 18],'backgroundcolor',[80 200 120]/255);
+
 
 
 %% Momentum Panel
-hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
-hpKspace.Position=[0 hpAnl.Position(2)-90 160 105];
+% hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
+% hpKspace.Position=[0 hpAnl.Position(2)-90 160 105];
+
+hpKspace=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'Position',[0 hpPosition.Position(2)-110 160 110],'title','momentum analysis');
 
 % Checkbox for center of mass and sigma 
 ttstr='Automatically perform analysis on new image';
@@ -1256,9 +1408,11 @@ hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','lattice basis and 
 hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 
 % Refit button
-hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','analyze',...
+hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','momentum analysis',...
     'units','pixels','callback',@analyze_k,'parent',hpKspace,'backgroundcolor',[80 200 120]/255);
-hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
+hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
+
+
 
 % Callback function for redoing fits button
     function analyze_k(~,~)
@@ -1294,8 +1448,12 @@ hb_Kanalyze.Position=[hpKspace.Position(3)-45 1 45 15];
     end
 
 %% Binning Panel
-hpBin=uipanel(hF,'units','pixels','backgroundcolor','w','title','binning');
-hpBin.Position=[0 hpKspace.Position(2)-180 160 260];
+hpBin=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'title','binned analysis');
+hpBin.Position(3)=160;
+hpBin.Position(4)=275;
+hpBin.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
+hpBin.Position(2)=hpNav.Position(2)-hpBin.Position(4);
 
 ttstr='auto do bin analysis';
 hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
@@ -1437,6 +1595,8 @@ uicontrol(hpBin,'style','pushbutton','Cdata',img_Full,'Fontsize',10,...
         x1=round(x1);y1=round(y1);  % Round to interger       
         p1=plot(x1,y1,'+','color','r','linewidth',1,'markersize',10,'hittest','off'); % Plot it        
         [x2,y2]=ginputMe(1);          % Get a mouse click
+        enableInteractivity;
+
         x2=round(x2);y2=round(y2);  % Round it        
         p2=plot(x2,y2,'+','color','r','linewidth',1,'markersize',10,'hittest','off');  % Plot it
         % Create the ROI
@@ -1466,9 +1626,15 @@ hc_anlB_Histogram=uicontrol(hpBin,'style','checkbox','string','histogram','fonts
     'backgroundcolor','w','Position',[1 tblROIB.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
 
+ttstr='radial binned histgoram analysis';
+hc_anlB_Radial=uicontrol(hpBin,'style','checkbox','string','radial analysis','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-15 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',1);
+
+
 ttstr='bin stripe focus';
 hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe; Threshold :','fontsize',7,...
-    'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-15 hpBin.Position(3)-1 15],...
+    'backgroundcolor','w','Position',[1 hc_anlB_Radial.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
 stripe_threshold_tbl=uitable('parent',hpBin,'units','pixels','RowName',{},'ColumnName',{},...
@@ -1479,9 +1645,9 @@ stripe_threshold_tbl.Position(1:2)=[90 hc_anlB_stripe.Position(2)];
 
 
 % Refit button
-hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','analyze',...
+hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','binned analysis',...
     'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor',[80 200 120]/255);
-hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
+hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
 
     function [a1, a2, p1, p2] = getLattice        
         switch bgBasis.SelectedObject.UserData
@@ -1542,31 +1708,27 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
             x = data.X(ix_1:ix_2);
             y = data.Y(iy_1:iy_2);   
             z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
-%             znofilter = data.ZNoFilter(iy_1:iy_2,ix_1:ix_2,kk);   
             tic;
             fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
-                ') binning into lattice ...']);    
-           
+                ') binning into lattice ...']);   
             tic
-            data.LatticeBin(kk) = binLattice(x,y,z,opts); 
-%             toc
-            
-%             tic
-%             data.LatticeBin(kk) = binLattice2(x,y,z,opts); 
-% toc
-
-%             data.LatticeBinNoFilter(kk) = binLattice(x,y,znofilter,opts); 
+             data.LatticeBin(kk) = binLattice(x,y,z,opts); 
             t2=toc;
             disp(['done (' num2str(t2,3) ' sec.)']);
         end 
 
         data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
-%         data = ixon_SharpnessBinned(data);  
 
-%         data = ixon_binnedHistogramFit(data);
         
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
+
+         if hc_anlB_Radial.Value
+             ropts=struct;
+             ropts.FigureNumber = 3001;
+            data=bin_radialHistogram(data);
+            bin_showRadialHistogram(data,ropts);
+         end
         
         if hc_anlB_stripe.Value
             opts_stripe = struct;
@@ -1594,8 +1756,15 @@ hb_Binanalyze.Position=[hpBin.Position(3)-45 1 45 15];
     
     end
 %% Digitization Panel
-hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','digitization');
-hpDig.Position=[0 hpBin.Position(2)-80 160 100];
+% hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','digitization');
+% hpDig.Position=[0 hpBin.Position(2)-80 160 100];
+
+
+hpDig=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'title','digital analysis');
+hpDig.Position(3:4) = [160 140];
+hpDig.Position(1) = hpBin.Position(1);
+hpDig.Position(2) = hpBin.Position(2)-hpDig.Position(4);
 
 ttstr='auto do digital analysis';
 hc_anlD_auto=uicontrol(hpDig,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
@@ -1604,32 +1773,36 @@ hc_anlD_auto=uicontrol(hpDig,'style','checkbox','string','auto-analyze on new im
 
 % Digitization Threshold Text
 hcDigThreshold=uicontrol(hpDig,'style','text','string','digitization threshold','fontsize',7,...
-    'backgroundcolor','w','Position',[5 40 100 15],'horizontalalignment','left');
-
+    'backgroundcolor','w','Position',[1 hc_anlD_auto.Position(2)-20 100 15],'horizontalalignment','left');
+hcDigThreshold.Position(3)=hcDigThreshold.Extent(3);
 % Digitization Threshold
 tblDig=uitable('parent',hpDig,'units','pixels',...
     'rowname',{},'columnname',{},'Data',3000,'columneditable',[true],...
     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-tblDig.Position=[hpDig.Position(3)-55 hcDigThreshold.Position(2)+1 50 20];
+tblDig.Position=[hcDigThreshold.Position(1)+hcDigThreshold.Position(3) hcDigThreshold.Position(2)+1 50 20];
 
-% Digitization Threshold Text
-% hcDigPixelThreshold = uicontrol(hpDig,'style','text','string','pixel threshold','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 18 100 15],'horizontalalignment','left');
 
-% Digitization Threshold
-% tblDigPixel=uitable('parent',hpDig,'units','pixels',...
-%     'rowname',{},'columnname',{},'Data',0,'columneditable',[true],...
-%     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-% tblDigPixel.Position=[hpDig.Position(3)-55 hcDigPixelThreshold.Position(2)+1 50 20];
-% 
-% % Digitization Threshold Text
-hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','fidelity','fontsize',7,...
-    'backgroundcolor','w','Position',[5 10 100 15],'Value',0);
+% Thresholding Fidelity
+hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','threshold fidelity','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hcDigThreshold.Position(2)-15 100 15],'Value',0);
+
+% Smart Thresholding
+hcSmartThreshold=uicontrol(hpDig,'style','checkbox','string','radial thresholding','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hcDigFidelity.Position(2)-15 100 15],'Value',0,'enable','off');
+
+% Maximum Liklihood Algorithm
+hcDigLikelihood=uicontrol(hpDig,'style','checkbox','string','maximum likelihood','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hcSmartThreshold.Position(2)-15 120 15],'Value',0,'enable','off');
+
+% Maximum Liklihood Algorithm
+hcDigRadial=uicontrol(hpDig,'style','checkbox','string','radial analysis','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hcDigLikelihood.Position(2)-15 120 15],'Value',0);
+
 
 % Refit button
-hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','analyze',...
+hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','digital analysis',...
     'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor',[80 200 120]/255);
-hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
+hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
 
     function chBasis(src,evt)
        defaultBasis = src.Data;
@@ -1651,7 +1824,6 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
              
             opts=struct;
             opts.threshold = dig_threshold;
-            opts.FigureNumber = 4001;      
             
             opts.Label = data.Name;
             n1 = data.LatticeDig(1).n1;
@@ -1662,11 +1834,13 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
                 Zdig(:,:,jj) = data.LatticeDig(jj).Zdig;
             end
 
-            out = dig_Fidelity(Zdig,n1,n2,opts);
-            
-            opts.FigureNumber = 4002; 
+            opts.FigureNumber = 4001; 
             bin_Fidelity(data,opts);
             
+            opts.FigureNumber = 4002; 
+            out = dig_Fidelity(Zdig,n1,n2,opts);
+            
+
             data.DigFideltiy = out;
  
         end  
@@ -1713,26 +1887,30 @@ hb_Diganalyze.Position=[hpDig.Position(3)-45 1 45 15];
         pAtoms.DataTipTemplate.DataTipRows(5) = row;
         
         drawnow;
-%         keyboard
         
     end
 
-
 %% Image Number Selector
-hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
-hpDisp_Select.Position=[160 500 160 80];
+% hpDisp_Select = uipanel(hF,'units','pixels','backgroundcolor','w','title','image selector');
+% hpDisp_Select.Position=[160 500 160 80];
+
+hpDisp_Select = uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'title','image selector');
+hpDisp_Select.Position=[320 hpNav.Position(2)-50 280 50];
 
 menuSelectCMAP=uicontrol('style','popupmenu','string',...
     {'black-purple','black-purple-white','white-purple'},'units','pixels','parent',hpDisp_Select,...
     'Callback',@updateCMAP,'fontsize',12,'Value',3);
-menuSelectCMAP.Position(3:4)=[150 18];
-menuSelectCMAP.Position(1:2)=[2 45];   
+menuSelectCMAP.Position(3:4)=[125 18];
+menuSelectCMAP.Position(1:2)=[2 15];   
 
 menuSelectImg=uicontrol('style','popupmenu','string',...
     {'image 1 of 1','image 1 of 2'},'units','pixels','parent',hpDisp_Select,...
     'Callback',{@(a,b) updateGraphics},'fontsize',12);
-menuSelectImg.Position(3:4)=[150 18];
-menuSelectImg.Position(1:2)=[2 15];   
+menuSelectImg.Position(3:4)=[125 18];
+% menuSelectImg.Position(1:2)=[2 15];   
+menuSelectImg.Position(1)=menuSelectCMAP.Position(1)+menuSelectCMAP.Position(3)+2;
+menuSelectImg.Position(2)=15;   
 
     function updateCMAP(src,evt)
         switch src.Value
@@ -1792,14 +1970,39 @@ menuSelectImg.Position(1:2)=[2 15];
 
 %% Display Options Panel
 
-hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w','title','position display');
+% hpDispOpt=uitabgroup(hF,'units','pixels');
+% hpDispOpt=uipanel(hF,'units','pixels','title','display');
+
+hpDispOpt=uitabgroup(hpControl,'units','pixels');
+hpDispOpt.Position(1) = hpDisp_Select.Position(1);
+hpDispOpt.Position(3) = hpDisp_Select.Position(3);
+hpDispOpt.Position(4) = 250;
+hpDispOpt.Position(2) = hpDisp_Select.Position(2)-hpDispOpt.Position(4);
+
+disp_opt_tabs(1)=uitab(hpDispOpt,'Title','position','units','pixels');
+disp_opt_tabs(2)=uitab(hpDispOpt,'Title','stripe','units','pixels');
+disp_opt_tabs(3)=uitab(hpDispOpt,'Title','histogram','units','pixels');
+disp_opt_tabs(4)=uitab(hpDispOpt,'Title','momentum','units','pixels');
+disp_opt_tabs(5)=uitab(hpDispOpt,'Title','binned','units','pixels');
+disp_opt_tabs(6)=uitab(hpDispOpt,'Title','binned histogram','units','pixels');
+disp_opt_tabs(7)=uitab(hpDispOpt,'Title','digitized','units','pixels');
+
+
+%% Display Options Panel
+
+hpDisp_X = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_X.Position=[160 500 160 190];
+
+set(hpDisp_X,'parent',hpDispOpt.Children(1))
+
+hpDisp_X.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+
 
 menuSelectImgType=uicontrol('style','popupmenu','string',...
     {'processed','no filter'},'units','pixels','parent',hpDisp_X,...
-    'Callback',{@ (src,evt) updateDispPosImg},'fontsize',8,'Value',1);
+    'Callback',{@ (src,evt) updateDispPosImg},'fontsize',8,'Value',2);
 menuSelectImgType.Position(3:4)=[140 18];
-menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Position(4)-15];   
+menuSelectImgType.Position(1:2)=[2 hpDisp_X.Position(4)-menuSelectImgType.Position(4)-35];   
 
     function updateDispPosImg
         imgnum = menuSelectImg.Value;
@@ -1908,8 +2111,11 @@ cDrawAtoms.Position=[2 2 80 15];
 
 %% Display Options Panel
 
-hpDisp_K = uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum display');
+hpDisp_K = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_K.Position=[160 hpDisp_X.Position(2)-180 160 180];
+
+set(hpDisp_K,'parent',hpDispOpt.Children(4));
+hpDisp_K.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
 
 % Table for changing display limits
 tbl_dROI_K=uitable('parent',hpDisp_K,'units','pixels','RowName',{},...
@@ -1994,8 +2200,13 @@ cLat_K_text.Position=[2 2 120 15];
 
 %% Bin and Digital Plot Display Options
 
-hpDisp_B = uipanel(hF,'units','pixels','backgroundcolor','w','title','binned display');
+hpDisp_B = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_B.Position=[160 hpDisp_K.Position(2)-120 160 120];
+
+set(hpDisp_B,'parent',hpDispOpt.Children(5));
+hpDisp_B.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+
+
 
 % Table for changing display limits
 tbl_dROI_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},...
@@ -2036,28 +2247,50 @@ cAutoColor_B.Position=[climtbl_B.Position(1)+climtbl_B.Position(3)+1 climtbl_B.P
 
 %% Count Histogram
 
-hpDisp_HB = uipanel(hF,'units','pixels','backgroundcolor','w','title','binned histogram display');
+hpDisp_HB = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_HB.Position=[160 hpDisp_B.Position(2)-80 160 80];
+
+set(hpDisp_HB,'parent',hpDispOpt.Children(6));
+hpDisp_HB.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+
+
 
 % Table to adjust color limits on image
 histBtbl=uitable('parent',hpDisp_HB,'units','pixels','RowName',{},'ColumnName',{'threshold','number bins'},...
     'Data',[3000 100],'ColumnWidth',{70,80},'ColumnEditable',[true true],...
     'CellEditCallback',@binnedHistCB,'fontsize',7);
 histBtbl.Position(3:4)=histBtbl.Extent(3:4);
-histBtbl.Position(1:2)=[2 20];
-    
+histBtbl.Position(1:2)=[2 1];
+
+
+% Checkbox for enabling display of the CoM analysis
+hchistBautothresh=uicontrol(hpDisp_HB,'style','checkbox','string','auto-threshold?',...
+    'units','pixels','fontsize',7,'backgroundcolor','w',...
+    'enable','on','value',1);
+hchistBautothresh.Position=[2 histBtbl.Position(2)+histBtbl.Position(4)+1 125 15];
+
+% Checkbox for enabling display of the CoM analysis
+hchistBthreshnoise=uicontrol(hpDisp_HB,'style','checkbox','string','threshold noise?',...
+    'units','pixels','fontsize',7,'backgroundcolor','w',...
+    'enable','on','value',1);
+hchistBthreshnoise.Position=[2 hchistBautothresh.Position(2)+hchistBautothresh.Position(4)+1 125 15];
+
+     
     function binnedHistCB(src,evt)
-        ind = evt.Indices(2);    
-        if ind == 2
-            updateBinnedHistogram;    
-        end
+        data=ixon_binnedHistogram(data,histBtbl.Data(1,2));
+
         updateBinnedHistogramGraphics;       
     end
 
 %% Digitized Display
 
-hpDisp_D = uipanel(hF,'units','pixels','backgroundcolor','w','title','digital display');
+hpDisp_D = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_D.Position=[160 hpDisp_HB.Position(2)-110 160 110];
+
+set(hpDisp_D,'parent',hpDispOpt.Children(7));
+hpDisp_D.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+
+
 
 % Table for changing display limits
 tbl_dROI_D=uitable('parent',hpDisp_D,'units','pixels','RowName',{},...
@@ -2220,6 +2453,7 @@ cCoMStr_D.Position=[2 2 125 15];
         [x2,y2]=ginputMe(1);                                    % Get a mouse click
         if isequal(img_type,'X') || isequal(img_type,'B');x2=round(x2);y2=round(y2);end  % Round Pos.      
         p2=plot(x2,y2,'+','color','k','linewidth',1);           % Marker 2
+enableInteractivity;
 
         delete(p1);delete(p2);                                  % Delete markers
 
@@ -2334,10 +2568,17 @@ cCoMStr_D.Position=[2 2 125 15];
 %% Tabular Data Results Panel
 % Panel for parameters and analysis results.
 
-hpFit=uitabgroup(hF,'units','pixels');
+hpFit=uitabgroup(hpControl,'units','pixels');
 % hpFit.Position=[320 0 300 ...
     % hF.Position(4)-(hpCam.Position(4)+hpSave.Position(4)+hpNav.Position(4))];
-hpFit.Position=[320 0 300 hpNav.Position(2)];
+% hpFit.Position=[320 0 300 hpNav.Position(2)];
+
+% hpFit.Position=[320 0 300 hpNav.Position(2)-200];
+
+hpFit.Position(1) = hpDispOpt.Position(1);
+hpFit.Position(3) = hpDispOpt.Position(3);
+hpFit.Position(2) = 0;
+hpFit.Position(4) = hpDispOpt.Position(2);
 
 tabs(1)=uitab(hpFit,'Title','acq','units','pixels');
 tabs(2)=uitab(hpFit,'Title','param','units','pixels');
@@ -2405,37 +2646,53 @@ tbl_acq=uitable(tabs(1),'units','normalized','RowName',{},'fontsize',7,...
 
 
 % Table for run parameters
-tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',8,...
-    'ColumnName',{},'ColumnWidth',{225 50},'columneditable',[false false],...
+tbl_params=uitable(tabs(2),'units','normalized','RowName',{},'fontsize',7,...
+    'ColumnName',{},'ColumnWidth',{215 40},'columneditable',[false false],...
     'Position',[0 0 1 1]);
 
 % Table for run flags
-tbl_flags=uitable(tabs(3),'units','normalized','RowName',{},'fontsize',8,...
-    'ColumnName',{},'ColumnWidth',{225 50},'columneditable',[false false],...
+tbl_flags=uitable(tabs(3),'units','normalized','RowName',{},'fontsize',7,...
+    'ColumnName',{},'ColumnWidth',{215 40},'columneditable',[false false],...
     'Position',[0 0 1 1]);
 
 % Table for pos analysis outputs
 tbl_pos_analysis=uitable(tabs(4),'units','normalized','RowName',{},'ColumnName',{},...
-    'fontsize',8,'ColumnWidth',{200 85},'columneditable',false(ones(1,2)),...
+    'fontsize',8,'ColumnWidth',{160 95},'columneditable',false(ones(1,2)),...
     'Position',[0 0 1 1]);
 
 % Table for fft analysis outputs
 tbl_fft_analysis=uitable(tabs(5),'units','normalized','RowName',{},'ColumnName',{},...
-    'fontsize',8,'ColumnWidth',{100 85},'columneditable',false(ones(1,2)),...
+    'fontsize',8,'ColumnWidth',{160 95},'columneditable',false(ones(1,2)),...
     'Position',[0 0 1 1]);
 
 % Table for hopping analysis outputs
 tbl_fidelity_analysis=uitable(tabs(6),'units','normalized','RowName',{},'ColumnName',{},...
-    'fontsize',8,'ColumnWidth',{100 85},'columneditable',false(ones(1,2)),...
+    'fontsize',8,'ColumnWidth',{160 95},'columneditable',false(ones(1,2)),...
     'Position',[0 0 1 1]);
 
 
 %% Initialize the image panel
 
 hp=uitabgroup(hF,'units','pixels','Position',...
-    [400 0 hF.Position(3)-200 hF.Position(4)-40]);
-% hp.Position=[400 0 hF.Position(3)-200 hF.Position(4)-40];
-hp.Position=[400 0 hF.Position(3)-200 hpNav.Position(2)];
+    [400 0 hF.Position(3)-200 hF.Position(4)-40],...
+    'SelectionChangedFcn',@hp_tab_cb);
+hp.Position=[hpControl.Position(3) 0 hF.Position(3)-hpControl.Position(3) hF.Position(4)];
+
+    function hp_tab_cb(src,evt)
+        newTitle = evt.NewValue.Title;
+
+        ind = 0;
+        for jj=1:length(hpDispOpt.Children)
+            if isequal(hpDispOpt.Children(jj).Title,newTitle)
+                ind = jj;
+            end
+        end
+        if ind
+            hpDispOpt.SelectedTab=hpDispOpt.Children(ind);
+        end
+
+       
+    end
 
 
 % Tab Groups for each display
@@ -2447,8 +2704,8 @@ tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
 
 tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
 tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
-tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
-tabFidelity=uitab(hp,'Title','fidelity','units','pixels','backgroundcolor','w');
+% tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
+% tabFidelity=uitab(hp,'Title','fidelity','units','pixels','backgroundcolor','w');
 
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary
@@ -2501,16 +2758,21 @@ hImg=imagesc(data.X,data.Y,data.Z);
 set(axImg,'box','on','linewidth',.1,'fontsize',10,'units','pixels',...
     'XAxisLocation','top','colormap',colormap(cmap),...
     'xcolor',co(4,:),'ycolor',co(4,:),'YDir','normal','UserData','X');
+
 hold on
 axImg.Position=[50 150 tabX.Position(3)-200 tabX.Position(4)-200];
 axis equal tight
 
-pxinfo = impixelinfo(hF,hImg);
+% This seems to mess with axis interactivity in certain versions of matlab
+% pxinfo = impixelinfo(hF,hImg);
+enableDefaultInteractivity(axImg);
 
 
 % Cross Hair Plots
-pCrossX=plot([1 512],[512/2 512/2],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
-pCrossY=plot([512/2 512/2],[1 512],'-','color',[1 0 0 .2],'linewidth',1,'hittest','off');
+pCrossX=plot([1 512],[512/2 512/2],'-',...
+    'color',[1 0 0 .2],'linewidth',1,'hittest','off','parent',axImg);
+pCrossY=plot([512/2 512/2],[1 512],'-',...
+    'color',[1 0 0 .2],'linewidth',1,'hittest','off','parent',axImg);
 
 % Initialize Grid Objects
 pGrid = line([1 512],[1 512],'linestyle','-',...
@@ -3189,10 +3451,10 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
         
         ROI=round(ROI);      % Make sure this ROI are integers   
         % Check that limits go from low to high
-        if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
-           warning('Bad ROI specification given.');
-           ROI(evt.Indices(2))=evt.PreviousData;
-        end               
+        % if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
+        %    % warning('Bad ROI specification given.');
+        %    % ROI(evt.Indices(2))=evt.PreviousData;
+        % end               
         % Check that ROI is within image bounds
         if ROI(1)<RL(1); ROI(1)=RL(1); end       
         if ROI(3)<RL(3); ROI(3)=RL(3); end   
@@ -3245,7 +3507,13 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
         imgnum = menuSelectImg.Value;        
         x = data.LatticeHistogram(imgnum).Centers;
         xe = data.LatticeHistogram(imgnum).Edges;
-        y = data.LatticeHistogram(imgnum).N;        
+        y = data.LatticeHistogram(imgnum).N;      
+
+
+        if hchistBautothresh.Value
+            histBtbl.Data(1,1) = data.LatticeBin(imgnum).ClusterThreshold(1);
+        end
+
         Nthresh = histBtbl.Data(1,1);           
 
         xL = x<=Nthresh;
@@ -3461,27 +3729,32 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
     %% Image Processing
     % Grab the RawImages and process them into usable data
     opt = struct;    
-    opt.doSubtractBias     = hcSubBias.Value;
-    opt.doSubtractBG       = hcSubBG.Value;
-    opt.doScale            = cScale.Value;
-    opt.ScaleFactor        = tblScale.Data;
-    opt.doGaussFilter      = cGaussFilter.Value;
-    opt.GaussFilterRadius  = tblGaussFilter.Data;
-    opt.doMask             = hcMask.Value;
+    opt.doSubtractBias     = tbl_process_1.Data{1,1};%hcSubBias.Value;
+    opt.doSubtractBG       = tbl_process_1.Data{2,1};%hcSubBG.Value;
+    opt.doMask             = tbl_process_1.Data{3,1};%hcMask.Value;
     opt.Mask               = ixon_mask;
-    opt.doPSF              = hcPSF.Value ;    
+    
+    opt.doPSF              = tbl_process_1.Data{4,1};%hcPSF.Value ;    
     opt.PSF                = tblPSF.Data;    
-    opt.doRotate           = cRotate.Value;
-    opt.Theta              = tblTheta.Data;
-    opt.DetectNoise        = hcPSF_noise.Value;
-    opt.Noise             = tblPSF.Data(4);
-        
+    opt.DetectNoise        = tbl_process_1.Data{5,1};%hcPSF_noise.Value;
+    opt.Noise              = tblPSF.Data(4);
+    
+    opt.doGaussFilter      = tbl_process_2.Data{1,1};%cGaussFilter.Value;
+    opt.GaussFilterRadius  = tbl_process_2.Data{1,3};%tblGaussFilter.Data;
+    
+    opt.doScale      = tbl_process_2.Data{2,1};%cScale.Value;
+    opt.ScaleFactor  = tbl_process_2.Data{2,3};%tblScale.Data;   
+
+    opt.doRotate           = tbl_process_2.Data{3,1};%cRotate.Value;
+    opt.Theta              = tbl_process_2.Data{3,3};%tblTheta.Data;
+    
     % Momentum Space
-    opt.doFFT              = hcFFT.Value;
-    opt.doMaskIR           = hcIRMask.Value;
-    opt.IRMaskRadius       = tblIRMask.Data;
-    opt.doFFTFilter        = cKGaussFilter.Value;
-    opt.FFTFilterRadius    = tblKGaussFilter.Data;      
+    opt.doFFT              = 1;%hcFFT.Value;
+    opt.doFFTFilter        = tbl_process_2.Data{4,1};%cKGaussFilter.Value;
+    opt.FFTFilterRadius    = tbl_process_2.Data{4,3};%tblKGaussFilter.Data;         
+    opt.doMaskIR           = tbl_process_2.Data{5,1};%hcIRMask.Value;
+    opt.IRMaskRadius       = tbl_process_2.Data{5,3};%tblIRMask.Data;        
+
     
     % Process the Images
     hbprocess.BackgroundColor=	[255 219 88]/255;
@@ -4027,14 +4300,19 @@ end
         end
 
         % Update string
-        tNavInd.String=sprintf('%03d',ind); 
-        tNavName.String=fullfile(currDir,data.Name);        
+        % tNavInd.String=sprintf('%03d',ind); 
+
+        tNavMax.String=['of ' num2str(length(filenames))];        
+
+        tNavName.String=fullfile(currDir,[data.Name '.mat']);        
+
+        tNavInd.Data(1)=ind;
     end
     
     %% FINISH
 newDataCallback;
 % Go to most recent image
-chData([],[],0);   
+chData([],[],1);   
 drawnow;
 SizeChangedFcn
 axes(axImg);
@@ -4048,7 +4326,7 @@ addlistener(axImg_B,'YLim','PostSet',@foo4);
 addlistener(axImg_D,'XLim','PostSet',@foo5); 
 addlistener(axImg_D,'YLim','PostSet',@foo5); 
 
-set(hF,'WindowState','maximized');
+% set(hF,'WindowState','maximized');
     function foo5(~,~)
         tbl_dROI_D.Data = round([axImg_D.XLim axImg_D.YLim]);
     end
@@ -4126,14 +4404,19 @@ set(hF,'WindowState','maximized');
 
 axes(axImg);
 set(axImg,'XLim',[1 512],'YLim',[ 1 512]); 
-enableDefaultInteractivity(axImg);
-enableDefaultInteractivity(axImg_K);
-enableDefaultInteractivity(axImg_B);
-enableDefaultInteractivity(axImg_D);
-enableDefaultInteractivity(axImg);
 
+enableInteractivity;
+
+function enableInteractivity
+    enableDefaultInteractivity(axImg);
+    enableDefaultInteractivity(axImg_K);
+    enableDefaultInteractivity(axImg_B);
+    enableDefaultInteractivity(axImg_D);
+    enableDefaultInteractivity(axImg);
+end
 
 end
+
 
 
 function savePosAnalysis(tbl,execdate,src)
