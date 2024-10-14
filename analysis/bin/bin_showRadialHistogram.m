@@ -51,6 +51,7 @@ end
             % nMax = max([])
             % for rr = 1:size(bindata(ii).LatticeRadialHistogram(jj).N,1)
             for rr=1:nmax
+                
                 ax = subplot(nmax,2,2*rr-1);
 
                 N = bindata(ii).LatticeRadialHistogram(jj).N(rr,:);
@@ -64,6 +65,7 @@ end
                 Nt = bindata(ii).LatticeRadialHistogram(jj).ClusterThreshold(rr);
 
                 Nscaled = N/Nt;
+                
             end
 
                 subplot(2,2,2);
@@ -87,9 +89,7 @@ end
                         '-','linewidth',2,'color',cedge*.5);
                     fit_strs{end+1}=['$A:' num2str(round(bindata(ii).LatticeRadialHistogram(jj).Amplitude)) ...
                         ',~s:' num2str(round(bindata(ii).LatticeRadialHistogram(jj).Radius)) '$'];
-                % LatticeRadialHistogram(jj).GaussFit = fout;
-                % LatticeRadialHistogram(jj).Amplitude = fout.A;
-                % LatticeRadialHistogram(jj).Radius = fout.s;
+
                   end                
 
                 subplot(2,2,4);
