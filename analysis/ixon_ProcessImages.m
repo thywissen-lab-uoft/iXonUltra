@@ -89,6 +89,14 @@ if opts.doSubtractBG
     end
     Z_bg_removed = zeros(size(Z,1),size(Z,2),L/2);
     for n=1:L/2
+        % r=[220 320 480 500];
+        % n1=Z(r(3):r(4),r(1):r(2),n);
+        % n2=Z(r(3):r(4),r(1):r(2),n+L/2);
+        % sc = sum(n1,'all')/sum(n2,'all');
+        % sc = 1/sc;
+        % sc=1;
+        % keyboard
+
         Z_bg_removed(:,:,n) = Z(:,:,n) -  Z(:,:,n+L/2);
     end
     Z=Z_bg_removed;
@@ -130,6 +138,8 @@ if opts.doSubtractBG
             data(kk).NoiseEstimation(n) = 0;
         end
     end
+else
+    data(kk).NoiseEstimation = 0;
 end
   
 %% Image Mask
@@ -163,7 +173,9 @@ end
             
             noise_variance = Nnoise^2;
             Zpre = data(kk).Z(:,:,ii);
+
             Zpre(Zpre<=0)=0;
+            Zpre(Zpre<=(Nnoise))=0;
             
 %             psf2     = fspecial('gaussian',N,3*s);  
 %             psf = psf*.9+psf2*.1;
@@ -177,6 +189,7 @@ end
 
 %% Scale Image
     if isfield(opts,'doScale') && opts.doScale         
+    
         data(kk).X = linspace(1,data(kk).X(end),length(data(kk).X)*opts.ScaleFactor);
        data(kk).Y = linspace(1,data(kk).Y(end),length(data(kk).Y)*opts.ScaleFactor);
        data(kk).Z = imresize(data(kk).Z,opts.ScaleFactor)/(opts.ScaleFactor)^2;
