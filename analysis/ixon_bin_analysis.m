@@ -84,6 +84,10 @@ bin_BinAcummulateHist                   = 1;
 bin_BinAcummulateHist_Zmax              = 30000;
 bin_BinAcummulateHist_Nbins             = 100;
 
+% Rescale
+bin_BinReScale                          = 1;
+
+
 % Stripe fit Data
 bin_BinStripe                           = 0;
 bin_BinStripeAnimate                    = 1;
@@ -93,6 +97,9 @@ bin_BinStripe_ColorThreshold            = [1000 4500];
 % Digitzation
 bin_Digitize                            = 1; 
 dig_DigitizationThreshold               = 2000;
+
+bin_Digitize_Source                     = 'compensated';
+bin_Digitize_Source                     = 'uncompensated';
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and
@@ -165,6 +172,16 @@ if bin_BinAcummulateHist
     end
 end
 
+%%
+
+if bin_BinReScale
+    [bindata,hF_BinCompensate] = bin_rescale(bindata,opts);    
+    if bin_opts.doSave
+        ixon_saveFigure2(hF_BinCompensate,...
+         'bin_Compensate',bin_opts);  
+    end
+    
+end
 %% Bin Stripe
 if bin_BinStripe    
     if ~isfield(bindata,'LatticeBin')

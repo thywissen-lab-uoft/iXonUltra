@@ -19,7 +19,7 @@ function hF = bin_gridHistogram(bindata,opts)
       opts.NumGrid=[3 3]; 
    end
     
-   edges = linspace(0,6*opts.Nthresh,opts.NumBins);
+    edges = linspace(0,6*opts.Nthresh,opts.NumBins);
     n1 = bindata(1).LatticeBin(1).n1;
     n2 = bindata(1).LatticeBin(1).n2;
     %% Get All Data
