@@ -18,9 +18,7 @@ function [digdata] = bin_makeDigData(bindata,opts)
     for nn=1:length(bindata)
         Zdig(:,:,nn) = [bindata(nn).LatticeDig(1).Zdig];        
     end
-    
-%     LD = [bindata.LatticeDig(1)];
-    
+        
     digdata = struct;    
     digdata.SourceDirectory = unique({bindata.SourceDirectory});
     digdata.FileNames = {bindata.Name}';

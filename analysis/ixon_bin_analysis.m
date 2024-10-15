@@ -99,7 +99,7 @@ bin_Digitize                            = 1;
 dig_DigitizationThreshold               = 2000;
 
 bin_Digitize_Source                     = 'compensated';
-bin_Digitize_Source                     = 'uncompensated';
+%bin_Digitize_Source                     = 'uncompensated';
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and

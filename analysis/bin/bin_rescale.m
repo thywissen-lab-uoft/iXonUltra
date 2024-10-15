@@ -36,7 +36,9 @@ gauss_map_inv(gauss_map_inv>opts.SpatialInhomogeneityMaxScale)=opts.SpatialInhom
 %% Spatial Data
 
 if opts.do_SpatialInhomogeneity
-    ZbinScaled = ZbinScaled.*gauss_map_inv;    
+    for kk=1:size(ZbinScaled,3)
+        ZbinScaled(:,:,kk) = ZbinScaled(:,:,kk).*gauss_map_inv;    
+    end
     bindata(kk).ScaleRadius = s;  
 end
 
@@ -106,7 +108,7 @@ scaledEdges = linspace(0,3,50);
 scaledN = histcounts(Zscaledplot,scaledEdges); 
 scaledCenters = (scaledEdges(1:end-1) + scaledEdges(2:end))/2;      
 
-scaledThreshold = bindata(1).ScaledThreshold;
+scaledThreshold = mean([bindata.ScaledThreshold]);
 
 scaled_iL = scaledCenters<=scaledThreshold;
 scaled_iH = ~scaled_iL;
@@ -242,7 +244,6 @@ set(gca,'box','on','linewidth',1,'fontsize',10,...
 for kk=1:length(bindata)
    bindata(kk).LatticeBin(1).ZbinScaled = ZbinScaled(:,:,kk);
    bindata(kk).LatticeBin(1).ScaledThreshold = scaledThreshold;
-
 end
 
 end
