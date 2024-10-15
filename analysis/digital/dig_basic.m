@@ -55,6 +55,7 @@ function [digdata] = dig_basic(digdata)
         Yc = mean(Yn);
         Ys = std(Yn);        
         
+        digdata.RatomSite{nn}=N;
         digdata.Ratom{nn}=Rn;         
 
         

@@ -79,6 +79,7 @@ dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 0;
 dig_doRadialAnalysis                    = 1;
+dig_doRadialSkewAnalysis                = 1;
 %% Show CLoud
 
 if dig_doShowCloud
@@ -180,6 +181,22 @@ if dig_doRadialAnalysis
 %     [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);        
 
 
+end
+
+%% Radial Skew Analysis
+
+if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')
+    
+    [digdata] = dig_compute_radial_skew(digdata,opts);
+    
+    [hFs_radial_skew] = dig_radialAnalysis_average_images_skew(digdata,opts);
+    if dig_opts.doSave
+       for kk=1:length(hFs_radial_skew)
+           ixon_saveFigure2(hFs_radial_skew(kk),...
+                ['dig_radial_skew_' num2str(kk)],dig_opts);   
+       end
+    end
+    
 end
 
 %% Conductivity Analysis
