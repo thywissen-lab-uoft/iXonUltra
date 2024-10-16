@@ -1,4 +1,4 @@
-function [scores,centers]=bin_StripeScore(n1,Zb,seps,threshold)
+function [scores,centers]=bin_StripeScore(n1,Zb,seps,threshold,sumdir)
 Zb(Zb<threshold(1))=0;
 
 s = sum(Zb,'all');
@@ -10,7 +10,12 @@ end
 scores = zeros(length(seps)-1,1);
 centers = zeros(length(seps)-1,1);
 for kk=2:(length(seps))
-    Zbsub = Zb((ii(kk-1)):ii(kk),:);
+    
+    if sumdir == 2
+        Zbsub = Zb((ii(kk-1)):ii(kk),:);
+    else 
+        Zbsub = Zb(:,(ii(kk-1)):ii(kk));
+    end
     Nhigh = sum(Zbsub>=threshold(2),'all');
     s_sub = sum(Zbsub,'all');
     scores(kk-1) = Nhigh*(1/s_sub);

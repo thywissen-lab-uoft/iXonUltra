@@ -31,6 +31,10 @@ if ~isfield(opts,'doSave')
    opts.doSave = 0; 
 end
 
+if ~isfield(opts,'SumIndex')
+    opts.SumIndex = 2;
+end
+
 
 %% Initialize Graphics
     hF=figure(opts.FigureNumber);
@@ -91,7 +95,12 @@ end
     pZsF = plot(1,1,'-','color',co(1,:),'linewidth',2);
     set(gca,'fontsize',12,'YAxisLocation','right','YColor',co(1,:),'fontname','times',...
         'Xaxislocation','top')
-    ylabel('$n_2$ (site)','interpreter','latex');
+    
+    if opts.SumIndex == 2
+        ylabel('$n_2$ (site)','interpreter','latex');
+    else
+        ylabel('$n_1$ (site)','interpreter','latex');
+    end
     ylim([0 1])
     
 %     pSEnv = plot(1,1,'--','color',co(1,:),'linewidth',1);
@@ -112,7 +121,13 @@ end
     hold on
     pZtF = plot(1,1,'-','color',co(2,:),'linewidth',2);
     set(gca,'ydir','normal','fontsize',12,'Xcolor',co(2,:),'fontname','times')
+    
+    if opts.SumIndex == 2
     xlabel('$n_1$ (site)','interpreter','latex');
+    else
+    xlabel('$n_2$ (site)','interpreter','latex');
+    end
+        
     xlim([0 1])
     grid on
     tRt = text(4,2,'','fontsize',10,'interpreter','latex','verticalalignment','bottom',...
@@ -139,9 +154,18 @@ end
     %% Main Loop
 
     for nn = 1:length(bindata)
+        
+        if opts.SumIndex == 2
         n1 = [bindata(nn).LatticeBin(1).n1];
         n2 = [bindata(nn).LatticeBin(1).n2];
         Zb = [bindata(nn).LatticeBin(1).Zbin];
+        else
+        n2 = [bindata(nn).LatticeBin(1).n1];
+        n1 = [bindata(nn).LatticeBin(1).n2];
+        Zb = [bindata(nn).LatticeBin(1).Zbin]';
+        end
+        
+        
         Zb2 = Zb;
         Zb2(Zb<opts.Threshold(1)) = 0;
         Zb2(isnan(Zb)) = 0;

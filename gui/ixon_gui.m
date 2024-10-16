@@ -1740,6 +1740,7 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
                 n2 = data.LatticeBin(ll).n2;
                 Zb = data.LatticeBin(ll).Zbin;    
                 opts_stripe.LGuess = 26.62;
+                opts_stripe.SumIndex = 1;
                 
                 out = bin_StripeFit(n1,n2,Zb,opts_stripe);  
                 

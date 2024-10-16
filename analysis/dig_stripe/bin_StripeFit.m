@@ -20,7 +20,7 @@ end
 
 % Default direction to look at stripes
 if ~isfield(opts,'SumIndex')
-    opts.SumIndex = 2;
+    opts.SumIndex = 1;
 end
 
 % Default figure number
@@ -180,7 +180,7 @@ seps = round(seps);
 seps(seps<min(ns))=[];
 seps(seps>max(ns))=[];
 
-[scores,centers] = bin_StripeScore(ns,Zb,seps,opts.Threshold);
+[scores,centers] = bin_StripeScore(ns,Zb,seps,opts.Threshold,opts.SumIndex);
 [~,ind] = max(scores);
 focus_center = centers(ind);
 
@@ -200,6 +200,7 @@ BinStripe.Centers             = centers;
 BinStripe.Scores              = scores;
 BinStripe.FocusCenter         = focus_center;
 BinStripe.Counts              = sum(Zb,'all');
+BinStripe.Opts                = opts;
 
 %% Plot the Results
 %{
