@@ -252,17 +252,17 @@ if isfield(fit_opts,'Center_SineDecay') && fit_opts.Center_SineDecay && length(x
     sTblY.ColumnWidth={60 60 60};
 
     cX=coeffvalues(fit1);
-    cIntX=confint(fit1);
+    cInt=confint(fit1);
     
     data={};
     
-    %data{1,3}=range(cInt(:,1))/2;
-    %data{2,3}=range(cInt(:,2))/2;
+    data{1,3}=range(cInt(:,1))/2;
+    data{2,3}=range(cInt(:,2))/2;
 
-    %data{3,3}=1./(range(cInt(:,2))/2);
-    %data{4,3}=range(cInt(:,3))/2;
-    %data{5,3}=range(cInt(:,4))/2;
-    %data{6,3}=range(cInt(:,5))/2;
+    data{3,3}=(range(cInt(:,2))/2)./(cX(2)).^2;
+    data{4,3}=range(cInt(:,3))/2;
+    data{5,3}=range(cInt(:,4))/2;
+    data{6,3}=range(cInt(:,5))/2;
 
     
     sTblX.Data={};
@@ -297,20 +297,20 @@ if isfield(fit_opts,'Center_SineDecay') && fit_opts.Center_SineDecay && length(x
     
     axes(hax2);
     fit2=makeSineDecayFit(xvals',Yc(:,nn));
-    cIntY=confint(fit2);
-    
-    %data{1,3}=range(cInt(:,1))/2;
-    %data{2,3}=range(cInt(:,2))/2;
-
-    %data{3,3}=1./(range(cInt(:,2))/2);
-    %data{4,3}=range(cInt(:,3))/2;
-    %data{5,3}=range(cInt(:,4))/2;
-    %data{6,3}=range(cInt(:,5))/2;
-    
     
     plot(tVec,feval(fit2,tVec),'r-');  
 
     cY=coeffvalues(fit2);
+    
+    cInt=confint(fit2);
+    
+    data{1,3}=range(cInt(:,1))/2;
+    data{2,3}=range(cInt(:,2))/2;
+
+    data{3,3}=(range(cInt(:,2))/2)./(cY(2)).^2;
+    data{4,3}=range(cInt(:,3))/2;
+    data{5,3}=range(cInt(:,4))/2;
+    data{6,3}=range(cInt(:,5))/2;
     
     sTblY.Data={};
     data{1,1}='amp (px)';
@@ -521,7 +521,7 @@ iHigh=find((Y-gD)/gA>.8,1);
 iLow=find((Y-gD)/gA<-.8,1);
 gB=abs(X(iHigh)-X(iLow))*2.2;
 
-gB=20;
+gB=24;
 
 minValues=X(Y==min(Y));
 maxValues=X(Y==max(Y));
@@ -535,7 +535,7 @@ gC=maxValues(1);
 gC=pi;
 gD=0.5*(max(Y)+min(Y));
 
-gC=pi/2;
+gC=pi;
 gE = range(X)/2;
 
 cosFit=fittype('A*cos(2*pi*t/B+C)*exp(t/E)+D','independent',{'t'},...

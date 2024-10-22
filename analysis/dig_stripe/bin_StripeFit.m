@@ -20,7 +20,7 @@ end
 
 % Default direction to look at stripes
 if ~isfield(opts,'SumIndex')
-    opts.SumIndex = 1;
+    opts.SumIndex = 1; % 1 for trees % 2 for fallen trees
 end
 
 % Default figure number
