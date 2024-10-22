@@ -68,7 +68,7 @@ bin_opts.FigLabel = bindata(1).SourceDirectory;
 
 % Choose what kind of variable to plot against (sequencer/camera)
 bin_opts.varType        = 'param';          % always select 'param' for now 
-bin_opts.autoXVar       = 1;                % Auto detect changing variable?
+bin_opts.autoXVar       = 0;                % Auto detect changing variable?
 bin_opts.autoUnit       = 1;                % Auto detect unit for variable?
 bin_opts.xVar           = 'ExecutionDate';  % Variable Name
 bin_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
@@ -89,13 +89,13 @@ bin_BinReScale                          = 1;
 
 
 % Stripe fit Data
-bin_BinStripe                           = 0;
+bin_BinStripe                           = 1;
 bin_BinStripeAnimate                    = 1;
 bin_BinStripe_LGuess                    = 26.5;
-bin_BinStripe_ColorThreshold            = [1000 4500];
+bin_BinStripe_ColorThreshold            = [3000 5000];
 
 % Digitzation
-bin_Digitize                            = 1; 
+bin_Digitize                            = 0; 
 dig_DigitizationThreshold               = 2000;
 
 bin_Digitize_Source                     = 'compensated';
@@ -201,10 +201,10 @@ if bin_BinStripe
             opts_stripe.LGuess = bin_BinStripe_LGuess;
             opts_stripe.FigNum=3000+10*(n-1)+kk-1;
             opts_stripe.FigNum=3000;
-            opts_stripe.ColorThreshold = bin_BinStripe_ColorThreshold;
+            opts_stripe.Threshold = bin_BinStripe_ColorThreshold;
             
             bindata(n).BinStripe(kk) = ...
-                ixon_BinStripeFit(n1,n2,Zb,opts_stripe);
+                bin_StripeFit(n1,n2,Zb,opts_stripe);
         end
         disp([' done (' num2str(toc,'%.2f') 's)']); 
     end
@@ -212,7 +212,7 @@ if bin_BinStripe
 end  
 %% Bin Stripe Summary
 if bin_BinStripe    
-    bin_opts.nCenter = 70;
+    bin_opts.nCenter = 100;
     hF_StripeSummary = bin_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
@@ -223,8 +223,10 @@ end
 %% Bin Stripe Animation
 if bin_BinStripe && bin_BinStripeAnimate
     opts = bin_opts;
-    opts.ColorThreshold = bin_BinStripe_ColorThreshold;
+    opts.Threshold = bin_BinStripe_ColorThreshold;
     opts.filename = 'bin_BinStripeAnimation.gif';
+    opts.SumIndex = 1; % 1 for trees % 2 for fallen trees
+
     bin_showStripeBin(bindata,bin_opts.xVar,opts);
 end
 %% Digitization Stuff

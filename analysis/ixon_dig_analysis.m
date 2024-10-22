@@ -79,7 +79,7 @@ dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 0;
 dig_doRadialAnalysis                    = 1;
-dig_doRadialSkewAnalysis                = 1;
+dig_doRadialSkewAnalysis                = 0;
 %% Show CLoud
 
 if dig_doShowCloud

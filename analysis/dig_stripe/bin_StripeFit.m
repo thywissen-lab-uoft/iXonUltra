@@ -35,7 +35,7 @@ end
 
 % Thresholds to throw data away and for focusing score
 if ~isfield(opts,'Threshold')
-    opts.ColorThreshold = [1000 3000];
+    opts.Threshold = [1000 3000];
 end
 
 %% Fit Functions
