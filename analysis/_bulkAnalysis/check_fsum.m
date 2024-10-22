@@ -3,6 +3,8 @@ h = 6.626e-34;
 hbar = h/(2*pi);
 kb = 1.380649e-23;
 aL = 527e-9;
+amu = 1.6e-27;
+m = 40*amu;
 
 %% Define the lookup tables for R and E
 global Rvalues;
@@ -55,8 +57,8 @@ fsum2 = [];
 for loop = 1:length(GG)
     fun = @(w) qfit_real(TT,GG(loop),w).*(aL^2)./hbar;
     fun2 = @(w) qfit_real(TT,GG(loop),w).*(aL^2)./hbar./w.^2;
-    fsum(loop) = m0*(2/pi)*integral(fun,0,inf);
-    fsum2(loop) = (2*pi*64.4)^2*m0*(2/pi)*integral(fun2,0,inf);
+    fsum(loop) = m*(2/pi)*integral(fun,0,inf);
+    fsum2(loop) = (2*pi*64.4)^2*m*(2/pi)*integral(fun2,0,inf);
 end
 
 %% Plot
@@ -65,14 +67,21 @@ f1 = figure(111);
 clf(f1);
 % plot(T./tK,STB,'DisplayName', 'S_{TB}');
 hold on;
-plot(GG,fsum,'DisplayName','$m^*_0 \frac{2}{\pi}\int_0^{\infty} d\omega Re[\sigma(\omega)]$')
-plot(GG,fsum2,'DisplayName','$m^*_0 \omega_{\mathrm{Trap}}^2 \frac{2}{\pi}\int_0^{\infty} d\omega \frac{Re[\sigma(\omega)]}{\omega^2}$')
+plot(GG,fsum,'DisplayName','$m \frac{2}{\pi}\int_0^{\infty} d\omega Re[\sigma(\omega)]$')
+plot(GG,fsum2,'DisplayName','$m \omega_{\mathrm{Trap}}^2 \frac{2}{\pi}\int_0^{\infty} d\omega \frac{Re[\sigma(\omega)]}{\omega^2}$')
 % plot(TT./tK,fsum,'DisplayName','S_{xx}')
 % plot(TT./tK,fsum2,'DisplayName','S2_{xx}')
 % xlabel('T/t', FontSize=16);
 xlabel('\Gamma (s^{-1})', FontSize=16);
-ylabel('$\frac{m_0^*}{N}S_{XX}$','Interpreter','latex',FontSize=16);
+ylabel('$\frac{m}{N}S_{XX}$','Interpreter','latex',FontSize=16);
 title('T/t = 3', FontSize=16)
 % title('\Gamma = 2\pi \times 30 Hz',FontSize=16)
 box on;
 legend(FontSize=12,Interpreter = 'Latex');
+%%
+ww = 2*pi*[0:0.5:80] ;
+fun3 = @(w) qfit_real(3*tK,0,w).*(aL^2)./hbar./w.^2;
+f2 = figure(222);
+clf(f2);
+hold on;
+plot(ww,(2*pi*64.4)^3*m0*fun3(ww))

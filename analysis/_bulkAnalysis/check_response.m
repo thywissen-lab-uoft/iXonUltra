@@ -17,17 +17,20 @@ energies = h*(energies_Hz);
 
 %% Trap parameters
 wXDT = 2*pi*42.5; %2*pi*Hz
-T = 80e-9; %K
-G = 2*pi*35; %2*pi*Hz
-amp_desired = 0.8; %um
+
+T = 95e-9; %K
+G = 2*pi*39; %2*pi*Hz
+amp_desired = 0.65; %um
+
 
 f = [20:1:150];
 
 %% Create data points
-
+%Feb 2024, scaled by 3.55 um/V
+%Oct 2024, scaled by 2.63 um/V
 d = [];
 for ff = 1:length(f)
-    d(ff) = hbar*2*pi*f(ff)*amp_desired/(aL^2*m*wXDT^2*sqrt(qfit_real(T,G,2*pi*f(ff))^2+qfit_imag(T,G,2*pi*f(ff))^2))/3.55; %V
+    d(ff) = hbar*2*pi*f(ff)*amp_desired/(aL^2*m*wXDT^2*sqrt(qfit_real(T,G,2*pi*f(ff))^2+qfit_imag(T,G,2*pi*f(ff))^2))/2.63; %V
 end
 
 %% Plot Anticipated response
@@ -62,13 +65,15 @@ WL = [f<=f0]';
 myfit = fittype(@(a8,a6,a4,a2,x) d0 + a2*(x-f0).^2 + a4*(x-f0).^4+ a6*(x-f0).^6+ a8*(x-f0).^8,...
     'independent',{'x'},'coefficients',{'a8','a6','a4','a2'});
 opt = fitoptions(myfit);
-opt.StartPoint = [0 0 pp(1) pp(3)];
-opt.Weights = WH;
+
+opt.StartPoint = [0 0 pp(1) pp(2)];
+opt.Weights = double(WH);
+
 opt.Robust = 'bisquare';
 
 foutH = fit(f',d',myfit,opt);
 
-opt.Weights = WL;
+opt.Weights = double(WL);
 foutL = fit(f',d',myfit,opt);
 
 plot(f(f>=f0),feval(foutH,f(f>=f0)),'r-','linewidth',1)
@@ -87,6 +92,7 @@ s = [s newline '$(a_2,a_4,a_6,a_8)_H = ($' num2str(foutH.a2,'%.2e') ',' ...
 
 text(.01,.98,s,'interpreter','latex','units','normalized','fontsize',12,...
     'verticalalignment','top');
+title(['T = ' num2str(T*1e9) ' nK, ', '\Gamma = 2\pi\times' num2str(G/(2*pi)) ' Hz' ', Desired Amp. = ' num2str(amp_desired) '\mum' ])
 
 
 % plot([20 40], [1.63,1.63],'r')
