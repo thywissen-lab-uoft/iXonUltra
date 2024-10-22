@@ -92,7 +92,7 @@ if doFit
 
     sTblX=uitable('FontSize',8,'RowName',{},'ColumnName',{},...
         'ColumnEditable',[false false],'units','normalized');
-    sTblX.ColumnWidth={100 60};
+    sTblX.ColumnWidth={100 80};
     sTblX.Position=pos;
     sTblX.Data={[char(0x0394) 'X (px)'],num2str(round(range(Xc(:,nn)),1))};
     drawnow;
@@ -135,7 +135,7 @@ if doFit
 
     sTblY=uitable('FontSize',8,'RowName',{},'ColumnName',{},...
         'ColumnEditable',[false false],'units','normalized');
-    sTblY.ColumnWidth={100 60};
+    sTblY.ColumnWidth={100 80};
     sTblY.Position=pos;
     sTblY.Data={[char(0x0394) 'Y (px)'],num2str(round(range(Yc(:,nn)),1))};
     drawnow;
@@ -465,9 +465,9 @@ if isfield(fit_opts,'Center_Linear') && fit_opts.Center_Linear && length(xvals)>
     pxsize = 16/(80);
     
     data{1,2}=fit1(1);
-    data{2,2}=fit1(1)*pxsize*1e6;
+    data{2,2}=fit1(1)*pxsize;
     data{3,2}=fit1(2);
-    data{4,2}=fit1(2)*pxsize*1e6;
+    data{4,2}=fit1(2)*pxsize;
     
     data{5,1}='<HTML> &Delta;X (px)</HTML>';
     data{5,2}=range(Xc(:,nn));
@@ -490,9 +490,9 @@ if isfield(fit_opts,'Center_Linear') && fit_opts.Center_Linear && length(xvals)>
     data{4,1}='intercept (um) ';
 
     data{1,2}=fit2(1);
-    data{2,2}=fit2(1)*pxsize*1e6;
+    data{2,2}=fit2(1)*pxsize;
     data{3,2}=fit2(2);
-    data{4,2}=fit2(2)*pxsize*1e6;
+    data{4,2}=fit2(2)*pxsize;
     
     data{5,1}='<HTML> &Delta;Y (px)</HTML>';
     data{5,2}=range(Yc(:,nn));

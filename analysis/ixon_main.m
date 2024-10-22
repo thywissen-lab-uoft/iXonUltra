@@ -82,9 +82,9 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'conductivity_snap_and_hold_time'; % Variable Name
+ixon_xVar           = 'conductivity_ODT2_mod_amp'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -383,7 +383,7 @@ ixon_animateOpts.Source = 'ZNoFilter';
 %      ixon_animateOpts.CLim='auto';
 %      ixon_animateOpts.CLim=[0 10000];
 % end
-      ixon_animateOpts.CLim=[0 300];   % Automatically choose CLIM?
+      ixon_animateOpts.CLim=[0 1200];   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
@@ -406,7 +406,7 @@ if ixon_doAnimate == 1 && ixon_doSave && size(ixondata(1).Z,3)==2
 %     ixon_animateOpts.Source = 'Z';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-      ixon_animateOpts.CLim=[0 300];   % Automatically choose CLIM?
+      ixon_animateOpts.CLim=[0 1200];   % Automatically choose CLIM?
 
 ixon_animateOpts.filename='ixon_animate_2shot';
 
