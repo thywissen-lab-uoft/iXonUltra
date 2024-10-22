@@ -21,7 +21,11 @@ co =  [0    0.4470    0.7410
     0.3010    0.7450    0.9330
     0.6350    0.0780    0.1840];
 
-BS = [bindata.BinStripe];
+
+BS = [bindata(1).BinStripe(1)];
+for kk=2:length(bindata)
+    BS(kk)=bindata(kk).BinStripe(1);
+end
 P = [bindata.Params];
 X = [P.(xVar)];
 
@@ -62,9 +66,9 @@ MYC=[];
          continue;
      end
      
-    ss = [bindata(kk).BinStripe.Scores];
+    ss = [bindata(kk).BinStripe(1).Scores];
     ss(isnan(ss))=0;
-    cs=[bindata(kk).BinStripe.Centers];
+    cs=[bindata(kk).BinStripe(1).Centers];
     xs = repmat(X(kk),[length(cs),1]);
     
     n = length(xs);

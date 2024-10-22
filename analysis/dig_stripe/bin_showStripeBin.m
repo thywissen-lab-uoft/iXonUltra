@@ -16,7 +16,7 @@ if nargin<2
 end
 
 if ~isfield(opts,'Threshold')
-    opts.ColorThreshold = [1000 5000];
+    opts.Threshold = [1000 5000];
 end
 
 if ~isfield(opts,'FigLabel')
@@ -80,6 +80,12 @@ end
         'verticalalignment','bottom','fontsize',14,...
         'color',myc,'interpreter','latex','backgroundcolor',[0 0 0],'Margin',1,...
         'units','pixels');
+    
+    % Text summary of stripe fit
+    tVar = text(.99,.99,'','horizontalalignment','right',...
+        'verticalalignment','top','fontsize',14,...
+        'color',myc,'interpreter','latex','backgroundcolor',[0 0 0],'Margin',1,...
+        'units','normalized');  
     
     % Plot star for most in-focused plane
     pStar = plot(1,1,'pentagram','markersize',12,...
@@ -170,7 +176,7 @@ end
         Zb2(Zb<opts.Threshold(1)) = 0;
         Zb2(isnan(Zb)) = 0;
         
-        BS = [bindata(nn).BinStripe];
+        BS = [bindata(nn).BinStripe(1)];
 
         % Update Main Image
         set(hImg,'CData',Zb,'XData',n1,'YData',n2);
@@ -180,50 +186,56 @@ end
         for kk = 1:length(pSeps)
             pSeps(kk).Visible='off';
         end
-        for kk=1:length([BS.Separations])
-            set(pSeps(kk),'XData',[min(n1) max(n1)],'YData',[1 1]*BS.Separations(kk),'Visible','on');
+        for kk=1:length([BS(1).Separations])
+            set(pSeps(kk),'XData',[min(n1) max(n1)],'YData',[1 1]*BS(1).Separations(kk),'Visible','on');
         end
 
         % Update Score Text
         for kk = 1:length(tScores)
             tScores(kk).Visible='off';
         end
-        for kk=1:length([BS.Centers])
-            str = ['score=' num2str(BS.Scores(kk),'%.2e')];
-            set(tScores(kk),'String',str,'Position',[min(n1)+6 BS.Centers(kk)],'Visible','on')
+        for kk=1:length([BS(1).Centers])
+            str = ['score=' num2str(BS(1).Scores(kk),'%.2e')];
+            set(tScores(kk),'String',str,'Position',[min(n1)+6 BS(1).Centers(kk)],'Visible','on')
         end
-        set(pStar,'XData',min(n1)+1,'YData',BS.FocusCenter);
+        set(pStar,'XData',min(n1)+1,'YData',BS(1).FocusCenter);
 
         % Update Summary 
-        str = ['$\lambda=' num2str(BS.FitStripe.L,'%.2f') ',' ...
-            '\phi=2\pi\cdot' num2str(mod(BS.FitStripe.phi,2*pi)/(2*pi),'%.2f') ',' ...
-            '\alpha = ' num2str(BS.FitStripe.B,'%.2f') '$'];
+        str = ['$\lambda=' num2str(BS(1).FitStripe.L,'%.2f') ',' ...
+            '\phi=2\pi\cdot' num2str(mod(BS(1).FitStripe.phi,2*pi)/(2*pi),'%.2f') ',' ...
+            '\alpha = ' num2str(BS(1).FitStripe.B,'%.2f') '$'];
         set(tSummary,'String',str);
         
+        if isequal(xVar,'ExecutionDate')
+            strVar=[xVar ': ' datestr(bindata(nn).Params.(xVar),'YYYY-mm-DD_HH-MM-SS')];          % Variable string
+        else
+            strVar = [xVar ':' num2str(bindata(nn).Params.(xVar)) ];
+        end
+        set(tVar,'String',strVar,'interpreter','none');
         set(pZs,'XData',sum(Zb2,2)','YData',n2);
-        set(pZsF,'XData',feval(BS.FitStripe,n2)','YData',n2);
+        set(pZsF,'XData',feval(BS(1).FitStripe,n2)','YData',n2);
         set(ax2,'YLim',[min(n2) max(n2)]);
         
         % Update Separation Bars
         for kk = 1:length(pSeps2)
             pSeps2(kk).Visible='off';
         end
-        for kk=1:length([BS.Separations])
-            set(pSeps2(kk),'XData',get(ax2,'XLim'),'YData',[1 1]*BS.Separations(kk),'Visible','on');
+        for kk=1:length([BS(1).Separations])
+            set(pSeps2(kk),'XData',get(ax2,'XLim'),'YData',[1 1]*BS(1).Separations(kk),'Visible','on');
         end
         
         
-        set(tRs,'String',['$R^2 = ' num2str(BS.RSquareStripe,'%.3f') '$']);
+        set(tRs,'String',['$R^2 = ' num2str(BS(1).RSquareStripe,'%.3f') '$']);
 
         set(pZt,'YData',sum(Zb2,1)','XData',n1);
-        set(pZtF,'YData',feval(BS.FitTransverse,n1)','XData',n1);
+        set(pZtF,'YData',feval(BS(1).FitTransverse,n1)','XData',n1);
         set(ax3,'XLim',[min(n1) max(n1)]);
-        set(tRt,'String',['$R^2 = ' num2str(BS.RSquareTransverse,'%.3f') '$']);
+        set(tRt,'String',['$R^2 = ' num2str(BS(1).RSquareTransverse,'%.3f') '$']);
 
 
-        set(pScore,'XData',[BS.Centers],'YData',[BS.Scores]);
+        set(pScore,'XData',[BS(1).Centers],'YData',[BS(1).Scores]);
         try
-        set(ax4,'XLim',[min(n1) max(n1)],'YLim',[0 max([BS.Scores])*1.2]);
+        set(ax4,'XLim',[min(n1) max(n1)],'YLim',[0 max([BS(1).Scores])*1.2]);
         end
         drawnow;
         

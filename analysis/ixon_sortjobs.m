@@ -1,7 +1,7 @@
 
 % Source directory of all data
 
-srcdir = 'X:\Data\2024\2024.07\07.05\07 overnight';
+srcdir = 'X:\Data\2024\2024.10\10.21\13 overnight';
 
 
 % Parent directory of data to sort
@@ -56,7 +56,7 @@ for kk=1:length(names)
     P = data.Params;
     F = data.Flags;
     
-    dotilt = F.plane_selection.dotilt;
+    dotilt = F.plane_selection_dotilt;
     pow = 1e3*P.xdtB_evap_power;
     
     % ODT mode (0: off, 1: shake);
