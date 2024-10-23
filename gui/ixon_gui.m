@@ -670,9 +670,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
 % Timer function checks if acquisition is over and restarts it
     function acqTimerFcn(src,evt)      
         try
-            if hcAdwinCamera.Value
-                autoCameraConfig;
-            end
+          
         % Camera Status
         [out,outstr]=ixon_getCameraStatus;  
         % Check number of available images and post and upate
@@ -721,7 +719,10 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
                     updateHistoryInd(data);   
                 end                  
             case 'DRV_ACQUIRING'
-                % Acquisition is still going.  
+                % Acquisition is still going. 
+                if hcAdwinCamera.Value
+                    autoCameraConfig;
+                end
             otherwise
                 warning('Acuisition timer has unexpected result');
                 stopCamCB;
@@ -1852,8 +1853,7 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
             data=bin_radialHistogram(data);
             bin_showRadialHistogram(data,ropts);
          end
-        
-         
+                
          
         if (hc_anlB_stripe.Value && ~isfield(data.Flags,'plane_selection_dotilt')) || ...
             (hc_anlB_stripe.Value && isfield(data.Flags,'plane_selection_dotilt') &&  data.Flags.plane_selection_dotilt)
@@ -1861,14 +1861,12 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
             opts_stripe.FigureNumber=3000;
             opts_stripe.Threshold = stripe_threshold_tbl.Data;
             ll=1;
-%             for ll = 1:length(data.LatticeBin)
-                n1 = data.LatticeBin(ll).n1;
-                n2 = data.LatticeBin(ll).n2;
-                Zb = data.LatticeBin(ll).Zbin;    
-                opts_stripe.LGuess = 26.62;
-                opts_stripe.SumIndex = 1; % 1 for trees % 2 for fallen trees                
-                out = bin_StripeFit(n1,n2,Zb,opts_stripe);                  
-%             end            
+            n1 = data.LatticeBin(ll).n1;
+            n2 = data.LatticeBin(ll).n2;
+            Zb = data.LatticeBin(ll).Zbin;    
+            opts_stripe.LGuess = 26.62;
+            opts_stripe.SumIndex = 1; % 1 for trees % 2 for fallen trees                
+            out = bin_StripeFit(n1,n2,Zb,opts_stripe);                  
             data.BinStripe = out;     
             bin_showStripeBin(data,[],opts_stripe);
         end  
