@@ -14,6 +14,12 @@ fmat = sqrt(fxx.^2+fyy.^2);
 fmat(fmat>(kL*1.1)) = 0;
 fmat(fmat<(kL*0.9)) = 0;
 
+Zfalt =abs(Zf);
+Zfalt(isnan(Zfalt))=0;
+Zfalt(isinf(Zfalt))=0;
+
+Zfsum=sum(Zfalt,'all');
+
 % Mask the data
 ss = (fmat~=0).*abs(Zf);
 
@@ -102,6 +108,14 @@ out.A1 = fout1.A;
 out.A2 = fout2.A;
 out.Fit1 = fout1;
 out.Fit2 = fout2;
+
+N1 = 2*pi*fout1.s^2*fout1.A;
+N2 = 2*pi*fout2.s^2*fout2.A;
+
+out.NkScore =      2*(N1+N2)/Zfsum;
+
+
+out.Zfsum=Zfsum;
  
 end
 

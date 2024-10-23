@@ -1384,7 +1384,7 @@ hbposition=uicontrol(hpPosition,'style','pushbutton','string','position analysis
 % hpKspace.Position=[0 hpAnl.Position(2)-90 160 105];
 
 hpKspace=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpPosition.Position(2)-110 160 110],'title','momentum analysis');
+    'Position',[0 hpPosition.Position(2)-110 160 130],'title','momentum analysis');
 
 % Checkbox for center of mass and sigma 
 ttstr='Automatically perform analysis on new image';
@@ -1438,9 +1438,15 @@ tblROIK.Position(1:2)=[5 hc_anlK_auto.Position(2)-tblROIK.Position(4)];
 
 % Mask IR Checkbox
 hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','lattice basis and phase','fontsize',7,...
-    'backgroundcolor','w','Position',[5 5 120 15],...
+    'backgroundcolor','w','Position',[5 20 120 15],...
     'ToolTipString',ttstr,'enable','on','value',1);
 hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
+
+% Mask IR Checkbox
+hcKFocus=uicontrol(hpKspace,'style','checkbox','string','multi-shot focusing','fontsize',7,...
+    'backgroundcolor','w','Position',[5 5 120 15],...
+    'ToolTipString',ttstr,'enable','on','value',1);
+hcKFocus.Position(2) = hcFindLattice.Position(2) - 15;
 
 % Refit button
 hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','momentum analysis',...
@@ -1483,7 +1489,40 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
             
             hb_Kanalyze.BackgroundColor=[80 200 120]/255;
             drawnow;
-        end         
+        end
+
+        if hcKFocus.Value && hcFindLattice.Value && ...
+            isfield(data,'Zf') && isfield(data,'LatticeK') ...
+                && isfield(data.Flags,'lattice_fluor_multi_mode') ...
+                &&  (data.Flags.lattice_fluor_multi_mode==2)
+                fignum=5100;
+
+                X = data.Params.qgm_MultiPiezos;
+                X(isnan(X))=[];
+
+                if data.ProcessOptions.doSubtractBG
+                    L = length(X)/2;
+                    X = X(1:L);
+                end
+                scores = [data.LatticeK.NkScore];
+
+                hF_kscore=figure(fignum);
+                hF_kscore.Position=[50 50 400 300];
+                clf
+                hF_kscore.Color='w';
+                co2=get(gca,'colororder');
+                plot(X,scores,'o','markerfacecolor',co2(1,:),...
+                    'markeredgecolor',co2(1,:)*.5,'linewidth',2,...
+                   'markersize',10);
+                xlabel('piezo (V)')
+                ylabel('momentum peak score (arb.)')
+                yL = get(gca,'YLim');
+                ylim([0 yL(2)]);
+                grid on
+
+
+
+        end
     end
 
 %% Binning Panel
@@ -1682,8 +1721,8 @@ stripe_threshold_tbl=uitable('parent',hpBin,'units','pixels','RowName',{},'Colum
 stripe_threshold_tbl.Position(3:4)=stripe_threshold_tbl.Extent(3:4);
 stripe_threshold_tbl.Position(1:2)=[90 hc_anlB_stripe.Position(2)];
 
-ttstr='multi shot focus';
-hc_anlB_multishotfocus=uicontrol(hpBin,'style','checkbox','string','multi shot focusing','fontsize',7,...
+ttstr='  focus';
+hc_anlB_multishotfocus=uicontrol(hpBin,'style','checkbox','string','multi-shot focusing','fontsize',7,...
     'backgroundcolor','w','Position',[1 hc_anlB_stripe.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
@@ -3424,11 +3463,16 @@ end
         k2 = data.LatticeK(imgnum).k2;      
         A1 = data.LatticeK(imgnum).A1;
         A2 = data.LatticeK(imgnum).A2;
-        keyboard
+        s1 = data.LatticeK(imgnum).s1;
+        s2 = data.LatticeK(imgnum).s2;
+        Zfsum = data.LatticeK(imgnum).Zfsum;
+        NkScore = data.LatticeK(imgnum).NkScore;
+        
         theta=acos(sum(k1.*k2)/(norm(k1)*norm(k2)))*180/pi;        
         tTopLeftK.String = ['$\vec{k}_1 = (' num2str(round(k1(1),4)) ',' num2str(round(k1(2),4)) ')$' newline ...
             '$\vec{k}_2 = (' num2str(round(k2(1),4)) ',' num2str(round(k2(2),4)) ')$' newline ...
-            '$\vec{k}_1\cdot\vec{k}_2 = k_1k_2\cos(' num2str(theta,4) '^\circ )$'];
+            '$\vec{k}_1\cdot\vec{k}_2 = k_1k_2\cos(' num2str(theta,4) '^\circ )$' newline ...
+            '$N_\mathrm{k}/N_\mathrm{tot}=' num2str(NkScore,'%.3g') '$'];
     end
 
     function reciprocalLatticeTextCB(src,evt)
