@@ -1486,7 +1486,7 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
 hpBin=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','binned analysis');
 hpBin.Position(3)=160;
-hpBin.Position(4)=275;
+hpBin.Position(4)=300;
 hpBin.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
 hpBin.Position(2)=hpNav.Position(2)-hpBin.Position(4);
 
@@ -1677,6 +1677,11 @@ stripe_threshold_tbl=uitable('parent',hpBin,'units','pixels','RowName',{},'Colum
     'ColumnFormat',{'numeric'});
 stripe_threshold_tbl.Position(3:4)=stripe_threshold_tbl.Extent(3:4);
 stripe_threshold_tbl.Position(1:2)=[90 hc_anlB_stripe.Position(2)];
+
+ttstr='multi shot focus';
+hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','multi shot focusing','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hc_anlB_stripe.Position(2)-15 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
 
 
 % Refit button
