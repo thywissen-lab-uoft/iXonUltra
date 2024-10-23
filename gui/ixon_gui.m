@@ -1679,7 +1679,7 @@ stripe_threshold_tbl.Position(3:4)=stripe_threshold_tbl.Extent(3:4);
 stripe_threshold_tbl.Position(1:2)=[90 hc_anlB_stripe.Position(2)];
 
 ttstr='multi shot focus';
-hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','multi shot focusing','fontsize',7,...
+hc_anlB_multishotfocus=uicontrol(hpBin,'style','checkbox','string','multi shot focusing','fontsize',7,...
     'backgroundcolor','w','Position',[1 hc_anlB_stripe.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
@@ -1783,16 +1783,31 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
                 n2 = data.LatticeBin(ll).n2;
                 Zb = data.LatticeBin(ll).Zbin;    
                 opts_stripe.LGuess = 26.62;
-                opts_stripe.SumIndex = 1; % 1 for trees % 2 for fallen trees
-                
-                out = bin_StripeFit(n1,n2,Zb,opts_stripe);  
-                
+                opts_stripe.SumIndex = 1; % 1 for trees % 2 for fallen trees                
+                out = bin_StripeFit(n1,n2,Zb,opts_stripe);                  
 %             end            
             data.BinStripe = out;     
             bin_showStripeBin(data,[],opts_stripe);
         end  
         
-        
+        if (hc_anlB_multishotfocus.Value && ~isfield(data.Flags,'lattice_fluor_multi_mode')) || ...
+            (hc_anlB_multishotfocus.Value && isfield(data.Flags,'lattice_fluor_multi_mode') &&  data.Flags.lattice_fluor_multi_mode==2)
+            opts_focusing = struct;
+            opts_focusing.FigureNumber=4000;
+            opts_focusing.Sites = [25 25];
+            opts_focusing.XVal = data.Params.qgm_MultiPiezos(2:5);
+            data = bin_recenter(data);
+            n1 = data.LatticeBin(1).n1;
+            n2 = data.LatticeBin(1).n2;
+
+            Zb = zeros(length(n2),length(n1),length(data.LatticeBin));
+            for jj=1:length(data.LatticeBin)
+                Zb(:,:,jj) = data.LatticeBin(jj).Zbin;
+            end
+            Focusing = bin_multiShotFocusing(n1,n2,Zb,opts_focusing);      
+        end  
+
+
                 
          hb_Binanalyze.BackgroundColor=[80 200 120]/255;
         drawnow;
@@ -3989,7 +4004,7 @@ end
             ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];     
 
-
+ 
         set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);        
         tt=linspace(min([focus.y_coms]),max([focus.y_coms]),100);        
         set(stripe_pFocusFit,'XData',tt,'YData',polyval(focus.poly,tt))        
