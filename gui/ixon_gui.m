@@ -1549,6 +1549,16 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
                 legend({'data',str},'location','south','interpreter','latex')               
                 set(gca,'box','on','linewidth',1,'fontsize',10);
 
+                % for mm=1:length(X)
+                %     subplot(4,length(X),length(X)*3+mm)
+                %     imagesc(data.X,data.Y,data.Z(:,:,1));
+                %     axis equal tight
+                %     set(gca,'Ydir','normal','box','on','linewidth',1);
+                %     set(gca,'Visible','off')
+                %     colormap(hF_kscore,hF.Colormap);
+                % 
+                % end
+
         end
     end
 
