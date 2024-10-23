@@ -1489,6 +1489,8 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
             
             hb_Kanalyze.BackgroundColor=[80 200 120]/255;
             drawnow;
+
+            if cAutoColor_K.Value;setClim('K');end  
         end
 
         if hcKFocus.Value && hcFindLattice.Value && ...
@@ -1520,7 +1522,21 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
                 ylim([0 yL(2)]);
                 grid on
 
+                [val,ind]=max(scores);
 
+                myfit=fittype('-A*(x-x0).^2+B','independent','x',...
+                    'coefficients',{'A','B','x0'});
+                fitopt = fitoptions(myfit);
+                fitopt.Start = [1e-3 1 X(ind)];
+                fitopt.Lower = [0 .9 min(X)-.1];
+                fitopt.Upper = [inf 1.1 max(X)+.1];
+                fout = fit(X',scores'/val,myfit,fitopt);
+                hold on
+                xx=linspace(min(X)-.1,max(X)+.1,100);
+                plot(xx,feval(fout,xx)*val,'r-','linewidth',2)
+
+                str = ['$V_0 = ' num2str(round(fout.x0,2)) '~\mathrm{V}$'];
+                legend({'data',str},'location','south','interpreter','latex')               
 
         end
     end
@@ -2603,19 +2619,25 @@ enableInteractivity;
                 ax = axImg;
                 z = hImg.CData;
                 tbl = climtbl_X;
-%                 tbl 
+                N0 = round(max(max(z))*.95);
             case 'K'
                 ax = axImg_K;
                 z = hImg_K.CData;
                 tbl = climtbl_K;
+                N0 = round(max(max(z))*.95);                
+                if isfield(data,'LatticeK')
+                    imgnum = menuSelectImg.Value;
+                    A = max([data.LatticeK(imgnum).A1 data.LatticeK(imgnum).A2]);
+                    N0 = round(A);
+                end
                 
               case 'B'
                 ax = axImg_B;
                 z = hImg_B.CData;
                 tbl = climtbl_B;
+                N0 = round(max(max(z))*.95);
 
         end              
-        N0 = round(max(max(z))*.95);
         if nargin == 1
             CLIM = [0 N0];
         end
@@ -3417,7 +3439,8 @@ end
 
 %% Momentum Callbacks
 
-    function updateMomentumGraphics
+    function updateMomentumGraphics                   
+
         if isfield(data,'ZfNorm')
             set(hImg_K,'XData',data.f,'YData',data.f,'CData',...
                 data.ZfNorm(:,:,menuSelectImg.Value));
