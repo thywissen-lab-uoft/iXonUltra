@@ -184,6 +184,24 @@ seps(seps>max(ns))=[];
 [~,ind] = max(scores);
 focus_center = centers(ind);
 
+[scores_sort,inds] = sort(scores,'descend');
+scores_sort = scores_sort(1:3);
+scores_sort = scores_sort/max(scores_sort);
+centers_sort = centers(inds(1:3));
+
+scores_sort(isnan(scores_sort))=0;
+
+
+
+myfit = fittype('-A*(x-x0).^2+B','independent','x','coefficients',{'A','x0','B'});
+
+fitopt=fitoptions(myfit);
+fitopt.Start = [1e-3 centers_sort(1) 1];
+fitopt.Upper = [1 max(centers_sort)+5 1.1];
+fitopt.Lower = [0 min(centers_sort)-5 .9];
+
+
+ fout_centers = fit(centers_sort,scores_sort,myfit,fitopt);
 
 %% Create Output Data
 BinStripe = struct;
@@ -199,6 +217,8 @@ BinStripe.Separations         = seps;
 BinStripe.Centers             = centers;
 BinStripe.Scores              = scores;
 BinStripe.FocusCenter         = focus_center;
+BinStripe.FocusCenterFit      = fout_centers.x0;
+
 BinStripe.Counts              = sum(Zb,'all');
 BinStripe.Opts                = opts;
 

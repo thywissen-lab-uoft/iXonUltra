@@ -11,7 +11,7 @@ if nargin <3
    opts=struct;
 end
 
-if nargin<2
+if nargin<2 || isempty(xVar)
     xVar = 'ExecutionDate';
 end
 
@@ -206,6 +206,7 @@ end
             '\alpha = ' num2str(BS(1).FitStripe.B,'%.2f') '$'];
         set(tSummary,'String',str);
         
+        % Label image with date/xVar in top right (for analysis only)s
         if isequal(xVar,'ExecutionDate')
             strVar=[xVar ': ' datestr(bindata(nn).Params.(xVar),'YYYY-mm-DD_HH-MM-SS')];          % Variable string
         else

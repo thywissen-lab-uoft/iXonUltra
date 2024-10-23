@@ -74,6 +74,8 @@ bin_opts.xVar           = 'ExecutionDate';  % Variable Name
 bin_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 bin_opts.doSave         = 1;                % Save Analysis?
 
+bin_opts.ControlVariable='f_offset';
+
 %% Flags
 
 % Recenter all binned data to have same limits
@@ -188,6 +190,9 @@ if bin_BinStripe
         return;
     end
     clear out
+    if isfield(bindata,'BinStripe')
+    bindata=rmfield(bindata,'BinStripe');
+    end
     for n = 1:length(bindata)    
         fprintf(['(' num2str(n) '/' num2str(numel(bindata))...
             ') lattice stripe fit']);
@@ -212,11 +217,11 @@ if bin_BinStripe
 end  
 %% Bin Stripe Summary
 if bin_BinStripe    
-    bin_opts.nCenter = 100;
+    bin_opts.nCenter = 110;
     hF_StripeSummary = bin_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
-         'bin_StripeSummary',saveOpts);     
+         'bin_StripeSummary',opts);     
     end
 end
 
