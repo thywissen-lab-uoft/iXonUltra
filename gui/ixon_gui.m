@@ -1805,6 +1805,7 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
                 Zb(:,:,jj) = data.LatticeBin(jj).Zbin;
             end
             Focusing = bin_multiShotFocusing(n1,n2,Zb,opts_focusing);      
+            data.MultiShotFocusing = Focusing;
         end  
 
 
@@ -3742,6 +3743,10 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
             
             if isfield(data,'BinStripe')
                gui_saveData.BinStripe = data.BinStripe; 
+            end
+            
+            if isfield(data,'MultiShotFocusing')
+               gui_saveData.MultiShotFocusing = data.MultiShotFocusing; 
             end
            
             filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
