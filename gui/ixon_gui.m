@@ -1765,7 +1765,10 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
             bin_showRadialHistogram(data,ropts);
          end
         
-        if hc_anlB_stripe.Value
+         
+         
+        if (hc_anlB_stripe.Value && ~isfield(data.Flags,'plane_selection_dotilt')) || ...
+            (hc_anlB_stripe.Value && isfield(data.Flags,'plane_selection_dotilt') &&  data.Flags.plane_selection_dotilt)
             opts_stripe = struct;
             opts_stripe.FigureNumber=3000;
             opts_stripe.Threshold = stripe_threshold_tbl.Data;
