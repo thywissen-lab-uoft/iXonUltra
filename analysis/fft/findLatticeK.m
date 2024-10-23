@@ -98,6 +98,8 @@ out.k1 = k1;
 out.k2 = k2;
 out.s1 = s1;
 out.s2 = s2;
+out.A1 = fout1.A;
+out.A2 = fout2.A;
 out.Fit1 = fout1;
 out.Fit2 = fout2;
  

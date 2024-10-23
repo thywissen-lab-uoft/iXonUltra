@@ -1798,7 +1798,7 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
             opts_focusing.XVal = data.Params.qgm_MultiPiezos(2:5);
             data = bin_recenter(data);
             n1 = data.LatticeBin(1).n1;
-            n2 = data.LatticeBin(1).n2;
+            n2 = data.LatticeBin(1).n2;             
 
             Zb = zeros(length(n2),length(n1),length(data.LatticeBin));
             for jj=1:length(data.LatticeBin)
@@ -1807,14 +1807,12 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
             Focusing = bin_multiShotFocusing(n1,n2,Zb,opts_focusing);      
             data.MultiShotFocusing = Focusing;
         end  
-
-
-                
-         hb_Binanalyze.BackgroundColor=[80 200 120]/255;
-        drawnow;
+            hb_Binanalyze.BackgroundColor=[80 200 120]/255;
+            drawnow;   
+        end    
+        
     
     
-    end
 %% Digitization Panel
 % hpDig=uipanel(hF,'units','pixels','backgroundcolor','w','title','digitization');
 % hpDig.Position=[0 hpBin.Position(2)-80 160 100];
@@ -3419,11 +3417,14 @@ end
             return;
         end     
         k1 = data.LatticeK(imgnum).k1;
-        k2 = data.LatticeK(imgnum).k2;        
+        k2 = data.LatticeK(imgnum).k2;      
+        A1 = data.LatticeK(imgnum).A1;
+        A2 = data.LatticeK(imgnum).A2;
+        keyboard
         theta=acos(sum(k1.*k2)/(norm(k1)*norm(k2)))*180/pi;        
         tTopLeftK.String = ['$\vec{k}_1 = (' num2str(round(k1(1),4)) ',' num2str(round(k1(2),4)) ')$' newline ...
             '$\vec{k}_2 = (' num2str(round(k2(1),4)) ',' num2str(round(k2(2),4)) ')$' newline ...
-            '$\vec{k}_1\cdot\vec{k}_2 = k_1k_2\cos(' num2str(theta,4) '^\circ )$'];        
+            '$\vec{k}_1\cdot\vec{k}_2 = k_1k_2\cos(' num2str(theta,4) '^\circ )$'];
     end
 
     function reciprocalLatticeTextCB(src,evt)
