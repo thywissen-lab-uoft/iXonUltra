@@ -91,13 +91,13 @@ bin_BinReScale                          = 1;
 
 
 % Stripe fit Data
-bin_BinStripe                           = 1;
+bin_BinStripe                           = 0;
 bin_BinStripeAnimate                    = 1;
 bin_BinStripe_LGuess                    = 26.5;
 bin_BinStripe_ColorThreshold            = [3000 5000];
 
 % Digitzation
-bin_Digitize                            = 0; 
+bin_Digitize                            = 1; 
 dig_DigitizationThreshold               = 2000;
 
 bin_Digitize_Source                     = 'compensated';
@@ -177,10 +177,12 @@ end
 %%
 
 if bin_BinReScale
-    [bindata,hF_BinCompensate] = bin_rescale(bindata,opts);    
+    [bindata,hF_BinCompensate,hF_BinFluor] = bin_rescale(bindata,bin_opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinCompensate,...
          'bin_Compensate',bin_opts);  
+     ixon_saveFigure2(hF_BinFluor,...
+         'bin_FluorPerAtom',bin_opts);  
     end
     
 end

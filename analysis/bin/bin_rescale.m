@@ -1,4 +1,4 @@
-function  [bindata,hF] = bin_rescale(bindata,opts)
+function  [bindata,hF,hF2] = bin_rescale(bindata,opts)
 % This function accounts for 
 
 
@@ -239,6 +239,43 @@ set(gca,'box','on','linewidth',1,'fontsize',10,...
       text(.95,.95,descStr,'units','normalized',...
           'interpreter','latex','horizontalalignment','right',...
           'verticalalignment','cap');
+      
+%% Other Figure
+
+      P=[bindata.Params];
+    X = [P.(opts.xVar)];
+    
+    Y =  [bindata.ScaledCentroid];
+    Ye = [bindata.ScaledCentroidRadius].*[bindata.ScaledCentroid];
+   
+    
+hF2 = figure;
+hF2.Color='w';
+hF2.Position=[1000 50 600 400];
+
+
+    ax =axes;   
+    
+    co=get(gca,'colororder');
+
+    hold on
+
+  
+    errorbar(X,Y,2*Ye,'o','linewidth',2,'markersize',10,'markerfacecolor',co(1,:),...
+        'markeredgecolor',co(1,:)*.5);
+    xlabel(opts.xVar)
+    if isequal(opts.xVar,'ExecutionDate')
+        datetick x
+    end
+    ylabel('fluorescence/atom');
+    set(gca,'box','on','linewidth',1,'fontsize',10);
+    grid on;
+    yL=get(gca,'YLim');
+    set(gca,'YLim',[0 yL(2)]);
+    legend({'$\mathrm{compensated~centroid} \pm 2\sigma$'},'interpreter','latex');
+%     
+%              bindata(kk).ScaledCentroidRadius = pdf1_c(2)/I0;
+%         bindata(kk).ScaledThreshold = (I0-2*pdf1_c(2))/I0;
 %% Assign Outputs
 
 for kk=1:length(bindata)
