@@ -27,6 +27,8 @@ ixon_mask=ixon_mask.BW;
 % Add analysis paths
 addpath(analysis_path);addpath(genpath(analysis_path))
 
+camera_control_file='Y:\_communication\camera_control.mat';
+
 %% Other Settings
 
 cmap=purplemap;                                 % default colormap
@@ -622,6 +624,18 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
         
     end
 
+% Auto Save check box
+ttstr=['Use the camera control file to set the camera settings?'];
+hcAdwinCamera=uicontrol(hpAcq,'style','checkbox','string','auto camera config?','fontsize',7,...
+    'backgroundcolor','w','Position',[bgAcq.Position(1)+bgAcq.Position(3) bgAcq.Position(2) 110 18],...
+    'ToolTipString',ttstr);
+
+ttstr=['Use the camera control file to set the save directory?'];
+hcAdwinSaveDir=uicontrol(hpAcq,'style','checkbox','string','auto set save dir?','fontsize',7,...
+    'backgroundcolor','w','Position',[hcAdwinCamera.Position(1)+hcAdwinCamera.Position(3) hcAdwinCamera.Position(2) 110 18],...
+    'ToolTipString',ttstr);
+
+
 % Timer to check on acquisition
 % boop = struct;
 % boop.ReadTime = [];
@@ -634,9 +648,30 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
         src.UserData = [0 0];
     end
 
+    function autoCameraConfig
+        if exist(camera_control_file,'file')
+            exposures = load(camera_control_file,'IxonMultiExposures');
+            if acq.NumKin~=length(exposures)    
+                warning('incompatible number of exposures detected. Automatically changing')
+                stopCamCB;
+                pause(0.1);
+                acq.NumKin = length(exposures);
+                loadAcquisitionSettings;
+                startCamCB;
+            end
+        end  
+    end
+
+    function autoSaveDir
+
+    end
+
 % Timer function checks if acquisition is over and restarts it
     function acqTimerFcn(src,evt)      
         try
+            if hcAdwinCamera.Value
+                autoCameraConfig;
+            end
         % Camera Status
         [out,outstr]=ixon_getCameraStatus;  
         % Check number of available images and post and upate
