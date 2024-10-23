@@ -1454,7 +1454,11 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
         if hcFindLattice.Value && isfield(data,'Zf')
             hb_Kanalyze.BackgroundColor=[255 219 88]/255;
             drawnow;
-            opts = data.ProcessOptions;            
+            opts = data.ProcessOptions;  
+
+            if isfield(data,'LatticeK')
+                data = rmfield(data,'LatticeK');
+            end
             for kk=1:size(data.Zf,3)
                 tic;
                 fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ') Fitting reciprocal lattice ...']);
