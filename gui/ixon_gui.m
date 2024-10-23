@@ -649,14 +649,15 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
     end
 
     function autoCameraConfig
-        if exist(camera_control_file,'file')
-            CameraControl = load(camera_control_file);
+        if exist(camera_control_file,'file') && cam_status.isConnected 
+            CameraControl = load(camera_control_file);            
             if acq.NumKin~=length(CameraControl.IxonMultiExposures)    
-                warning('incompatible number of exposures detected. Automatically changing')
+                disp('incompatible number of exposures detected. Automatically changing')
                 stopCamCB;
                 pause(0.1);
                 acq.NumKin = length(CameraControl.IxonMultiExposures);
                 loadAcquisitionSettings;
+                pause(0.1);
                 startCamCB;
             end
         end  
@@ -727,7 +728,9 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
         end        
         catch ME
             warning('Acqtimer failed.');
-            disp([ME.stack(1).file ' (' num2str(ME.stack(1).line) ']']);        
+            for tt=1:length(ME.stack)
+                disp([ME.stack(tt).file ' (' num2str(ME.stack(tt).line) ']']);        
+            end
         end
     end
 
