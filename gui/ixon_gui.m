@@ -1509,13 +1509,23 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
                 scores = [data.LatticeK.NkScore];
 
                 hF_kscore=figure(fignum);
-                hF_kscore.Position=[50 50 400 300];
+                hF_kscore.Position=[50 50 400 500];
                 clf
                 hF_kscore.Color='w';
                 co2=get(gca,'colororder');
+
+                subplot(3,1,1)
+                plot(X,'ko','markerfacecolor',[.5 .5 .5],'markersize',8,...
+                    'linewidth',2);
+                xlabel('image number');
+                ylabel('piezo (V)')
+                set(gca,'box','on','linewidth',1,'fontsize',10);
+                grid on
+
+                subplot(3,1,[2 3])
                 plot(X,scores,'o','markerfacecolor',co2(1,:),...
                     'markeredgecolor',co2(1,:)*.5,'linewidth',2,...
-                   'markersize',10);
+                   'markersize',8);
                 xlabel('piezo (V)')
                 ylabel('momentum peak score (arb.)')
                 yL = get(gca,'YLim');
@@ -1537,6 +1547,7 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
 
                 str = ['$V_0 = ' num2str(round(fout.x0,2)) '~\mathrm{V}$'];
                 legend({'data',str},'location','south','interpreter','latex')               
+                set(gca,'box','on','linewidth',1,'fontsize',10);
 
         end
     end
