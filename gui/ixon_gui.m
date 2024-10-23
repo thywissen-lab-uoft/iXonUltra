@@ -740,7 +740,7 @@ hcauto=uicontrol(hpAcq,'style','checkbox','string','save?','fontsize',7,...
 
 % Save checkbox callback
     function saveCheck(src,~)
-        if src.Value;
+        if src.Value
             tSaveDir.Enable='on';
             bBrowse.Enable='on';
         else
