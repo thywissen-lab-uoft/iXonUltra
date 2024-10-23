@@ -614,10 +614,10 @@ rbLive=uicontrol(bgAcq,'Style','radiobutton','String','software',...
                     'starting acquisition. You can break the camera.'];
                 msgbox(msg,'Live Mode','warn','modal');  
                 acq=defaultLiveAcqSettings;    
-                loadAcquisitionSettings
+                loadAcquisitionSettings;
             case 'Normal'
                 acq=defaultNormalAcqSettings;
-                loadAcquisitionSettings
+                loadAcquisitionSettings;
             otherwise
                 warning('Unexpected acqusition mode. What happened?');
         end        
@@ -650,12 +650,12 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
 
     function autoCameraConfig
         if exist(camera_control_file,'file')
-            exposures = load(camera_control_file,'IxonMultiExposures');
-            if acq.NumKin~=length(exposures)    
+            CameraControl = load(camera_control_file);
+            if acq.NumKin~=length(CameraControl.IxonMultiExposures)    
                 warning('incompatible number of exposures detected. Automatically changing')
                 stopCamCB;
                 pause(0.1);
-                acq.NumKin = length(exposures);
+                acq.NumKin = length(CameraControl.IxonMultiExposures);
                 loadAcquisitionSettings;
                 startCamCB;
             end
