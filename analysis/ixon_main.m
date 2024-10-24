@@ -92,32 +92,41 @@ ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 
 %% Analysis Options
-% Fitting options
-ixon_doBoxCount             = 1;
-ixon_doGaussFit             = 0;
+
+ixon_doBoxCount                     = 1;
+ixon_doGaussFit                     = 0;
 
 % Analysis to run
-ixon_doStandardAnalysis     = 1;
-ixon_doPlotProfiles         = 0;
-ixon_doAnimate              = 1;    % Animate in position domain
-ixon_doAnalyzeRaw           = 0;    % Raw Image Analysis
-ixon_doAnalyzeFourier       = 0;    % Fourier Domain Analysis
-ixon_doAnalyzeStripes2D     = 0;    % Stripe Analysis :  for field stability in titled plane selection
-ixon_doAnalyzeQPD           = 1;    % Analyze QPD traces
+ixon_doStandardAnalysis             = 1;
+ixon_doPlotProfiles                 = 0;
+ixon_doAnimate                      = 1;    % Animate in position domain
+ixon_doAnalyzeRaw                   = 0;    % Raw Image Analysis
+ixon_doAnalyzeFourier               = 0;    % Fourier Domain Analysis
+ixon_doAnalyzeStripes2D             = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
+
+ixon_showFOffset                    = 1;
 %% QGM Single Plane Analysis
 
-% QGM Single Plane Analysis
-ixon_doQGM                          = 0;
-doPSF                               = 0;
-ixon_doQGM_FindLattice              = 0;
-ixon_doQGM_Bin                      = 0;
+% Master flag for QGM stuff
+ixon_doQGM                          = 1;
 
+
+ixon_doQGM_FindLattice              = 1;
+ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
+ixon_doQGM_BinStandardAnalysis      = 1;
+ixon_doQGM_Digitize                 = 1;
+ixon_doQGM_DigitalStandardAnalysis  = 1;
+ixon_doQGM_reassignBadK             = 1;
+ixon_doQGM_useAverageK              = 0;
 
-ixon_doQGM_BinStandardAnalysis      = 0;
-ixon_doQGM_Digitize                 = 0;
-ixon_doQGM_DigitalStandardAnalysis  = 0;
+
+% only PSF sharpen if you are doing QGM analysis
+doPSF                               = ixon_doQGM;
+
+%% Other Analyses
+ixon_doAnalyzeQPD                   = 0;    % Analyze QPD traces
 
 
 %% Image Processing Options
@@ -133,9 +142,7 @@ img_opt.doSubtractBG        = 1;
 img_opt.doScale             = 0;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
-% img_opt.Theta               = 59.64;  % Rotation amount (deg.)
 img_opt.Theta               = 59.81;  % Rotation amount (deg.)
-% img_opt.Theta               = 30;
 img_opt.DetectNoise         = 1;
 img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
@@ -383,7 +390,7 @@ ixon_animateOpts.Source = 'ZNoFilter';
 %      ixon_animateOpts.CLim='auto';
 %      ixon_animateOpts.CLim=[0 10000];
 % end
-      ixon_animateOpts.CLim=[0 300];   % Automatically choose CLIM?
+      ixon_animateOpts.CLim=[0 1000];   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
@@ -406,7 +413,7 @@ if ixon_doAnimate == 1 && ixon_doSave && size(ixondata(1).Z,3)==2
 %     ixon_animateOpts.Source = 'Z';
 
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
-      ixon_animateOpts.CLim=[0 300];   % Automatically choose CLIM?
+      ixon_animateOpts.CLim=[0 100];   % Automatically choose CLIM?
 
 ixon_animateOpts.filename='ixon_animate_2shot';
 
@@ -423,13 +430,43 @@ if ixon_doAnalyzeFourier;ixon_AnalyzeFourier;end
 %% Stripe Analysis
 if ixon_doAnalyzeStripes2D;ixon_stripe_2d;end
 
-%% QPD Analysis
-if ixon_doAnalyzeQPD;[ixondata,pd_summary]=AnalyzeIxonQPD(ixondata,saveDir,[],FigLabel);end
+%% Foffset for plane selection stability
 
+if ixon_showFOffset
+    hF_offset = figure;
+    hF_offset.Color='w';
+    hF_offset.Position=[50 50 500 300];
+    yVar = 'f_offset';
+    xVar = 'ExecutionDate';
+    P = [ixondata.Params];
+    
+    x = [P.(xVar)];
+    y = [P.(yVar)];
+    
+    ax = axes;
+    plot(x,y,'ko','markerfacecolor',[.5 .5 .5],'markersize',8,'linewidth',1);
+    xlabel(xVar,'interpreter','none');
+    ylabel(yVar,'interpreter','none');
+    if isequal(xVar,'ExecutionDate')
+       datetick x 
+    end
+    t=uicontrol('style','text','string',FigLabel,'units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left','fontsize',8);
+    t.Position=[1 hF_offset.Position(4)-15 t.Extent(3) t.Extent(4)];
+    grid on
+    
+    if ixon_doSave;ixon_saveFigure2(hF_offset,'ixon_foffset_track',saveOpts);end     
+
+end
 %% Quantum Gas Micrscopy
 if ixon_doQGM            
     ixon_bin_initialize; 
 end
+
+%% QPD Analysis
+if ixon_doAnalyzeQPD;[ixondata,pd_summary]=AnalyzeIxonQPD(ixondata,saveDir,[],FigLabel);end
+
+
 
 
 

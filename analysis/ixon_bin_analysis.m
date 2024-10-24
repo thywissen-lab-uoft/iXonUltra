@@ -94,7 +94,8 @@ bin_BinReScale                          = 1;
 bin_BinStripe                           = 0;
 bin_BinStripeAnimate                    = 1;
 bin_BinStripe_LGuess                    = 26.5;
-bin_BinStripe_ColorThreshold            = [3000 5000];
+% bin_BinStripe_ColorThreshold            = [3000 5000];
+bin_BinStripe_ColorThreshold            = [5000 10000];
 
 % Digitzation
 bin_Digitize                            = 1; 

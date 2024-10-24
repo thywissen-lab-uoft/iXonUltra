@@ -11,12 +11,6 @@ disp(['Calling ' mfilename '.m']);
 disp(repmat('-',1,60));disp(repmat('-',1,60));  
 
 
-% Some flags
-ixon_doQGM_FindLattice = 1;
-reassignBadK = 1;
-useAverageK = 0;
-ixon_doQGM_Bin = 1;
-
 %% Initial checks
 % Check to make sure that PSF deconvolution had been done 
 if ~exist('ixondata')
@@ -57,7 +51,7 @@ if ixon_doQGM_FindLattice
             ') lattice phase']);        
         k1 = ixondata(nn).LatticeK(1).k1;
         k2 = ixondata(nn).LatticeK(1).k2;          
-        if (reassignBadK && LatticeK.BadLattice(nn)) || useAverageK
+        if (ixon_doQGM_reassignBadK && LatticeK.BadLattice(nn)) || ixon_doQGM_useAverageK
             k1 = LatticeK.k1;
             k2 = LatticeK.k2;
         end        
