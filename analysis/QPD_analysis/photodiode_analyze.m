@@ -23,9 +23,13 @@ for nn=1:length(qpd_filenames)
 
     % Index of modulation start and convert to ms
     mod_start = max(find(diff(qpd_single.data(:,10))==1));
+    
+%     mod_start = min(find(round(qpd_single.t,2)==1.27));
 
     % Shift time by modulation start time
     t = (qpd_single.t - qpd_single.t(mod_start))*1e3;
+    
+
 
     %% Save all traces with timeshift
 
@@ -143,6 +147,7 @@ for nn=1:length(qpd_filenames)
 
     % Select the first 50 ms of modulation
     mod50 = find(round(t,1)==50);
+    mod50 = find(round(t,1)==40);
     t_fitmod = t(mod_start:mod50);
 
     % Normalize the data by the sum

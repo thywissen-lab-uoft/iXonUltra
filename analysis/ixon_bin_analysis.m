@@ -70,7 +70,7 @@ bin_opts.FigLabel = bindata(1).SourceDirectory;
 bin_opts.varType        = 'param';          % always select 'param' for now 
 bin_opts.autoXVar       = 0;                % Auto detect changing variable?
 bin_opts.autoUnit       = 1;                % Auto detect unit for variable?
-bin_opts.xVar           = 'ExecutionDate';  % Variable Name
+bin_opts.xVar           = 'conductivity_mod_time';  % Variable Name
 bin_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 bin_opts.doSave         = 1;                % Save Analysis?
 
@@ -99,7 +99,7 @@ bin_BinStripe_ColorThreshold            = [5000 10000];
 
 % Digitzation
 bin_Digitize                            = 1; 
-dig_DigitizationThreshold               = 2000;
+dig_DigitizationThreshold               = 4000;
 
 bin_Digitize_Source                     = 'compensated';
 %bin_Digitize_Source                     = 'uncompensated';
