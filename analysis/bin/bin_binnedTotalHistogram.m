@@ -19,7 +19,7 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
     if ~isfield(opts,'Bins')
         opts.Bins = 100;
     end   
-    
+ 
     if ~isfield(opts,'doAnimate')
        opts.doAnimate = 0; 
     end

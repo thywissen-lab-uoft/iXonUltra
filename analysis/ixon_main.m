@@ -126,7 +126,7 @@ ixon_doQGM_useAverageK              = 0;
 doPSF                               = ixon_doQGM;
 
 %% Other Analyses
-ixon_doAnalyzeQPD                   = 1;    % Analyze QPD traces
+ixon_doAnalyzeQPD                   = 0;    % Analyze QPD traces
 
 
 %% Image Processing Options
@@ -163,6 +163,9 @@ img_opt.FFTFilterRadius     = 1;        % FFT Filter radius (1/px)
 
 % Full ROI 
 ixonROI = [1 512 1 512]; 
+
+    
+    
 
 %% Load the data
 clear ixondata

@@ -8,9 +8,20 @@ opts.SpatialInhomogeneityMaxScale = 1.5;
 
 opts.do_Intensity = 1;
 s=opts.SpatialInhomogeneityRadius;
+
+%% Get ROI
+    
+    n1 = bindata(1).LatticeBin(1).n1;
+    n2 = bindata(1).LatticeBin(1).n2;
+    
+    if isequal(opts.ROI,'max')
+       opts.ROI = [min(n1) max(n1) min(n2) max(n2)]; 
+    end    
+    R = opts.ROI;
+    in1i = find(n1==R(1),1);in1f = find(n1==R(2),1);    
+    in2i = find(n2==R(3),1);in2f = find(n2==R(4),1);
+ 
 %% Gather Data
-n1 = bindata(1).LatticeBin(1).n1;
-n2 = bindata(1).LatticeBin(1).n2;
 
 ZbinScaled = zeros(numel(n2),numel(n1),length(bindata));
 
@@ -18,8 +29,13 @@ for kk=1:length(bindata)
     ZbinScaled(:,:,kk) = bindata(kk).LatticeBin(1).Zbin;
 end
 
+% Asign to ROI
+ZbinScaled = ZbinScaled(in2i:in2f,in1i:in1f,:);
+
 Zbin = ZbinScaled;
 
+n1 = n1(in1i:in1f);
+n2 = n2(in2i:in2f);
 [nn1,nn2]=meshgrid(n1,n2);
 
 ZbinScaledCopy = ZbinScaled;
