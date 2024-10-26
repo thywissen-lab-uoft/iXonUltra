@@ -3858,6 +3858,10 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
                gui_saveData.BinStripe = data.BinStripe; 
             end
             
+            if isfield(data,'BinStripeCircular')
+               gui_saveData.BinStripeCircular = data.BinStripeCircular; 
+            end
+            
             if isfield(data,'MultiShotFocusing')
                gui_saveData.MultiShotFocusing = data.MultiShotFocusing; 
             end
