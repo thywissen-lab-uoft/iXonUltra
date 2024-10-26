@@ -1,4 +1,4 @@
-function BinStripe = bin_StripeFitCircular(n1,n2,Zb,opts)
+function out = bin_StripeFitCircular(n1,n2,Zb,opts)
 %bin_StripeFit Fit a binned fluorescence image to a stripe pattern.
 %   When taking fluoresence images of a 2D slice of the 3D cloud,
 %   application of a transverse magnetic field induces a stripe pattern to
@@ -36,11 +36,77 @@ end
 % Thresholds to throw data away and for focusing score
 if ~isfield(opts,'Threshold')
     opts.Threshold = [1000 3000];
+end
 
+if ~isfield(opts,'FeshbachField')
+    opts.FeshbachField = 124;
+end
+
+if ~isfield(opts,'Gradient')
+    opts.FeshbachField = 622;
 end
 
 [nn1,nn2]=meshgrid(n1,n2);
 
+
+if ~isfield(opts,'doDebug')
+    opts.doDebug=1;
+end
+
+
+%% Wavelength Guess Via 2D FFT
+tic
+
+Z = Zb;
+Z(isnan(Z))=0;
+Z(isinf(Z))=0;
+zf = fft2(Z,2^8+1,2^8+1);              % 2D FFT
+zf = fftshift(zf);                      % Shift so zero at center
+f  = 0.5*linspace(-1,1,size(zf,2));     % Frequency Vector
+df=f(2)-f(1);                           % Frequecny spacing
+zfnorm=abs(zf);                         % Norm of data
+
+% Radial Profile
+[Tics,Average]=radial_profile(zfnorm,1);
+
+% Find peak in radial data
+[pks,locs,w,p] =findpeaks(Average,'SortStr','descend','Npeaks',2);
+
+% Get the frequency
+f_me = Tics(locs)*df;
+
+% Convert to wavelength
+
+if 1/f_me(1)>100
+    ind = 2;
+else
+    ind =1 ;
+end
+
+    guess_lambda= 1/f_me(ind);
+lambda_peak_val = pks(ind);
+%% Find Rotation Angle
+% Find angle with maximum value (at the correct rotation angle, everything
+% sums up)
+thetaVec = linspace(0,pi/2,180);
+valTheta = zeros(length(thetaVec),1);
+for tt=1:length(thetaVec)
+    valTheta(tt)=max(sum(imrotate(zfnorm,thetaVec(tt)*180/pi,'crop'),2));
+end
+[~,ind]=max(valTheta);
+
+% Rotation Angle
+guess_theta = thetaVec(ind);
+
+%% Radius of Curvature
+% The radius of curvature depends on the radial field gradient and on the
+% bias field.
+% Feshbach field --> gotten from uwave frequency
+% Bias field gotten from labmda + feshbach field
+% Gradient --> gotten from independent measurement
+% Radius of curvature --> gotten from bias field and radial gradient
+
+guess_R = 514;
 
 %% Circular Wave Phase
 % This function creates a phase map
@@ -49,23 +115,130 @@ end
 % theta  = angle
 % phi0   = phase offset
 
-n10 = mean(n1);
 n20 = mean(n2);
 y0=n20;
-
-
-x0=n10;
 x0=0;
 
-
-theta0=atan2(n20,n10);
 phase_func = @(L,R,theta,phi0,xx,yy) ...
     2*pi/L*(R^2+2*R*(cos(theta)*(xx-x0)+sin(theta)*(yy-y0))+((xx-x0).^2+(yy-y0).^2)).^(1/2)-2*pi*R/L+phi0;
 
+%% Phase Guess
+
+phiVec = linspace(0,2*pi,180);
+valPhi = zeros(length(phiVec),1);
+for tt=1:length(phiVec)
+    map = cos(phase_func(guess_lambda,guess_R,guess_theta,phiVec(tt),nn1,nn2));
+    valPhi(tt)=sum(Z.*map,'all');
+end
+[~,ind]=max(valPhi);
+
+guess_phi=phiVec(ind);
+toc
+
+%% Construct initial Guess
+
+guess_phase_map = phase_func(guess_lambda,guess_R,guess_theta,guess_phi,...
+    nn1,nn2);
+
+guess_phase_func = @(n1,n2)  phase_func(guess_lambda,guess_R,guess_theta,guess_phi,...
+    n1,n2);
+%% Show it
+if opts.doDebug
+    FigName = 'BinStripeCircular';
+    ff=get(groot,'Children');
+
+    fig=[];
+    for kk=1:length(ff)
+        if isequal(ff(kk).Name, FigName)
+            fig = ff(kk);
+        end
+    end
+    if isempty(fig)
+        fig = figure;
+    end    
+    figure(fig);
+    fig.Color='w';
+    fig.Name=FigName;
+    fig.Position=[50 50 1000 500];
+
+    clf
+    
+    ax1=subplot(3,4,[1 2 5 6]);
+    im1=imagesc(n1,n2,Zb);
+    hold on
+    colormap(ax1,"parula")
+    xlabel('site 1');
+    ylabel('site 2');
+    axis equal tight    
+    ax2=axes;
+    ax2.Position=ax1.Position;
+    im2=imagesc(n1,n2,cos(guess_phase_map));
+    im2.AlphaData=0.2;
+    ax2.Visible='off';
+    colormap(ax2,"jet")
+    axis equal tight  
+    linkaxes([ax1,ax2]) 
+    ax2.Position=ax1.Position;
+    ax1.Position=ax2.Position;
+
+    ax_fft=subplot(3,4,[3 4 7 8]);
+    imagesc(f,f,zfnorm);
+    axis equal tight
+    xlim(2*[-1 1]/guess_lambda);
+    ylim(2*[-1 1]/guess_lambda);
+    colormap(ax_fft,'jet')
+    xlabel('fx (1/site)');
+    ylabel('fy (1/site)')
+
+    subplot(3,4,9);
+    plot(Tics*df,Average,'.-');
+    hold on
+    p=plot(1/guess_lambda,lambda_peak_val,'ko','markerfacecolor','k');
+    ylim([0 lambda_peak_val]*1.5)
+    xlabel('radial frequency (1/site)');
+    ylabel('radial average');
+    legend(p,{['\lambda = ' num2str(round(guess_lambda,3)) ' site']})
+    title('wavelength');
+
+    subplot(3,4,10);
+    plot(thetaVec,valTheta,'.-');
+    hold on
+    xlabel('rotation angle \theta (rad.)');
+    ylabel('sum correlation');
+    hold on
+    p=plot(guess_theta,valTheta(find(guess_theta==thetaVec,1)),'ko','markerfacecolor','k');
+    legend(p,{['\theta = ' num2str(round(guess_theta,3)) ' rad.']})
+    title('rotation angle');
 
 
-keyboard
-% Lguess = [
+    subplot(3,4,11);
+    plot(phiVec,valPhi,'.-');
+    hold on
+    xlabel('phase angle \phi (rad.)');
+    ylabel('sum correlation');
+    p=plot(guess_phi,valPhi(find(guess_phi==phiVec,1)),'ko','markerfacecolor','k');
+    title('phase');
+    legend(p,{['\phi = ' num2str(round(guess_phi,3)) ' rad.']})
+
+    % fig.SizeChangedFcn=@foo;
+
+   
+end
+
+%% output
+
+out = struct;
+out.Lambda = guess_lambda;
+out.Theta = guess_theta;
+out.Radius = guess_R;
+out.Phi     = guess_phi;
+out.PhaseFunc = @(n1,n2) phase_func(guess_lambda,guess_R,guess_theta,guess_phi,...
+    n1,n2);
+
+
+%  function foo(src,evt)
+%     ax2.Position=ax1.Position;
+% end
 
 %% Fit Functions
 
@@ -449,7 +622,33 @@ keyboard
 % ylim([0 yL(2)]);
 % xlim([min(n1) max(n1)])
 %}
+
+function out = contructGuess(n1,n2,Zb)
+
 end
+
+
+end
+
+
+
+function [Tics,Average]=radial_profile(data,radial_step)
+    %main axii cpecified:
+    x=(1:size(data,2))-size(data,2)/2;
+    y=(1:size(data,1))-size(data,1)/2;
+    % coordinate grid:
+    [X,Y]=meshgrid(x,y);
+    % creating circular layers
+    Z_integer=round(abs(X+1i*Y)/radial_step)+1;
+    % % illustrating the principle:
+    % % figure;imagesc(Z_integer.*data)
+    % very fast MatLab calculations:
+    Tics=accumarray(Z_integer(:),abs(X(:)+1i*Y(:)),[],@mean);
+    Average=accumarray(Z_integer(:),data(:),[],@mean);
+end
+
+
+
 
 % % rectangular pulse via erf functions
 % function y = erf_pulse(center,smooth_width,FWHM,xx) 

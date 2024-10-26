@@ -72,8 +72,6 @@ end
 
 
 
-
-
 % phin_global = mod([BS.Phase]-pi/2,2*pi);
 
 % phase_error = phin_n -0.5;

@@ -68,9 +68,9 @@ bin_opts.FigLabel = bindata(1).SourceDirectory;
 
 % Choose what kind of variable to plot against (sequencer/camera)
 bin_opts.varType        = 'param';          % always select 'param' for now 
-bin_opts.autoXVar       = 1;                % Auto detect changing variable?
+bin_opts.autoXVar       = 0;                % Auto detect changing variable?
 bin_opts.autoUnit       = 1;                % Auto detect unit for variable?
-bin_opts.xVar           = 'conductivity_mod_time';  % Variable Name
+bin_opts.xVar           = 'ExecutionDate';  % Variable Name
 bin_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 bin_opts.doSave         = 0;                % Save Analysis?
 
@@ -206,7 +206,8 @@ if bin_BinStripe
         fprintf(['(' num2str(n) '/' num2str(numel(bindata))...
             ') lattice stripe fit']);
         tic
-        for kk = 1:length(bindata(n).LatticeBin)
+        kk=1;
+        % for kk = 1:length(bindata(n).LatticeBin)
             fprintf(['...' num2str(kk)]);
             n1 = bindata(n).LatticeBin(kk).n1;
             n2 = bindata(n).LatticeBin(kk).n2;
@@ -217,14 +218,13 @@ if bin_BinStripe
             opts_stripe.FigNum=3000;
             opts_stripe.Threshold = bin_BinStripe_ColorThreshold;
             opts_stripe.SumIndex = bin_BinStripeIndex; % 1 for trees % 2 for fallen trees
-
-            bindata(n).BinStripe(kk) = ...
-                bin_StripeFit(n1,n2,Zb,opts_stripe);
-            
-            
-            bindata(n).BinStripe(kk) = ...
+            opts_stripe.doDebug=0;
+            % bindata(n).BinStripe(kk) = ...
+            %     bin_StripeFit(n1,n2,Zb,opts_stripe);
+            %             
+            bindata(n).BinStripeCircular(kk) = ...
                 bin_StripeFitCircular(n1,n2,Zb,opts_stripe);
-        end
+        % end
         disp([' done (' num2str(toc,'%.2f') 's)']); 
     end
 
@@ -232,18 +232,31 @@ end
 
 %%
 
-bin_opts.nCenter = 117;
+bin_opts.nCenter = [100 100];
+
+%% Bin Stripe Summary
+% if bin_BinStripe       
+% 
+% 
+%     hF_StripeSummary = bin_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
+%     if bin_opts.doSave
+%         ixon_saveFigure2(hF_StripeSummary,...
+%          'bin_StripeSummary',opts);     
+%     end
+% end
 
 %% Bin Stripe Summary
 if bin_BinStripe       
 
 
-    hF_StripeSummary = bin_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
+    hF_StripeSummary = bin_showStripeBinSummaryCircular(bindata,bin_opts.xVar,bin_opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
          'bin_StripeSummary',opts);     
     end
 end
+
+
 
 %% Bin Stripe Animation
 if bin_BinStripe && bin_BinStripeAnimate
