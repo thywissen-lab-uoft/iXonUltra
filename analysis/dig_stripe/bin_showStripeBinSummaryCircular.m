@@ -38,7 +38,7 @@ Radius= [BS.Radius];
 
 Phi=mod(Phi+pi,2*pi)-pi;
 
-Navg=2;
+Navg=3;
 PhiUnwrap = unwrapPhaseTime(X,Phi,Navg);
 
 %% Smush Data
@@ -97,6 +97,7 @@ xlim([min(X) max(X)]);
 set(gca,'YTick',[-.5 -.25 0 .25 .5]);
 grid on
 set(gca,'box','on','linewidth',1,'fontsize',10);
+title('local phase');
 
 % Unwrapped Phase
 subplot(2,4,2);
@@ -110,10 +111,8 @@ hold on
 grid on
 set(gca,'box','on','linewidth',1,'fontsize',10);
 yL=get(gca,'YLim');
-% if (yL(2)-yL(1))<1
-%    ylim([0 1]); 
-% end
 xlim([min(X) max(X)]);
+title('unwrapped local phase');
 
 
 % Image
@@ -122,7 +121,6 @@ imagesc(X,n1,Zsum)
 set(gca,'YDir','normal','box','on','linewidth',1);
 hold on
 xlabel(xVar,'interpreter','none');
-
 if isequal(xVar,'ExecutionDate')
     datetick x
 end
@@ -130,6 +128,7 @@ ylabel('position (site)');
 set(gca,'box','on','linewidth',1,'fontsize',10);
 xlim([min(X) max(X)]);
 grid on
+title('raw sum profile');
 
 
 % Control Variable
@@ -143,6 +142,7 @@ ylabel(opts.ControlVariable,'interpreter','none');
 set(gca,'box','on','linewidth',1,'fontsize',10);
 xlim([min(X) max(X)]);
 grid on
+title('feedback variable');
 
 
 % Wavelength
@@ -152,10 +152,11 @@ xlabel(xVar,'interpreter','none');
 if isequal(xVar,'ExecutionDate')
     datetick x
 end
-ylabel('wavelength \lambda (sites)');
+ylabel('\lambda (sites)');
 set(gca,'box','on','linewidth',1,'fontsize',10);
 xlim([min(X) max(X)]);
 grid on
+title('wavelength');
 
 % Rotation
 subplot(2,4,6);
@@ -164,11 +165,11 @@ xlabel(xVar,'interpreter','none');
 if isequal(xVar,'ExecutionDate')
     datetick x
 end
-ylabel('rotation \theta (deg)');
+ylabel('\theta (deg)');
 set(gca,'box','on','linewidth',1,'fontsize',10);
 xlim([min(X) max(X)]);
 grid on
-
+title('rotation');
 
 % Radius
 subplot(2,4,7);
@@ -177,15 +178,15 @@ xlabel(xVar,'interpreter','none');
 if isequal(xVar,'ExecutionDate')
     datetick x
 end
-ylabel('radius of curvature R (sites)');
+ylabel('R (sites)');
 set(gca,'box','on','linewidth',1,'fontsize',10);
 xlim([min(X) max(X)]);
 grid on
+title('radius of curvature');
 
 
-% Unwrapped Phase
+% Phase Histogram
 subplot(2,4,8);
-% plot(X,PhiUnwrap/(2*pi),'ko','markerfacecolor',co(1,:),'linewidth',1);
 histogram(Phi/(2*pi),linspace(-1,1,25)*.5);
 xlabel('\phi (2\pi)');
 ylabel('occurences');
@@ -193,6 +194,7 @@ hold on
 grid on
 set(gca,'box','on','linewidth',1,'fontsize',10);
 xlim([-.5 .5]);
+title('phase histogram');
 
 end
 
