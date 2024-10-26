@@ -1,7 +1,9 @@
 
 % Source directory of all data
 
-srcdir = 'X:\Data\2024\2024.10\10.24\06 overnight data';
+
+srcdir = 'X:\Data\2024\2024.10\10.25\01 stripe stability';
+
 
 
 % Parent directory of data to sort
