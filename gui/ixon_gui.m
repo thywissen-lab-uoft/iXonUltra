@@ -1557,9 +1557,9 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
                 legend({'data',str},'location','south','interpreter','latex')               
                 set(gca,'box','on','linewidth',1,'fontsize',10);
                 %}
-
-                data=ixon_fft_multi_shot_focusing(data,opts);
-          
+                data=ixon_fft_multi_shot_focusing(data,opts);          
+            catch ME
+                warning('OH NO')
             end
         end
     end
@@ -1893,17 +1893,24 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
             data.MultiShotFocusing = Focusing;
         end 
 
-        
+
         if (hc_anlB_circlestripe.Value && ~isfield(data.Flags,'plane_selection_dotilt')) || ...
             (hc_anlB_circlestripe.Value && isfield(data.Flags,'plane_selection_dotilt') &&  data.Flags.plane_selection_dotilt)
             opts_stripe = struct;
             opts_stripe.doDebug=1; 
+
             ll=1;
             n1 = data.LatticeBin(ll).n1;
             n2 = data.LatticeBin(ll).n2;
-            Zb = data.LatticeBin(ll).Zbin; 
+            Zb = zeros(length(n2),length(n1));
+            for ll=1:length(data.LatticeBin)
+                myZ = data.LatticeBin(ll).Zbin;
+                myZ(isnan(myZ))=0;
+                myZ(isinf(myZ))=0;
+                Zb = Zb + myZ;                 
+            end
             data.BinStripeCircular = ...
-                bin_StripeFitCircular(n1,n2,Zb,opts_stripe);
+                    bin_StripeFitCircular(n1,n2,Zb,opts_stripe);
         end  
 
             hb_Binanalyze.BackgroundColor=[80 200 120]/255;

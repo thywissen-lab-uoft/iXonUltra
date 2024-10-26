@@ -48,7 +48,6 @@ if ~isfield(opts,'doDebug')
     opts.doDebug=1;
 end
 
-
 %% Wavelength Guess Via 2D FFT
 tic
 
@@ -81,20 +80,50 @@ else
 end
 
 
-    guess_lambda= 1/f_me(ind);
+guess_lambda= 1/f_me(ind);
 lambda_peak_val = pks(ind);
+
 %% Find Rotation Angle
+
+% Mininum lambda
+lambda_min = 10;
+
+px_max = ceil((1/lambda_min)/df);
+px_center = (size(zfnorm,1)+1)/2;
+fmax = f(px_center+px_max);
+
+px_lims = (px_center-px_max):(px_center+px_max);
+f_sub = f((px_center-px_max):(px_center+px_max));
+
+
+[ffx_sub,ffy_sub]=meshgrid(f_sub,f_sub);
+
+fmat=(ffx_sub.^2+ffy_sub.^2).^(1/2);
+F = fmat<=fmax;
+
+
+zfnorm_sub = zfnorm(px_lims,px_lims).*F;
+
+
+
 % Find angle with maximum value (at the correct rotation angle, everything
 % sums up)
 thetaVec = linspace(-pi/4,-pi/4+pi,360);
 valTheta = zeros(length(thetaVec),1);
+tic
 for tt=1:length(thetaVec)
-    valTheta(tt)=max(sum(imrotate(zfnorm,thetaVec(tt)*180/pi,'crop'),2));
+    % valTheta(tt)=max(sum(imrotate(zfnorm,thetaVec(tt)*180/pi,'crop'),2));
+    valTheta(tt)=max(sum(imrotate(zfnorm_sub,thetaVec(tt)*180/pi,'crop'),2));
 end
-[~,ind]=max(valTheta);
+tRotate=toc;
+[valTheta0,ind]=max(valTheta);
+
+inds=[valTheta>0.9*valTheta0];
+
 
 % Rotation Angle
-guess_theta = thetaVec(ind);
+% guess_theta = thetaVec(ind);
+guess_theta = sum(valTheta(inds).*thetaVec(ind))/sum(valTheta(inds));
 
 %% Radius of Curvature
 % The radius of curvature depends on the radial field gradient and on the
@@ -121,17 +150,22 @@ phase_func = @(L,R,theta,phi0,xx,yy) ...
     2*pi/L*(R^2+2*R*(cos(theta)*(xx-x0)+sin(theta)*(yy-y0))+((xx-x0).^2+(yy-y0).^2)).^(1/2)-2*pi*R/L+phi0;
 
 %% Phase Guess
+% Compute best phase using phasors
+Cmap = sum(Z.*cos(phase_func(guess_lambda,guess_R,guess_theta,0,nn1,nn2)),'all');
+Smap = sum(Z.*cos(phase_func(guess_lambda,guess_R,guess_theta,pi/2,nn1,nn2)),'all');
+guess_phi=atan2(Smap,Cmap);
 
-phiVec = linspace(0,2*pi,180);
-valPhi = zeros(length(phiVec),1);
-for tt=1:length(phiVec)
-    map = cos(phase_func(guess_lambda,guess_R,guess_theta,phiVec(tt),nn1,nn2));
-    valPhi(tt)=sum(Z.*map,'all');
-end
-[~,ind]=max(valPhi);
-
-guess_phi=phiVec(ind);
-toc
+%  OLD WAY SLOW
+% tic
+% phiVec = linspace(0,2*pi,180);
+% valPhi = zeros(length(phiVec),1);
+% for tt=1:length(phiVec)
+%     map = cos(phase_func(guess_lambda,guess_R,guess_theta,phiVec(tt),nn1,nn2));
+%     valPhi(tt)=sum(Z.*map,'all');
+% end
+% [~,ind]=max(valPhi);
+% guess_phi=phiVec(ind);
+% toc
 
 %% Construct Output
 
@@ -206,16 +240,17 @@ if opts.doDebug
     figure(fig);
     fig.Color='w';
     fig.Name=FigName;
-    fig.Position=[50 50 1000 500];
+    fig.Position=[50 50 1000 300];
     clf
     
-    ax1=subplot(3,4,[1 2 5 6],'parent',fig);
+    ax1=subplot(1,3,1,'parent',fig);
     im1=imagesc(n1,n2,Zb);
     hold on
     colormap(ax1,"parula")
     xlabel('site 1');
     ylabel('site 2');
     axis equal tight    
+    caxis([0 max(Zb,[],'all')*0.5]);
     ax2=axes;
     ax2.Position=ax1.Position;
     im2=imagesc(n1,n2,cos(guess_phase_map));
@@ -229,7 +264,7 @@ if opts.doDebug
     hold on
     scatter(n1c,n2c,sz,myc,'filled')
 
-    ax_fft=subplot(3,4,[3 4 7 8],'parent',fig);
+    ax_fft=subplot(1,3,2,'parent',fig);
     imagesc(f,f,zfnorm);
     axis equal tight
     xlim(2*[-1 1]/guess_lambda);
@@ -238,7 +273,7 @@ if opts.doDebug
     xlabel('fx (1/site)');
     ylabel('fy (1/site)')
 
-    ax_radial=subplot(3,4,9,'parent',fig);
+    ax_radial=subplot(2,3,3,'parent',fig);
     plot(Tics*df,Average,'.-','parent',ax_radial);
     hold on
     p=plot(1/guess_lambda,lambda_peak_val,'ko','markerfacecolor','k');
@@ -246,30 +281,43 @@ if opts.doDebug
     xlabel('radial frequency (1/site)');
     ylabel('radial average');
     legend(p,{['\lambda = ' num2str(round(guess_lambda,3)) ' site']})
-    title('wavelength');
+    % title('wavelength');
 
-    ax_theta=subplot(3,4,10,'parent',fig);
-    plot(thetaVec,valTheta,'.-','parent',ax_theta);
+    ax_theta=subplot(2,3,6,'parent',fig);
+    plot(180/pi*thetaVec,valTheta,'.-','parent',ax_theta);
     hold on
-    xlabel('rotation angle \theta (rad.)');
+    xlabel('rotation angle \theta (deg.)');
     ylabel('sum correlation');
     hold on
-    p=plot(guess_theta,valTheta(find(guess_theta==thetaVec,1)),'ko','markerfacecolor','k');
-    legend(p,{['\theta = ' num2str(round(guess_theta,3)) ' rad.']})
-    title('rotation angle');
+    p=plot(180/pi*guess_theta,max(valTheta),'ko','markerfacecolor','k');
+    legend(p,{['\theta = ' num2str(round(180/pi*guess_theta,1)) ' deg.']},...
+        'location','southeast')
+    % title('rotation angle');
+
+% OLD WAY
+    % ax_phi=subplot(3,4,11,'parent',fig);
+    % plot(phiVec,valPhi,'.-','parent',ax_phi);
+    % hold on
+    % xlabel('phase angle \phi (rad.)');
+    % ylabel('sum correlation');
+    % p=plot(guess_phi,valPhi(find(guess_phi==phiVec,1)),'ko','markerfacecolor','k');
+    % title('phase');
+    % legend(p,{['\phi = ' num2str(round(guess_phi,3)) ' rad.']})
 
 
-    ax_phi=subplot(3,4,11,'parent',fig);
-    plot(phiVec,valPhi,'.-','parent',ax_phi);
-    hold on
-    xlabel('phase angle \phi (rad.)');
-    ylabel('sum correlation');
-    p=plot(guess_phi,valPhi(find(guess_phi==phiVec,1)),'ko','markerfacecolor','k');
-    title('phase');
-    legend(p,{['\phi = ' num2str(round(guess_phi,3)) ' rad.']})
-
-
-
+    % ax_phi=subplot(3,4,11,'parent',fig);
+    % plot(Cmap,Smap,'ko','parent',ax_phi,'markerfacecolor','k');
+    % hold on
+    % xlabel('cosine correlation');
+    % ylabel('sine correlation');
+    % 
+    % % p=plot(guess_phi,valPhi(find(guess_phi==phiVec,1)),'ko','markerfacecolor','k');
+    % tt=linspace(0,2*pi,100);
+    % A = sqrt(Cmap.^2+Smap.^2);
+    % plot(cos(tt)*A,A*sin(tt),'r-');
+    % title('phase');
+    % axis equal tight
+    % legend(p,{['\phi = ' num2str(round(guess_phi,3)) ' rad.']})
    
 end
 

@@ -82,9 +82,9 @@ for kk=1:length(data)
         FigName = 'FFTFocusing';
         ff=get(groot,'Children');        
         fig=[];
-        for kk=1:length(ff)
-            if isequal(ff(kk).Name, FigName)
-                fig = ff(kk);
+        for mm=1:length(ff)
+            if isequal(ff(mm).Name, FigName)
+                fig = ff(mm);
             end
         end
         if isempty(fig)
@@ -96,7 +96,7 @@ for kk=1:length(data)
         fig.Position=[50 50 400 500];
         co2=get(gca,'colororder');
 
-        tt=uicontrol('style','text','string',data(kk).Name','fontsize',8,...
+        tt=uicontrol('style','text','string',data(kk).Name,'fontsize',8,...
             'horizontalalignment','left','backgroundcolor','w');
         tt.Position=[1 1 300 15];
 
