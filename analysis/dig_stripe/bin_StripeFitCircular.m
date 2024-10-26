@@ -18,11 +18,6 @@ if nargin~=4
     opts = struct;
 end
 
-% Default direction to look at stripes
-if ~isfield(opts,'SumIndex')
-    opts.SumIndex = 1; % 1 for trees % 2 for fallen trees
-end
-
 % Default figure number
 if ~isfield(opts,'FigNum')
     opts.FigNum = 901;
@@ -60,6 +55,8 @@ tic
 Z = Zb;
 Z(isnan(Z))=0;
 Z(isinf(Z))=0;
+
+Z(Z<500)=0;
 zf = fft2(Z,2^8+1,2^8+1);              % 2D FFT
 zf = fftshift(zf);                      % Shift so zero at center
 f  = 0.5*linspace(-1,1,size(zf,2));     % Frequency Vector

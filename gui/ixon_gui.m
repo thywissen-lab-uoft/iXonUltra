@@ -1570,7 +1570,7 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
 hpBin=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','binned analysis');
 hpBin.Position(3)=160;
-hpBin.Position(4)=300;
+hpBin.Position(4)=320;
 hpBin.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
 hpBin.Position(2)=hpNav.Position(2)-hpBin.Position(4);
 
@@ -1767,6 +1767,11 @@ hc_anlB_multishotfocus=uicontrol(hpBin,'style','checkbox','string','multi-shot f
     'backgroundcolor','w','Position',[1 hc_anlB_stripe.Position(2)-15 hpBin.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
 
+ttstr='circle stripe phase';
+hc_anlB_circlestripe=uicontrol(hpBin,'style','checkbox','string','circle stripe','fontsize',7,...
+    'backgroundcolor','w','Position',[1 hc_anlB_multishotfocus.Position(2)-15 hpBin.Position(3)-1 15],...
+    'ToolTipString',ttstr,'enable','on','Value',0);
+
 
 % Refit button
 hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','binned analysis',...
@@ -1887,7 +1892,21 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
             end
             Focusing = bin_multiShotFocusing(n1,n2,Zb,opts_focusing);      
             data.MultiShotFocusing = Focusing;
+        end 
+
+        
+        if (hc_anlB_circlestripe.Value && ~isfield(data.Flags,'plane_selection_dotilt')) || ...
+            (hc_anlB_circlestripe.Value && isfield(data.Flags,'plane_selection_dotilt') &&  data.Flags.plane_selection_dotilt)
+            opts_stripe = struct;
+            opts_stripe.doDebug=1; 
+            ll=1;
+            n1 = data.LatticeBin(ll).n1;
+            n2 = data.LatticeBin(ll).n2;
+            Zb = data.LatticeBin(ll).Zbin; 
+            data.BinStripeCircular = ...
+                bin_StripeFitCircular(n1,n2,Zb,opts_stripe);
         end  
+
             hb_Binanalyze.BackgroundColor=[80 200 120]/255;
             drawnow;   
         end    

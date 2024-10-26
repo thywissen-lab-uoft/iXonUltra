@@ -247,8 +247,6 @@ bin_opts.nCenter = [100 100];
 
 %% Bin Stripe Summary
 if bin_BinStripe       
-
-
     hF_StripeSummary = bin_showStripeBinSummaryCircular(bindata,bin_opts.xVar,bin_opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
