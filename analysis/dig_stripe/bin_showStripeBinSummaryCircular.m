@@ -58,7 +58,9 @@ for nn=1:length(BS)
 
     Zs = sum(Zbrot,1);
     Zs = Zs(:);
+    Zs = Zs/sum(Zs);
     Zsum(:,nn)=Zs;
+    
 
 end
 
@@ -108,9 +110,9 @@ hold on
 grid on
 set(gca,'box','on','linewidth',1,'fontsize',10);
 yL=get(gca,'YLim');
-if (yL(2)-yL(1))<1
-   ylim([0 1]); 
-end
+% if (yL(2)-yL(1))<1
+%    ylim([0 1]); 
+% end
 xlim([min(X) max(X)]);
 
 
@@ -181,53 +183,16 @@ xlim([min(X) max(X)]);
 grid on
 
 
+% Unwrapped Phase
+subplot(2,4,8);
+% plot(X,PhiUnwrap/(2*pi),'ko','markerfacecolor',co(1,:),'linewidth',1);
+histogram(Phi/(2*pi),linspace(-1,1,25)*.5);
+xlabel('\phi (2\pi)');
+ylabel('occurences');
+hold on
+grid on
+set(gca,'box','on','linewidth',1,'fontsize',10);
+xlim([-.5 .5]);
 
-% Duty Cycle
-% subplot(2,4,7);
-% plot(X,[BS.Duty]*100,'ko','markerfacecolor',co(1,:),'linewidth',1);
-% xlabel(xVar,'interpreter','none');
-% if isequal(xVar,'ExecutionDate')
-%     datetick x
-% end
-% ylabel('duty cycle (%)');
-% set(gca,'box','on','linewidth',1,'fontsize',10);
-% ylim([0 100]);
-% set(gca,'YTick',100*[0 .25 .5 .75 1]);
-% grid on
-% xlim([min(X) max(X)]);
-
-% Modulation Depth
-% subplot(2,4,8);
-% plot(X,100*[BS.ModDepth],'ko','markerfacecolor',co(1,:),'linewidth',1);
-% xlabel(xVar,'interpreter','none');
-% if isequal(xVar,'ExecutionDate')
-%     datetick x
-% end
-% ylabel('Mod Depth %');
-% ylim([0 100]);
-% xlim([min(X) max(X)]);
-% set(gca,'YTick',100*[0 .25 .5 .75 1]);
-% grid on
-% set(gca,'box','on','linewidth',1,'fontsize',10);
-% 
-
-% % Rsquare
-% subplot(2,4,8);
-% plot(X,[BS.RSquareStripe],'ko','markerfacecolor',co(1,:),'linewidth',1);
-% xlabel(xVar,'interpreter','none');
-% if isequal(xVar,'ExecutionDate')
-%     datetick x
-% end
-% ylabel('RSquareStripe','interpreter','none');
-% set(gca,'box','on','linewidth',1,'fontsize',10);
-% xlim([min(X) max(X)]);
-
-%%
-% 
-% hFB= figure;
-% hFB.Color='w';
-% 
-% plot([P.(opts.ControlVariable)],phin_global/(2*pi),'ko','markerfacecolor',co(1,:),'linewidth',1);
-% xlabel(opts.ControlVariable,'interpreter','none');
 end
 

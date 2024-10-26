@@ -1462,6 +1462,7 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
 % Callback function for redoing fits button
     function analyze_k(~,~)
         if hcFindLattice.Value && isfield(data,'Zf')
+            try
             hb_Kanalyze.BackgroundColor=[255 219 88]/255;
             drawnow;
             opts = data.ProcessOptions;  
@@ -1495,12 +1496,14 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
             drawnow;
 
             if cAutoColor_K.Value;setClim('K');end  
+            end
         end
 
         if hcKFocus.Value && hcFindLattice.Value && ...
             isfield(data,'Zf') && isfield(data,'LatticeK') ...
                 && isfield(data.Flags,'lattice_fluor_multi_mode') ...
                 &&  (data.Flags.lattice_fluor_multi_mode==2)
+            try
                 fignum=5100;
 
                 X = data.Params.qgm_MultiPiezos;
@@ -1553,16 +1556,8 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
                 legend({'data',str},'location','south','interpreter','latex')               
                 set(gca,'box','on','linewidth',1,'fontsize',10);
 
-                % for mm=1:length(X)
-                %     subplot(4,length(X),length(X)*3+mm)
-                %     imagesc(data.X,data.Y,data.Z(:,:,1));
-                %     axis equal tight
-                %     set(gca,'Ydir','normal','box','on','linewidth',1);
-                %     set(gca,'Visible','off')
-                %     colormap(hF_kscore,hF.Colormap);
-                % 
-                % end
-
+          
+            end
         end
     end
 
@@ -1809,6 +1804,7 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
             data = rmfield(data,'LatticeBin');
          end
         
+         try
          hb_Binanalyze.BackgroundColor=[255 219 88]/255;
         drawnow;
         
@@ -1909,6 +1905,7 @@ hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
 
             hb_Binanalyze.BackgroundColor=[80 200 120]/255;
             drawnow;   
+         end
         end    
         
     
@@ -3858,7 +3855,7 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
                gui_saveData.BinStripe = data.BinStripe; 
             end
             
-            if isfield(data,'BinStripeCircular')
+            if isfield(data,'BinStripeCircular')                
                gui_saveData.BinStripeCircular = data.BinStripeCircular; 
             end
             
@@ -3994,7 +3991,7 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
     updatePositionAnalysis;
     
     %% Momentum Space Analysis
-    if hc_anlK_auto.Value
+    if hc_anlK_auto.Value        
        analyze_k       
     end
     

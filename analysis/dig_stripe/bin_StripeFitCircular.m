@@ -56,7 +56,7 @@ Z = Zb;
 Z(isnan(Z))=0;
 Z(isinf(Z))=0;
 
-Z(Z<500)=0;
+Z(Z<300)=0;
 zf = fft2(Z,2^8+1,2^8+1);              % 2D FFT
 zf = fftshift(zf);                      % Shift so zero at center
 f  = 0.5*linspace(-1,1,size(zf,2));     % Frequency Vector
@@ -85,7 +85,7 @@ lambda_peak_val = pks(ind);
 %% Find Rotation Angle
 % Find angle with maximum value (at the correct rotation angle, everything
 % sums up)
-thetaVec = linspace(0,pi/2,180);
+thetaVec = linspace(-pi/4,-pi/4+pi,360);
 valTheta = zeros(length(thetaVec),1);
 for tt=1:length(thetaVec)
     valTheta(tt)=max(sum(imrotate(zfnorm,thetaVec(tt)*180/pi,'crop'),2));
