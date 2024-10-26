@@ -91,11 +91,14 @@ bin_BinReScale                          = 1;
 
 
 % Stripe fit Data
-bin_BinStripe                           = 0;
+bin_BinStripe                           = 1;
+
+bin_BinStripeIndex                      = 1;% 1 for trees, 2 for fallen tree
+
 bin_BinStripeAnimate                    = 1;
 bin_BinStripe_LGuess                    = 26.5;
 % bin_BinStripe_ColorThreshold            = [3000 5000];
-bin_BinStripe_ColorThreshold            = [5000 10000];
+bin_BinStripe_ColorThreshold            = [2500 6000];
 
 % Digitzation
 bin_Digitize                            = 1; 
@@ -188,6 +191,8 @@ if bin_BinReScale
     end
     
 end
+
+
 %% Bin Stripe
 if bin_BinStripe    
     if ~isfield(bindata,'LatticeBin')
@@ -211,17 +216,28 @@ if bin_BinStripe
             opts_stripe.FigNum=3000+10*(n-1)+kk-1;
             opts_stripe.FigNum=3000;
             opts_stripe.Threshold = bin_BinStripe_ColorThreshold;
-            
+            opts_stripe.SumIndex = bin_BinStripeIndex; % 1 for trees % 2 for fallen trees
+
             bindata(n).BinStripe(kk) = ...
                 bin_StripeFit(n1,n2,Zb,opts_stripe);
+            
+            
+            bindata(n).BinStripe(kk) = ...
+                bin_StripeFitCircular(n1,n2,Zb,opts_stripe);
         end
         disp([' done (' num2str(toc,'%.2f') 's)']); 
     end
 
 end  
+
+%%
+
+bin_opts.nCenter = 117;
+
 %% Bin Stripe Summary
-if bin_BinStripe    
-    bin_opts.nCenter = 110;
+if bin_BinStripe       
+
+
     hF_StripeSummary = bin_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_StripeSummary,...
@@ -234,7 +250,6 @@ if bin_BinStripe && bin_BinStripeAnimate
     opts = bin_opts;
     opts.Threshold = bin_BinStripe_ColorThreshold;
     opts.filename = 'bin_BinStripeAnimation.gif';
-    opts.SumIndex = 1; % 1 for trees % 2 for fallen trees
 
     bin_showStripeBin(bindata,bin_opts.xVar,opts);
 end

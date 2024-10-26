@@ -102,7 +102,7 @@ ixon_doPlotProfiles                 = 0;
 ixon_doAnimate                      = 1;    % Animate in position domain
 ixon_doAnalyzeRaw                   = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier               = 0;    % Fourier Domain Analysis
-ixon_doAnalyzeStripes2D             = 0;    % Stripe Analysis :  for field stability in titled plane selection
+ixon_doAnalyzeStripes2D             = 1;    % Stripe Analysis :  for field stability in titled plane selection
 
 
 ixon_showFOffset                    = 0;
@@ -114,7 +114,7 @@ ixon_doQGM                          = 1;
 
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
-ixon_doQGM_BinStripe                = 0;
+ixon_doQGM_BinStripe                = 1;
 ixon_doQGM_BinStandardAnalysis      = 1;
 ixon_doQGM_Digitize                 = 1;
 ixon_doQGM_DigitalStandardAnalysis  = 1;
@@ -388,12 +388,12 @@ ixon_animateOpts.Source = 'ZNoFilter';
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 %     ixon_animateOpts.CLim=[0 1500];   % Color limits
 %     ixon_animateOpts.CLim=[0 1000];   % Color limits
-%     ixon_animateOpts.CLim=[0 500];
-% if ~ixon_doQGM
-%      ixon_animateOpts.CLim='auto';
+    ixon_animateOpts.CLim=[0 700];
+if ~ixon_doQGM
+     ixon_animateOpts.CLim='auto';
 %      ixon_animateOpts.CLim=[0 10000];
-% end
-      ixon_animateOpts.CLim=[0 1000];   % Automatically choose CLIM?
+end
+%       ixon_animateOpts.CLim=[0 1000];   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end

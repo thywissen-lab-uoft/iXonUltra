@@ -43,11 +43,50 @@ X = X(goodInds);
 BS = BS(goodInds);
 
 %% Extract Local and Global Phase
-phin_n = mod(2*pi*(opts.nCenter./[BS.Lambda])-[BS.Phase],2*pi);
+% phin_n = mod(2*pi*(opts.nCenter./[BS.Lambda])-[BS.Phase],2*pi);
+
+phin_n=zeros(length(BS),1);
+
+n1 = bindata(1).LatticeBin(1).n1;
+n2 = bindata(1).LatticeBin(1).n2;
+
+SumIndex = bindata(1).BinStripe(1).SumIndex;
+
+if SumIndex ==1
+   n = n1;
+else
+    n = n2;
+end
+
+Zsum = zeros(length(n),length(bindata));
+for nn=1:length(BS)
+   phin_n(nn)=BS(nn).Site2Phase(opts.nCenter);   
+   Zb = bindata(nn).LatticeBin(1).Zbin;
+   Zb(isnan(Zb))=0;
+   Zb(isinf(Zb))=0;
+   Zbs = sum(Zb,SumIndex);
+   Zbs = Zbs(:);      
+   Zbs = Zbs/sum(Zbs,'all');
+   Zsum(:,nn) = Zbs;
+end
+
+
+
+
+
 % phin_global = mod([BS.Phase]-pi/2,2*pi);
 
-Navg=2;
+% phase_error = phin_n -0.5;
+alpha =BS.ModDepth;
+r2 = BS.RSquareStripe;
+% phase_error = phase_error.*[alpha>=0.6].*[r2>0.85];
+
+
+Navg=5;
 phin_global = unwrapPhaseTime(X,phin_n,Navg);
+
+%% Smush Data
+
 
 
 %% Focusing Positions
@@ -108,9 +147,16 @@ focus_center = zeros(length(bindata),3);
 %%
 hF = figure(4000);
 hF.Color='w';
-hF.Position = [100 20 1500 900];
+hF.Position = [100 20 1500 600];
 clf
 
+ ca = [1 1 1];
+cb = [0.6 0 .5];
+cc = [linspace(ca(1),cb(1),1000)' ...
+    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+colormap(hF,cc);
+                
+                
 t=uicontrol('style','text','string',opts.FigLabel,'units','pixels','backgroundcolor',...
     'w','horizontalalignment','left');
 t.Position(4)=t.Extent(4);
@@ -125,9 +171,9 @@ if isequal(xVar,'ExecutionDate')
     datetick x
 end
 ylabel(['phase at n=' num2str(opts.nCenter) ' (2\pi)']);
-ylim([0 1]);
+ylim([-.5 .5]);
 xlim([min(X) max(X)]);
-set(gca,'YTick',[0 .25 .5 .75 1]);
+set(gca,'YTick',[-.5 -.25 0 .25 .5]);
 grid on
 set(gca,'box','on','linewidth',1,'fontsize',10);
 
@@ -149,25 +195,44 @@ end
 xlim([min(X) max(X)]);
 
 
+% % Focus Position
+% subplot(2,4,3);
+% plot(X,focus_center(:,1),'o-','markerfacecolor',co(1,:),'linewidth',1,'markeredgecolor',co(1,:)*.5);
+% xlabel(xVar,'interpreter','none');
+% hold on
+% plot(X,focus_center(:,2),'o','markerfacecolor',co(2,:),'linewidth',1,'markeredgecolor',co(2,:)*.5);
+% plot(X,focus_center(:,3),'o','markerfacecolor',co(3,:),'linewidth',1,'markeredgecolor',co(3,:)*.5);
+% 
+% if isequal(xVar,'ExecutionDate')
+%     datetick x
+% end
+% ylabel('stripe position (sites)');
+% set(gca,'box','on','linewidth',1,'fontsize',10);
+% xlim([min(X) max(X)]);
+% grid on
+% p1=plot(X,[BS.FocusCenterFit],'k-','linewidth',1);
+% legend(p1,{'center fit'},'fontsize',6,'location','northwest');
+
 % Focus Position
 subplot(2,4,3);
-plot(X,focus_center(:,1),'o-','markerfacecolor',co(1,:),'linewidth',1,'markeredgecolor',co(1,:)*.5);
-xlabel(xVar,'interpreter','none');
+imagesc(X,n1,Zsum)
+set(gca,'YDir','normal','box','on','linewidth',1);
 hold on
-plot(X,focus_center(:,2),'o','markerfacecolor',co(2,:),'linewidth',1,'markeredgecolor',co(2,:)*.5);
-plot(X,focus_center(:,3),'o','markerfacecolor',co(3,:),'linewidth',1,'markeredgecolor',co(3,:)*.5);
+xlabel(xVar,'interpreter','none');
 
 if isequal(xVar,'ExecutionDate')
     datetick x
 end
-ylabel('stripe position (sites)');
+ylabel('position (site)');
 set(gca,'box','on','linewidth',1,'fontsize',10);
 xlim([min(X) max(X)]);
 grid on
+% p1=plot(X,[BS.FocusCenterFit],'k.','linewidth',1);
+p2=plot(X,[BS.FocusCenter],'b.','linewidth',1);
 
-p1=plot(X,[BS.FocusCenterFit],'k-','linewidth',1);
+% legend([p1 p2],{'center fit','best stripe'},'fontsize',6,'location','northwest');
 
-legend(p1,{'center fit'},'fontsize',6,'location','northwest');
+legend([p2],{'best stripe'},'fontsize',6,'location','northwest');
 
 % Focus Scores
 subplot(2,4,4);
@@ -250,8 +315,13 @@ set(gca,'box','on','linewidth',1,'fontsize',10);
 % set(gca,'box','on','linewidth',1,'fontsize',10);
 % xlim([min(X) max(X)]);
 
+%%
 
+hFB= figure;
+hFB.Color='w';
 
+plot([P.(opts.ControlVariable)],phin_global/(2*pi),'ko','markerfacecolor',co(1,:),'linewidth',1);
+xlabel(opts.ControlVariable,'interpreter','none');
 
 end
 

@@ -31,10 +31,12 @@ if ~isfield(opts,'doSave')
    opts.doSave = 0; 
 end
 
-if ~isfield(opts,'SumIndex')
-    opts.SumIndex = 2;
-end
+% if ~isfield(opts,'SumIndex')
+%     opts.SumIndex = 2;
+% end
 
+
+SumIndex = bindata(1).BinStripe(1).SumIndex;
 
 %% Initialize Graphics
     hF=figure(opts.FigureNumber);
@@ -102,7 +104,7 @@ end
     set(gca,'fontsize',12,'YAxisLocation','right','YColor',co(1,:),'fontname','times',...
         'Xaxislocation','top')
     
-    if opts.SumIndex == 2
+    if SumIndex == 2
         ylabel('$n_2$ (site)','interpreter','latex');
     else
         ylabel('$n_1$ (site)','interpreter','latex');
@@ -128,7 +130,7 @@ end
     pZtF = plot(1,1,'-','color',co(2,:),'linewidth',2);
     set(gca,'ydir','normal','fontsize',12,'Xcolor',co(2,:),'fontname','times')
     
-    if opts.SumIndex == 2
+    if SumIndex == 2
     xlabel('$n_1$ (site)','interpreter','latex');
     else
     xlabel('$n_2$ (site)','interpreter','latex');
@@ -161,7 +163,7 @@ end
 
     for nn = 1:length(bindata)
         
-        if opts.SumIndex == 2
+        if SumIndex == 2
         n1 = [bindata(nn).LatticeBin(1).n1];
         n2 = [bindata(nn).LatticeBin(1).n2];
         Zb = [bindata(nn).LatticeBin(1).Zbin];

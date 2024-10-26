@@ -49,30 +49,47 @@ fit_opts_t = fitoptions(fit_exp);
 myfunc = @(A,n0,s,B,L,duty,R,phi,n) ...
     A.*exp(-(n-n0).^2/(2*s^2)).*(1-B*erf_pulse_wave(L,duty,phi,R,n));
 
+% Stripe Fit Function
+% myfunc = @(A,n0,s,B,L,duty,R,phi,n) ...
+%     A.*exp(-(n-n0).^2/(2*s^2)).*(B+(1-B)*erf_pulse_wave(L,duty,phi,R,n));
+
 fit_exp_stripe = fittype(@(A,n0,s,B,L,duty,R,phi,n) myfunc(A,n0,s,B,L,duty,R,phi,n),...
     'independent','n','coefficients',...
     {'A','n0','s','B','L','duty','R','phi'});
 fit_opts_s = fitoptions(fit_exp_stripe);
 fit_opts_s.MaxIter = 1200;
 fit_opts_s.MaxFunEvals = 1e3;
+
+
+% Stripe Amplitude Function
+phase_func = @(L,phi,site) 2*pi*(site/L)+phi+pi/2;
+
+
 % fit_opts_s.Robust='bisquare';
 %% Data Processing
-Zb(isnan(Zb))=0;Zb(isinf(Zb))=0;        % Remove non number sites
-Zb(Zb<opts.Threshold(1)) = 0;           % Threshold low sites
+Zb(isnan(Zb))=0;
+Zb(isinf(Zb))=0;        % Remove non number sites
 
-Zs1 = sum(Zb,1);
+
+
+Zbcopy=Zb;
+
+Zbcopy(Zbcopy<opts.Threshold(1)) = 0;           % Threshold low sites
+
+Zs1 = sum(Zbcopy,1);
 Zs1 = Zs1(:);
 n1 = n1(:);
 
-Zs2 = sum(Zb,2);
+Zs2 = sum(Zbcopy,2);
 Zs2 = Zs2(:);
 n2 = n2(:);
 
+
 [nn1, nn2] = meshgrid(n1,n2);
-n01g = sum(Zb.*nn1,'all')/sum(Zb,'all');
-n02g = sum(Zb.*nn2,'all')/sum(Zb,'all');
-s1g = sqrt(sum(Zb.*(nn1-n01g).^2,'all')/sum(Zb,'all'));
-s2g = sqrt(sum(Zb.*(nn2-n02g).^2,'all')/sum(Zb,'all'));
+n01g = sum(Zbcopy.*nn1,'all')/sum(Zbcopy,'all');
+n02g = sum(Zbcopy.*nn2,'all')/sum(Zbcopy,'all');
+s1g = sqrt(sum(Zbcopy.*(nn1-n01g).^2,'all')/sum(Zbcopy,'all'));
+s2g = sqrt(sum(Zbcopy.*(nn2-n02g).^2,'all')/sum(Zbcopy,'all'));
 
 R = 3;
 if opts.SumIndex == 1
@@ -145,8 +162,8 @@ D = DD(ind);
 
 % Initial Guess and bounds
 fit_opts_s.StartPoint = [As ns0 ss B L D .5 phi];
-fit_opts_s.Upper = [As*2 ns0+10 (ss*1.5+10) 1 L+2 0.9 5 phi+pi];
-fit_opts_s.Lower = [As*.5 ns0-10 0 0.25 L-2 0.1 0.1 phi-pi];
+fit_opts_s.Upper = [As*2 ns0+10 (ss*1.5+10) 1 L+2 1 5 phi+1.5*pi];
+fit_opts_s.Lower = [As*.5 ns0-10 0 0.01 L-2 0 0.1 phi-1.5*pi];
 
 % Perform the fit 
 try
@@ -180,7 +197,7 @@ seps = round(seps);
 seps(seps<min(ns))=[];
 seps(seps>max(ns))=[];
 
-[scores,centers] = bin_StripeScore(ns,Zb,seps,opts.Threshold,opts.SumIndex);
+[scores,centers] = bin_StripeScore(ns,Zbcopy,seps,opts.Threshold,opts.SumIndex);
 [~,ind] = max(scores);
 focus_center = centers(ind);
 
@@ -202,6 +219,71 @@ fitopt.Lower = [0 min(centers_sort)-5 .9];
 
 
  fout_centers = fit(centers_sort,scores_sort,myfit,fitopt);
+ FocusCenterFit=fout_centers.x0;
+ %% Score Try 2
+%  
+%  if opts.SumIndex ==1     
+%      site_map = nn1;
+%  else
+%      site_map = nn2;
+%  end
+%  
+%  phase_map = phase_func(fout_s.L,fout_s.phi,site_map);
+% 
+%  fringe_map = round(phase_map/(2*pi));
+%  
+%  fringe_vals = unique(fringe_map);
+%  fringe_locs = zeros(length(fringe_vals),1);
+%  fringe_scores = zeros(length(fringe_vals),1);
+%  fringe_coms = zeros(length(fringe_vals),1);
+%  
+%  % Score Via kmeans clustering
+%  for kk=1:length(fringe_vals)
+%      this_fringe = [fringe_map==fringe_vals(kk)];     
+%      loc = sum(this_fringe.*site_map,'all')/sum(this_fringe,'all');
+%      fringe_locs(kk)=loc;        
+%     Zsub = Zb.*this_fringe;
+%     fringe_coms(kk) = sum(Zbcopy.*site_map.*this_fringe,'all')/sum(Zbcopy.*this_fringe,'all');
+% 
+%      
+%      if sum(Zsub,'all')/sum(Zb,'all')>0.15 && ~isnan(fringe_coms(kk))
+%          data = Zsub(:);
+%          data(data==0)=[];         
+%          [idx,C,sumd,D] = kmeans(data,2);
+%          fringe_scores(kk) = max(C);  
+%      else
+%          fringe_scores(kk)=0;
+%      end   
+%  end
+%  
+%   X              = fringe_locs;
+%   X              = fringe_coms;
+%  
+%  Y              = fringe_scores;
+%  
+%  bad_inds       = [fringe_scores==0];
+%  
+%  X(bad_inds)    = [];
+%  Y(bad_inds)    = [];
+%    
+%  [Y0,ind]       = max(Y); 
+%  X0             = X(ind);
+%  
+% myfit = fittype('-A*(x-x0).^2+B','independent','x','coefficients',{'A','x0','B'});
+% fitopt=fitoptions(myfit);
+% fitopt.Start = [1e-3 X0 1];
+% fitopt.Upper = [1 X0+20 1.1];
+% fitopt.Lower = [0 X0-20 .9];
+% 
+% 
+% fout_focus = fit(X,Y/Y0,myfit,fitopt);
+% if X0<90
+%     keyboard
+% end
+% focus_center = X0;
+% FocusCenterFit=fout_focus.x0;
+
+% keyboard
 
 %% Create Output Data
 BinStripe = struct;
@@ -213,15 +295,24 @@ BinStripe.Lambda              = fout_s.L;
 BinStripe.Phase               = fout_s.phi;
 BinStripe.Duty                = fout_s.duty;
 BinStripe.ModDepth            = fout_s.B;
+
+
 BinStripe.Separations         = seps;
 BinStripe.Centers             = centers;
 BinStripe.Scores              = scores;
+
 BinStripe.FocusCenter         = focus_center;
-BinStripe.FocusCenterFit      = fout_centers.x0;
+BinStripe.FocusCenterFit      = FocusCenterFit;
 
-BinStripe.Counts              = sum(Zb,'all');
+BinStripe.SumIndex              = opts.SumIndex;
+BinStripe.Site2Phase          = @(site) mod(phase_func(fout_s.L,fout_s.phi,site)+pi,2*pi)-pi;
+
+
+
+
+BinStripe.Counts              = sum(Zbcopy,'all');
 BinStripe.Opts                = opts;
-
+% keyboard
 %% Plot the Results
 %{
 hF1=figure(opts.FigNum);
