@@ -251,6 +251,7 @@ if opts.doDebug
     ylabel('site 2');
     axis equal tight    
     caxis([0 max(Zb,[],'all')*0.5]);
+    set(ax1,'YDir','normal');
     ax2=axes;
     ax2.Position=ax1.Position;
     im2=imagesc(n1,n2,cos(guess_phase_map));
@@ -263,6 +264,7 @@ if opts.doDebug
     ax1.Position=ax2.Position;
     hold on
     scatter(n1c,n2c,sz,myc,'filled')
+    set(ax2,'YDir','normal');
 
     ax_fft=subplot(1,3,2,'parent',fig);
     imagesc(f,f,zfnorm);
@@ -272,6 +274,7 @@ if opts.doDebug
     colormap(ax_fft,'jet')
     xlabel('fx (1/site)');
     ylabel('fy (1/site)')
+    set(ax_fft,'YDir','normal');
 
     ax_radial=subplot(2,3,3,'parent',fig);
     plot(Tics*df,Average,'.-','parent',ax_radial);
