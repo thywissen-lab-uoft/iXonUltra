@@ -92,7 +92,7 @@ for kk=1:length(data)
         N= 1000;
         [IDX, C, SUMD, D]  = kmeans(b(1:N),2);
         scores(nn) = max(C)/sum(zsub);
-        scores(nn)=sum(b(1:N))/sum(zsub);
+        scores(nn)=sum(b(1:N))/sum(z,'all');
     end    
     focus.Scores = scores;
     
