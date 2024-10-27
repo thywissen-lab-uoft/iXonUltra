@@ -3,9 +3,20 @@ function out = StripeCircle(X,Y,Z,opts)
 
 [XX,YY]=meshgrid(X,Y);
 
+if nargin==3
+    opts=struct;
+end
+
 if ~isfield(opts,'doDebug')
     opts.doDebug=1;
 end
+
+if ~isfield(opts,'Name')
+    opts.Name=[];
+end
+
+disp('pixel domain stripe analysis');
+
 
 % 16 um at a magnification of 
 a_site = 2.68;
@@ -55,6 +66,7 @@ inds=[valTheta>0.9*valTheta0];
 % Rotation Angle
 % guess_theta = thetaVec(ind);
 guess_theta = sum(valTheta(inds).*thetaVec(ind))/sum(valTheta(inds));
+guess_theta = median(thetaVec(inds));
 
 %% Wavelength 
 tic
@@ -119,6 +131,8 @@ guess_phase_func = @(x,y)  phase_func(guess_lambda,guess_R,guess_theta,guess_phi
 
 %% Show it
 if opts.doDebug
+
+    if ~isfield(opts,'Parent')
     FigName = 'StripeCircular';
     ff=get(groot,'Children');
 
@@ -134,68 +148,94 @@ if opts.doDebug
     figure(fig);
     fig.Color='w';
     fig.Name=FigName;
-    fig.ToolBar='none';
-    fig.MenuBar='none';
+    % fig.ToolBar='none';
+    % fig.MenuBar='none';
     fig.Position=[5 50 350 300];
-    clf
-    
-    ax1=subplot(3,2,[1 3],'parent',fig);
-    im1=imagesc(X,Y,Z);
-    hold on
-    colormap(ax1,"parula")
-    xlabel('x');
-    ylabel('y');
-    axis equal tight    
-    caxis([0 max(Z,[],'all')*0.5]);
+    clf(fig);
+    else
+        fig = opts.Parent;
+        for kk=1:length(fig.Children)
+            delete(fig.Children(1))
+        end
+    end
+    ca = [1 1 1];
+    cb = [0.6 0 .5];
+    cAtoms = [linspace(ca(1),cb(1),1000)' ...
+        linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+
+    ca = [1 1 1];
+    cb = [255,215,0]/255;
+    cStripe = [linspace(ca(1),cb(1),1000)' ...
+        linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+
+    if ~isempty(opts.Name)
+        t=uicontrol('parent',fig,'units','pixels','string',opts.Name,...
+            'fontsize',8,'horizontalalignment','left','backgroundcolor','w',...
+            'style','text');
+        t.Position=[2 2 300 15];
+    end
+
+    ax1=subplot(3,1,[1 2],'parent',fig);
+    imagesc(X,Y,Z,'parent',ax1);
+    colormap(ax1,cAtoms);
+    xlabel(ax1,'x');
+    ylabel(ax1,'y');
     set(ax1,'YDir','normal');
-    ax2=axes;
+    caxis(ax1,[0 max(Z,[],'all')*0.2]);
+    axis(ax1,'tight');axis(ax1,'equal'); 
+    hold(ax1,'on');
+    ax2=axes('parent',fig);
     ax2.Position=ax1.Position;
-    im2=imagesc(X,Y,cos(guess_phase_map));
-    im2.AlphaData=0.2;
+    im2=imagesc(X,Y,cos(guess_phase_map),'parent',ax2);
+    im2.AlphaData=0.3;
     ax2.Visible='off';
-    colormap(ax2,"jet")
-    axis equal tight  
+    colormap(ax2,cStripe)
+    axis(ax2,'tight');axis(ax2,'equal'); 
     linkaxes([ax1,ax2]) 
     ax2.Position=ax1.Position;
     ax1.Position=ax2.Position;
-    hold on
-    set(ax1,'fontsize',6);
-    set(ax2,'fontsize',6);
-  
+    set(ax1,'fontsize',10);
+    set(ax2,'fontsize',10);  
     set(ax2,'YDir','normal');
+    title(ax1,'image');
 
-    ax_fft=subplot(3,2,[2 4],'parent',fig);
-    imagesc(f,f,zfnorm);
-    axis equal tight
-    xlim(2*[-1 1]/guess_lambda);
-    ylim(2*[-1 1]/guess_lambda);
+    ax_fft=subplot(3,3,7,'parent',fig);
+    imagesc(f,f,zfnorm,'parent',ax_fft);
+    axis(ax_fft,'equal');
+    axis(ax_fft,'tight');
+    xlim(ax_fft,2*[-1 1]/guess_lambda);
+    ylim(ax_fft,2*[-1 1]/guess_lambda);
     colormap(ax_fft,'jet')
-    xlabel('fx (1/px)');
-    ylabel('fy (1/px)')
-    set(ax_fft,'YDir','normal','fontsize',6);
+    xlabel(ax_fft,'fx (1/px)');
+    ylabel(ax_fft,'fy (1/px)')
+    set(ax_fft,'YDir','normal','fontsize',10);
+    title(ax_fft,'abs fft');
 
-    ax_radial=subplot(3,2,5,'parent',fig);
+    ax_radial=subplot(3,3,8,'parent',fig);
     plot(Tics*df,Average,'.-','parent',ax_radial);
-    hold on
-    p=plot(1/guess_lambda,lambda_peak_val,'ko','markerfacecolor','k');
-    ylim([0 lambda_peak_val]*1.5)
-    xlabel('radial frequency (1/px)');
-    ylabel('radial average');
-    legend(p,{['\lambda = ' num2str(round(guess_lambda,3)) ' px']})
-    xlim([0 0.2])
-    set(ax_radial,'fontsize',6);
-    % title('wavelength');
+    ylim(ax_radial,[0 lambda_peak_val]*1.5)
+    xlabel(ax_radial,'radial frequency (1/px)');
+    ylabel(ax_radial,'radial average');
+    hold(ax_radial,'on');
+    p=plot([1 1]/guess_lambda,[0 1]*lambda_peak_val,'k-','markerfacecolor','k',...
+        'parent',ax_radial);    
+    legend(p,{['\lambda = ' num2str(round(guess_lambda,3)) ' px']},...
+        'parent',ax_radial.Parent);
+    xlim(ax_radial,[0 0.2])
+    set(ax_radial,'fontsize',10);
+    title(ax_radial,'wavelength');
 
-    ax_theta=subplot(3,2,6,'parent',fig);
+    ax_theta=subplot(3,3,9,'parent',fig);
     plot(180/pi*thetaVec,valTheta,'.-','parent',ax_theta);
-    hold on
-    xlabel('rotation angle \theta (deg.)');
-    ylabel('sum correlation');
-    hold on
-    p=plot(180/pi*guess_theta,max(valTheta),'ko','markerfacecolor','k');
+    xlabel(ax_theta,'rotation angle \theta (deg.)');
+    ylabel(ax_theta,'sum correlation');
+    set(ax_theta,'Ylim',[min(valTheta) max(valTheta)*1.1]);
+    hold(ax_theta,'on');
+    p=plot(180/pi*guess_theta*[1 1],[min(valTheta) max(valTheta)],'k-','markerfacecolor','k','parent',ax_theta);
     legend(p,{['\theta = ' num2str(round(180/pi*guess_theta,1)) ' deg.']},...
-        'location','southeast')
-    set(ax_theta,'fontsize',6);
+        'location','best','parent',ax_theta.Parent)
+    set(ax_theta,'fontsize',10);
+    title(ax_theta,'rotation');
 
 
 end

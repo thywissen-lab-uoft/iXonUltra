@@ -20,6 +20,17 @@ if ~isfield(opts,'doDebug')
     opts.doDebug=1;
 end
 
+if ~isfield(opts,'ROI')
+    opts.ROI=[260 300 20 500];
+end
+
+
+if ~isfield(opts,'Name')
+    opts.Name=[];
+end
+
+disp('momentum pixel domain focus analysis');
+
 %% Construct Filters
 
 klims = opts.kmag+[-1 1]*opts.kdelta;
@@ -50,20 +61,39 @@ for kk=1:length(data)
     focus.ControlVariable = opts.ControlVariable;
     focus.X = X;
 
+    % Calculate FFT on ROI
+    ix_1 = find(data(kk).X>=opts.ROI(1),1);
+    ix_2 = find(data(kk).X>=opts.ROI(2),1);
+    iy_1 = find(data(kk).Y>=opts.ROI(3),1);
+    iy_2 = find(data(kk).Y>=opts.ROI(4),1);            
+    Xpx = data(kk).X(ix_1:ix_2);
+    Ypx = data(kk).Y(iy_1:iy_2);   
+    Z = data(kk).Z(iy_1:iy_2,ix_1:ix_2,:);       
+
+    Nfft = 2^10+1;       
+    dX = Xpx(2)-Xpx(1);
+    f_max = 1/dX;
+    f=1/2*linspace(-f_max,f_max,Nfft);
+    zfnorm=zeros(Nfft,Nfft,size(Z,3));
+
+    for nn=1:size(Z,3)
+        zf = fftshift(fft2(Z(:,:,nn),Nfft,Nfft));
+        zfnorm(:,:,nn)=abs(zf);   
+    end     
+
+
     % Find Scores
     scores=zeros(size(data(kk).ZfNorm,3),1);
-    for nn=1:size(data(kk).ZfNorm,3)
-        z = data(kk).ZfNorm(:,:,nn);
+    for nn=1:size(zfnorm,3)
+        z = zfnorm(:,:,nn);
         zsub = z(PF);    
-        N0 = sum(z,'all');
-        Nmean = mean(zsub);
-        Nstd = std(zsub);
-        inds = [z>(Nmean+5*Nstd)];
-        inds = inds.*PF;
-        inds = logical(inds);
-        Nk=sum(z(inds),'all');    
-        scores(nn) = Nk/N0;
-    end
+
+        b = sort(zsub,'descend');
+        N= 1000;
+        [IDX, C, SUMD, D]  = kmeans(b(1:N),2);
+        scores(nn) = max(C)/sum(zsub);
+        scores(nn)=sum(b(1:N))/sum(zsub);
+    end    
     focus.Scores = scores;
     
     [val,ind]=max(scores);
@@ -80,31 +110,61 @@ for kk=1:length(data)
     
 
     if opts.doDebug
-        FigName = 'FFTFocusing';
-        ff=get(groot,'Children');        
-        fig=[];
-        for mm=1:length(ff)
-            if isequal(ff(mm).Name, FigName)
-                fig = ff(mm);
+
+    
+        if ~isfield(opts,'Parent')
+            FigName = 'StripeCircular';
+            ff=get(groot,'Children');
+        
+            fig=[];
+            for kk=1:length(ff)
+                if isequal(ff(kk).Name, FigName)
+                    fig = ff(kk);
+                end
             end
+            if isempty(fig)
+                fig = figure;
+            end    
+            figure(fig);
+            fig.Color='w';
+            fig.Name=FigName;
+            fig.Position=[5 50 350 300];
+            clf(fig);
+            figure(fig);
+        else
+            fig = opts.Parent;
+            for mm=1:length(fig.Children)
+                delete(fig.Children(1))
+            end
+        end  
+
+
+        if ~isempty(data(kk).Name)
+            tt=uicontrol('parent',fig,'units','pixels','string',data(kk).Name,...
+            'fontsize',8,'horizontalalignment','left','backgroundcolor','w',...
+            'style','text');
+            tt.Position=[1 1 300 15];
         end
-        if isempty(fig)
-            fig = figure;
-        end    
-        figure(fig);
-        clf(fig);
-        fig.Color='w';
-        fig.Name=FigName;
-        fig.MenuBar='none';
-        fig.ToolBar='none';
-        fig.Position=[5 390 350 400];
+        ax_img=subplot(3,1,[1 2],'parent',fig);      
+        [val,ind]=max(scores);
+        imagesc(data(kk).X,data(kk).Y, data(kk).ZNoFilter(:,:,ind),'parent',ax_img);
+        xlabel('x (px)');
+        xlabel('y (px)');
+        set(gca,'box','on','linewidth',1,'fontsize',10);
+        axis(ax_img,'equal');
+        axis(ax_img,'tight');
+        caxis(ax_img,[0 max(data(kk).ZNoFilter(:,:,ind),[],'all')*.5]);
+        hold on
+        co=get(ax_img,'colororder');
+        pROI=rectangle('position',...
+            [opts.ROI(1) opts.ROI(3) ...
+            opts.ROI(2)-opts.ROI(1) opts.ROI(4)-opts.ROI(3)],...
+            'edgecolor',co(1,:),'linewidth',1,'hittest','off','parent',ax_img);
+        set(ax_img,'YDir','normal');
+        title(ax_img,['(' num2str(ind) ') : val=' num2str(X(ind)) 'V, score=' num2str(val,'%.2g')]);
+
+        subplot(3,2,[5],'parent',fig)
         co2=get(gca,'colororder');
-
-        tt=uicontrol('style','text','string',data(kk).Name,'fontsize',8,...
-            'horizontalalignment','left','backgroundcolor','w');
-        tt.Position=[1 1 300 15];
-
-        subplot(3,1,1,'parent',fig)
         plot(X,'ko','markerfacecolor',[.5 .5 .5],'markersize',8,...
             'linewidth',2);
         xlabel('image number');
@@ -112,7 +172,7 @@ for kk=1:length(data)
         set(gca,'box','on','linewidth',1,'fontsize',10);
         grid on
 
-        subplot(3,1,[2 3])
+        subplot(3,2,[6])
         xx=linspace(min(X)-.1,max(X)+.1,100);
         plot(xx,feval(fout,xx)*val,'r-','linewidth',2)
         hold on

@@ -37,6 +37,7 @@ defaultDir=['C:' filesep 'IxonImageHistory'];   % Temporary save directory
 
 doSaveGUIAnalysis = 1;
 GUIAnalysisSaveDir = 'X:\IxonGUIAnalysisHistory';
+GUIAnalysisLocalDir = 'C:\IxonGUIAnalysisHistory';
 
 currDir=defaultDir;                             % Current directory of navigator is the default one
 if ~exist(defaultDir,'dir'); mkdir(defaultDir);end % Make temp directory if necessary
@@ -168,7 +169,9 @@ function SizeChangedFcn(~,~)
 
  
         hpProcess.Position(2)           = hpNav.Position(2)-hpProcess.Position(4);
-        hpPosition.Position(2)       = hpProcess.Position(2)-hpPosition.Position(4);   
+
+        hpFeedback.Position(2)      = hpProcess.Position(2)-hpFeedback.Position(4);
+        hpPosition.Position(2)       = hpFeedback.Position(2)-hpPosition.Position(4);   
 
         hpKspace.Position(2)    = hpPosition.Position(2)-hpKspace.Position(4);
 
@@ -1193,14 +1196,33 @@ hbprocess.Position=[3 1 hpProcess.Position(3)-8 18];
 hbprocess.String = 'process images';
     function processCB(src,evt)
         newDataCallback;
-  end
+    end
+
+%% Feedback Panel
+
+hpFeedback=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
+    'Position',[0 hpProcess.Position(2)-50 160 50],'title','feedback');
+
+
+% ttstr='Open the feedback file';
+% cdata=imresize(imread('icons/file_matlab.png'),[14 14]);
+open_func=uicontrol(hpFeedback,'style','pushbutton','string','open feedback function',...
+    'callback',@(src,evt) open('ixon_gui_feedback'),'backgroundcolor','w',...
+    'fontsize',7,...
+    'position',[3 hpFeedback.Position(4)-34 hpFeedback.Position(3)-8  16],'ToolTipString',ttstr);
+
+% Feedback function
+hbfeedback=uicontrol(hpFeedback,'style','pushbutton','string','evaluate feedback function',...
+    'units','pixels','callback',{@(~,~) ixon_gui_feedback},'parent',hpFeedback,...
+    'backgroundcolor','w','position',[3 1 hpFeedback.Position(3)-8 16],'backgroundcolor',[80 200 120]/255,...
+    'fontsize',7);
 
 %% Analysis Panel
 % hpAnl=uipanel(hF,'units','pixels','backgroundcolor','w','title','position analysis');
 % hpAnl.Position=[0 hpADV.Position(2)-130 160 180];
 
 hpPosition=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpProcess.Position(2)-170 160 170],'title','position analysis');
+    'Position',[0 hpFeedback.Position(2)-170 160 170],'title','position analysis');
 
 
 % Checkbox for center of mass and sigma 
@@ -1512,62 +1534,13 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
 
             try
                 opts=struct;
-                %{
-                fignum=5100;
-
-                X = data.Params.qgm_MultiPiezos;
-                X(isnan(X))=[];
-
-                if data.ProcessOptions.doSubtractBG
-                    L = length(X)/2;
-                    X = X(1:L);
-                end
-                scores = [data.LatticeK.NkScore];
-
-                hF_kscore=figure(fignum);
-                hF_kscore.Position=[50 50 400 500];
-                clf
-                hF_kscore.Color='w';
-                co2=get(gca,'colororder');
-
-                subplot(3,1,1)
-                plot(X,'ko','markerfacecolor',[.5 .5 .5],'markersize',8,...
-                    'linewidth',2);
-                xlabel('image number');
-                ylabel('piezo (V)')
-                set(gca,'box','on','linewidth',1,'fontsize',10);
-                grid on
-
-                subplot(3,1,[2 3])
-                plot(X,scores,'o','markerfacecolor',co2(1,:),...
-                    'markeredgecolor',co2(1,:)*.5,'linewidth',2,...
-                   'markersize',8);
-                xlabel('piezo (V)')
-                ylabel('momentum peak score (arb.)')
-                yL = get(gca,'YLim');
-                ylim([0 yL(2)]);
-                grid on
-
-                [val,ind]=max(scores);
-
-                myfit=fittype('-A*(x-x0).^2+B','independent','x',...
-                    'coefficients',{'A','B','x0'});
-                fitopt = fitoptions(myfit);
-                fitopt.Start = [1e-3 1 X(ind)];
-                fitopt.Lower = [0 .9 min(X)-.1];
-                fitopt.Upper = [inf 1.1 max(X)+.1];
-                fout = fit(X',scores'/val,myfit,fitopt);
-                hold on
-                xx=linspace(min(X)-.1,max(X)+.1,100);
-                plot(xx,feval(fout,xx)*val,'r-','linewidth',2)
-
-                str = ['$V_0 = ' num2str(round(fout.x0,2)) '~\mathrm{V}$'];
-                legend({'data',str},'location','south','interpreter','latex')               
-                set(gca,'box','on','linewidth',1,'fontsize',10);
-                %}
+                opts.doDebug=1;
+                opts.Parent = tabFocus;
+                opts.ROI = tbl_dROI_focus.Data;
                 if isfield(data,'KFocusing')
                     data=rmfield(data,'KFocusing');
-                end                    
+                end             
+
                 data=ixon_fft_multi_shot_focusing(data,opts); 
             catch ME
                 warning('OH NO');                
@@ -2101,16 +2074,16 @@ menuSelectImg.Position(2)=15;
                 pAtoms.MarkerFaceColor=pAtoms.Color;
                 pAtoms.MarkerSize=3;
 
-                stripe_pBar.Color='w';
-                stripe_pAngleCirc.Color='w';  
-                stripe_pCloudEllipse.Color='w';  
+                % stripe_pBar.Color='w';
+                % stripe_pAngleCirc.Color='w';  
+                % stripe_pCloudEllipse.Color='w';  
 
             case 2
                 colormap(hF,purplemap);
                 pGrid.Color = [.5 .5 .5 .5];
-                stripe_pBar.Color='w';
-                stripe_pAngleCirc.Color='w';  
-                stripe_pCloudEllipse.Color='w';
+                % stripe_pBar.Color='w';
+                % stripe_pAngleCirc.Color='w';  
+                % stripe_pCloudEllipse.Color='w';
                 pAtoms.Color=[255,215,0]/255;
      pAtoms.MarkerFaceColor=pAtoms.Color;
                 pAtoms.MarkerSize=3;
@@ -2122,9 +2095,9 @@ menuSelectImg.Position(2)=15;
                 cc = [linspace(ca(1),cb(1),1000)' ...
                     linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
                 colormap(hF,cc);
-                stripe_pBar.Color='k';
-                stripe_pAngleCirc.Color='k';  
-                stripe_pCloudEllipse.Color='k';
+                % stripe_pBar.Color='k';
+                % stripe_pAngleCirc.Color='k';  
+                % stripe_pCloudEllipse.Color='k';
                 pAtoms.Color=[218,165,32]/255;
 %                         pAtoms.Color=[0,128,128]/255;
 
@@ -2157,11 +2130,13 @@ hpDispOpt.Position(2) = hpDisp_Select.Position(2)-hpDispOpt.Position(4);
 
 disp_opt_tabs(1)=uitab(hpDispOpt,'Title','position','units','pixels');
 disp_opt_tabs(2)=uitab(hpDispOpt,'Title','stripe','units','pixels');
-disp_opt_tabs(3)=uitab(hpDispOpt,'Title','histogram','units','pixels');
-disp_opt_tabs(4)=uitab(hpDispOpt,'Title','momentum','units','pixels');
-disp_opt_tabs(5)=uitab(hpDispOpt,'Title','binned','units','pixels');
-disp_opt_tabs(6)=uitab(hpDispOpt,'Title','binned histogram','units','pixels');
-disp_opt_tabs(7)=uitab(hpDispOpt,'Title','digitized','units','pixels');
+disp_opt_tabs(3)=uitab(hpDispOpt,'Title','focus','units','pixels');
+
+disp_opt_tabs(4)=uitab(hpDispOpt,'Title','histogram','units','pixels');
+disp_opt_tabs(5)=uitab(hpDispOpt,'Title','momentum','units','pixels');
+disp_opt_tabs(6)=uitab(hpDispOpt,'Title','binned','units','pixels');
+disp_opt_tabs(7)=uitab(hpDispOpt,'Title','binned histogram','units','pixels');
+disp_opt_tabs(8)=uitab(hpDispOpt,'Title','digitized','units','pixels');
 
 
 %% Display Options Panel
@@ -2251,8 +2226,6 @@ rbSum_X=uicontrol(bgPlot_X,'Style','radiobutton','String','plot sum',...
     'Position',[60 0 60 15],'units','pixels','backgroundcolor','w','Value',0,...
     'fontsize',7);
 
-
-
 % Checkbox for enabling display of the CoM analysis
 cCoMStr_X=uicontrol(hpDisp_X,'style','checkbox','string','center of mass text',...
     'units','pixels','fontsize',7,'backgroundcolor','w','callback',@cCoMCB,...
@@ -2284,6 +2257,22 @@ cDrawAtoms=uicontrol(hpDisp_X,'style','checkbox','string','draw atoms',...
     'enable','on','value',1);
 cDrawAtoms.Position=[2 2 80 15];
 
+%% Display Options Panel Focus
+
+hpFocus = uipanel(hF,'units','pixels','backgroundcolor','w');
+hpFocus.Position=[160 500 160 190];
+set(hpFocus,'parent',hpDispOpt.Children(3))
+hpFocus.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+
+
+% Table for changing display limits
+tbl_dROI_focus=uitable('parent',hpFocus,'units','pixels','RowName',{},...
+    'columnname',{'x1','x2','y1','y2'},'UserData','X',...
+    'ColumnEditable',[true true true true],...
+    'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[260 300 100 450],...
+    'ColumnFormat',{'numeric', 'numeric','numeric','numeric'});
+tbl_dROI_focus.Position(3:4)=tbl_dROI_focus.Extent(3:4);
+tbl_dROI_focus.Position(1:2)=[2 5];
 
 %% Display Options Panel
 
@@ -2880,6 +2869,8 @@ hp.Position=[hpControl.Position(3) 0 hF.Position(3)-hpControl.Position(3) hF.Pos
 % Tab Groups for each display
 tabX=uitab(hp,'Title','position','units','pixels','backgroundcolor','w');
 tabStripe=uitab(hp,'Title','stripe','units','pixels','backgroundcolor','w');
+tabFocus=uitab(hp,'Title','focus','units','pixels','backgroundcolor','w');
+
 tabH=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
 tabK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
 tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
@@ -3025,80 +3016,80 @@ linkaxes([axImg hAxY],'y');
 linkaxes([axImg hAxX],'x');
 
 %% Stripe
-
-ax_stripe_img = subplot(2,3,[1 2 4 5],'parent',tabStripe);
-stripe_hImgStripe=imagesc(data.X,data.Y,data.Z,'parent',ax_stripe_img);
-set(ax_stripe_img,'box','on','linewidth',.1,'fontsize',10,...
-    'XAxisLocation','bottom','colormap',colormap(cmap),...
-    'YDir','normal');
-hold on
-axis equal tight
-
-stripe_pFringe=plot(0,0,'-','color',co(1,:),'linewidth',1);
-stripe_pPerp=plot(0,0,'-','color',co(5,:),'linewidth',1);     
-stripe_pBar=plot(0,0,'-','color','w','linewidth',1);     
-stripe_pAngleCirc=plot(0,0,'-','color','w','linewidth',1);     
-stripe_pCloudEllipse=plot(0,0,'-','color','w','linewidth',1);     
-
-
-% clear stripe_lines
-% stripe_lines(1) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% stripe_lines(2) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% stripe_lines(3) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% stripe_lines(4) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% stripe_lines(5) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% stripe_lines(6) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% stripe_lines(7) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% stripe_lines(8) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% stripe_lines(9) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% stripe_lines(10) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
 % 
-
-% file name string
-stripe_str_bottom_left=text(3,3,'FILENAME','units','pixels','fontsize',10,'fontweight','bold',...
-    'horizontalalignment','left','verticalalignment','bottom','margin',1,...
-    'interpreter','none','backgroundcolor',[1 1 1 .5]);
-
-% Box Count Analysis String
-stripe_str_bottom_right=text(.99,0.01,'FILENAME','units','normalized','fontsize',10,'fontweight','normal',...
-    'horizontalalignment','right','verticalalignment','bottom','margin',1,...
-    'interpreter','latex',...
-    'color','k','backgroundcolor',[1 1 1 .7]);
-
-
-ax_stripe_fit = subplot(2,3,3,'parent',tabStripe);
-set(ax_stripe_fit,'box','on','fontsize',10,...
-    'XAxisLocation','Bottom');
-
-% Add X data data and fit plots
-stripe_pSum2_fit=plot(0,0,'k--','linewidth',1,'parent',ax_stripe_fit);
-hold on
-stripe_pSum2_data=plot(0,0,'-','color',co(5,:),'linewidth',1,'parent',ax_stripe_fit);
-
-stripe_pSum1_fit=plot(0,0,'-','linewidth',2,'color',co(2,:),'parent',ax_stripe_fit);
-hold on
-stripe_pSum1_data=plot(0,0,'-','color',co(1,:),'linewidth',1,'parent',ax_stripe_fit);
-xlabel('rotated position (px)');
-ylabel('sum counts');
-
-legend([stripe_pSum1_data, stripe_pSum1_fit, stripe_pSum2_data, stripe_pSum2_fit],...
-    {'fringe','fringe fit','perp','perp fit'},'fontsize',6,...
-    'location','northeast')
-text(.01,.98,'projected sum counts','units','normalized',...
-    'verticalalignment','top','fontsize',6,'parent',ax_stripe_fit);
-
-ax_stripe_focus = subplot(2,3,6,'parent',tabStripe);
-set(ax_stripe_focus,'box','on','fontsize',10,...
-    'XAxisLocation','Bottom');
-
-stripe_pFocus=plot(0,0,'o-','color','k','linewidth',1);     
-hold on
-stripe_pFocusFit=plot(0,0,'--','color','k','linewidth',1);     
-
-yyaxis right
-
-stripe_pFocus2=plot(0,0,'o-','color','r','linewidth',1);     
-yyaxis left
+% ax_stripe_img = subplot(2,3,[1 2 4 5],'parent',tabStripe);
+% stripe_hImgStripe=imagesc(data.X,data.Y,data.Z,'parent',ax_stripe_img);
+% set(ax_stripe_img,'box','on','linewidth',.1,'fontsize',10,...
+%     'XAxisLocation','bottom','colormap',colormap(cmap),...
+%     'YDir','normal');
+% hold on
+% axis equal tight
+% 
+% stripe_pFringe=plot(0,0,'-','color',co(1,:),'linewidth',1);
+% stripe_pPerp=plot(0,0,'-','color',co(5,:),'linewidth',1);     
+% stripe_pBar=plot(0,0,'-','color','w','linewidth',1);     
+% stripe_pAngleCirc=plot(0,0,'-','color','w','linewidth',1);     
+% stripe_pCloudEllipse=plot(0,0,'-','color','w','linewidth',1);     
+% 
+% 
+% % clear stripe_lines
+% % stripe_lines(1) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % stripe_lines(2) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % stripe_lines(3) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % stripe_lines(4) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % stripe_lines(5) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % stripe_lines(6) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % stripe_lines(7) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % stripe_lines(8) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % stripe_lines(9) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % stripe_lines(10) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
+% % 
+% 
+% % file name string
+% stripe_str_bottom_left=text(3,3,'FILENAME','units','pixels','fontsize',10,'fontweight','bold',...
+%     'horizontalalignment','left','verticalalignment','bottom','margin',1,...
+%     'interpreter','none','backgroundcolor',[1 1 1 .5]);
+% 
+% % Box Count Analysis String
+% stripe_str_bottom_right=text(.99,0.01,'FILENAME','units','normalized','fontsize',10,'fontweight','normal',...
+%     'horizontalalignment','right','verticalalignment','bottom','margin',1,...
+%     'interpreter','latex',...
+%     'color','k','backgroundcolor',[1 1 1 .7]);
+% 
+% 
+% ax_stripe_fit = subplot(2,3,3,'parent',tabStripe);
+% set(ax_stripe_fit,'box','on','fontsize',10,...
+%     'XAxisLocation','Bottom');
+% 
+% % Add X data data and fit plots
+% stripe_pSum2_fit=plot(0,0,'k--','linewidth',1,'parent',ax_stripe_fit);
+% hold on
+% stripe_pSum2_data=plot(0,0,'-','color',co(5,:),'linewidth',1,'parent',ax_stripe_fit);
+% 
+% stripe_pSum1_fit=plot(0,0,'-','linewidth',2,'color',co(2,:),'parent',ax_stripe_fit);
+% hold on
+% stripe_pSum1_data=plot(0,0,'-','color',co(1,:),'linewidth',1,'parent',ax_stripe_fit);
+% xlabel('rotated position (px)');
+% ylabel('sum counts');
+% 
+% legend([stripe_pSum1_data, stripe_pSum1_fit, stripe_pSum2_data, stripe_pSum2_fit],...
+%     {'fringe','fringe fit','perp','perp fit'},'fontsize',6,...
+%     'location','northeast')
+% text(.01,.98,'projected sum counts','units','normalized',...
+%     'verticalalignment','top','fontsize',6,'parent',ax_stripe_fit);
+% 
+% ax_stripe_focus = subplot(2,3,6,'parent',tabStripe);
+% set(ax_stripe_focus,'box','on','fontsize',10,...
+%     'XAxisLocation','Bottom');
+% 
+% stripe_pFocus=plot(0,0,'o-','color','k','linewidth',1);     
+% hold on
+% stripe_pFocusFit=plot(0,0,'--','color','k','linewidth',1);     
+% 
+% yyaxis right
+% 
+% stripe_pFocus2=plot(0,0,'o-','color','r','linewidth',1);     
+% yyaxis left
 %% Histgoram
 
 ax_h1 = subplot(2,2,1,'parent',tabH);
@@ -3824,17 +3815,11 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
         end    
 
     %% Stripe Analysis
-    if hcStripe.Value
+    if (hcStripe.Value) && (~isfield(data.Flags,'plane_selection_dotilt') || ...
+            (isfield(data.Flags,'plane_selection_dotilt') && data.Flags.plane_selection_dotilt))
         opts = struct;
-        % opts.Theta = [10 190];
-        % for ll = 1:size(data.ZNoFilter,3)            
-        %     stripes(ll)=ixon_fitStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),opts);
-        %     foci(ll)=ixon_focusStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),stripes(ll));
-        % 
-        % end
-        % data.StripeFit = stripes;
-        % data.StripeFocus = foci;
-        % updateStripeGraphics;
+        opts.Parent=tabStripe;
+        opts.Name=data.Name;
         X = data.X;
         Y = data.Y;
         myz=sum(data.Z,3);    
@@ -3851,7 +3836,7 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
         drawnow;
     end
 
-    function saveGUIData       
+    function saveGUIData(saveDir)       
         if doSaveGUIAnalysis
             try
             gui_saveData = struct;     
@@ -3862,7 +3847,7 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
             
             if isfield(data,'BoxCount')
                 BoxCount = data.BoxCount;
-               gui_saveData.BoxCount = data.BoxCount; 
+                gui_saveData.BoxCount = data.BoxCount; 
             end
             
             if isfield(data,'GaussFit')
@@ -3897,28 +3882,33 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
                gui_saveData.MultiShotFocusing = data.MultiShotFocusing; 
             end
            
-            filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
+            filenames=dir([saveDir filesep '*.mat']);
             filenames={filenames.name};
             filenames=sort(filenames);
 
             % Delete old images
             if length(filenames)>200
-               f=[GUIAnalysisSaveDir filesep filenames{1}];
+               f=[saveDir filesep filenames{1}];
                delete(f);
             end               
 
             filename=[data.Name '.mat']; 
-            if ~exist(GUIAnalysisSaveDir,'dir')                
-               mkdir(GUIAnalysisSaveDir);
-            end     
-            
-            filename=fullfile(GUIAnalysisSaveDir,filename);
+            if ~exist(saveDir,'dir')                
+               mkdir(saveDir);
+            end         
+
+            filename=fullfile(saveDir,filename);
             fprintf('%s',[filename ' ...']);
             save(filename,"-struct",'gui_saveData');
+
+
             disp(' done');      
             catch ME
                 warning('Unable to save GUI data.')
             end
+
+
+
         end 
     end
 
@@ -3929,7 +3919,7 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
         updatePositionHistogramGraphics;
         updatePCAGraphics;    
         updateGaussGraphics; 
-        updateStripeGraphics;
+        % updateStripeGraphics;
     end
 
 %% New Data
@@ -4043,7 +4033,12 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
     drawnow;
     climtbl_X.Data=axImg.CLim;
 
-    saveGUIData
+    %% Save Analysis
+
+    saveGUIData(GUIAnalysisLocalDir);
+    saveGUIData(GUIAnalysisSaveDir);
+
+
 
 end
 
@@ -4083,92 +4078,92 @@ function updateDataPlots(data)
     end   
 end
 
- 
-   
-  function updateStripeGraphics
-         if ~isfield(data,'StripeFit') 
-            return;
-        end
-        imgnum = menuSelectImg.Value;   
-
-        x = data.X;
-        y = data.Y;
-        z = data.ZNoFilter(:,:,imgnum);
-        stripe = data.StripeFit(imgnum);
-        focus = data.StripeFocus(imgnum);
-
-        [xx,yy] = meshgrid(x,y);        
-        Zfit=feval(stripe.Fit,xx,yy);        
-        theta=stripe.theta;
-        L = stripe.L;
-        phi = stripe.phi;
-        xC = stripe.xC;
-        yC = stripe.yC;
-        s1 = stripe.s1;
-        s2 = stripe.s2;        
-        set(stripe_str_bottom_left,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
-
-        str=['$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(xC,1)) ',' ...
-            num2str(round(yC,1)) ')$' newline ...
-            '$(\sigma_1,\sigma_2) = ' '('  num2str(round(s1,1)) ',' ...
-            num2str(round(s2,1)) ')$' newline ...
-            '$(\theta,\phi,\lambda) = (' num2str(round(theta,2)) '^\circ,' ...
-            num2str(round(phi/(2*pi),2)) '\cdot 2\pi,' ...
-            num2str(round(L,1)) ')$']; 
-        set(stripe_str_bottom_right,'String',str);
-        % Update Image
-        set(stripe_hImgStripe,'XData',x,'YData',y,'CData',z);       
-        
-        % Update Image markers
-        set(stripe_pFringe,'XData',xC+[-2 2]*s1*cosd(theta),...
-            'Ydata',yC+[-2 2]*s1*sind(theta));
-        set(stripe_pPerp,'XData',xC+[-2 2]*s2*cosd(theta+90),...
-            'Ydata',yC+[-2 2]*s2*sind(theta+90));
-         set(stripe_pBar,'XData',xC+[50 0],...
-            'Ydata',yC*[1 1]);
-        
-        tt=linspace(0,2*pi,100);
-        xell = 2*s1*cosd(theta)*cos(tt)-2*s2*sind(theta)*sin(tt)+xC;
-        yell = 2*s2*cosd(theta)*sin(tt)+2*s1*sind(theta)*cos(tt)+yC;        
-        set(stripe_pCloudEllipse,'XData',xell,'YData',yell);
-        tt=linspace(0,theta,100);
-        set(stripe_pAngleCirc,'XData',xC+25*cosd(tt),...
-            'YData',yC+25*sind(tt));
-        ax_stripe_img.CLim = axImg.CLim;
-        set(ax_stripe_img,'XLim',[1 512],'YLim',[1 512]);
-        
-        % Update fits   
-        set(stripe_pSum1_fit,'XData',x,'YData',sum(imrotate(Zfit,theta,'crop'),1));
-        set(stripe_pSum1_data,'XData',x,'YData',sum(imrotate(z,theta,'crop'),1));
-        % Show the sum counts orthogonal to the stripe axis
-        set(stripe_pSum2_fit,'XData',y,'YData',sum(imrotate(Zfit,theta,'crop'),2));
-        set(stripe_pSum2_data,'XData',y,'YData',sum(imrotate(z,theta,'crop'),2));      
-
-          % stripe=ixon_fitStripe(data,opts);   
-        stranl={'','';
-            ['stripe A (amp)'] ,stripe.A;
-            ['stripe xC (px)'],stripe.xC;
-            ['stripe yC (px)'],stripe.yC;
-            ['stripe ' char(963) '1 (px)'],stripe.s1;
-            ['stripe ' char(963) '2 (px)'],stripe.s2;
-            ['stripe B'],stripe.B;
-            ['stripe ' char(952) ' (deg)'],stripe.theta;
-            ['stripe ' char(955) ' (px)'],stripe.L;
-            ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
-        tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];     
-
- 
-        set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);        
-        tt=linspace(min([focus.y_coms]),max([focus.y_coms]),100);        
-        set(stripe_pFocusFit,'XData',tt,'YData',polyval(focus.poly,tt))        
-        axes(ax_stripe_focus);
-        yyaxis left
-        set(ax_stripe_focus,'YLim',[0 max(focus.scores)*1.1]);
-        set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
-   
-
-    end
-
+  % 
+  % 
+  % function updateStripeGraphics
+  %        if ~isfield(data,'StripeFit') 
+  %           return;
+  %       end
+  %       imgnum = menuSelectImg.Value;   
+  % 
+  %       x = data.X;
+  %       y = data.Y;
+  %       z = data.ZNoFilter(:,:,imgnum);
+  %       stripe = data.StripeFit(imgnum);
+  %       focus = data.StripeFocus(imgnum);
+  % 
+  %       [xx,yy] = meshgrid(x,y);        
+  %       Zfit=feval(stripe.Fit,xx,yy);        
+  %       theta=stripe.theta;
+  %       L = stripe.L;
+  %       phi = stripe.phi;
+  %       xC = stripe.xC;
+  %       yC = stripe.yC;
+  %       s1 = stripe.s1;
+  %       s2 = stripe.s2;        
+  %       set(stripe_str_bottom_left,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
+  % 
+  %       str=['$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(xC,1)) ',' ...
+  %           num2str(round(yC,1)) ')$' newline ...
+  %           '$(\sigma_1,\sigma_2) = ' '('  num2str(round(s1,1)) ',' ...
+  %           num2str(round(s2,1)) ')$' newline ...
+  %           '$(\theta,\phi,\lambda) = (' num2str(round(theta,2)) '^\circ,' ...
+  %           num2str(round(phi/(2*pi),2)) '\cdot 2\pi,' ...
+  %           num2str(round(L,1)) ')$']; 
+  %       set(stripe_str_bottom_right,'String',str);
+  %       % Update Image
+  %       set(stripe_hImgStripe,'XData',x,'YData',y,'CData',z);       
+  % 
+  %       % Update Image markers
+  %       set(stripe_pFringe,'XData',xC+[-2 2]*s1*cosd(theta),...
+  %           'Ydata',yC+[-2 2]*s1*sind(theta));
+  %       set(stripe_pPerp,'XData',xC+[-2 2]*s2*cosd(theta+90),...
+  %           'Ydata',yC+[-2 2]*s2*sind(theta+90));
+  %        set(stripe_pBar,'XData',xC+[50 0],...
+  %           'Ydata',yC*[1 1]);
+  % 
+  %       tt=linspace(0,2*pi,100);
+  %       xell = 2*s1*cosd(theta)*cos(tt)-2*s2*sind(theta)*sin(tt)+xC;
+  %       yell = 2*s2*cosd(theta)*sin(tt)+2*s1*sind(theta)*cos(tt)+yC;        
+  %       set(stripe_pCloudEllipse,'XData',xell,'YData',yell);
+  %       tt=linspace(0,theta,100);
+  %       set(stripe_pAngleCirc,'XData',xC+25*cosd(tt),...
+  %           'YData',yC+25*sind(tt));
+  %       ax_stripe_img.CLim = axImg.CLim;
+  %       set(ax_stripe_img,'XLim',[1 512],'YLim',[1 512]);
+  % 
+  %       % Update fits   
+  %       set(stripe_pSum1_fit,'XData',x,'YData',sum(imrotate(Zfit,theta,'crop'),1));
+  %       set(stripe_pSum1_data,'XData',x,'YData',sum(imrotate(z,theta,'crop'),1));
+  %       % Show the sum counts orthogonal to the stripe axis
+  %       set(stripe_pSum2_fit,'XData',y,'YData',sum(imrotate(Zfit,theta,'crop'),2));
+  %       set(stripe_pSum2_data,'XData',y,'YData',sum(imrotate(z,theta,'crop'),2));      
+  % 
+  %         % stripe=ixon_fitStripe(data,opts);   
+  %       stranl={'','';
+  %           ['stripe A (amp)'] ,stripe.A;
+  %           ['stripe xC (px)'],stripe.xC;
+  %           ['stripe yC (px)'],stripe.yC;
+  %           ['stripe ' char(963) '1 (px)'],stripe.s1;
+  %           ['stripe ' char(963) '2 (px)'],stripe.s2;
+  %           ['stripe B'],stripe.B;
+  %           ['stripe ' char(952) ' (deg)'],stripe.theta;
+  %           ['stripe ' char(955) ' (px)'],stripe.L;
+  %           ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
+  %       tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];     
+  % 
+  % 
+  %       set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);        
+  %       tt=linspace(min([focus.y_coms]),max([focus.y_coms]),100);        
+  %       set(stripe_pFocusFit,'XData',tt,'YData',polyval(focus.poly,tt))        
+  %       axes(ax_stripe_focus);
+  %       yyaxis left
+  %       set(ax_stripe_focus,'YLim',[0 max(focus.scores)*1.1]);
+  %       set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
+  % 
+  % 
+  %   end
+  % 
 
 
     function updateGaussGraphics
@@ -4403,35 +4398,35 @@ function data=updateAnalysis(data)
     % assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults
     % 
     
-    if doSaveGUIAnalysis
-        gui_saveData = struct;
-        gui_saveData.Date = data.Date;
-        gui_saveData.FileName = data.Name; 
-        gui_saveData.Params = data.Params;
-        gui_saveData.BoxCount = data.BoxCount;    
-        if hcStripe.Value  
-            gui_saveData.Stripe = stripe;
-        end
-        
-       filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
-       filenames={filenames.name};
-       filenames=sort(filenames);
-
-       % Delete old images
-       if length(filenames)>200
-           f=[GUIAnalysisSaveDir filesep filenames{1}];
-           delete(f);
-       end               
-
-        filename=[data.Name '.mat']; 
-        if ~exist(GUIAnalysisSaveDir,'dir')
-           mkdir(GUIAnalysisSaveDir);
-        end        
-        filename=fullfile(GUIAnalysisSaveDir,filename);
-        fprintf('%s',[filename ' ...']);
-        save(filename,'gui_saveData');
-        disp(' done');    
-    end
+    % if doSaveGUIAnalysis
+    %     gui_saveData = struct;
+    %     gui_saveData.Date = data.Date;
+    %     gui_saveData.FileName = data.Name; 
+    %     gui_saveData.Params = data.Params;
+    %     gui_saveData.BoxCount = data.BoxCount;    
+    %     if hcStripe.Value  
+    %         gui_saveData.Stripe = stripe;
+    %     end
+    % 
+    %    filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
+    %    filenames={filenames.name};
+    %    filenames=sort(filenames);
+    % 
+    %    % Delete old images
+    %    if length(filenames)>200
+    %        f=[GUIAnalysisSaveDir filesep filenames{1}];
+    %        delete(f);
+    %    end               
+    % 
+    %     filename=[data.Name '.mat']; 
+    %     if ~exist(GUIAnalysisSaveDir,'dir')
+    %        mkdir(GUIAnalysisSaveDir);
+    %     end        
+    %     filename=fullfile(GUIAnalysisSaveDir,filename);
+    %     fprintf('%s',[filename ' ...']);
+    %     save(filename,'gui_saveData');
+    %     disp(' done');    
+    % end
 end
 
 %% OTHER HELPER FUNCTIONS
