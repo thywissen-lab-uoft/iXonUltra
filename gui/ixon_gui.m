@@ -3824,15 +3824,11 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
         % data.StripeFit = stripes;
         % data.StripeFocus = foci;
         % updateStripeGraphics;
-
-
-
         X = data.X;
         Y = data.Y;
         myz=sum(data.Z,3);    
         data.StripeCircular = ...
                 StripeCircle(X,Y,myz,opts);
-
     end          
 
         updateDispPosImg;   
@@ -3876,6 +3872,10 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
             
             if isfield(data,'BinStripeCircular')                
                gui_saveData.BinStripeCircular = data.BinStripeCircular; 
+            end
+
+            if isfield(data,'StripeCircular')
+                gui_saveData.StripeCircular = data.StripeCircular; 
             end
             
             if isfield(data,'MultiShotFocusing')
