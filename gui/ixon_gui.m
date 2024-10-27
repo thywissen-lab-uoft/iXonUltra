@@ -3815,15 +3815,24 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
     %% Stripe Analysis
     if hcStripe.Value
         opts = struct;
-        opts.Theta = [10 190];
-        for ll = 1:size(data.ZNoFilter,3)            
-            stripes(ll)=ixon_fitStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),opts);
-            foci(ll)=ixon_focusStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),stripes(ll));
+        % opts.Theta = [10 190];
+        % for ll = 1:size(data.ZNoFilter,3)            
+        %     stripes(ll)=ixon_fitStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),opts);
+        %     foci(ll)=ixon_focusStripe(data.X',data.Y',data.ZNoFilter(:,:,ll),stripes(ll));
+        % 
+        % end
+        % data.StripeFit = stripes;
+        % data.StripeFocus = foci;
+        % updateStripeGraphics;
 
-        end
-        data.StripeFit = stripes;
-        data.StripeFocus = foci;
-        updateStripeGraphics;
+
+
+        X = data.X;
+        Y = data.Y;
+        myz=sum(data.Z,3);    
+        data.StripeCircular = ...
+                StripeCircle(X,Y,myz,opts);
+
     end          
 
         updateDispPosImg;   

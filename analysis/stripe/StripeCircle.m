@@ -1,0 +1,226 @@
+function out = StripeCircle(X,Y,Z,opts)
+
+
+[XX,YY]=meshgrid(X,Y);
+
+if ~isfield(opts,'doDebug')
+    opts.doDebug=1;
+end
+
+% 16 um at a magnification of 
+a_site = 2.68;
+
+%% Get Data And FFT
+
+Z(isnan(Z))=0;
+Z(isinf(Z))=0;
+
+zf = fft2(Z,2^10+1,2^10+1);              % 2D FFT
+zf = fftshift(zf);                      % Shift so zero at center
+f  = 0.5*linspace(-1,1,size(zf,2));     % Frequency Vector
+df=f(2)-f(1);                           % Frequecny spacing
+zfnorm=abs(zf);                         % Norm of data
+%% Find Rotation Angle
+
+% Mininum lambda
+lambda_min = 10*a_site;
+
+px_max = ceil((1/lambda_min)/df);
+px_center = (size(zfnorm,1)+1)/2;
+fmax = f(px_center+px_max);
+
+px_lims = (px_center-px_max):(px_center+px_max);
+f_sub = f((px_center-px_max):(px_center+px_max));
+[ffx_sub,ffy_sub]=meshgrid(f_sub,f_sub);
+fmat=(ffx_sub.^2+ffy_sub.^2).^(1/2);
+F = fmat<=fmax;
+
+zfnorm_sub = zfnorm(px_lims,px_lims).*F;
+
+% Find angle with maximum value (at the correct rotation angle, everything
+% sums up)
+thetaVec = linspace(-pi/4,-pi/4+pi,360);
+valTheta = zeros(length(thetaVec),1);
+tic
+for tt=1:length(thetaVec)
+    % valTheta(tt)=max(sum(imrotate(zfnorm,thetaVec(tt)*180/pi,'crop'),2));
+    valTheta(tt)=max(sum(imrotate(zfnorm_sub,thetaVec(tt)*180/pi,'crop'),2));
+end
+tRotate=toc;
+[valTheta0,ind]=max(valTheta);
+
+inds=[valTheta>0.9*valTheta0];
+
+
+% Rotation Angle
+% guess_theta = thetaVec(ind);
+guess_theta = sum(valTheta(inds).*thetaVec(ind))/sum(valTheta(inds));
+
+%% Wavelength 
+tic
+
+% Radial Profile
+[Tics,Average]=radial_profile(zfnorm,1);
+
+% Find peak in radial data
+[pks,locs,w,p] =findpeaks(Average,'SortStr','descend','Npeaks',2);
+
+% Get the frequency
+f_me = Tics(locs)*df;
+
+% Convert to wavelength
+
+if 1/f_me(1)>100
+    ind = 2;
+else
+    ind =1 ;
+end
+
+guess_lambda= 1/f_me(ind);
+lambda_peak_val = pks(ind);
+
+%% Radius of Curvature
+% The radius of curvature depends on the radial field gradient and on the
+% bias field.
+% Feshbach field --> gotten from uwave frequency
+% Bias field gotten from labmda + feshbach field
+% Gradient --> gotten from independent measurement
+% Radius of curvature --> gotten from bias field and radial gradient
+
+guess_R = 514*a_site;
+
+%% Circular Wave Phase
+% This function creates a phase map
+% L = wavelength
+% R      = radius of curvature
+% theta  = angle
+% phi0   = phase offset
+
+y0=mean(Y);
+x0=0;
+
+phase_func = @(L,R,theta,phi0,xx,yy) ...
+    2*pi/L*(R^2+2*R*(cos(theta)*(xx-x0)+sin(theta)*(yy-y0))+((xx-x0).^2+(yy-y0).^2)).^(1/2)-2*pi*R/L+phi0;
+
+%% Phase Guess
+% Compute best phase using phasors
+Cmap = sum(Z.*cos(phase_func(guess_lambda,guess_R,guess_theta,0,XX,YY)),'all');
+Smap = sum(Z.*cos(phase_func(guess_lambda,guess_R,guess_theta,pi/2,XX,YY)),'all');
+guess_phi=atan2(Smap,Cmap);
+
+
+%% Construct Output
+
+guess_phase_map = phase_func(guess_lambda,guess_R,guess_theta,guess_phi,...
+    XX,YY);
+guess_phase_func = @(x,y)  phase_func(guess_lambda,guess_R,guess_theta,guess_phi,...
+    x,y);
+
+
+%% Show it
+if opts.doDebug
+    FigName = 'StripeCircular';
+    ff=get(groot,'Children');
+
+    fig=[];
+    for kk=1:length(ff)
+        if isequal(ff(kk).Name, FigName)
+            fig = ff(kk);
+        end
+    end
+    if isempty(fig)
+        fig = figure;
+    end    
+    figure(fig);
+    fig.Color='w';
+    fig.Name=FigName;
+    fig.Position=[50 50 1000 300];
+    clf
+    
+    ax1=subplot(1,3,1,'parent',fig);
+    im1=imagesc(X,Y,Z);
+    hold on
+    colormap(ax1,"parula")
+    xlabel('x');
+    ylabel('y');
+    axis equal tight    
+    caxis([0 max(Z,[],'all')*0.5]);
+    set(ax1,'YDir','normal');
+    ax2=axes;
+    ax2.Position=ax1.Position;
+    im2=imagesc(X,Y,cos(guess_phase_map));
+    im2.AlphaData=0.2;
+    ax2.Visible='off';
+    colormap(ax2,"jet")
+    axis equal tight  
+    linkaxes([ax1,ax2]) 
+    ax2.Position=ax1.Position;
+    ax1.Position=ax2.Position;
+    hold on
+  
+    set(ax2,'YDir','normal');
+
+    ax_fft=subplot(1,3,2,'parent',fig);
+    imagesc(f,f,zfnorm);
+    axis equal tight
+    xlim(2*[-1 1]/guess_lambda);
+    ylim(2*[-1 1]/guess_lambda);
+    colormap(ax_fft,'jet')
+    xlabel('fx (1/px)');
+    ylabel('fy (1/px)')
+    set(ax_fft,'YDir','normal');
+
+    ax_radial=subplot(2,3,3,'parent',fig);
+    plot(Tics*df,Average,'.-','parent',ax_radial);
+    hold on
+    p=plot(1/guess_lambda,lambda_peak_val,'ko','markerfacecolor','k');
+    ylim([0 lambda_peak_val]*1.5)
+    xlabel('radial frequency (1/px)');
+    ylabel('radial average');
+    legend(p,{['\lambda = ' num2str(round(guess_lambda,3)) ' px']})
+    xlim([0 0.2])
+    % title('wavelength');
+
+    ax_theta=subplot(2,3,6,'parent',fig);
+    plot(180/pi*thetaVec,valTheta,'.-','parent',ax_theta);
+    hold on
+    xlabel('rotation angle \theta (deg.)');
+    ylabel('sum correlation');
+    hold on
+    p=plot(180/pi*guess_theta,max(valTheta),'ko','markerfacecolor','k');
+    legend(p,{['\theta = ' num2str(round(180/pi*guess_theta,1)) ' deg.']},...
+        'location','southeast')
+
+
+end
+
+%% output
+
+out = struct;
+out.Lambda = guess_lambda;
+out.Theta = guess_theta;
+out.Radius = guess_R;
+out.Phi     = guess_phi;
+out.PhaseFunc = @(x,y) phase_func(guess_lambda,guess_R,guess_theta,guess_phi,...
+    x,y);
+
+
+
+
+end
+
+function [Tics,Average]=radial_profile(data,radial_step)
+    %main axii cpecified:
+    x=(1:size(data,2))-size(data,2)/2;
+    y=(1:size(data,1))-size(data,1)/2;
+    % coordinate grid:
+    [X,Y]=meshgrid(x,y);
+    % creating circular layers
+    Z_integer=round(abs(X+1i*Y)/radial_step)+1;
+    % % illustrating the principle:
+    % % figure;imagesc(Z_integer.*data)
+    % very fast MatLab calculations:
+    Tics=accumarray(Z_integer(:),abs(X(:)+1i*Y(:)),[],@mean);
+    Average=accumarray(Z_integer(:),data(:),[],@mean);
+end
+
