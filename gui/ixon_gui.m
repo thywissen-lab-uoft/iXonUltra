@@ -641,7 +641,7 @@ hcAdwinSaveDir=uicontrol(hpAcq,'style','checkbox','string','auto set save dir?',
 % boop.ReadTime = [];
 % boop.
 acqTimer.UserData=[0 0];
-acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
+acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
     'TimerFcn',@acqTimerFcn,'ExecutionMode','FixedSpacing','StartFcn',@acqTimerStartFcn);
 
     function acqTimerStartFcn(src,evt)
@@ -650,15 +650,20 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.1,...
 
     function autoCameraConfig
         if exist(camera_control_file,'file') && cam_status.isConnected 
-            CameraControl = load(camera_control_file);            
-            if acq.NumKin~=length(CameraControl.IxonMultiExposures)    
-                disp('incompatible number of exposures detected. Automatically changing')
-                stopCamCB;
-                pause(0.1);
-                acq.NumKin = length(CameraControl.IxonMultiExposures);
-                loadAcquisitionSettings;
-                pause(0.1);
-                startCamCB;
+            try
+                CameraControl = load(camera_control_file);
+                if ~isfield(CameraControl,'IxonMultiExposures')
+                    return;
+                end
+                if acq.NumKin~=length(CameraControl.IxonMultiExposures)    
+                    disp('incompatible number of exposures detected. Automatically changing')
+                    stopCamCB;
+                    pause(0.1);
+                    acq.NumKin = length(CameraControl.IxonMultiExposures);
+                    loadAcquisitionSettings;
+                    pause(0.1);
+                    startCamCB;
+                end           
             end
         end  
     end
@@ -1498,12 +1503,15 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
             if cAutoColor_K.Value;setClim('K');end  
             end
         end
-
-        if hcKFocus.Value && hcFindLattice.Value && ...
-            isfield(data,'Zf') && isfield(data,'LatticeK') ...
+                
+        if hcKFocus.Value &&  ...
+            isfield(data,'Zf') ...
                 && isfield(data.Flags,'lattice_fluor_multi_mode') ...
                 &&  (data.Flags.lattice_fluor_multi_mode==2)
+            
+
             try
+                opts=struct;
                 %{
                 fignum=5100;
 
@@ -1557,9 +1565,12 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
                 legend({'data',str},'location','south','interpreter','latex')               
                 set(gca,'box','on','linewidth',1,'fontsize',10);
                 %}
-                data=ixon_fft_multi_shot_focusing(data,opts);          
+                if isfield(data,'KFocusing')
+                    data=rmfield(data,'KFocusing');
+                end                    
+                data=ixon_fft_multi_shot_focusing(data,opts); 
             catch ME
-                warning('OH NO')
+                warning('OH NO');                
             end
         end
     end
@@ -3864,6 +3875,10 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
            
             if isfield(data,'StripeFocus')
                gui_saveData.StripeFocus = data.StripeFocus; 
+            end
+            
+            if isfield(data,'KFocusing')
+               gui_saveData.KFocusing = data.KFocusing; 
             end
             
             if isfield(data,'BinStripe')

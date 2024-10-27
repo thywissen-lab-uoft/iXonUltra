@@ -77,6 +77,7 @@ for kk=1:length(data)
     focus.Fit = fout;
     focus.FocusCenter = fout.x0;
     data(kk).KFocusing = focus;
+    
 
     if opts.doDebug
         FigName = 'FFTFocusing';
@@ -91,9 +92,12 @@ for kk=1:length(data)
             fig = figure;
         end    
         figure(fig);
+        clf(fig);
         fig.Color='w';
         fig.Name=FigName;
-        fig.Position=[50 50 400 500];
+        fig.MenuBar='none';
+        fig.ToolBar='none';
+        fig.Position=[5 390 350 400];
         co2=get(gca,'colororder');
 
         tt=uicontrol('style','text','string',data(kk).Name,'fontsize',8,...

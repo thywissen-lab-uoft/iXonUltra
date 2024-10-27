@@ -240,7 +240,7 @@ if opts.doDebug
     figure(fig);
     fig.Color='w';
     fig.Name=FigName;
-    fig.Position=[50 50 1000 300];
+    fig.Position=[10 50 1000 300];
     clf
     
     ax1=subplot(1,3,1,'parent',fig);

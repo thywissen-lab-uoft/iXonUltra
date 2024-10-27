@@ -134,10 +134,12 @@ if opts.doDebug
     figure(fig);
     fig.Color='w';
     fig.Name=FigName;
-    fig.Position=[50 50 1000 300];
+    fig.ToolBar='none';
+    fig.MenuBar='none';
+    fig.Position=[5 50 350 300];
     clf
     
-    ax1=subplot(1,3,1,'parent',fig);
+    ax1=subplot(3,2,[1 3],'parent',fig);
     im1=imagesc(X,Y,Z);
     hold on
     colormap(ax1,"parula")
@@ -157,10 +159,12 @@ if opts.doDebug
     ax2.Position=ax1.Position;
     ax1.Position=ax2.Position;
     hold on
+    set(ax1,'fontsize',6);
+    set(ax2,'fontsize',6);
   
     set(ax2,'YDir','normal');
 
-    ax_fft=subplot(1,3,2,'parent',fig);
+    ax_fft=subplot(3,2,[2 4],'parent',fig);
     imagesc(f,f,zfnorm);
     axis equal tight
     xlim(2*[-1 1]/guess_lambda);
@@ -168,9 +172,9 @@ if opts.doDebug
     colormap(ax_fft,'jet')
     xlabel('fx (1/px)');
     ylabel('fy (1/px)')
-    set(ax_fft,'YDir','normal');
+    set(ax_fft,'YDir','normal','fontsize',6);
 
-    ax_radial=subplot(2,3,3,'parent',fig);
+    ax_radial=subplot(3,2,5,'parent',fig);
     plot(Tics*df,Average,'.-','parent',ax_radial);
     hold on
     p=plot(1/guess_lambda,lambda_peak_val,'ko','markerfacecolor','k');
@@ -179,9 +183,10 @@ if opts.doDebug
     ylabel('radial average');
     legend(p,{['\lambda = ' num2str(round(guess_lambda,3)) ' px']})
     xlim([0 0.2])
+    set(ax_radial,'fontsize',6);
     % title('wavelength');
 
-    ax_theta=subplot(2,3,6,'parent',fig);
+    ax_theta=subplot(3,2,6,'parent',fig);
     plot(180/pi*thetaVec,valTheta,'.-','parent',ax_theta);
     hold on
     xlabel('rotation angle \theta (deg.)');
@@ -190,6 +195,7 @@ if opts.doDebug
     p=plot(180/pi*guess_theta,max(valTheta),'ko','markerfacecolor','k');
     legend(p,{['\theta = ' num2str(round(180/pi*guess_theta,1)) ' deg.']},...
         'location','southeast')
+    set(ax_theta,'fontsize',6);
 
 
 end
