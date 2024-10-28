@@ -82,7 +82,7 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 0;      % Auto detect changing variable?
+ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
@@ -90,6 +90,11 @@ ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
+
+
+% Ignore these variables when choosing auto var
+autoVar_Ignore = {'f_offset','piezo_offset'};
+% autoVar_Ignore = {};
 
 %% Analysis Options
 
@@ -207,6 +212,12 @@ if ixon_autoXVar
     disp([' Found ' num2str(length(xVars)) ...
         ' valid variables that are changing to plot against.']);
     disp(xVars);    
+    
+    for kk=1:length(autoVar_Ignore)
+        thisVar = autoVar_Ignore{kk};
+        index = find(ismember(xVars, thisVar));
+        xVars(index)=[];
+    end
     % Select the first variable that is changed
     ind = 1;    
     ixon_xVar = xVars{ind};    

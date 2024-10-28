@@ -68,13 +68,16 @@ bin_opts.FigLabel = bindata(1).SourceDirectory;
 
 % Choose what kind of variable to plot against (sequencer/camera)
 bin_opts.varType        = 'param';          % always select 'param' for now 
-bin_opts.autoXVar       = 0;                % Auto detect changing variable?
+bin_opts.autoXVar       = 1;                % Auto detect changing variable?
 bin_opts.autoUnit       = 1;                % Auto detect unit for variable?
 bin_opts.xVar           = 'ExecutionDate';  % Variable Name
 bin_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 bin_opts.doSave         = 1;                % Save Analysis?
 
 bin_opts.ControlVariable='f_offset';
+% Ignore these variables when choosing auto var
+autoVar_Ignore = {'f_offset','piezo_offset'};
+% autoVar_Ignore = {};
 
 %% Flags
 
@@ -91,7 +94,7 @@ bin_BinReScale                          = 1;
 
 
 % Stripe fit Data
-bin_BinStripe                           = 1;
+bin_BinStripe                           = 0;
 
 bin_BinStripeIndex                      = 1;% 1 for trees, 2 for fallen tree
 
@@ -118,6 +121,12 @@ if bin_opts.autoXVar
     disp([' Found ' num2str(length(xVars)) ...
         ' valid variables that are changing to plot against.']);
     disp(xVars);    
+        for kk=1:length(autoVar_Ignore)
+        thisVar = autoVar_Ignore{kk};
+        index = find(ismember(xVars, thisVar));
+        xVars(index)=[];
+    end
+    
     xVar = xVars{1};    
     disp([' Setting ' xVar ' to be the x-variable']);    
     for kk=1:length(bindata)

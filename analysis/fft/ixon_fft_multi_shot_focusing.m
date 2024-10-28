@@ -148,13 +148,13 @@ for kk=1:length(data)
         ax_img=subplot(3,1,[1 2],'parent',fig);      
         [val,ind]=max(scores);
         imagesc(data(kk).X,data(kk).Y, data(kk).ZNoFilter(:,:,ind),'parent',ax_img);
-        xlabel('x (px)');
-        xlabel('y (px)');
-        set(gca,'box','on','linewidth',1,'fontsize',10);
+        xlabel(ax_img,'x (px)');
+        xlabel(ax_img,'y (px)');
+        set(ax_img,'box','on','linewidth',1,'fontsize',10);
         axis(ax_img,'equal');
         axis(ax_img,'tight');
         caxis(ax_img,[0 max(data(kk).ZNoFilter(:,:,ind),[],'all')*.5]);
-        hold on
+        hold(ax_img,'on');
         co=get(ax_img,'colororder');
         pROI=rectangle('position',...
             [opts.ROI(1) opts.ROI(3) ...
@@ -163,30 +163,28 @@ for kk=1:length(data)
         set(ax_img,'YDir','normal');
         title(ax_img,['(' num2str(ind) ') : val=' num2str(X(ind)) 'V, score=' num2str(val,'%.2g')]);
 
-        subplot(3,2,[5],'parent',fig)
-        co2=get(gca,'colororder');
+        ax_piezo=subplot(3,2,[5],'parent',fig);
+        co2=get(ax_piezo,'colororder');
         plot(X,'ko','markerfacecolor',[.5 .5 .5],'markersize',8,...
-            'linewidth',2);
-        xlabel('image number');
-        ylabel('piezo (V)')
-        set(gca,'box','on','linewidth',1,'fontsize',10);
-        grid on
+            'linewidth',2,'parent',ax_piezo);
+        xlabel(ax_piezo,'image number');
+        ylabel(ax_piezo,'piezo (V)')
+        set(ax_piezo,'box','on','linewidth',1,'fontsize',10,'Xgrid','on','ygrid','on');
 
-        subplot(3,2,[6])
+        ax_score=subplot(3,2,[6]);
         xx=linspace(min(X)-.1,max(X)+.1,100);
-        plot(xx,feval(fout,xx)*val,'r-','linewidth',2)
-        hold on
+        plot(xx,feval(fout,xx)*val,'r-','linewidth',2,'parent',ax_score)
+        hold(ax_score,'on');
         plot(X,scores,'o','markerfacecolor',co2(1,:),...
             'markeredgecolor',co2(1,:)*.5,'linewidth',2,...
-           'markersize',8);
-        xlabel('piezo (V)')
-        ylabel('momentum peak score (arb.)')
-        yL = get(gca,'YLim');
-        ylim([0 yL(2)]);
-        grid on
+           'markersize',8,'parent',ax_score);
+        xlabel(ax_score,'piezo (V)')
+        ylabel(ax_score,'momentum peak score (arb.)')
+        yL = get(ax_score,'YLim');
+        ylim(ax_score,[0 yL(2)]);
         str = ['$V_0 = ' num2str(round(fout.x0,2)) '~\mathrm{V}$'];
-        legend({'data',str},'location','south','interpreter','latex')               
-        set(gca,'box','on','linewidth',1,'fontsize',10);
+        legend({'data',str},'location','south','interpreter','latex','parent',fig)               
+        set(ax_score,'box','on','linewidth',1,'fontsize',10,'xgrid','on','ygrid','on');
     end
 end
 
