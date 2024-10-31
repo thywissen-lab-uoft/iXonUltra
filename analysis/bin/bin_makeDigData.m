@@ -20,9 +20,10 @@ function [digdata] = bin_makeDigData(bindata,opts)
     end
         
     digdata = struct;    
-    digdata.SourceDirectory = unique({bindata.SourceDirectory});
-    digdata.FileNames = {bindata.Name}';
-    digdata.Threshold = [D.Threshold];
+    digdata.SourceDirectory     = unique({bindata.SourceDirectory});
+    digdata.FileNames           = {bindata.Name}';
+    digdata.Threshold           = [D.Threshold];
+    digdata.ThresholdingType    = 'uncompensated';
     digdata.xVar = opts.xVar;
     digdata.X = [P.(opts.xVar)];
     digdata.Params = P;

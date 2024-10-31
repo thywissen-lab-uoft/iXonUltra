@@ -80,6 +80,7 @@ if opts.do_Intensity
         nCluster=zeros(numel(c),1);
 
         for bb=1:numel(c)
+            
             ind = inds(bb);
             nThis = sum(idx==ind);
             dd(bb) = sqrt(sumD(bb)/nThis);
@@ -110,6 +111,7 @@ if opts.do_Intensity
         bindata(kk).ScaledCentroid = I0;
         bindata(kk).ScaledCentroidRadius = pdf1_c(2)/I0;
         bindata(kk).ScaledThreshold = (I0-2*pdf1_c(2))/I0;
+        bindata(kk).ScaledThreshold_abs = (I0-2*pdf1_c(2));
     end      
 end
 
@@ -296,7 +298,7 @@ hF2.Position=[1000 50 600 400];
 
 for kk=1:length(bindata)
    bindata(kk).LatticeBin(1).ZbinScaled = ZbinScaled(:,:,kk);
-   bindata(kk).LatticeBin(1).ScaledThreshold = scaledThreshold;
+   bindata(kk).LatticeBin(1).ScaledThreshold = bindata(kk).ScaledThreshold;scaledThreshold;
 end
 
 end

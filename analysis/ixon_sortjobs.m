@@ -2,7 +2,7 @@
 % Source directory of all data
 
 
-srcdir = 'X:\Data\2024\2024.10\10.25\01 stripe stability';
+srcdir = 'X:\Data\2024\2024.10\10.30\11 overnight';
 
 
 

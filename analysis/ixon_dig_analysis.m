@@ -77,7 +77,7 @@ dig_opts.doSave         = 1;                % Save Analysis?
 dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
-dig_ac_conductivity_fit                 = 0;
+dig_ac_conductivity_fit                 = 1;
 dig_doRadialAnalysis                    = 1;
 dig_doRadialSkewAnalysis                = 0;
 %% Show CLoud
@@ -116,7 +116,7 @@ if dig_doRadialAnalysis
 
     
     opts.rMaxShow = 80;                 % max r to plot
-    opts.nMaxShow = 0.5;               % max density to plot
+    opts.nMaxShow = 0.7;               % max density to plot
     opts.showDevParametrization  = 0;   % show standard deviation?
     
     % Show radial profiles
@@ -135,12 +135,16 @@ if dig_doRadialAnalysis
 %     opts.ForceAverage = 0;
     opts.doAnimate = 1;
     
-    [hFs_radial] = dig_radialAnalysis_average_images(digdata,opts);
+    [hFs_radial,hF2_radial] = dig_radialAnalysis_average_images(digdata,opts);
     if dig_opts.doSave
        for kk=1:length(hFs_radial)
            ixon_saveFigure2(hFs_radial(kk),...
                 ['dig_radial_' num2str(kk)],dig_opts);   
        end
+       
+       ixon_saveFigure2(hF2_radial,...
+                ['dig_filling'],dig_opts);   
+       
     end
     
     doExportforDrut=0;

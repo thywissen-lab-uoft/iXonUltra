@@ -10,12 +10,37 @@ function [digdata] = bin_makeDigDataScaled(bindata,opts)
     n1 = bindata(1).LatticeBin.n1;
     n2 = bindata(1).LatticeBin.n2;
     
-    thresh=median([bindata.ScaledThreshold]);
+    thresh = [];
+    
+    thresh_med     = median([bindata.ScaledThreshold]);
+    thresh_abs_med = median([bindata.ScaledThreshold].*[bindata.ScaledCentroid]);
+    
+    if opts.DigAve
+            thresh     = thresh_med;
+            thresh_abs = thresh_abs_med;
+            
+        Threshtype = 'CompensatedAve';
+    else
+        Threshtype = 'CompensatedInd';
+    end
 
 
     for nn=1:length(bindata)
-        Zscaled = bindata(nn).LatticeBin(1).ZbinScaled;        
-        Zdig(:,:,nn) = Zscaled>=thresh;  
+        Zscaled = bindata(nn).LatticeBin(1).ZbinScaled;
+        
+        if opts.DigAve
+            Zdig(:,:,nn) = Zscaled>=thresh;  
+        else
+            thresh(nn)=bindata(nn).ScaledThreshold;
+            thresh_abs(nn) = thresh(nn)*bindata(nn).ScaledCentroid;
+            if thresh_abs(nn)<2000
+                thresh(nn) = thresh_med;
+                thresh_abs(nn) = thresh_abs_med;
+            end
+            Zdig(:,:,nn) = Zscaled>=thresh(nn);  
+
+        end
+        
         Natoms(nn) = sum(Zdig(:,:,nn),[1 2]);
     end
     
@@ -23,7 +48,9 @@ function [digdata] = bin_makeDigDataScaled(bindata,opts)
     digdata                     = struct;    
     digdata.SourceDirectory     = unique({bindata.SourceDirectory});
     digdata.FileNames           = {bindata.Name}';
-    digdata.Threshold           = thresh;
+    digdata.ScaledThreshold     = thresh;
+    digdata.Threshold           = thresh_abs;
+    digdata.ThresholdingType    = Threshtype;
     digdata.xVar                = opts.xVar;
     digdata.X                   = [P.(opts.xVar)];
     digdata.Params              = P;

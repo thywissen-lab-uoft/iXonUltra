@@ -73,6 +73,7 @@ bin_opts.autoUnit       = 1;                % Auto detect unit for variable?
 bin_opts.xVar           = 'ExecutionDate';  % Variable Name
 bin_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 bin_opts.doSave         = 1;                % Save Analysis?
+bin_opts.DigAve          = 0;                % Digitize with average threshold? Only used with compensate thresholding
 
 bin_opts.ControlVariable='f_offset';
 % Ignore these variables when choosing auto var
@@ -276,4 +277,11 @@ end
 %% Digitization Stuff
 if bin_Digitize
     ixon_dig_initialize;
+end
+
+%% Save QGM Data
+if bin_opts.doSave            
+    filename = fullfile(bin_opts.saveDir,'bindata.mat');
+    disp(['Saving ' filename ' ...']);
+    save(filename,'bindata');
 end

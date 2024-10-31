@@ -99,7 +99,7 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 %% Analysis Options
 
 ixon_doBoxCount                     = 1;
-ixon_doGaussFit                     = 0;
+ixon_doGaussFit                     = 1;
 
 % Analysis to run
 ixon_doStandardAnalysis             = 1;
@@ -110,7 +110,7 @@ ixon_doAnalyzeFourier               = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D             = 0;    % Stripe Analysis :  for field stability in titled plane selection
 
 
-ixon_showFOffset                    = 0;
+ixon_showFOffset                    = 1;
 %% QGM Single Plane Analysis
 
 % Master flag for QGM stuff

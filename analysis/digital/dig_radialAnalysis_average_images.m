@@ -1,4 +1,4 @@
-function [hFs,out] = dig_radialAnalysis_average_images(digdata,opts)
+function [hFs,hF2,out] = dig_radialAnalysis_average_images(digdata,opts)
     if nargin == 1
         opts = struct;
     end    
@@ -25,7 +25,14 @@ function [hFs,out] = dig_radialAnalysis_average_images(digdata,opts)
     
   
     
-    %%
+    %% 
+    
+    
+npeak = 0;
+npeak_loc = 0;
+ncenter = 0;
+ncenter_err = 0;
+
 for kk = 1:length(Ux)
    if opts.ForceAverage         
         inds = 1:length(X);
@@ -39,6 +46,25 @@ for kk = 1:length(Ux)
    Zr = mean(digdata.Zr(:,inds),2);             % Average Radial data for this X variable
    err = std(digdata.Zr(:,inds),1,2)/sqrt(nImg);  % Standard error at each radius 
    r = mean(digdata.r(:,inds),2);               % Radial vector
+   
+   % find filling at center
+   inds_good = find(Zr>0); % only look for datapoints>0
+   Zr_filt = Zr(inds_good);
+   r_filt = r(inds_good);
+   L = length(Zr_filt);
+   
+   % remove center outliers
+   inds_good = find(abs(Zr(1:3)-median(Zr(1:3)))<0.15);
+  
+   Zr_filt_center = Zr_filt(inds_good);
+   Zr_filt = Zr_filt([inds_good' 4:L]);
+   r_filt = r_filt([inds_good' 4:L]);
+   
+   ncenter(kk) = mean(Zr_filt_center);
+   ncenter_err(kk) = std(Zr_filt_center);
+   
+   [npeak(kk),ind_max] = max(Zr_filt);
+   npeak_loc(kk) = r_filt(ind_max);
 
    n1 = digdata.n1-mean(digdata.rCenter(:,1));
    n2 = digdata.n2-mean(digdata.rCenter(:,2));
@@ -183,6 +209,29 @@ for kk = 1:length(Ux)
          end
     end
 end
+
+%% Plot peak filling vs. X var
+
+co=get(gca,'colororder');
+
+hF2 = figure('color','w');
+
+yyaxis left
+errorbar(Ux,ncenter,ncenter_err,'o','color',co(1,:),'linewidth',1,'markersize',8,...
+       'markerfacecolor',co(1,:),'markeredgecolor',co(1,:)*.5);
+xlabel([digdata.xVar ' (' digdata.Units(1).(digdata.xVar) ')'],'Interpreter','none')
+ylabel('Central charge filling')
+if isfield(opts,'nMaxShow')
+       ylim([0 opts.nMaxShow]); 
+    end
+yyaxis right
+plot(Ux,npeak,'o','color',co(2,:),'linewidth',1,'markersize',8,...
+       'markerfacecolor',co(2,:),'markeredgecolor',co(2,:)*.5);
+ylabel('Peak charge filling')
+if isfield(opts,'nMaxShow')
+       ylim([0 opts.nMaxShow]); 
+    end
+set(gca,'box','on','linewidth',1,'fontsize',10,'units','pixels');
 
   
     

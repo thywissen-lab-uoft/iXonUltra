@@ -84,7 +84,15 @@ ylabel('Natoms');
 if isequal(digdata.xVar,'ExecutionDate')
     datetick x
 end
-str = ['$N_{\mathrm{thresh}} = ' num2str(unique([digdata.Threshold])) '$'];
+if isfield(digdata,'ThresholdingType')
+    if digdata.ThresholdingType == 'CompensatedInd'
+        str = [digdata.ThresholdingType ' thresholding' newline '$N_{\mathrm{thresh}} = ' num2str(mean([digdata.Threshold])) '$'];
+    else  
+        str = [digdata.ThresholdingType ' thresholding' newline '$N_{\mathrm{thresh}} = ' num2str(unique([digdata.Threshold])) '$'];
+    end
+else
+    str = ['$N_{\mathrm{thresh}} = ' num2str(unique([digdata.Threshold])) '$'];
+end
 text(2,2,str,'units','pixels','fontsize',10,'verticalalignment','bottom',...
 'horizontalalignment','left','interpreter','latex');
 
