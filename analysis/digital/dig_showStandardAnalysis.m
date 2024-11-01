@@ -85,7 +85,7 @@ ylabel('Natoms');
 yyaxis right
 plot([digdata.X],[digdata.npeak],'o','markerfacecolor',co(6,:),'markeredgecolor',0.5*co(6,:),...
         'linewidth',2,'color',co(6,:)*.5);
-ylabel('avg. filling (2D Gauss), n_\uparrow');
+ylabel('avg. peak filling (2D Gauss), n_\uparrow');
 set(gca,'ycolor',0.7*co(6,:));
 if isequal(digdata.xVar,'ExecutionDate')
     datetick x
