@@ -64,7 +64,7 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 0;                % Auto detect changing variable?
+dig_opts.autoXVar       = 1;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
 % dig_opts.xVar           = 'ExecutionDate';  % Variable Name
@@ -77,7 +77,7 @@ dig_opts.doSave         = 1;                % Save Analysis?
 dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
-dig_ac_conductivity_fit                 = 1;
+dig_ac_conductivity_fit                 = 0;
 dig_doRadialAnalysis                    = 1;
 dig_doRadialSkewAnalysis                = 0;
 %% Show CLoud

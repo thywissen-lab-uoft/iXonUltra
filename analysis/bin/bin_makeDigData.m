@@ -48,6 +48,7 @@ function [digdata] = bin_makeDigData(bindata,opts)
     digdata.Yc_site = [D.Yc_site];
     digdata.Xs_site = [D.Xs_site];
     digdata.Ys_site = [D.Ys_site];
+    digdata.npeak = [D.npeak];
 
     digdata.Xc_px = [D.Xc_px];
     digdata.Yc_px = [D.Yc_px];

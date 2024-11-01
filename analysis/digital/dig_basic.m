@@ -53,7 +53,16 @@ function [digdata] = dig_basic(digdata)
         Xs = std(Xn);
         Yn = Rn(2,:);
         Yc = mean(Yn);
-        Ys = std(Yn);        
+        Ys = std(Yn); 
+        
+        Xc_site = px_2_site(Xc);
+        Yc_site = px_2_site(Yc);
+        Xs_site = px_2_site(Xs);
+        Ys_site = px_2_site(Ys);
+        
+        Natoms = digdata.Natoms(nn);
+        
+        npeak = 0.5*Natoms./(sqrt(2*pi*Xs_site.^2).*sqrt(2*pi*Ys_site.^2));
         
         digdata.RatomSite{nn}=N;
         digdata.Ratom{nn}=Rn;         
@@ -69,10 +78,12 @@ function [digdata] = dig_basic(digdata)
         digdata.Xs_um(nn) = px_2_um(Xs);
         digdata.Ys_um(nn) = px_2_um(Ys);   
         
-        digdata.Xc_site(nn) = px_2_site(Xc);
-        digdata.Yc_site(nn) = px_2_site(Yc);
-        digdata.Xs_site(nn) = px_2_site(Xs);
-        digdata.Ys_site(nn) = px_2_site(Ys);  
+        digdata.Xc_site(nn) = Xc_site;
+        digdata.Yc_site(nn) = Yc_site;
+        digdata.Xs_site(nn) = Xs_site;
+        digdata.Ys_site(nn) = Ys_site;  
+        
+        digdata.npeak(nn) = npeak;
                 
     end
 
