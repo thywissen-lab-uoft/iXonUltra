@@ -106,10 +106,10 @@ bin_BinStripe_ColorThreshold            = [2500 6000];
 
 % Digitzation
 bin_Digitize                            = 1; 
-dig_DigitizationThreshold               = 4000;
+dig_DigitizationThreshold               = 6000;
 
 bin_Digitize_Source                     = 'compensated';
-%bin_Digitize_Source                     = 'uncompensated';
+% bin_Digitize_Source                     = 'uncompensated';
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and

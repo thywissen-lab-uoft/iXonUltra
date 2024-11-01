@@ -2,7 +2,7 @@
 % Source directory of all data
 
 
-srcdir = 'X:\Data\2024\2024.10\10.30\11 overnight';
+srcdir = 'X:\Data\2024\2024.10\10.31\05 overnight';
 
 
 
@@ -36,8 +36,12 @@ end
 
 if makeNewTiltDir 
     dirtilt = fullfile(daydir,[num2str(ind,'%02.0f') ' ' 'tiltcheck']);
+    dirfocus = fullfile(daydir,[num2str(ind,'%02.0f') ' ' 'focuscheck']);
     if ~exist(dirtilt)
        mkdir(dirtilt); 
+    end
+    if ~exist(dirfocus)
+       mkdir(dirfocus); 
     end
 end
 
@@ -84,23 +88,30 @@ for kk=1:length(names)
                 num2str(round(pow,2)) ' mW, ' ...
                 num2str(A2,'%.1f') ' V ODT2, ' ...
                 num2str(tau) ' ms ramp time'];   
+            
+            fulldir = fullfile(daydir,[num2str(ind,'%02.0f') ' ' dirname]);
+            if ~exist(fulldir)
+                ind = ind+1;
+                fulldir = fullfile(daydir,[num2str(ind,'%02.0f') ' ' dirname]);
+                mkdir(fulldir);
+            end        
+        
+            disp([num2str(ind,'%02.0f') ' ' dirname])
+            movefile(filename,fulldir);
+            
         else 
-            B   = P.lattice_load_feshbach_field;
-            U   = P.lattice_load_depthX;
-            dirname = ['single plane ' num2str(round(B,2)) ' G,' ...
-                num2str(round(U,2)) ' Er' ...
-                num2str(round(pow,2)) ' mW '];
+%             B   = P.lattice_load_feshbach_field;
+%             U   = P.lattice_load_depthX;
+%             dirname = ['single plane ' num2str(round(B,2)) ' G, ' ...
+%                 num2str(round(U,2)) ' Er, ' ...
+%                 num2str(round(pow,2)) ' mW '];
+            [~,dirname,~]=fileparts(dirfocus);
+            disp(dirname);
+            movefile(filename,dirfocus);
+            
         end
     
-        fulldir = fullfile(daydir,[num2str(ind,'%02.0f') ' ' dirname]);
-        if ~exist(fulldir)
-            ind = ind+1;
-            fulldir = fullfile(daydir,[num2str(ind,'%02.0f') ' ' dirname]);
-            mkdir(fulldir);
-        end        
         
-        disp([num2str(ind,'%02.0f') ' ' dirname])
-         movefile(filename,fulldir);
 
     end
     

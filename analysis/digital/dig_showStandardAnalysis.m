@@ -85,7 +85,7 @@ if isequal(digdata.xVar,'ExecutionDate')
     datetick x
 end
 if isfield(digdata,'ThresholdingType')
-    if digdata.ThresholdingType == 'CompensatedInd'
+    if strcmp(digdata.ThresholdingType,'CompensatedInd')
         str = [digdata.ThresholdingType ' thresholding' newline '$N_{\mathrm{thresh}} = ' num2str(mean([digdata.Threshold])) '$'];
     else  
         str = [digdata.ThresholdingType ' thresholding' newline '$N_{\mathrm{thresh}} = ' num2str(unique([digdata.Threshold])) '$'];
