@@ -483,6 +483,52 @@ composite_data(end).Runs=  [
     2024 10 24 19;
     ];
 
+% 201.3 G high field evap 50 ms mod ramp 10/25 lower drive
+composite_data(end+1).Name = '201.3 G 10/25';
+composite_data(end).Runs= [ 
+    2024 10 25 04;
+    2024 10 25 05;
+    2024 10 25 06;
+    2024 10 25 07;
+    2024 10 25 08;
+    2024 10 25 09;
+    2024 10 25 10;
+    2024 10 25 11;
+    ];
+
+%201.3 G high field evap 50 ms mod ramp 10/30 evap to 64 mW, lower temp
+%than 10/25
+composite_data(end+1).Name = '201.3 G 10/30';
+composite_data(end).Runs= [ 
+    2024 10 30 13; %good
+    2024 10 30 14; %okay
+    2024 10 30 15; %good
+    2024 10 30 16; %okay
+    2024 10 30 17; %bad
+    2024 10 30 18; %not great, low SNR
+    2024 10 30 19; %not great, noisy
+    2024 10 30 20; %not great, low SNR
+    2024 10 30 21; %good, large amplitude
+    2024 10 30 22; %okay
+    ];
+
+%201.1 G high field evap 50 ms mod ramp 10/31 evap to 65.5 mW, hold at
+%201.1G for 200 ms before shaking
+composite_data(end+1).Name = '201.1 G 10/31';
+composite_data(end).Runs= [ 
+    2024 10 31 07;
+    2024 10 31 09;
+    2024 10 31 11;
+    2024 10 31 13;
+    2024 10 31 15;
+    2024 10 31 17;
+    2024 10 31 19;
+    2024 10 31 21;
+    2024 10 31 23;
+    2024 10 31 25;
+    ];
+
+
 composite_data(1)=[];
 %% Gather All Data
 
@@ -509,6 +555,7 @@ for kk=1:length(composite_data)
     composite_data(kk).digdata = digdata;
 end
 
+composite_data_all = composite_data;
 
 %% Upload data
 doUpload = 1;

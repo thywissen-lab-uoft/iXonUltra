@@ -61,9 +61,11 @@ for kk=1:length(ixondata)
         X2_site=sum(zX.*(n1-Xc_site).^2); % x variance
         Xs_site=sqrt(X2_site); % standard deviation X
         Y2_site=sum(zY.*(n2-Yc_site).^2); % x variance
-        Ys_site=sqrt(Y2_site); % standard deviation Y        
+        Ys_site=sqrt(Y2_site); % standard deviation Y    
+        X2m_site = sqrt(X2_site - Xc_site^2); %second moment X
+        Y2m_site = sqrt(Y2_site - Yc_site^2); %second moment Y
  
-
+        npeak = 0.5*Natoms./(sqrt(2*pi*X2m_site.^2).*sqrt(2*pi*Y2m_site.^2));
 
         [nn1,nn2]=meshgrid(n1,n2);
         X = (nn1+ixondata(kk).LatticeBin(k).p(1)).*a1(1) + ...
@@ -110,6 +112,7 @@ for kk=1:length(ixondata)
         LatticeDig(k).Xs_um = Xs_px*LatticeDig(k).lattice_spacing_um/LatticeDig(k).lattice_spacing_px;
         LatticeDig(k).Ys_um = Ys_px*LatticeDig(k).lattice_spacing_um/LatticeDig(k).lattice_spacing_px; 
 
+        LatticeDig(k).npeak = npeak; %Calculated assuming a 2D gaussian distribution
 
     end
     ixondata(kk).LatticeDig = LatticeDig;

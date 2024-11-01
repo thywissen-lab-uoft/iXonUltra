@@ -81,6 +81,12 @@ plot([digdata.X],[digdata.Natoms],'ko','markerfacecolor',[.5 .5 .5],...
 'linewidth',1);
 xlabel(digdata.xVar,'interpreter','none');
 ylabel('Natoms');
+
+yyaxis right
+plot([digdata.X],[digdata.npeak],'markerfacecolor',co(6,:),'markeredgecolor',0.5*co(6,:),...
+        'linewidth',2,'color',co(6,:)*.5);
+ylabel('avg. filling (2D Gauss), n_\uparrow');
+set(gca,'ycolor',0.7*co(6,:));
 if isequal(digdata.xVar,'ExecutionDate')
     datetick x
 end

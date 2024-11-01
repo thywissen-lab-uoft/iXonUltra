@@ -82,9 +82,9 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'ExecutionDate'; % Variable Name
+ixon_xVar           = 'conductivity_mod_time'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -131,7 +131,7 @@ ixon_doQGM_useAverageK              = 0;
 doPSF                               = ixon_doQGM;
 
 %% Other Analyses
-ixon_doAnalyzeQPD                   = 0;    % Analyze QPD traces
+ixon_doAnalyzeQPD                   = 1;    % Analyze QPD traces
 
 
 %% Image Processing Options
