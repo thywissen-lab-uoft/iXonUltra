@@ -753,11 +753,11 @@ hcauto=uicontrol(hpAcq,'style','checkbox','string','save?','fontsize',7,...
 % Save checkbox callback
     function saveCheck(src,~)
         if src.Value
-            tSaveDir.Enable='on';
-            bBrowse.Enable='on';
+            %tSaveDir.Enable='on';
+            %bBrowse.Enable='on';
         else
-            tSaveDir.Enable='off';
-            bBrowse.Enable='off';
+            %tSaveDir.Enable='off';
+            %bBrowse.Enable='off';
         end
     end
 
@@ -766,14 +766,14 @@ hcauto=uicontrol(hpAcq,'style','checkbox','string','save?','fontsize',7,...
 ttstr='Select directory to save images.';
 cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[15 15]);
 bBrowse=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@browseCB,...
-    'enable','off','backgroundcolor','w','position',[95 hcauto.Position(2) 18 18],...
+    'enable','on','backgroundcolor','w','position',[95 hcauto.Position(2) 18 18],...
     'tooltipstring',ttstr);
 bBrowse.Position(1) = hcauto.Position(1) + hcauto.Position(3);
 % String for current save directory
 ttstr='The current save directory.';
 tSaveDir=uicontrol(hpAcq,'style','text','string','save directory','fontsize',8,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'enable','off','UserData','','Position',[bBrowse.Position(1)+bBrowse.Position(3) hcauto.Position(2)-5 hF.Position(3)-135 20],...
+    'enable','on','UserData','','Position',[bBrowse.Position(1)+bBrowse.Position(3) hcauto.Position(2)-5 hF.Position(3)-135 20],...
     'tooltipstring',ttstr);
 
 % Browse button callback
