@@ -633,10 +633,7 @@ hcAdwinCamera=uicontrol(hpAcq,'style','checkbox','string','auto camera config?',
     'backgroundcolor','w','Position',[bgAcq.Position(1)+bgAcq.Position(3) bgAcq.Position(2) 110 18],...
     'ToolTipString',ttstr);
 
-ttstr=['Use the camera control file to set the save directory?'];
-hcAdwinSaveDir=uicontrol(hpAcq,'style','checkbox','string','auto set save dir?','fontsize',7,...
-    'backgroundcolor','w','Position',[hcAdwinCamera.Position(1)+hcAdwinCamera.Position(3) hcAdwinCamera.Position(2) 110 18],...
-    'ToolTipString',ttstr);
+
 
 
 % Timer to check on acquisition
@@ -672,6 +669,26 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
     end
 
     function autoSaveDir
+        if exist("camera_control_file",'file')
+            try 
+                CameraControl = load(camera_control_file);
+                if ~isfield(CameraControl,'SaveDir')
+                    return; 
+                end
+
+                if isempty(CameraControl.SaveDir)
+                    return;
+                end
+                dirToday=ixon_getDayDir;
+                
+                SaveDir = fullfile(dirToday,CameraControl.SaveDir);
+                tSaveDir.UserData = SaveDir;
+
+                str=strsplit(SaveDir,filesep);
+                str=[str{end-1} filesep str{end}];
+                tSaveDir.String=str; % display string
+            end
+        end
 
     end
 
@@ -714,14 +731,15 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
                     saveData(mydata);
                 end
                 % Save images to save directory
-                if hcauto.Value
+                if hcSave.Value
                    saveData(mydata,tSaveDir.UserData); 
                 end              
                 % Update live preview if new                
                 if ~cAutoUpdate.Value
                     currDir=defaultDir;
-                    data=mydata;   
+                    data=mydata;                       
                     newDataCallback;                     
+
                 else                    
                     % Just update index
                     updateHistoryInd(data);   
@@ -731,6 +749,12 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
                 if hcAdwinCamera.Value
                     autoCameraConfig;
                 end
+
+                if hcAdwinSaveDir.Value
+                    autoSaveDir;
+                end
+                
+                 % if h
             otherwise
                 warning('Acuisition timer has unexpected result');
                 stopCamCB;
@@ -746,34 +770,27 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
 % Auto Save check box
 ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
     'not override saving to image history.'];
-hcauto=uicontrol(hpAcq,'style','checkbox','string','save?','fontsize',7,...
+hcSave=uicontrol(hpAcq,'style','checkbox','string','save?','fontsize',7,...
     'backgroundcolor','w','Position',[0 hbstart.Position(2)-18 50 18],'callback',@saveCheck,...
     'ToolTipString',ttstr);
 
-% Save checkbox callback
-    function saveCheck(src,~)
-        if src.Value
-            %tSaveDir.Enable='on';
-            %bBrowse.Enable='on';
-        else
-            %tSaveDir.Enable='off';
-            %bBrowse.Enable='off';
-        end
-    end
-
+ttstr=['Use the camera control file to set the save directory?'];
+hcAdwinSaveDir=uicontrol(hpAcq,'style','checkbox','string','CurrentJob SaveDir','fontsize',7,...
+    'backgroundcolor','w','Position',[hcSave.Position(1)+hcSave.Position(3) hcSave.Position(2) 110 18],...
+    'ToolTipString',ttstr);
 
 % Browse button
 ttstr='Select directory to save images.';
 cdata=imresize(imread(fullfile(mpath,'icons','browse.jpg')),[15 15]);
 bBrowse=uicontrol(hpAcq,'style','pushbutton','CData',cdata,'callback',@browseCB,...
-    'enable','on','backgroundcolor','w','position',[95 hcauto.Position(2) 18 18],...
+    'enable','on','backgroundcolor','w','position',[95 hcSave.Position(2) 18 18],...
     'tooltipstring',ttstr);
-bBrowse.Position(1) = hcauto.Position(1) + hcauto.Position(3);
+bBrowse.Position(1) = hcAdwinSaveDir.Position(1) + hcAdwinSaveDir.Position(3);
 % String for current save directory
 ttstr='The current save directory.';
 tSaveDir=uicontrol(hpAcq,'style','text','string','save directory','fontsize',8,...
     'backgroundcolor','w','units','pixels','horizontalalignment','left',...
-    'enable','on','UserData','','Position',[bBrowse.Position(1)+bBrowse.Position(3) hcauto.Position(2)-5 hF.Position(3)-135 20],...
+    'enable','on','UserData','','Position',[bBrowse.Position(1)+bBrowse.Position(3) hcSave.Position(2)-5 hF.Position(3)-135 20],...
     'tooltipstring',ttstr);
 
 % Browse button callback
@@ -3925,120 +3942,123 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
 %% New Data
 % What to do when new data is put into the GUI
     function newDataCallback
-    % Grab the ROI
-    ROI=tblROI.Data;data.ROI=ROI;       
-
-    %% Image Processing
-    % Grab the RawImages and process them into usable data
-    opt = struct;    
-    opt.doSubtractBias     = tbl_process_1.Data{1,1};%hcSubBias.Value;
-    opt.doSubtractBG       = tbl_process_1.Data{2,1};%hcSubBG.Value;
-    opt.doMask             = tbl_process_1.Data{3,1};%hcMask.Value;
-    opt.Mask               = ixon_mask;
+        try
+        % Grab the ROI
+        ROI=tblROI.Data;data.ROI=ROI;       
     
-    opt.doPSF              = tbl_process_1.Data{4,1};%hcPSF.Value ;    
-    opt.PSF                = tblPSF.Data;    
-    opt.DetectNoise        = tbl_process_1.Data{5,1};%hcPSF_noise.Value;
-    opt.Noise              = tblPSF.Data(4);
+        %% Image Processing
+        % Grab the RawImages and process them into usable data
+        opt = struct;    
+        opt.doSubtractBias     = tbl_process_1.Data{1,1};%hcSubBias.Value;
+        opt.doSubtractBG       = tbl_process_1.Data{2,1};%hcSubBG.Value;
+        opt.doMask             = tbl_process_1.Data{3,1};%hcMask.Value;
+        opt.Mask               = ixon_mask;
+        
+        opt.doPSF              = tbl_process_1.Data{4,1};%hcPSF.Value ;    
+        opt.PSF                = tblPSF.Data;    
+        opt.DetectNoise        = tbl_process_1.Data{5,1};%hcPSF_noise.Value;
+        opt.Noise              = tblPSF.Data(4);
+        
+        opt.doGaussFilter      = tbl_process_2.Data{1,1};%cGaussFilter.Value;
+        opt.GaussFilterRadius  = tbl_process_2.Data{1,3};%tblGaussFilter.Data;
+        
+        opt.doScale      = tbl_process_2.Data{2,1};%cScale.Value;
+        opt.ScaleFactor  = tbl_process_2.Data{2,3};%tblScale.Data;   
     
-    opt.doGaussFilter      = tbl_process_2.Data{1,1};%cGaussFilter.Value;
-    opt.GaussFilterRadius  = tbl_process_2.Data{1,3};%tblGaussFilter.Data;
+        opt.doRotate           = tbl_process_2.Data{3,1};%cRotate.Value;
+        opt.Theta              = tbl_process_2.Data{3,3};%tblTheta.Data;
+        
+        % Momentum Space
+        opt.doFFT              = 1;%hcFFT.Value;
+        opt.doFFTFilter        = tbl_process_2.Data{4,1};%cKGaussFilter.Value;
+        opt.FFTFilterRadius    = tbl_process_2.Data{4,3};%tblKGaussFilter.Data;         
+        opt.doMaskIR           = tbl_process_2.Data{5,1};%hcIRMask.Value;
+        opt.IRMaskRadius       = tbl_process_2.Data{5,3};%tblIRMask.Data;        
     
-    opt.doScale      = tbl_process_2.Data{2,1};%cScale.Value;
-    opt.ScaleFactor  = tbl_process_2.Data{2,3};%tblScale.Data;   
-
-    opt.doRotate           = tbl_process_2.Data{3,1};%cRotate.Value;
-    opt.Theta              = tbl_process_2.Data{3,3};%tblTheta.Data;
+        
+        % Process the Images
+        hbprocess.BackgroundColor=	[255 219 88]/255;
+        drawnow;
+        data = ixon_ProcessImages(data,opt);  
+        
+        tblPSF.Data(4) =  round(data.NoiseEstimation(1));
+        hbprocess.BackgroundColor=[80 200 120]/255;
+        
+        pAtoms.Visible='off';
+        set(pAtoms,'XData',[],'YData',[]);
     
-    % Momentum Space
-    opt.doFFT              = 1;%hcFFT.Value;
-    opt.doFFTFilter        = tbl_process_2.Data{4,1};%cKGaussFilter.Value;
-    opt.FFTFilterRadius    = tbl_process_2.Data{4,3};%tblKGaussFilter.Data;         
-    opt.doMaskIR           = tbl_process_2.Data{5,1};%hcIRMask.Value;
-    opt.IRMaskRadius       = tbl_process_2.Data{5,3};%tblIRMask.Data;        
-
+        % Update history index
+        updateHistoryInd(data); 
     
-    % Process the Images
-    hbprocess.BackgroundColor=	[255 219 88]/255;
-    drawnow;
-    data = ixon_ProcessImages(data,opt);  
+        % Update the record of the process images
+        updateImageDataLists;    
     
-    tblPSF.Data(4) =  round(data.NoiseEstimation(1));
-    hbprocess.BackgroundColor=[80 200 120]/255;
+        updateDispPosImg;
+    %% Update Parameter Data
+        % Update table parameters (alphebetically)
+        [~,inds] = sort(lower(fieldnames(data.Params)));
+        params = orderfields(data.Params,inds);    
+                    
+        tbl_params.Data={};
     
-    pAtoms.Visible='off';
-    set(pAtoms,'XData',[],'YData',[]);
-
-    % Update history index
-    updateHistoryInd(data); 
-
-    % Update the record of the process images
-    updateImageDataLists;    
-
-    updateDispPosImg;
-%% Update Parameter Data
-    % Update table parameters (alphebetically)
-    [~,inds] = sort(lower(fieldnames(data.Params)));
-    params = orderfields(data.Params,inds);    
-                
-    tbl_params.Data={};
-
-    fnames=fieldnames(params);
-    for nn=1:length(fnames)
-      tbl_params.Data{nn,1}=fnames{nn};
-        val=data.Params.(fnames{nn});
-        if isa(val,'double')
-            tbl_params.Data{nn,2}=num2str(val);
-        end
-
-        if isa(val,'struct')
-           tbl_params.Data{nn,2}='[struct]'; 
-        end  
-    end        
-%% Update Flag Data
-    tbl_flags.Data={};
-    if isfield(data,'Flags')
-        flags = data.Flags;
-        fnames=fieldnames(flags);
+        fnames=fieldnames(params);
         for nn=1:length(fnames)
-          tbl_flags.Data{nn,1}=fnames{nn};
-            val=flags.(fnames{nn});
+          tbl_params.Data{nn,1}=fnames{nn};
+            val=data.Params.(fnames{nn});
             if isa(val,'double')
-                tbl_flags.Data{nn,2}=num2str(val);
+                tbl_params.Data{nn,2}=num2str(val);
             end
+    
             if isa(val,'struct')
-               tbl_flags.Data{nn,2}='[struct]'; 
+               tbl_params.Data{nn,2}='[struct]'; 
             end  
-        end     
-    end
-    %% Position Space Analysis
-    updatePositionAnalysis;
+        end        
+    %% Update Flag Data
+        tbl_flags.Data={};
+        if isfield(data,'Flags')
+            flags = data.Flags;
+            fnames=fieldnames(flags);
+            for nn=1:length(fnames)
+              tbl_flags.Data{nn,1}=fnames{nn};
+                val=flags.(fnames{nn});
+                if isa(val,'double')
+                    tbl_flags.Data{nn,2}=num2str(val);
+                end
+                if isa(val,'struct')
+                   tbl_flags.Data{nn,2}='[struct]'; 
+                end  
+            end     
+        end
+        %% Position Space Analysis
+        updatePositionAnalysis;
+        
+        %% Momentum Space Analysis
+        if hc_anlK_auto.Value        
+           analyze_k       
+        end
+        
+        if hc_anlB_auto.Value
+            analyze_bin
+        end
+        
+        if hc_anlD_auto.Value
+            analyze_dig
+        end
+      
+    %% Update Fit Results (depreciated)
     
-    %% Momentum Space Analysis
-    if hc_anlK_auto.Value        
-       analyze_k       
-    end
+        
+        drawnow;
+        climtbl_X.Data=axImg.CLim;
     
-    if hc_anlB_auto.Value
-        analyze_bin
-    end
+        %% Save Analysis
     
-    if hc_anlD_auto.Value
-        analyze_dig
+        saveGUIData(GUIAnalysisLocalDir);
+        saveGUIData(GUIAnalysisSaveDir);
+
+    catch ME
+        warning(getReport(ME,'extended','hyperlinks','on'));
     end
-  
-%% Update Fit Results (depreciated)
-
-    
-    drawnow;
-    climtbl_X.Data=axImg.CLim;
-
-    %% Save Analysis
-
-    saveGUIData(GUIAnalysisLocalDir);
-    saveGUIData(GUIAnalysisSaveDir);
-
-
 
 end
 
