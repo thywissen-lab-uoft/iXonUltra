@@ -15,9 +15,7 @@ if ~isfield(opts,'Name')
     opts.Name=[];
 end
 
-disp('pixel domain stripe analysis');
-
-
+% disp('pixel domain stripe analysis');
 % 16 um at a magnification of 
 a_site = 2.68;
 

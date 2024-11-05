@@ -669,7 +669,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
     end
 
     function autoSaveDir
-        if exist("camera_control_file",'file')
+        if exist(camera_control_file,'file')
             try 
                 CameraControl = load(camera_control_file);
                 if ~isfield(CameraControl,'SaveDir')
@@ -681,7 +681,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
                 end
                 dirToday=ixon_getDayDir;
                 
-                SaveDir = fullfile(dirToday,CameraControl.SaveDir);
+                SaveDir = fullfile(dirToday,['ixon_' CameraControl.SaveDir]);
                 tSaveDir.UserData = SaveDir;
 
                 str=strsplit(SaveDir,filesep);
@@ -771,7 +771,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
 ttstr=['Enable/Disable automatic saving to external directory. Does ' ...
     'not override saving to image history.'];
 hcSave=uicontrol(hpAcq,'style','checkbox','string','save?','fontsize',7,...
-    'backgroundcolor','w','Position',[0 hbstart.Position(2)-18 50 18],'callback',@saveCheck,...
+    'backgroundcolor','w','Position',[0 hbstart.Position(2)-18 50 18],...
     'ToolTipString',ttstr);
 
 ttstr=['Use the camera control file to set the save directory?'];
