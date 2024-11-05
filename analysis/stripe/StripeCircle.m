@@ -26,7 +26,7 @@ a_site = 2.68;
 Z(isnan(Z))=0;
 Z(isinf(Z))=0;
 
-zf = fft2(Z,2^10+1,2^10+1);              % 2D FFT
+zf = fft2(Z,2^12+1,2^12+1);              % 2D FFT
 zf = fftshift(zf);                      % Shift so zero at center
 f  = 0.5*linspace(-1,1,size(zf,2));     % Frequency Vector
 df=f(2)-f(1);                           % Frequecny spacing
@@ -69,27 +69,53 @@ guess_theta = sum(valTheta(inds).*thetaVec(ind))/sum(valTheta(inds));
 guess_theta = median(thetaVec(inds));
 
 %% Wavelength 
-tic
 
-% Radial Profile
-[Tics,Average]=radial_profile(zfnorm,1);
+zfnorm_rotate = imrotate(zfnorm,180/pi*guess_theta,'crop');
 
-% Find peak in radial data
-[pks,locs,w,p] =findpeaks(Average,'SortStr','descend','Npeaks',2);
+iCenter = (size(zfnorm_rotate,1)+1)*0.5;
+zfnorm_rotate_sub = zfnorm_rotate((iCenter-10:iCenter+10),:);
 
-% Get the frequency
-f_me = Tics(locs)*df;
+zfnorm_rotate_sub_sum=sum(zfnorm_rotate_sub,1);
 
-% Convert to wavelength
+lambdaMin = 40; % in pixels
+lambdaMax = 120;
 
-if 1/f_me(1)>100
-    ind = 2;
-else
-    ind =1 ;
-end
+fMin = 1/lambdaMax;
+fMax = 1/lambdaMin;
 
-guess_lambda= 1/f_me(ind);
-lambda_peak_val = pks(ind);
+[pks,locs,w,p] = findpeaks(zfnorm_rotate_sub_sum,f,'NPeaks',3,'SortStr',...
+    'descend','MinPeakDistance',fMin);
+
+[locs_sort,inds]=sort(locs,'ascend');
+fMe = 0.5*(locs_sort(3)-locs_sort(1));
+
+pks_sort = pks(inds);
+
+lambda_peak_val = mean(pks_sort(1:2));
+guess_lambda = 1/fMe;
+
+% 
+% 
+% % Radial Profile
+% [Tics,Average]=radial_profile(zfnorm,1);
+% 
+% % Find peak in radial data
+% [pks,locs,w,p] =findpeaks(Average,'SortStr','descend','Npeaks',2);
+% 
+% 
+% % Get the frequency
+% f_me = Tics(locs)*df;
+% 
+% % Convert to wavelength
+% 
+% if 1/f_me(1)>100
+%     ind = 2;
+% else
+%     ind =1 ;
+% end
+% 
+% guess_lambda= 1/f_me(ind);
+% lambda_peak_val = pks(ind);
 
 %% Radius of Curvature
 % The radius of curvature depends on the radial field gradient and on the
@@ -211,19 +237,38 @@ if opts.doDebug
     set(ax_fft,'YDir','normal','fontsize',10);
     title(ax_fft,'abs fft');
 
-    ax_radial=subplot(3,3,8,'parent',fig);
-    plot(Tics*df,Average,'.-','parent',ax_radial);
-    ylim(ax_radial,[0 lambda_peak_val]*1.5)
-    xlabel(ax_radial,'radial frequency (1/px)');
-    ylabel(ax_radial,'radial average');
-    hold(ax_radial,'on');
+    % ax_radial=subplot(3,3,8,'parent',fig);
+    % plot(Tics*df,Average,'.-','parent',ax_radial);
+    % ylim(ax_radial,[0 lambda_peak_val]*1.5)
+    % xlabel(ax_radial,'radial frequency (1/px)');
+    % ylabel(ax_radial,'radial average');
+    % hold(ax_radial,'on');
+    % p=plot([1 1]/guess_lambda,[0 1]*lambda_peak_val,'k-','markerfacecolor','k',...
+    %     'parent',ax_radial);    
+    % legend(p,{['\lambda = ' num2str(round(guess_lambda,3)) ' px']},...
+    %     'parent',ax_radial.Parent);
+    % xlim(ax_radial,[0 0.2])
+    % set(ax_radial,'fontsize',10);
+    % title(ax_radial,'wavelength');
+
+    ax_sum=subplot(3,3,8,'parent',fig);
+    plot(f,zfnorm_rotate_sub_sum,'.-','parent',ax_sum);
+    ylim(ax_sum,[0 lambda_peak_val]*1.5)
+    xlabel(ax_sum,'rotated frequency (1/px)');
+    ylabel(ax_sum,'partial sum profile average');
+    hold(ax_sum,'on');
     p=plot([1 1]/guess_lambda,[0 1]*lambda_peak_val,'k-','markerfacecolor','k',...
-        'parent',ax_radial);    
+        'parent',ax_sum);  
+    p=plot(-[1 1]/guess_lambda,[0 1]*lambda_peak_val,'k-','markerfacecolor','k',...
+        'parent',ax_sum);    
     legend(p,{['\lambda = ' num2str(round(guess_lambda,3)) ' px']},...
-        'parent',ax_radial.Parent);
-    xlim(ax_radial,[0 0.2])
-    set(ax_radial,'fontsize',10);
-    title(ax_radial,'wavelength');
+        'parent',ax_sum.Parent);
+    xlim(ax_sum,[-2.5 2.5]/guess_lambda)
+    set(ax_sum,'fontsize',10);
+    title(ax_sum,'wavelength');
+
+
+    
 
     ax_theta=subplot(3,3,9,'parent',fig);
     plot(180/pi*thetaVec,valTheta,'.-','parent',ax_theta);
