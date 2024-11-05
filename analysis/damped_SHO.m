@@ -44,14 +44,15 @@ m           = 40*amu;        % 40K mass
 
 omega0      = 2*pi*57;     % Natural trap Frequency in Hz [1/s]
 omegaD      = 2*pi*42;     % Trap frequency of XDT [1/s]
-T           = .1;          % Ramp up time     [s]
-tau         = 2e-3;        % Relaxation Time [s]
+tau         = 5e-3;        % Relaxation Time [s]
+T           = 10*tau;          % Ramp up time     [s]
+
 gamma       = 1/tau
 
 x0          = 1*1e-6;       % Drive amplitude [m]
 
 
-fvec = 1:1:120;
+fvec = 2:2:120;
 
 kB=1.380649e-23;  % boltzmman consntat [J/K]
 
@@ -60,7 +61,7 @@ aL=0.532e-6;
 hbar = 1.05457182e-34;
 
 sigma0=aL^2/hbar;
-% hF=figure(20);
+% hF=figure;
 % hF.Color='w';
 % clf(hF)
 
@@ -81,7 +82,7 @@ for kk=1:length(fvec)
     power_curve = force_curve.*y(:,2);
     injected_energy(kk) = 1e9*trapz(dt,power_curve)/kB;
 
-
+    % 
     % plot(t,y(:,1),'-','color',cc(kk,:));
     % hold on
 
@@ -104,13 +105,13 @@ for kk=1:length(fvec)
     sigma_I(kk) = -fout.S*2*pi*fvec(kk)./(m*x0.*omegaD^2);
 
 end
-% xlim([0 100]);
-% 
+% xlim([0 T+0.050]);
+
 % colormap(hF,cc);
-% colorbar
+% % colorbar
 
 
-hF=figure(21);
+hF=figure
 hF.Color='w';
 clf(hF)
 
