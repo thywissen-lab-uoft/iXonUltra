@@ -171,7 +171,7 @@ for kk=1:length(data)
         ylabel(ax_piezo,'piezo (V)')
         set(ax_piezo,'box','on','linewidth',1,'fontsize',10,'Xgrid','on','ygrid','on');
 
-        ax_score=subplot(3,2,[6]);
+        ax_score=subplot(3,2,[6],'parent',fig);
         xx=linspace(min(X)-.1,max(X)+.1,100);
         plot(xx,feval(fout,xx)*val,'r-','linewidth',2,'parent',ax_score)
         hold(ax_score,'on');
