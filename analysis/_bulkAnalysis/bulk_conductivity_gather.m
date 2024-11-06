@@ -465,7 +465,7 @@ composite_data(end).Runs =  [
     ];
 
 
-% 201.1 G high field evap 50 ms mod ramp 10/24 lower drive
+% 201.1 G high field evap 50 ms mod ramp 10/24 lower drive evap to 65 mW
 composite_data(end+1).Name = '201.1 G 10/24';
 composite_data(end).Runs=  [ 
     2024 10 24 07;
@@ -526,6 +526,23 @@ composite_data(end).Runs= [
     2024 10 31 21;
     2024 10 31 23;
     2024 10 31 25;
+    ];
+
+%201.1 G high field evap 50 ms mod ramp 11/01 evap to 64 mW
+composite_data(end+1).Name = '201.1 G 11/01';
+composite_data(end).Runs= [ 
+    2024 11 01 07;
+    2024 11 01 08;
+    2024 11 01 09;
+    2024 11 01 10;
+    2024 11 01 11;
+    2024 11 01 12;
+    2024 11 01 13;
+    2024 11 01 14;
+    2024 11 01 15;
+    2024 11 01 16;
+    2024 11 01 17;
+    2024 11 01 18;
     ];
 
 

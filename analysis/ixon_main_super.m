@@ -623,31 +623,46 @@ src = 'X:\Data';
 %     2024 10 30 21;
 %     2024 10 30 22;
 %     ];
+% 
+% runs =  [ 
+%     2024 10 31 07;
+%     2024 10 31 09;
+%     2024 10 31 11;
+%     2024 10 31 13;
+%     2024 10 31 15;
+%     2024 10 31 17;
+%     2024 10 31 19;
+%     2024 10 31 21;
+%     2024 10 31 23;
+%     2024 10 31 25;
+%     ];
 
 runs =  [ 
-    2024 10 31 07;
-    2024 10 31 09;
-    2024 10 31 11;
-    2024 10 31 13;
-    2024 10 31 15;
-    2024 10 31 17;
-    2024 10 31 19;
-    2024 10 31 21;
-    2024 10 31 23;
-    2024 10 31 25;
+    2024 11 01 07;
+    2024 11 01 08;
+    2024 11 01 09;
+    2024 11 01 10;
+    2024 11 01 11;
+    2024 11 01 12;
+    2024 11 01 13;
+    2024 11 01 14;
+    2024 11 01 15;
+    2024 11 01 16;
+    2024 11 01 17;
+    2024 11 01 18;
     ];
 
 
 %% Get the direcotry list
-dir_list = ixon_findRunDirectory(runs);
-
-for nn=1:length(dir_list)
-   ixon_auto_dir = 0;
-   imgdir = dir_list{nn};
-   ixon_main;
-    ixon_auto_dir = 1;
-end
-
+% dir_list = ixon_findRunDirectory(runs);
+% 
+% for nn=1:length(dir_list)
+%    ixon_auto_dir = 0;
+%    imgdir = dir_list{nn};
+%    ixon_main;
+%     ixon_auto_dir = 1;
+% end
+% 
 %% Get the direcotry list
 dir_list = ixon_findRunDirectory(runs);
 
