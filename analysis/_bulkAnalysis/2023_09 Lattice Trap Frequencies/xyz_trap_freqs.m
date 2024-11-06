@@ -8,7 +8,8 @@ for kk=1:length(figs)
    end
 end
 disp(' ');
-
+% Add all subdirectories for this m file
+cur_path = fileparts(mfilename('fullpath'));
 
 %% Z lattice X Dir 2023/09
 
@@ -270,7 +271,7 @@ ylim([0 100]);
 
 
 
-save('trap_freq','uy','fy','fey','ux','fx','fex','uzx','fzx','fzex','uzy','fzy','fzey');
+save(fullfile(cur_path,'trap_freq'),'uy','fy','fey','ux','fx','fex','uzx','fzx','fzex','uzy','fzy','fzey');
 %% Plot and Analyze
 
 % 
