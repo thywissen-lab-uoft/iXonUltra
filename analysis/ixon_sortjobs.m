@@ -2,7 +2,7 @@
 % Source directory of all data
 
 
-srcdir = 'X:\Data\2024\2024.10\10.31\05 overnight';
+srcdir = 'X:\Data\2024\2024.11\11.01\06 overnight';
 
 
 

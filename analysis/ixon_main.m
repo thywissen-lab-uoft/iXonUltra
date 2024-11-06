@@ -115,8 +115,6 @@ ixon_showFOffset                    = 1;
 
 % Master flag for QGM stuff
 ixon_doQGM                          = 1;
-
-
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
@@ -125,7 +123,6 @@ ixon_doQGM_Digitize                 = 1;
 ixon_doQGM_DigitalStandardAnalysis  = 1;
 ixon_doQGM_reassignBadK             = 1;
 ixon_doQGM_useAverageK              = 0;
-
 
 % only PSF sharpen if you are doing QGM analysis
 doPSF                               = ixon_doQGM;

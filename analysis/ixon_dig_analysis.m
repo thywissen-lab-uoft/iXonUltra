@@ -116,7 +116,7 @@ if dig_doRadialAnalysis
 
     
     opts.rMaxShow = 80;                 % max r to plot
-    opts.nMaxShow = 0.7;               % max density to plot
+    opts.nMaxShow = 1;               % max density to plot
     opts.showDevParametrization  = 0;   % show standard deviation?
     
     % Show radial profiles
