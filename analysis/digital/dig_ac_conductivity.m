@@ -1,24 +1,58 @@
 function [hF,out] = dig_ac_conductivity(digdata,opts)
 
 
+
+
 if nargin ==1
     opts = struct;
 end
 
-[Natoms,bad_inds] = rmoutliers([digdata.Natoms]);
-X = [digdata.Xc_um];X(bad_inds)=[];
-Xs = [digdata.Xs_um];Xs(bad_inds)=[];
-Y = [digdata.Yc_um];Y(bad_inds)=[];
-Ys = [digdata.Ys_um];Ys(bad_inds)=[];
+if ~isfield(opts,'Ndelta_bound')
+    opts.Ndelta_bound =  1.75;
+end
 
+if ~isfield(opts,'RemoveBadData')
+    opts.RemoveBadData =  true;
+end
+
+if ~isfield(opts,'NumSpins')
+    opts.NumSpins = 2;
+end
+
+Natoms = [digdata.Natoms];
+X = [digdata.Xc_um];
+Xs = [digdata.Xs_um];
+Y = [digdata.Yc_um];
+Ys = [digdata.Ys_um];
 
 P = [digdata.Params];
-T = [P.conductivity_mod_time];T(bad_inds)=[];
-Tr = [P.conductivity_mod_ramp_time];Tr(bad_inds)=[];
+T = [P.conductivity_mod_time];
+Tr = [P.conductivity_mod_ramp_time];
+
+
+% Mark bad inds
+Nmed=median(Natoms);
+Nbar = mean(Natoms);
+Nstd = std(Natoms);
+delta = (Natoms-Nbar)/Nstd;
+
+if opts.RemoveBadData
+    bad_inds=[abs(delta)>opts.Ndelta_bound];
+else
+    bad_inds=[];
+end
+
+
+% [Natoms,bad_inds] = rmoutliers([digdata.Natoms]);
+% T(bad_inds)=[];
+% Tr(bad_inds)=[];
+% Ys(bad_inds)=[];
+% Y(bad_inds)=[];
+% Xs(bad_inds)=[];
+% X(bad_inds)=[];
+% Natoms(bad_inds)=[];
 
 Ttot = T + Tr;
-
-
 
 %%
 
@@ -40,20 +74,38 @@ end
 
 ax1=subplot(2,3,[1 2]);
 co=get(gca,'colororder');
-plot(Ttot,X,'o','markerfacecolor',co(1,:),...
-    'linewidth',2,'markeredgecolor',co(1,:)*.5);
+plot(Ttot(~bad_inds),X(~bad_inds),'o','markerfacecolor',co(1,:),...
+    'linewidth',1,'markeredgecolor',co(1,:)*.3);
+hold on
+plot(Ttot(bad_inds),X(bad_inds),'o','markerfacecolor',co(2,:),...
+    'linewidth',1,'markeredgecolor',co(2,:)*.3);
+
+
 xlabel('total modulation time (ms)');
 ylabel('x center (um)');
 
+if opts.RemoveBadData
+    str = ['ignoring dN>' num2str(opts.Ndelta_bound) '\sigma'];
+    text(.99,.01,str,'units','normalized','verticalalignment','bottom',...
+        'HorizontalAlignment','right','fontsize',8);
+
+end
+
 ax2=subplot(2,3,4);
-plot(Ttot,Xs,'o','markerfacecolor',co(1,:),...
-    'linewidth',2,'markeredgecolor',co(1,:)*.5);
+plot(Ttot(~bad_inds),Xs(~bad_inds),'o','markerfacecolor',co(1,:),...
+    'linewidth',1,'markeredgecolor',co(1,:)*.3);
+hold on
+plot(Ttot(bad_inds),Xs(bad_inds),'o','markerfacecolor',co(2,:),...
+    'linewidth',1,'markeredgecolor',co(2,:)*.3);
 xlabel('total modulation time (ms)');
 ylabel('x sigma (um)');
 
 ax3=subplot(2,3,5);
-plot(Ttot,Natoms,'o','markerfacecolor',[.5 .5 .5],...
-    'linewidth',2,'markeredgecolor','k');
+plot(Ttot(~bad_inds),Natoms(~bad_inds),'o','markerfacecolor',co(1,:),...
+    'linewidth',1,'markeredgecolor','k');
+hold on
+plot(Ttot(bad_inds),Natoms(bad_inds),'o','markerfacecolor',co(2,:),...
+    'linewidth',1,'markeredgecolor','k');
 ylabel('atom number');
 xlabel('total modulation time (ms)');
 
@@ -111,7 +163,16 @@ sinecosinefit = fittype(@(S,C,x0,v0,a0,t) ...
     'independent','t','coefficients',{'S','C','x0','v0','a0'});
 sinecosinefit_opt = fitoptions(sinecosinefit);
 sinecosinefit_opt.StartPoint = [Ag*cos(fout_sine.phi) Ag*sin(fout_sine.phi) x0 0 0];
-strFit2 = '$-S\sin(2\pi f t)-C\cos(2\pi f t) + x_0 + v_0t +0.5a_0t^2$';
+
+if opts.RemoveBadData
+    sinecosinefit_opt.Weights = double(~bad_inds);
+end
+
+
+strFit2 = ['$-S\sin(2\pi f t)-C\cos(2\pi f t) + x_0 + v_0t +0.5a_0t^2$'];
+% strFit2 = ['$-S\sin(2\pi f t)-C\cos(2\pi f t) +$' newline ...
+    % '$x_0 + v_0t +0.5a_0t^2$'];
+
 fout_sinecosine = fit(Ttot',X',sinecosinefit,sinecosinefit_opt);
 cint2 = confint(fout_sinecosine,0.667);
 Serr2 = (cint2(2,1)-cint2(1,1))*0.5;
@@ -120,45 +181,8 @@ x0err2 = (cint2(2,3)-cint2(1,3))*0.5;
 v0err2 = (cint2(2,4)-cint2(1,4))*0.5;
 a0err2 = (cint2(2,5)-cint2(1,5))*0.5;
 
+%% Make OUtput
 
-tbl_f2={['S(' char(956) 'm)'], [num2str(fout_sinecosine.S,'%.2f') char(177) num2str(Serr2,'%.2f')];
-['C(' char(956) 'm)'], [num2str(fout_sinecosine.C,'%.2f') char(177) num2str(Cerr2,'%.2f')];
-['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sinecosine.x0,'%.1f') char(177) num2str(x0err2,'%.1f')];
-['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sinecosine.v0,'%.1e') char(177) num2str(v0err2,'%.1e')];
-['a' char(8320) '(' char(956) 'm/ms)' char(178)], [num2str(fout_sinecosine.a0,'%.1e') char(177) num2str(a0err2,'%.1e')];
-};
-
-
-tbl_f3={
-['A(' char(956) 'm)'], [num2str(fout_sine.A,'%.2f') ' ' char(177) ' ' num2str(Aerr,'%.2f')];
-[char(966) '(rad)'], [num2str(fout_sine.phi,'%.2f') ' ' char(177) ' ' num2str(phierr,'%.2f')];
-['S(' char(956) 'm)'], [num2str(fout_sinecosine.S,'%.2f') ' ' char(177) ' ' num2str(Serr2,'%.2f')];
-['C(' char(956) 'm)'], [num2str(fout_sinecosine.C,'%.2f') ' ' char(177) ' ' num2str(Cerr2,'%.2f')];
-['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sinecosine.x0,'%.1f') ' ' char(177) ' ' num2str(x0err2,'%.1f')];
-['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sinecosine.v0,'%.1e') ' ' char(177) ' ' num2str(v0err2,'%.1e')];
-['a' char(8320) '(' char(956) 'm/ms' char(178) ')'], [num2str(fout_sinecosine.a0,'%.1e') ' ' char(177) ' ' num2str(a0err2,'%.1e')];
-};
-
-
-tt=linspace(min(Ttot),max(Ttot),1e3);
-%% Plot Fits
-
-axes(ax1)
-hold on
-pF1 = plot(tt,feval(fout_sine,tt),'r-','linewidth',2);
-pF2 = plot(tt,feval(fout_sinecosine,tt),'g--','linewidth',2);
-
-legend([pF1 pF2],{strFit1,strFit2},'interpreter','latex','fontsize',8,'location','best');
-
-ax4=subplot(2,3,3);
-p = ax4.Position;
-delete(ax4);
-myTable = uitable('parent',hF,'units','normalized','pOsition',p);
-myTable.Data = tbl_f3;
-set(myTable,'rowname',{},'columnname',{},'fontsize',8,'Columnwidth',{70 100});
-myTable.Position(3:4) = myTable.Extent(3:4);
-
-%% Output
 
 out = struct;
 out.SourceDirecotry = digdata.SourceDirectory;
@@ -182,6 +206,7 @@ out.x0 = fout_sinecosine.x0;
 out.v0 = fout_sinecosine.v0;
 out.a0 = fout_sinecosine.a0;
 
+
 out.Aerr = Aerr;
 out.phierr = phierr;
 out.Serr =Serr2;
@@ -189,6 +214,85 @@ out.Cerr = Cerr2;
 out.x0err = x0err2;
 out.v0err = v0err2;
 out.a0err = a0err2;
+
+Ysreal = Ys(~bad_inds);
+Xsreal = Xs(~bad_inds);
+Natomsreal = Natoms(~bad_inds);
+
+Abar = (2*pi*mean(Ysreal)*mean(Xsreal)); % average area in um^-2
+n = 0.532^2*mean(Natomsreal)/Abar/opts.NumSpins;% factor of 0.5 is for two spins
+nerr = 0.532^2*std(Natomsreal)/Abar/opts.NumSpins;
+
+
+
+out.YsBar               = mean(Ysreal);
+out.YsBarErr            = std(Ysreal);
+out.XsBar               = mean(Xsreal);
+out.XsBarErr            = std(Xsreal);
+out.Natoms              = mean(Natomsreal);
+out.NatomsErr              = std(Natomsreal);
+out.SpatialMaxUpDensity = n;
+out.SpatialMaxUpDensityErr = n;
+
+%% Make Table
+
+% tbl_f2={['S(' char(956) 'm)'], [num2str(fout_sinecosine.S,'%.2f') char(177) num2str(Serr2,'%.2f')];
+% ['C(' char(956) 'm)'], [num2str(fout_sinecosine.C,'%.2f') char(177) num2str(Cerr2,'%.2f')];
+% ['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sinecosine.x0,'%.1f') char(177) num2str(x0err2,'%.1f')];
+% ['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sinecosine.v0,'%.1e') char(177) num2str(v0err2,'%.1e')];
+% ['a' char(8320) '(' char(956) 'm/ms)' char(178)], [num2str(fout_sinecosine.a0,'%.1e') char(177) num2str(a0err2,'%.1e')];
+% };
+% 
+% 
+% tbl_f3={
+% ['A(' char(956) 'm)'], [num2str(fout_sine.A,'%.2f') ' ' char(177) ' ' num2str(Aerr,'%.2f')];
+% [char(966) '(rad)'], [num2str(fout_sine.phi,'%.2f') ' ' char(177) ' ' num2str(phierr,'%.2f')];
+% ['S(' char(956) 'm)'], [num2str(fout_sinecosine.S,'%.2f') ' ' char(177) ' ' num2str(Serr2,'%.2f')];
+% ['C(' char(956) 'm)'], [num2str(fout_sinecosine.C,'%.2f') ' ' char(177) ' ' num2str(Cerr2,'%.2f')];
+% ['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sinecosine.x0,'%.1f') ' ' char(177) ' ' num2str(x0err2,'%.1f')];
+% ['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sinecosine.v0,'%.1e') ' ' char(177) ' ' num2str(v0err2,'%.1e')];
+% ['a' char(8320) '(' char(956) 'm/ms' char(178) ')'], [num2str(fout_sinecosine.a0,'%.1e') ' ' char(177) ' ' num2str(a0err2,'%.1e')];
+% };
+
+
+tbl_f3={
+['S(' char(956) 'm)'], [num2str(fout_sinecosine.S,'%.2f') ' ' char(177) ' ' num2str(Serr2,'%.2f')];
+['C(' char(956) 'm)'], [num2str(fout_sinecosine.C,'%.2f') ' ' char(177) ' ' num2str(Cerr2,'%.2f')];
+['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sinecosine.x0,'%.1f') ' ' char(177) ' ' num2str(x0err2,'%.1f')];
+['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sinecosine.v0,'%.1e') ' ' char(177) ' ' num2str(v0err2,'%.1e')];
+['a' char(8320) '(' char(956) 'm/ms' char(178) ')'], [num2str(fout_sinecosine.a0,'%.1e') ' ' char(177) ' ' num2str(a0err2,'%.1e')];
+['N'], [num2str(round(mean(Natomsreal))) ' ' char(177) ' ' num2str(round(std(Natomsreal))) ];
+['n' char(8320) 'up'], [num2str(n,'%.2f')  ' ' char(177) ' ' num2str(nerr,'%.2f')  ];
+[char(963) 'x'  '(' char(956) 'm)'], [num2str(out.XsBar,'%.2f')  ' ' char(177) ' ' num2str(out.XsBarErr,'%.2f')  ];
+[char(963) 'y'  '(' char(956) 'm)'], [num2str(out.YsBar,'%.2f')  ' ' char(177) ' ' num2str(out.YsBarErr,'%.2f')  ];
+
+
+};
+
+
+tt=linspace(min(Ttot),max(Ttot),1e3);
+%% Plot Fits
+
+axes(ax1)
+hold on
+% pF1 = plot(tt,feval(fout_sine,tt),'r-','linewidth',2);
+% pF2 = plot(tt,feval(fout_sinecosine,tt),'g--','linewidth',2);
+% legend([pF1 pF2],{strFit1,strFit2},'interpreter','latex','fontsize',6,'location','best');
+
+% pF1 = plot(tt,feval(fout_sine,tt),'r-','linewidth',2);
+pF2 = plot(tt,feval(fout_sinecosine,tt),'g-','linewidth',2);
+legend([pF2],{strFit2},'interpreter','latex','fontsize',7,'location','best');
+
+
+ax4=subplot(1,3,3);
+p = ax4.Position;
+delete(ax4);
+myTable = uitable('parent',hF,'units','normalized','pOsition',p);
+myTable.Data = tbl_f3;
+set(myTable,'rowname',{},'columnname',{},'fontsize',8,'Columnwidth',{70 100});
+myTable.Position(3:4) = myTable.Extent(3:4);
+
+%% Output
 
 
 end
