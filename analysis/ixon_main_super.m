@@ -673,6 +673,14 @@ runs = [
     2024 11 06 09;
     2024 11 06 10;
     ];
+
+runs = [     
+    2024 11 06 11;
+        2024 11 06 12;
+    2024 11 06 13;
+    2024 11 06 14;
+    2024 11 06 15;
+    ];
 %% Get the direcotry list
 dir_list = ixon_findRunDirectory(runs);
 

@@ -156,22 +156,29 @@ tbl_f1={['A(' char(956) 'm)'], [num2str(fout_sine.A,'%.2f') char(177) num2str(Ae
 ['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sine.v0,'%.1e') char(177) num2str(v0err,'%.1e')];
 ['a' char(8320) '(' char(956) 'm/ms)' char(178)], [num2str(fout_sine.a0,'%.1e') char(177) num2str(a0err,'%.1e')];
 };
+% strFit2 = ['$-S\sin(2\pi f t)-C\cos(2\pi f t) +$' newline ...
+    % '$x_0 + v_0t +0.5a_0t^2$'];
+
+%sinecosinefit = fittype(@(S,C,x0,v0,a0,t) ...
+%    -S*sin(2*pi*f*t)-C*cos(2*pi*f*t) + x0 + v0*t + 0.5*a0*t.^2,...
+%    'independent','t','coefficients',{'S','C','x0','v0','a0'});
+%sinecosinefit_opt = fitoptions(sinecosinefit);
+%sinecosinefit_opt.StartPoint = [Ag*cos(fout_sine.phi) Ag*sin(fout_sine.phi) x0 0 0];
+%strFit2 = ['$-S\sin(2\pi f t)-C\cos(2\pi f t) + x_0 + v_0t +0.5a_0t^2$'];
 
 
-sinecosinefit = fittype(@(S,C,x0,v0,a0,t) ...
-    -S*sin(2*pi*f*t)-C*cos(2*pi*f*t) + x0 + v0*t + 0.5*a0*t.^2,...
-    'independent','t','coefficients',{'S','C','x0','v0','a0'});
+sinecosinefit = fittype(@(S,C,x0,v0,t) ...
+    -S*sin(2*pi*f*t)-C*cos(2*pi*f*t) + x0 + v0*t,...
+    'independent','t','coefficients',{'S','C','x0','v0'});
 sinecosinefit_opt = fitoptions(sinecosinefit);
-sinecosinefit_opt.StartPoint = [Ag*cos(fout_sine.phi) Ag*sin(fout_sine.phi) x0 0 0];
-
+sinecosinefit_opt.StartPoint = [Ag*cos(fout_sine.phi) Ag*sin(fout_sine.phi) x0 0];
 if opts.RemoveBadData
     sinecosinefit_opt.Weights = double(~bad_inds);
 end
+strFit2 = ['$-S\sin(2\pi f t)-C\cos(2\pi f t) + x_0 + v_0t$'];
 
 
-strFit2 = ['$-S\sin(2\pi f t)-C\cos(2\pi f t) + x_0 + v_0t +0.5a_0t^2$'];
-% strFit2 = ['$-S\sin(2\pi f t)-C\cos(2\pi f t) +$' newline ...
-    % '$x_0 + v_0t +0.5a_0t^2$'];
+
 
 fout_sinecosine = fit(Ttot',X',sinecosinefit,sinecosinefit_opt);
 cint2 = confint(fout_sinecosine,0.667);
@@ -179,7 +186,7 @@ Serr2 = (cint2(2,1)-cint2(1,1))*0.5;
 Cerr2 = (cint2(2,2)-cint2(1,2))*0.5;
 x0err2 = (cint2(2,3)-cint2(1,3))*0.5;
 v0err2 = (cint2(2,4)-cint2(1,4))*0.5;
-a0err2 = (cint2(2,5)-cint2(1,5))*0.5;
+%a0err2 = (cint2(2,5)-cint2(1,5))*0.5;
 
 %% Make OUtput
 
@@ -204,7 +211,7 @@ out.S = fout_sinecosine.S;
 out.C = fout_sinecosine.C;
 out.x0 = fout_sinecosine.x0;
 out.v0 = fout_sinecosine.v0;
-out.a0 = fout_sinecosine.a0;
+%out.a0 = fout_sinecosine.a0;
 
 
 out.Aerr = Aerr;
@@ -213,7 +220,7 @@ out.Serr =Serr2;
 out.Cerr = Cerr2;
 out.x0err = x0err2;
 out.v0err = v0err2;
-out.a0err = a0err2;
+%out.a0err = a0err2;
 
 Ysreal = Ys(~bad_inds);
 Xsreal = Xs(~bad_inds);
@@ -232,7 +239,7 @@ out.XsBarErr            = std(Xsreal);
 out.Natoms              = mean(Natomsreal);
 out.NatomsErr              = std(Natomsreal);
 out.SpatialMaxUpDensity = n;
-out.SpatialMaxUpDensityErr = n;
+out.SpatialMaxUpDensityErr = nerr;
 
 %% Make Table
 
@@ -255,21 +262,28 @@ out.SpatialMaxUpDensityErr = n;
 % };
 
 
+% tbl_f3={
+% ['S(' char(956) 'm)'], [num2str(fout_sinecosine.S,'%.2f') ' ' char(177) ' ' num2str(Serr2,'%.2f')];
+% ['C(' char(956) 'm)'], [num2str(fout_sinecosine.C,'%.2f') ' ' char(177) ' ' num2str(Cerr2,'%.2f')];
+% ['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sinecosine.x0,'%.1f') ' ' char(177) ' ' num2str(x0err2,'%.1f')];
+% ['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sinecosine.v0,'%.1e') ' ' char(177) ' ' num2str(v0err2,'%.1e')];
+% ['a' char(8320) '(' char(956) 'm/ms' char(178) ')'], [num2str(fout_sinecosine.a0,'%.1e') ' ' char(177) ' ' num2str(a0err2,'%.1e')];
+% ['N'], [num2str(round(mean(Natomsreal))) ' ' char(177) ' ' num2str(round(std(Natomsreal))) ];
+% ['n' char(8320) 'up'], [num2str(n,'%.2f')  ' ' char(177) ' ' num2str(nerr,'%.2f')  ];
+% [char(963) 'x'  '(' char(956) 'm)'], [num2str(out.XsBar,'%.2f')  ' ' char(177) ' ' num2str(out.XsBarErr,'%.2f')  ];
+% [char(963) 'y'  '(' char(956) 'm)'], [num2str(out.YsBar,'%.2f')  ' ' char(177) ' ' num2str(out.YsBarErr,'%.2f')  ];
+% };
+
 tbl_f3={
 ['S(' char(956) 'm)'], [num2str(fout_sinecosine.S,'%.2f') ' ' char(177) ' ' num2str(Serr2,'%.2f')];
 ['C(' char(956) 'm)'], [num2str(fout_sinecosine.C,'%.2f') ' ' char(177) ' ' num2str(Cerr2,'%.2f')];
 ['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sinecosine.x0,'%.1f') ' ' char(177) ' ' num2str(x0err2,'%.1f')];
 ['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sinecosine.v0,'%.1e') ' ' char(177) ' ' num2str(v0err2,'%.1e')];
-['a' char(8320) '(' char(956) 'm/ms' char(178) ')'], [num2str(fout_sinecosine.a0,'%.1e') ' ' char(177) ' ' num2str(a0err2,'%.1e')];
 ['N'], [num2str(round(mean(Natomsreal))) ' ' char(177) ' ' num2str(round(std(Natomsreal))) ];
 ['n' char(8320) 'up'], [num2str(n,'%.2f')  ' ' char(177) ' ' num2str(nerr,'%.2f')  ];
 [char(963) 'x'  '(' char(956) 'm)'], [num2str(out.XsBar,'%.2f')  ' ' char(177) ' ' num2str(out.XsBarErr,'%.2f')  ];
 [char(963) 'y'  '(' char(956) 'm)'], [num2str(out.YsBar,'%.2f')  ' ' char(177) ' ' num2str(out.YsBarErr,'%.2f')  ];
-
-
 };
-
-
 tt=linspace(min(Ttot),max(Ttot),1e3);
 %% Plot Fits
 

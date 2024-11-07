@@ -11,28 +11,28 @@ GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-2
 %% Define the Runs
 
 
-% 201.1 G (missing QPD analysis)
-composite_data(index).Name = '201.1 G 03/14';
-composite_data(index).Description = 'uh';
-composite_data(index).Runs = [
-    2024 03 14 06;
-    2024 03 14 07;
-    2024 03 14 08;
-    2024 03 14 09;
-    2024 03 14 10;
-    2024 03 14 11;
-    2024 03 14 12;
-    2024 03 14 14;
-    2024 03 14 15;
-    2024 03 14 16;
-    2024 03 14 17;
-    2024 03 14 18;
-    2024 03 14 19;
-    2024 03 14 20;
-    2024 03 14 21;
-    2024 03 14 22;
-    ];
-index=index+1;
+% % 201.1 G (missing QPD analysis)
+% composite_data(index).Name = '201.1 G 03/14';
+% composite_data(index).Description = 'uh';
+% composite_data(index).Runs = [
+%     2024 03 14 06;
+%     2024 03 14 07;
+%     2024 03 14 08;
+%     2024 03 14 09;
+%     2024 03 14 10;
+%     2024 03 14 11;
+%     2024 03 14 12;
+%     2024 03 14 14;
+%     2024 03 14 15;
+%     2024 03 14 16;
+%     2024 03 14 17;
+%     2024 03 14 18;
+%     2024 03 14 19;
+%     2024 03 14 20;
+%     2024 03 14 21;
+%     2024 03 14 22;
+%     ];
+% index=index+1;
 
 % 201.1 G high field evap 50 ms mod ramp 10/24 lower drive evap to 65 mW
 composite_data(index).Name = '201.1 G 10/24';
@@ -115,11 +115,26 @@ composite_data(index).Runs= [
     2024 11 06 08;
     2024 11 06 09;
     2024 11 06 10;
+    2024 11 06 11;
+    2024 11 06 12;
+    2024 11 06 13;
+    2024 11 06 14;
+    2024 11 06 15;
     ];
 index=index+1;
 
-%% Gather the data
+%% Redo Analysis
+do_redo_analysis = 1;    % Do you want to run analysis on it?
 
+if do_redo_analysis
+    opts=struct;
+    opts.do_ixon_main           = 0;   % ixon_main
+    opts.do_ixon_bin_analysis   = 0;   % ixon_bing
+    opts.do_ixon_dig_analysis   = 1;   % ixon_dig
+    ixon_super(composite_data,opts)
+end
+
+%% Gather Data
 composite_data = gatherCompositeData(composite_data);
 
 %% Upload the data

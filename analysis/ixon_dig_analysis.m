@@ -80,6 +80,9 @@ dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
 dig_doRadialAnalysis                    = 1;
 dig_doRadialSkewAnalysis                = 0;
+
+%% Redo Basic Analysis
+digdata = dig_basic(digdata);
 %% Show CLoud
 
 if dig_doShowCloud

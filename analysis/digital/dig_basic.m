@@ -7,7 +7,7 @@ function [digdata] = dig_basic(digdata)
     a1bar = mean(digdata.a1,2);
     a2bar = mean(digdata.a2,2);        
     aL = 0.532; % lattice spacing
-    abar = mean([norm(a1bar) norm(a2bar)]) % average spacing
+    abar = mean([norm(a1bar) norm(a2bar)]); % average spacing
     % Convert pixel position to site
     px_2_site = @(px_val) px_val/abar;    
     % Convert pixel position to um position
