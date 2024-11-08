@@ -45,9 +45,7 @@ for super_composite_data_index=1:length(composite_data)
 end
 
 catch ME
-
-    keyboard
-
+    warning(getReport(ME,'extended','hyperlinks','on'));    
 end
 
 
