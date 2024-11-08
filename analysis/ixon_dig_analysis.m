@@ -95,7 +95,11 @@ if do_qpd_analysis
                  figs{kk}.Name,dig_opts);  
               end
           end
-      end
+           try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+            filename = fullfile(dig_opts.saveDir,'qpd.mat');
+            disp(['Saving ' filename ' ...']);
+            save(filename, '-struct','output');      
+      end  
 end
 
 
