@@ -1,4 +1,4 @@
-% ixon_main_super.m
+% % ixon_main_super.m
 %
 % Author : CF Fujiwara
 %
@@ -17,7 +17,7 @@ addpath(a);addpath(genpath(a));
 
 src = 'X:\Data';
 
-%%
+% %%
 % runs = [2023 12 14 06;
 %     2023 12 14 07;
 %     2023 12 14 08;
@@ -624,18 +624,18 @@ src = 'X:\Data';
 %     2024 10 30 22;
 %     ];
 % 
-runs =  [ 
-    2024 10 31 07;
-    2024 10 31 09;
-    2024 10 31 11;
-    2024 10 31 13;
-    2024 10 31 15;
-    2024 10 31 17;
-    2024 10 31 19;
-    2024 10 31 21;
-    2024 10 31 23;
-    2024 10 31 25;
-    ];
+% runs =  [ 
+%     2024 10 31 07;
+%     2024 10 31 09;
+%     2024 10 31 11;
+%     2024 10 31 13;
+%     2024 10 31 15;
+%     2024 10 31 17;
+%     2024 10 31 19;
+%     2024 10 31 21;
+%     2024 10 31 23;
+%     2024 10 31 25;
+%     ];
 
 % runs =  [ 
 %     2024 11 01 07;
@@ -652,65 +652,86 @@ runs =  [
 %     2024 11 01 18;
 %     ];
 
-runs = [ 
-    2024 11 05 09;
-    2024 11 05 10;
-    2024 11 05 11;
-    2024 11 05 12;
-    2024 11 05 13;
-    2024 11 05 14;
-    2024 11 05 15;
-    2024 11 05 16;
-    2024 11 05 17;
-    2024 11 06 01;
-    2024 11 06 02;
-    2024 11 06 03;
-    2024 11 06 04;
-    2024 11 06 05;
-    2024 11 06 06;
-    2024 11 06 07;
-    2024 11 06 08;
-    2024 11 06 09;
-    2024 11 06 10;
-    ];
+% runs = [ 
+%     2024 11 05 09;
+%     2024 11 05 10;
+%     2024 11 05 11;
+%     2024 11 05 12;
+%     2024 11 05 13;
+%     2024 11 05 14;
+%     2024 11 05 15;
+%     2024 11 05 16;
+%     2024 11 05 17;
+%     2024 11 06 01;
+%     2024 11 06 02;
+%     2024 11 06 03;
+%     2024 11 06 04;
+%     2024 11 06 05;
+%     2024 11 06 06;
+%     2024 11 06 07;
+%     2024 11 06 08;
+%     2024 11 06 09;
+%     2024 11 06 10;
+%     ];
+% 
+% runs = [     
+%     2024 11 06 11;
+%         2024 11 06 12;
+%     2024 11 06 13;
+%     2024 11 06 14;
+%     2024 11 06 15;
+%     ];
 
+
+% to FC/BD This is for the heating rdata
 runs = [     
-    2024 11 06 11;
-        2024 11 06 12;
-    2024 11 06 13;
-    2024 11 06 14;
-    2024 11 06 15;
+    2024 11 07 18;
+    2024 11 07 19;
+    2024 11 07 20;
+    2024 11 07 21;
+    2024 11 07 22;
+    2024 11 07 23;
+    2024 11 07 24;
+    2024 11 07 25;
+    2024 11 07 26;
+    2024 11 07 27;
+    2024 11 07 28;
+    2024 11 07 29;
+    2024 11 08 01;
+    2024 11 08 02;
+    2024 11 08 03;
     ];
-%% Get the direcotry list
-dir_list = ixon_findRunDirectory(runs);
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = 'heating data';
 
-for nn=1:length(dir_list)
-   ixon_auto_dir = 0;
-   imgdir = dir_list{nn};
-   ixon_main;
-    ixon_auto_dir = 1;
-end
+% this is for the non linearity check
+runs = [     
+      2024 11 08 04;
+      2024 11 08 05;
+      2024 11 08 06;
+      2024 11 08 07;
+      2024 11 08 08;
+      2024 11 08 09;
+      2024 11 08 10;
+      2024 11 08 11;
+      2024 11 08 12;
+      2024 11 08 13;
+      2024 11 08 14;
 
-%% Get the direcotry list
-dir_list = ixon_findRunDirectory(runs);
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = 'non linearity check';
 
-for nn=1:length(dir_list)
-    bin_auto_file = 0;
-    filename = fullfile(dir_list{nn},'figures','bindata.mat');
-    bin_imgdir = fullfile(dir_list{nn},'figures');
-    ixon_bin_analysis;
-    bin_auto_file = 1;    
-end
 
-%% Get the direcotry list
-dir_list = ixon_findRunDirectory(runs);
+%%
+super_opts=struct;
+super_opts.do_ixon_main = 1;
+super_opts.do_ixon_bin_analysis = 1;
+super_opts.do_ixon_dig_analysis = 1;
 
-for nn=1:length(dir_list)
-    dig_auto_file = 0;
-    dig_imgdir = fullfile(dir_list{nn},'figures');
-    filename = fullfile(dir_list{nn},'figures','digdata.mat');
 
-    ixon_dig_analysis;
-    dig_auto_file = 1;    
-end
-
+ixon_super(composite_data,super_opts);
+ %% Gather Data
+composite_data = gatherCompositeData(composite_data);
