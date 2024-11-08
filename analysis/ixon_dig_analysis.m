@@ -81,6 +81,24 @@ dig_ac_conductivity_fit                 = 1;
 dig_doRadialAnalysis                    = 1;
 dig_doRadialSkewAnalysis                = 0;
 
+do_qpd_analysis                            = 1;
+%% QPD Analysis
+
+if do_qpd_analysis
+    P=[digdata.Params];
+    D=[P.ExecutionDate];
+   [figs,output] = qpd_main(D,dig_opts) ;
+      if dig_opts.doSave
+          for kk=1:length(figs)
+              if ~isempty(figs{kk})
+                ixon_saveFigure2(figs{kk},...
+                 figs{kk}.Name,dig_opts);  
+              end
+          end
+      end
+end
+
+
 %% Redo Basic Analysis
 digdata = dig_basic(digdata);
 %% Show CLoud
