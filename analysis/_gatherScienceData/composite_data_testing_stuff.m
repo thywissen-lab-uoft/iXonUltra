@@ -31,7 +31,7 @@ errorbar(Xs,-C,CErr,CErr,XsErr,XsErr,'o','markerfacecolor',...
     co(1,:),'linewidth',1,'color',co(1,:)*.5);
 xlabel('x sigma (um)');
 ylabel('-C (um)');
-ylim([-.5 2.5]);
+ylim([-.5 3]);
 title('\pi/2 phase amplitude');
 
 subplot(232);
@@ -39,7 +39,7 @@ errorbar(Xs,S,SErr,SErr,XsErr,XsErr,'o','markerfacecolor',...
     co(2,:),'linewidth',1,'color',co(2,:)*.5);
 xlabel('x sigma (um)');
 ylabel('-S (um)');
-ylim([-.5 2.5]);
+ylim([-.5 3]);
 title('0 phase amplitude');
 
 
@@ -58,14 +58,14 @@ errorbar(amp,total_amp,total_amp_err,'o','markerfacecolor',...
     co(4,:),'linewidth',1,'color',co(4,:)*.5);
 xlabel('mod amp (V)');
 ylabel('sqrt(C^2+S^2) (um)');
-ylim([-.1 2.5]);
+ylim([-.1 3]);
 xlim([0 4.5]);
 hold on
 yyaxis right
 amp_vec=linspace(0,4,3);
 plot(amp_vec,amp_vec*2.63,'r-');
 xlim([0 4.5]);
-ylim([-.1 2.5]);
+ylim([-.1 3]);
 ylabel('drive amplitude (um)');
 title('total amplitude and mod strength');
 
