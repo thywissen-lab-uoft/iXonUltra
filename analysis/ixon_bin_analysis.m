@@ -237,7 +237,6 @@ if bin_BinStripe
         % end
         disp([' done (' num2str(toc,'%.2f') 's)']); 
     end
-
 end  
 
 %%

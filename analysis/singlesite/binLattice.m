@@ -91,8 +91,6 @@ ibad = logical((M(1,:)<n1i) + (M(1,:)>n1f) + (M(2,:)>n2f) + (M(2,:)<n2i));
 M(:,ibad) = [];
 Z(ibad) = [];
 
-
-
 Zbin = zeros(n2f-n2i+1,n1f-n1i+1);
 Znum = zeros(n2f-n2i+1,n1f-n1i+1);
 for ii=1:size(M,2)    
@@ -102,16 +100,6 @@ for ii=1:size(M,2)
     Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);  
 end
 
-
-% Zall = Zbin;
-% Zall = Zall(:);
-% Zbin2 = Zbin;
-% Zpercent = Znum/max(Znum,[],'all');
-% Zbin2(Zpercent<.9)=NaN;
-% % Zbin = Zbin2;
-
-% keyboard
-% toc
 %% Debugging
 doDebug=0;
 if doDebug
@@ -147,8 +135,6 @@ if doDebug
     
 end
 
-
-
 %%
 
 [nn1,nn2]=meshgrid(n1,n2);
@@ -175,9 +161,6 @@ p2 = opts.p2;
 a1 = opts.a1;
 a2 = opts.a2;
 out.site2px = @(n1,n2) (n1+p1)*a1 + (n2+p2)*a2;
-
-
-
 
 % Lattice Spacing in pixels
 lattice_spacing_px = mean([norm(a1) ...
@@ -212,30 +195,25 @@ thresh(end)=[];
 
 cluster_overlap = zeros(numel(thresh),1);
 
+        z2 = data(data>thresh(1));
+        % The n=1 (atom) distribution is fit with a simple gaussian
+        % distribution
+        % pd1 = fitdist(z2,'normal'); % This works too, but use MLE to make it
+        % the same output
+        [pdf1_c,pdf1_cint] = mle(z2,'distribution','normal');
+        
+        I0=pdf1_c(1); % center and then the 
+        
+
+
+
 for kk=1:numel(thresh)
     cluster_overlap(kk)=dd(kk);
 end
-% 
-% indLow = inds(1);
-% nlow = sum(idx==indLow);
-% low_average_distance = sqrt(sumD(1)/nlow);
-% 
-% 
-% indHigh = inds(2);
-% nhigh = sum(idx==indHigh);
-% high_average_distance = sqrt(sumD(2)/nhigh);
-% 
-% thresh=round(max(Zest(idx==indLow)));
 
 out.ClusterNumber = cluster_number;
 out.ClusterThreshold = thresh;
 out.ClusterCentroid = c;
 out.ClusterRadius = dd;
-
-% for kk=1:(cluster_number-1)
-% out.ClusterContrast(kk) = 
-
-% keyboard
-%%
 
 end
