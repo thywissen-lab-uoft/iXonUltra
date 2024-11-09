@@ -110,7 +110,7 @@ desc=acqDescription(acq);       % Get description of settings
 hF=figure;clf
 set(hF,'Color','w','units','pixels','Name',guiname,...
     'Tag','GUI','CloseRequestFcn',@closeGUI,'NumberTitle','off',...
-    'Position',[50 50 1300 700],'SizeChangedFcn',@SizeChangedFcn,...
+    'Position',[50 50 1200 630],'SizeChangedFcn',@SizeChangedFcn,...
     'toolbar','none');
 
 topBarHeight = 40;
@@ -170,10 +170,12 @@ function SizeChangedFcn(~,~)
         hpFeedback.Position(2)      = hpProcess.Position(2)-hpFeedback.Position(4);
         hpPosition.Position(2)       = hpFeedback.Position(2)-hpPosition.Position(4);   
 
-        hpKspace.Position(2)    = hpPosition.Position(2)-hpKspace.Position(4);
+        % hpKspace.Position(2)    = hpPosition.Position(2)-hpKspace.Position(4);
 
-  
-        hpBin.Position(2)       = hpNav.Position(2) - hpBin.Position(4);   
+        hpKspace.Position(2)   = hpNav.Position(2)-hpKspace.Position(4);
+      hpBin.Position(2)       = hpKspace.Position(2) - hpBin.Position(4);   
+
+        % hpBin.Position(2)       = hpNav.Position(2) - hpBin.Position(4);   
         hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
 
         hpDisp_Select.Position(2)=hpNav.Position(2)-hpDisp_Select.Position(4);
@@ -1430,6 +1432,8 @@ hbposition=uicontrol(hpPosition,'style','pushbutton','string','position analysis
 
 hpKspace=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'Position',[0 hpPosition.Position(2)-110 160 130],'title','momentum analysis');
+hpKspace.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
+hpKspace.Position(2)=hpNav.Position(2)-hpKspace.Position(4);
 
 % Checkbox for center of mass and sigma 
 ttstr='Automatically perform analysis on new image';
@@ -1568,7 +1572,7 @@ hpBin=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
 hpBin.Position(3)=160;
 hpBin.Position(4)=200;
 hpBin.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
-hpBin.Position(2)=hpNav.Position(2)-hpBin.Position(4);
+hpBin.Position(2)=hpKspace.Position(2)-hpBin.Position(4);
 
 ttstr='auto do bin analysis';
 hc_anlB_auto=uicontrol(hpBin,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
@@ -1791,60 +1795,16 @@ function analyze_bin(src,evt)
         hb_Binanalyze.BackgroundColor=[255 219 88]/255;
         drawnow;          
         [data] = ixon_ProcessImagesToBin(data);
-        % for kk=1:size(data.Z,3)
-        %     opts = struct;
-        %     switch lower(bin_options.BinBasis.LatticeSource)
-        %         case 'fft'
-        %             if isfield(data,'LatticePhase')     
-        %                 opts.a1 = data.LatticePhase(1).a1;
-        %                 opts.a2 = data.LatticePhase(1).a2;                        
-        %                 opts.p1 = data.LatticePhase(1).p1;
-        %                 opts.p2 = data.LatticePhase(1).p2;   
-        %             else
-        %                 error('Lattice Phase not calculated.');
-        %             end                
-        %         case 'manual'
-        %             basis=bin_options.BinBasis.BasisManual;
-        %             opts.a1 = basis(:,1);
-        %             opts.a2 = basis(:,2);
-        %             opts.p1 = basis(1,3);
-        %             opts.p2 = basis(1,4);
-        %         otherwise
-        %             error('invalid basis source')
-        %     end
-        %     opts.ScaleFactor = bin_options.PreBinOptions.RescaleFactor;    
-        %     opts.PixelThreshold = bin_options.PreBinOptions.PixelThreshold; 
-        % 
-        %     ROI=tblROI.Data;
-        %     data.ROI=ROI;               
-        %     ix_1 = find(data.X>=ROI(1),1);
-        %     ix_2 = find(data.X>=ROI(2),1);
-        %     iy_1 = find(data.Y>=ROI(3),1);
-        %     iy_2 = find(data.Y>=ROI(4),1);
-        %     x = data.X(ix_1:ix_2);
-        %     y = data.Y(iy_1:iy_2);   
-        %     z = data.Z(iy_1:iy_2,ix_1:ix_2,kk);   
-        % 
-        %     tic;
-        %     fprintf(['(' num2str(kk) '/' num2str(size(data.Zf,3)) ...
-        %         ') binning into lattice ...']);               
-        %     data.LatticeBin(kk) = binLattice(x,y,z,opts); 
-        %     t2=toc;
-        %     disp(['done (' num2str(t2,3) ' sec.)']);
-        % end
-        
-        % data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
         
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
 
-         % if hc_anlB_Radial.Value
-         %    ropts=struct;
-         %    ropts.FigureNumber = 3001;
-         %    data=bin_radialHistogram(data);
-         %    bin_showRadialHistogram(data,ropts);
-         % end
-                
+         if hc_anlB_Radial.Value
+            ropts=struct;
+            ropts.FigureNumber = 3001;
+            data=bin_radialHistogram(data);
+            bin_showRadialHistogram(data,ropts);
+         end                
          
         if (hc_anlB_stripe.Value && ~isfield(data.Flags,'plane_selection_dotilt')) || ...
             (hc_anlB_stripe.Value && isfield(data.Flags,'plane_selection_dotilt') &&  data.Flags.plane_selection_dotilt)
@@ -2427,28 +2387,10 @@ hpDisp_HB.Position=[0 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
 
 menuSelectBinType=uicontrol('style','popupmenu','string',...
     {'raw','processed','normalized'},'units','pixels','parent',hpDisp_HB,...
-    'Callback',{@ (src,evt) updateDispBinImg},'fontsize',8,'Value',2);
+    'Callback',{@ (src,evt) updateBinnedHistogramGraphics},'fontsize',8,'Value',2);
 menuSelectBinType.Position(3:4)=[140 18];
 menuSelectBinType.Position(1:2)=[2 hpDisp_HB.Position(4)-menuSelectBinType.Position(4)-35];   
 
-    function updateDispBinImg
-        opts=struct;
-        switch menuSelectBinType.Value
-            case 1
-                opts.BinSource = 'ZbinRaw';
-            case 2
-                opts.BinSource = 'Zbin';
-            case 3
-                opts.BinSource = 'ZbinNormalized';
-        end
-        updateBinnedHistogramGraphics(opts);    
-    end
-     
-    function binnedHistCB(src,evt)
-        % data=ixon_binnedHistogram(data,histBtbl.Data(1,2));
-        updateBinnedHistogramGraphics;       
-    end
-% keyboard
 %% Digitized Display
 
 hpDisp_D = uipanel(hF,'units','pixels','backgroundcolor','w');
@@ -3229,59 +3171,6 @@ pROIB=rectangle('position',[1 1 500 500],'edgecolor',co(1,:),'linewidth',2,'hitt
 
 %% Binned Histgoram
 
-% Binned Histogram 1
-% ax_hB1=subplot(2,1,1,'parent',tabHB);
-ax_hB1 = axes('parent',tabHB);
-co=get(gca,'colororder');
-pHistB1 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none',...
-    'facecolor','k');
-hold on
-pHistBdivide = plot([1 1]*50,[0 100],'k-','parent',ax_hB1);
-ylabel('occurences');
-xlabel('counts per lattice site');
-
-pPDF1a = plot(1,1,'-','parent',ax_hB1,'color',co(1,:),'linewidth',3);
-
-set(ax_hB1,'box','on','linewidth',.1,'fontsize',12,'units','normalized',...
-    'XAxisLocation','bottom','YDir','normal','UserData','H1');
-yyaxis right
-pHistB2 = bar(1:100,1:100,'parent',ax_hB1,'linestyle','none',...
-    'FaceColor',[0.6 0 0.5]);
-ylabel('occurences');
-ax_hB1.YColor=[0.6 0 0.5];
-pPDF1b = plot(1,1,'k-','parent',ax_hB1,'color',co(1,:),'linewidth',3);
-pPDF2 = plot(1,1,'r-','parent',ax_hB1,'color',co(2,:),'linewidth',3);
-
-t_B1_top_right = text(.98,.98,'bob','visible','off','fontsize',16,...
-    'verticalalignment','top','interpreter','latex','units','normalized',...
-    'horizontalalignment','right');
-
-% Add a left hand slider to control the relative size of the analog and
-% digital channels
-% 
-% jSlider = javax.swing.JSlider;
-% [jhSlider, hContainer]=javacomponent(jSlider,[0,60,600,15],tabHB);
-% set(jSlider, 'Value',30, 'PaintLabels',false, 'PaintTicks',true,...
-%     'Orientation',0);  % with ticks, no labels
-% 
-% set(hContainer,'units','normalized','position',...
-%     [ax_hB1.Position(1) ax_hB1.Position(2)+ax_hB1.Position(4) ...
-%     ax_hB1.Position(3) ax_hB1.Position(4)*.05]) ;
-
-% set(jSlider, 'StateChangedCallback', @adjustSize);  %alternative
-
-% Binned Histogram 2
-% ax_hB2=subplot(2,1,2,'parent',tabHB);
-% pHistB2 = bar(1:100,1:100,'parent',ax_hB2,'linestyle','none');
-% ylabel('occurences');
-% xlabel('counts/site');
-% hold on
-% pKernelB2 = plot(1,1,'k-','parent',ax_hB2);
-% 
-% set(ax_hB2,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
-%     'XAxisLocation','bottom','YDir','normal','UserData','H2');
-
-
 %% Digital Image
 
 axImg_D=axes('parent',tabD);
@@ -3618,12 +3507,6 @@ end
             'YData',data.LatticeBin(imgnum).n2,...
             'CData',data.LatticeBin(imgnum).Zbin);  
         
-%         theta1 = atan2d(data.LatticeBin(1).a1(1),data.LatticeBin(1).a1(2));        
-%         theta2 = atan2d(data.LatticeBin(1).a2(1),data.LatticeBin(1).a2(2));
-
-        
-%         view(hImg_B.Parent,theta2, 90);
-%         camorbit(hImg_B.Parent,theta2,0)
 
 
 
@@ -3650,12 +3533,6 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
             pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
             set(pROIB(1),'Position',pos);
         end
-
-
-
-
-
-
         if cAutoColor_B.Value;setClim('B');end     
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
@@ -3683,92 +3560,21 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
 
 %% Binned Histgoram Callbacks
 
-    function updateBinnedHistogramGraphics(opts)    
-        if nargin == 0
-            opts = struct;
+    function updateBinnedHistogramGraphics   
+         opts=struct;
+        switch menuSelectBinType.Value
+            case 1
+                opts.BinSource = 'ZbinRaw';
+            case 2
+                opts.BinSource = 'Zbin';
+            case 3
+                opts.BinSource = 'ZbinNormalized';
         end
-        
-        opts.Parent = tabHB;
-        bin_showHistogram(data,opts)
-        % if ~isfield(data,'LatticeHistogram')
-        %     return;
-        % end                 
-        % 
-        % imgnum = menuSelectImg.Value;        
-        % x = data.LatticeHistogram(imgnum).Centers;
-        % xe = data.LatticeHistogram(imgnum).Edges;
-        % y = data.LatticeHistogram(imgnum).N;      
-        % 
-        % 
-        % if hchistBautothresh.Value
-        %     histBtbl.Data(1,1) = data.LatticeBin(imgnum).ClusterThreshold(1);
-        % end
-        % 
-        % Nthresh = histBtbl.Data(1,1);           
-        % 
-        % xL = x<=Nthresh;
-        % xH = ~xL;        
-        % set(pHistB1,'XData',x(xL),'YData',y(xL));
-        % set(pHistB2,'XData',x(xH),'YData',y(xH));        
-        % pHistBdivide.Parent.YAxis(1).Limits = [0 max(pHistB1.YData)*1.1];
-        % pHistBdivide.Parent.YAxis(2).Limits = [0 max(pHistB2.YData)*1.1];        
-        % pHistBdivide.Parent.XAxis.Limits = [0 max(x)*1.1];
-        % set(pHistBdivide,'Xdata',[1 1]*Nthresh,'Ydata',pHistBdivide.Parent.YAxis(1).Limits);
-        % 
-        % 
-        % if isfield(data.LatticeBin(imgnum),'PDFFit')
-        %     foo0 = data.LatticeBin(imgnum).PDFFit.pdf0;
-        %     n0 = numel(data.LatticeBin(imgnum).PDFFit.pdf0_counts);
-        %     foo1 = data.LatticeBin(imgnum).PDFFit.pdf1;
-        %     n1 = numel(data.LatticeBin(imgnum).PDFFit.pdf1_counts);
-        %     t = linspace(min(x),max(x),1e3);
-        %     tL = t<=Nthresh;
-        %     tH = ~tL;
-        %     bw = x(2)-x(1);
-        %     set(pPDF1a,'XData',t(tL),'YData',n0*bw*foo0(t(tL)),'Visible','on');
-        %     set(pPDF1b,'XData',t(tH),'YData',n0*bw*foo0(t(tH)),'Visible','on');
-        %     set(pPDF2,'XData',t(tH),'YData',n1*bw*foo1(t(tH)),'Visible','on');            
-        %     str=['Fidelity $= ' num2str(round(data.LatticeBin(imgnum).PDFFit.Fidelity*100,3)) '\% $'];
-        %     set(t_B1_top_right,'string',str,'Visible','on');
-        % 
-        % else
-        %     pPDF1a.Visible='off';
-        %     pPDF1b.Visible='off';
-        %     pPDF2.Visible='off';
-        %     t_B1_top_right.Visible='off';
-        % 
-        % end
 
+        opts.ImageNum= menuSelectImg.Value; % get image to analyze
+        opts.Parent = tabHB;
+        bin_showHistogram(data,opts);      
     end
-% 
-%     function updateBinnedHistogram
-%        if ~isfield(data,'LatticeDig')
-%            return;
-%        end      
-%         Nbins = histBtbl.Data(1,2);                
-%         Zall = data.LatticeBin(1).Zbin;
-%         Zall = Zall(:);
-%         Zall(Zall==0) = NaN;                     
-%         [N,edges] = histcounts(Zall,Nbins);        
-%         centers = (edges(1:end-1) + edges(2:end))/2;
-%         LatticeHistogram = struct;
-%         LatticeHistogram.Edges = edges;
-%         LatticeHistogram.Centers = centers;
-%         LatticeHistogram.N = N;  
-%         data.LatticeHistogram(1) = LatticeHistogram; 
-%         for kk=2:length(data.LatticeBin)
-%             Zall = data.LatticeBin(kk).Zbin;
-%             Zall = Zall(:);
-% %           Zall(Zall==0)=[];            
-%             [N,edges] = histcounts(Zall,data.LatticeHistogram(1).Edges);
-%             centers = (edges(1:end-1) + edges(2:end))/2;
-%             LatticeHistogram = struct;
-%             LatticeHistogram.Edges = edges;
-%             LatticeHistogram.Centers = centers;
-%             LatticeHistogram.N = N;  
-%             data.LatticeHistogram(kk) = LatticeHistogram;            
-%         end                  
-%     end
 
 %% 
     function updatePositionAnalysis

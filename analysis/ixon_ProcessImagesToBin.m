@@ -42,42 +42,62 @@ if isfield(data,'LatticeBin')
 end
 
 %% Precalculate Things That Can Be Precalculated
+% important improves
+% speed up through ROI accumulation
+% Get all ROIS
+% ROI=[data(1).ROI];
+% for mm = 2:length(data)
+%     ROI(mm,:)=[data(mm).ROI];
+% end
+% 
+% % If ROI is constant pre calculate things
+% isOneROI= [size(unique(ROI,'rows'),1)==1];
+% if isOneROI
+%     X = data(1).X;
+%     Y = data(1).Y;
+%     ix_1 = find(X>=ROI(1),1);
+%     ix_2 = find(X>=ROI(2),1);
+%     iy_1 = find(Y>=ROI(3),1);
+%     iy_2 = find(Y>=ROI(4),1);
+%     X = X(ix_1:ix_2);
+%     Y = Y(iy_1:iy_2);   
+% end
 
 %% Iterate and Bin
 for kk = 1 :length(data)
-    for rr = 1:size(data.Z,3)
-    fprintf(['(' num2str(kk) '/' num2str(length(data)) ')' num2str(rr) ' '])
+    % This Stuff can be calculated ahead of time for a unique ROI
+    ROI=data(kk).ROI;
+    X = data(kk).X;
+    Y = data(kk).Y;
+    ix_1 = find(X>=ROI(1),1);
+    ix_2 = find(X>=ROI(2),1);
+    iy_1 = find(Y>=ROI(3),1);
+    iy_2 = find(Y>=ROI(4),1);
+    X = X(ix_1:ix_2);
+    Y = Y(iy_1:iy_2);   
+    X = linspace(X(1),X(end),length(X)*opts.ResizeFactor);
+    Y = linspace(Y(1),Y(end),length(Y)*opts.ResizeFactor);    
+    % Create 2xN vectors of all pixels positions
+    [XX,YY]=meshgrid(X,Y);                  % matrix of X and Y
+    R = [XX(:) YY(:)]'; 
+
+    for rr = 1:size(data.Z,3)        
+        fprintf(['(' num2str(kk) '/' num2str(length(data)) ')' num2str(rr) ' '])
         Z = data(kk).Z(:,:,rr);
-        X = data(kk).X;
-        Y = data(kk).Y;
 
-        %% ROI
-        ROI=data(kk).ROI;
-        ix_1 = find(X>=ROI(1),1);
-        ix_2 = find(X>=ROI(2),1);
-        iy_1 = find(Y>=ROI(3),1);
-        iy_2 = find(Y>=ROI(4),1);
-        X = X(ix_1:ix_2);
-        Y = Y(iy_1:iy_2);   
+        %% Get Data
         Z = Z(iy_1:iy_2,ix_1:ix_2,kk);   
-
         %% Pixel Thresholding 
         fprintf('thresh...');
         Z(Z<opts.PixelThreshold)=0;
-
-        %% Image Rescaling
+        %% Image Resize
+        % Resizing the image reduces binning issues caused from finite
+        % pixel size to bin size (lattice spacing)
         fprintf('resize...');
-
         Z = imresize(Z,opts.ResizeFactor,'method','bilinear')/(opts.ResizeFactor^2); 
-        X = linspace(X(1),X(end),size(Z,2));
-        Y = linspace(Y(1),Y(end),size(Z,1));
-
-        % Create 2xN vectors of all pixels positions
-        [XX,YY]=meshgrid(X,Y);                  % matrix of X and Y
-        R = [XX(:) YY(:)]'; % long part, becaues of transpose?
-        
-        Z = Z(:); %  All pixels to a list
+        Z = Z(:);                               %  All pixels to a list
         %% Assign Pixels To Lattice Site
+        % Solve the bravais problem for every site
         fprintf('solve px2lattice ...');
 
         % Get the basis
@@ -98,9 +118,7 @@ for kk = 1 :length(data)
         p = [p1; p2];               % Phase
         P = repmat(p,[1 numel(Z)]); % Phase for all pixels
         M = round(N0-P);            % Remove phase and round to nearest site
-
         %% Calculate lattice vectors       
-        
         % Solve for position of each corner in terms of the lattice basis
         na = inv(A)*[X(1); Y(1)];
         nb = inv(A)*[X(1); Y(end)];
@@ -122,6 +140,7 @@ for kk = 1 :length(data)
 
         %% Perform the Binning
         fprintf('binning ...');
+        % Long Step
 
         % Takes 0.3 seconds at x10 scale        
         % Remove points outside of the desired ROI.
@@ -143,7 +162,6 @@ for kk = 1 :length(data)
             Znum(m2,m1) = Znum(m2,m1)+1;
             Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);  
         end
-
         %% Initialize Raw Binning
 
         ZbinRaw = Zbin;
@@ -193,7 +211,6 @@ for kk = 1 :length(data)
         %% Fit PDF To Cluster
         fprintf('pdf...');
 
-
         boundLow = ClusterCentroids(2)-1.5*ClusterRadii(2);
         boundHigh = 2*ClusterCentroids(2);
         z_truncate =z;
@@ -241,6 +258,7 @@ for kk = 1 :length(data)
         disp('done');
 
         data(kk).LatticeBin(rr) = LatticeBin;
+        
     end
 end
 

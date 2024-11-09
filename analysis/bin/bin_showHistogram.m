@@ -21,6 +21,10 @@ if ~isfield(opts,'ManualThresh')
    opts.ManualThresh = 2000; 
 end
 
+if ~isfield(opts,'ImageNum')
+    opts.ImageNum = 1;
+end
+
 if ~isfield(opts,'useManualThresh')
     opts.useManualThresh = false';
 end
@@ -33,8 +37,8 @@ end
 
 %% Get ROI
 
-n1 = bindata(1).LatticeBin(1).n1;
-n2 = bindata(1).LatticeBin(1).n2;
+n1 = bindata(1).LatticeBin(opts.ImageNum).n1;
+n2 = bindata(1).LatticeBin(opts.ImageNum).n2;
 
 if isequal(opts.ROI,'max')
    opts.ROI = [min(n1) max(n1) min(n2) max(n2)]; 
@@ -43,9 +47,9 @@ R = opts.ROI;
 %% Prepare Data
 Zall = zeros(length(n2),length(n1),length(bindata));
 for nn = 1:length(bindata)        
-    Zthis = bindata(nn).LatticeBin(1).(opts.BinSource);    
+    Zthis = bindata(nn).LatticeBin(opts.ImageNum).(opts.BinSource);    
     Zall(:,:,nn) =  Zthis;
-    threshes(nn)=bindata.LatticeBin(1).ClusterThreshold;    
+    threshes(nn)=bindata.LatticeBin(opts.ImageNum).ClusterThreshold;    
     centerval(nn) = bindata.LatticeBin(1).PDF1_Center;
 end
 
