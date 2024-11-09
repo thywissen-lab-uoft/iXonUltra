@@ -1833,7 +1833,7 @@ function analyze_bin(src,evt)
         %     disp(['done (' num2str(t2,3) ' sec.)']);
         % end
         
-        data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
+        % data = ixon_binnedHistogram(data,histBtbl.Data(1,2));
         
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
@@ -2382,14 +2382,13 @@ set(hpDisp_B,'parent',hpDispOpt.Children(5));
 hpDisp_B.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
 
 
-
 % Table for changing display limits
 tbl_dROI_B=uitable('parent',hpDisp_B,'units','pixels','RowName',{},...
     'columnname',{'n1i','n1f','n2i','n2f'},'UserData','B',...
     'ColumnEditable',[true true true true],'CellEditCallback',@tbl_dispROICB,...
     'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[1 100 1 100]);
 tbl_dROI_B.Position(3:4)=tbl_dROI_B.Extent(3:4);
-tbl_dROI_B.Position(1:2)=[2 hpDisp_B.Position(4)-tbl_dROI_X.Position(4)-20];
+tbl_dROI_B.Position(1:2)=[2 hpDisp_B.Position(4)-tbl_dROI_X.Position(4)-30];
 
 
 % Button to snap display ROI to the data ROI
@@ -2422,47 +2421,40 @@ cAutoColor_B.Position=[climtbl_B.Position(1)+climtbl_B.Position(3)+1 climtbl_B.P
 
 %% Count Histogram
 
-hpDisp_HB = uipanel(hF,'units','pixels','backgroundcolor','w');
-hpDisp_HB.Position=[160 hpDisp_B.Position(2)-80 160 80];
-
-set(hpDisp_HB,'parent',hpDispOpt.Children(6));
-hpDisp_HB.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
+hpDisp_HB = uipanel(hF,'units','pixels','backgroundcolor','w','parent',hpDispOpt.Children(7));
+hpDisp_HB.Position=[0 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
 
 
+menuSelectBinType=uicontrol('style','popupmenu','string',...
+    {'raw','processed','normalized'},'units','pixels','parent',hpDisp_HB,...
+    'Callback',{@ (src,evt) updateDispBinImg},'fontsize',8,'Value',2);
+menuSelectBinType.Position(3:4)=[140 18];
+menuSelectBinType.Position(1:2)=[2 hpDisp_HB.Position(4)-menuSelectBinType.Position(4)-35];   
 
-% Table to adjust color limits on image
-histBtbl=uitable('parent',hpDisp_HB,'units','pixels','RowName',{},'ColumnName',{'threshold','number bins'},...
-    'Data',[3000 100],'ColumnWidth',{70,80},'ColumnEditable',[true true],...
-    'CellEditCallback',@binnedHistCB,'fontsize',7);
-histBtbl.Position(3:4)=histBtbl.Extent(3:4);
-histBtbl.Position(1:2)=[2 1];
-
-
-% Checkbox for enabling display of the CoM analysis
-hchistBautothresh=uicontrol(hpDisp_HB,'style','checkbox','string','auto-threshold?',...
-    'units','pixels','fontsize',7,'backgroundcolor','w',...
-    'enable','on','value',1);
-hchistBautothresh.Position=[2 histBtbl.Position(2)+histBtbl.Position(4)+1 125 15];
-
-% Checkbox for enabling display of the CoM analysis
-hchistBthreshnoise=uicontrol(hpDisp_HB,'style','checkbox','string','threshold noise?',...
-    'units','pixels','fontsize',7,'backgroundcolor','w',...
-    'enable','on','value',1);
-hchistBthreshnoise.Position=[2 hchistBautothresh.Position(2)+hchistBautothresh.Position(4)+1 125 15];
-
+    function updateDispBinImg
+        opts=struct;
+        switch menuSelectBinType.Value
+            case 1
+                opts.BinSource = 'ZbinRaw';
+            case 2
+                opts.BinSource = 'Zbin';
+            case 3
+                opts.BinSource = 'ZbinNormalized';
+        end
+        updateBinnedHistogramGraphics(opts);    
+    end
      
     function binnedHistCB(src,evt)
-        data=ixon_binnedHistogram(data,histBtbl.Data(1,2));
-
+        % data=ixon_binnedHistogram(data,histBtbl.Data(1,2));
         updateBinnedHistogramGraphics;       
     end
-
+% keyboard
 %% Digitized Display
 
 hpDisp_D = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpDisp_D.Position=[160 hpDisp_HB.Position(2)-110 160 110];
 
-set(hpDisp_D,'parent',hpDispOpt.Children(7));
+set(hpDisp_D,'parent',hpDispOpt.Children(8));
 hpDisp_D.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
 
 
@@ -3691,8 +3683,11 @@ RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
 
 %% Binned Histgoram Callbacks
 
-    function updateBinnedHistogramGraphics    
-        opts = struct;
+    function updateBinnedHistogramGraphics(opts)    
+        if nargin == 0
+            opts = struct;
+        end
+        
         opts.Parent = tabHB;
         bin_showHistogram(data,opts)
         % if ~isfield(data,'LatticeHistogram')
