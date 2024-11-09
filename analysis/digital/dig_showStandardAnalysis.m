@@ -120,22 +120,6 @@ xlabel(digdata.xVar,'interpreter','none');
 str = '$n_{0,\uparrow}=0.5N/(2\pi\sigma_x\sigma_y)$';
 text(.01,.99,str,'units','normalized','fontsize',10,'verticalalignment','top',...
 'horizontalalignment','left','interpreter','latex');
-% 
-% 
-% subplot(236)
-% 
-% Nbar = mean([rmoutliers(digdata.Natoms)]);
-% Nstd = std([rmoutliers(digdata.Natoms)]);
-% 
-% histogram(rmoutliers(digdata.Natoms),15);
-%   xlabel('atom number');
-% ylabel('occurences');
-% text(1,1,'*outliers removed*','units','normalized','fontsize',8,'verticalalignment','cap',...
-% 'horizontalalignment','right');
-% str = ['N = ' num2str(round(Nbar)) ' \pm ' num2str(round(Nstd))];
-% text(.02,.98,str,'units','normalized','fontsize',12,'verticalalignment','cap',...
-% 'horizontalalignment','left','backgroundcolor',[1 1 1 .5]);
-
 
 end
 
