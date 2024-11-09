@@ -1570,7 +1570,7 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
 hpBin=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
     'title','binned analysis');
 hpBin.Position(3)=160;
-hpBin.Position(4)=200;
+hpBin.Position(4)=160;
 hpBin.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
 hpBin.Position(2)=hpKspace.Position(2)-hpBin.Position(4);
 
@@ -1595,7 +1595,7 @@ hc_anlB_Histogram=uicontrol(hpBin,'style','checkbox','string','histogram','fonts
 ttstr='radial binned histgoram analysis';
 hc_anlB_Radial=uicontrol(hpBin,'style','checkbox','string','radial analysis','fontsize',7,...
     'backgroundcolor','w','Position',[1 hc_anlB_Histogram.Position(2)-15 hpBin.Position(3)-1 15],...
-    'ToolTipString',ttstr,'enable','on','Value',1);
+    'ToolTipString',ttstr,'enable','on','Value',0);
 
 
 ttstr='bin stripe focus';
@@ -1655,8 +1655,9 @@ function analyze_bin(src,evt)
         drawnow;       
         
 
-        [data] = ixon_ProcessImagesToBin(data,ixon_gui_bin_options());
-        
+        data = ixon_ProcessImagesToBin(data,ixon_gui_bin_options());
+        data = ixon_ProcessPostBin(data,ixon_gui_bin_options());
+
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
 
@@ -1760,13 +1761,8 @@ hcDigStandard=uicontrol(hpDig,'style','checkbox','string','standard','fontsize',
     'enable','on');
 
 % Thresholding Fidelity
-hcDigRadial=uicontrol(hpDig,'style','checkbox','string','radial','fontsize',7,...
-    'backgroundcolor','w','Position',[1 hcDigStandard.Position(2)-16 100 15],'Value',0,...
-    'enable','on');
-
-% Thresholding Fidelity
 hcDigCorrelator=uicontrol(hpDig,'style','checkbox','string','correlators','fontsize',7,...
-    'backgroundcolor','w','Position',[1 hcDigRadial.Position(2)-16 100 15],'Value',1,...
+    'backgroundcolor','w','Position',[1 hcDigStandard.Position(2)-16 100 15],'Value',1,...
     'enable','on');
 
 % Thresholding Fidelity
@@ -2230,7 +2226,7 @@ hpDisp_HB.Position=[0 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
 
 
 menuSelectBinType=uicontrol('style','popupmenu','string',...
-    {'raw','processed','normalized'},'units','pixels','parent',hpDisp_HB,...
+    {'raw','processed'},'units','pixels','parent',hpDisp_HB,...
     'Callback',{@ (src,evt) updateBinnedHistogramGraphics},'fontsize',8,'Value',2);
 menuSelectBinType.Position(3:4)=[140 18];
 menuSelectBinType.Position(1:2)=[2 hpDisp_HB.Position(4)-menuSelectBinType.Position(4)-35];   
@@ -3411,10 +3407,7 @@ end
                 opts.BinSource = 'ZbinRaw';
             case 2
                 opts.BinSource = 'Zbin';
-            case 3
-                opts.BinSource = 'ZbinNormalized';
         end
-
         opts.ImageNum= menuSelectImg.Value; % get image to analyze
         opts.Parent = tabHB;
         bin_showHistogram(data,opts);      

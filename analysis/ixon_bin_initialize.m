@@ -70,42 +70,11 @@ end
 
 %% Bin Data
 if ixon_doQGM_Bin
-    if isfield(ixondata,'LatticeBin')
-    ixondata = rmfield(ixondata,'LatticeBin');
-    end
-    for n=1:length(ixondata)
-        fprintf(['(' num2str(n) '/' num2str(numel(ixondata))...
-            ') lattice binning']);
-        tic
-        for kk=1:size(ixondata(n).Z,3)
-            fprintf(['...' num2str(kk)]);
-
-            opts = struct;
-            a1 = ixondata(n).LatticePhase(kk).a1;
-            a2 = ixondata(n).LatticePhase(kk).a2;                        
-            p1 = ixondata(n).LatticePhase(kk).p1;
-            p2 = ixondata(n).LatticePhase(kk).p2;        
-            opts.ScaleFactor = 8;
-            opts.a1 = a1;
-            opts.a2 = a2;
-            opts.p1 = p1;
-            opts.p2 = p2;     
-            if isfield(ixondata(n),'RotationMask')
-               opts.Mask =  ixondata(n).RotationMask;
-            end
-            ROI=ixondata(n).ROI;
-            ix_1 = find(ixondata(n).X>=ROI(1),1);
-            ix_2 = find(ixondata(n).X>=ROI(2),1);
-            iy_1 = find(ixondata(n).Y>=ROI(3),1);
-            iy_2 = find(ixondata(n).Y>=ROI(4),1);
-            x = ixondata(n).X(ix_1:ix_2);
-            y = ixondata(n).Y(iy_1:iy_2);   
-            z = ixondata(n).Z(iy_1:iy_2,ix_1:ix_2,kk);    
-            ixondata(n).LatticeBin(kk) = binLattice(x,y,z,opts); 
-        end    
-        disp([' done (' num2str(toc,'%.2f') 's)']);        
-    end
+    bin_options = struct;    
+    ixondata = ixon_ProcessImagesToBin(ixondata);    
 end  
+%% Initialize bindata    
+bindata = ixon_makeBinData(ixondata,saveOpts);
 %% Save Figures
 hF_LatticeVectors = ixon_showLatticeA(ixondata);
 hF_LatticePhase = ixon_showLatticePhase(ixondata);    
@@ -119,8 +88,6 @@ if ixon_doSave
         'ixon_LatticePhase',saveOpts);      
 end
 
-%% Initialize bindata    
-bindata = ixon_makeBinData(ixondata,saveOpts);
 %% Save QGM Data
 if ixon_doSave           
     try if ~exist(saveOpts.saveDir,'dir');mkdir(saveOpts.saveDir);end;end

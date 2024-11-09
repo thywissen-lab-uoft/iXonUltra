@@ -32,7 +32,6 @@ end
 if ~isfield(opts,'BinSource')
     opts.BinSource = 'Zbin';
     % opts.BinSource = 'ZbinRaw';
-    % opts.BinSource = 'ZbinNormalized';
 end
 
 %% Get ROI
@@ -64,9 +63,9 @@ centers = (edges(1:end-1) + edges(2:end))/2;
 thresh = median(threshes);
 
 centerval = median(centerval);
-if isequal(opts.BinSource,'ZbinNormalized')
-    thresh = thresh/centerval;
-end
+% if isequal(opts.BinSource,'ZbinNormalized')
+%     thresh = thresh/centerval;
+% end
     iL = centers<=thresh;
 iH = ~iL; 
 %% Initialize Figure

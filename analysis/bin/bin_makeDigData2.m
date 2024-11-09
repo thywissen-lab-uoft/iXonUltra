@@ -1,4 +1,4 @@
-function [digdata] = bin_makeDigDataScaled(bindata,opts)
+function digdata = bin_makeDigData2(bindata,opts)
     P = [bindata.Params];
     F = [bindata.Flags];
     U = [bindata.Units];
@@ -10,20 +10,6 @@ function [digdata] = bin_makeDigDataScaled(bindata,opts)
     n1 = bindata(1).LatticeBin.n1;
     n2 = bindata(1).LatticeBin.n2;
     
-    thresh = [];
-    
-    thresh_med     = median([bindata.ScaledThreshold]);
-    thresh_abs_med = median([bindata.ScaledThreshold].*[bindata.ScaledCentroid]);
-    
-    if opts.DigAve
-            thresh     = thresh_med;
-            thresh_abs = thresh_abs_med;
-            
-        Threshtype = 'CompensatedAve';
-    else
-        Threshtype = 'CompensatedInd';
-    end
-
 
     for nn=1:length(bindata)
         Zscaled = bindata(nn).LatticeBin(1).ZbinScaled;
@@ -67,5 +53,3 @@ function [digdata] = bin_makeDigDataScaled(bindata,opts)
     digdata.p2                  = [PH.p2];      % Lattice Phase 2
     
     [digdata] = dig_basic(digdata);
-end
-

@@ -63,8 +63,6 @@ function [digdata] = dig_basic(digdata)
         digdata.Yc_px(nn) = Yc;
         digdata.Xs_px(nn) = Xs;
         digdata.Ys_px(nn) = Ys;   
-
-
         
         digdata.Xc_um(nn) = px_2_um(Xc);
         digdata.Yc_um(nn) = px_2_um(Yc);

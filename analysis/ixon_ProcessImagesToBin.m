@@ -15,7 +15,7 @@ if nargin == 1
     opts.CompensateMethod           = 'gauss';'none';'custom';
 
     % If radially compensating
-    opts.CompensateGaussRadius           = 50;
+    opts.CompensateGaussRadius      = 50;
     opts.CompensateMax              = 1.5;
 
     % If using a custom map
@@ -140,9 +140,6 @@ for kk = 1 :length(data)
 
         %% Perform the Binning
         fprintf('binning ...');
-        % Long Step
-
-        % Takes 0.3 seconds at x10 scale        
         % Remove points outside of the desired ROI.
         ibad = logical(...
             (M(1,:)<n1i) + ...
@@ -163,102 +160,21 @@ for kk = 1 :length(data)
             Zbin(m2,m1) = Zbin(m2,m1) + Z(ii);  
         end
         %% Initialize Raw Binning
-
-        ZbinRaw = Zbin;
-        %% Spatial Compensation
-        fprintf('spatial compensate...');
-
-        switch opts.CompensateMethod
-            case 'none'
-                Zbin = ZbinRaw;
-            case 'gauss'
-                [nn1,nn2]=meshgrid(n1,n2);
-                n1c=sum(sum(ZbinRaw,3).*nn1,'all')/sum(ZbinRaw,'all');
-                n2c=sum(sum(ZbinRaw,3).*nn2,'all')/sum(ZbinRaw,'all');
-                s=opts.CompensateGaussRadius;   
-                N = opts.CompensateMax;
-                map = exp(-(nn1-n1c).^2/(2*s^2)).*exp(-(nn2-n2c).^2/(2*s^2));
-                map_inv = 1./map;
-                map_inv(map_inv>N)=N;
-                Zbin = ZbinRaw.*map_inv;   
-            case 'custom'
-                % Load a file which has a pixel map
-            case 'otherwise'
-                error('invalid spatial CompensateMethod')
-        end        
-
-        %% Clustering
-        fprintf('kmeans...');
-
-        z=Zbin(:);z(z==0)=[];       % Get histogram of all counts
-        % Sort into clusters
-        [idx,ClusterCentroids,sumD,D]=kmeans(z,opts.ClusterNumber);
-        
-        % Sort by centroid
-        [ClusterCentroids,inds]=sort(ClusterCentroids,'ascend');
-        sumD=sumD(inds);
-        
-        ClusterRadii = zeros(numel(ClusterCentroids),1);
-        ClusterThresholds = zeros(numel(ClusterCentroids),1);
-        for jj=1:numel(ClusterCentroids)
-            ind = inds(jj);
-            nThis = sum(idx==ind);
-            ClusterRadii(jj) = sqrt(sumD(jj)/nThis);
-            ClusterThresholds(jj) = round(max(z(idx==ind)));
-        end
-        ClusterThresholds(end)=[];    
-
-        %% Fit PDF To Cluster
-        fprintf('pdf...');
-
-        boundLow = ClusterCentroids(2)-1.5*ClusterRadii(2);
-        boundHigh = 2*ClusterCentroids(2);
-        z_truncate =z;
-        z_truncate(z_truncate<boundLow)=[];
-        z_truncate(z_truncate>boundHigh)=[];
-
-        [pdf1_c,pdf1_cint] = mle(z_truncate,'distribution','normal',...
-            'TruncationBounds',[boundLow boundHigh]);
-        PDF1_Distribution = 'normal';
-        PDF1_Center = pdf1_c(1);
-        PDF1_Radius = pdf1_c(2);
-        PDF1_Center_Bounds = pdf1_cint(1,:);
-        PDF1_Radius_Bounds = pdf1_cint(2,:);
-        PDF1 = @(x) pdf('normal',x,PDF1_Center,PDF1_Radius);
-
-        %% Normalized Counts
-        ZbinNormalized                  = Zbin./PDF1_Center;
-
+        ZbinRaw = Zbin;        
         %% Create Outputs
         LatticeBin                      = struct;
         LatticeBin.BinOptions           = opts;
         LatticeBin.n1                   = n1;
         LatticeBin.n2                   = n2;
         LatticeBin.ZbinRaw              = ZbinRaw;
-        LatticeBin.Zbin                 = Zbin;
-        LatticeBin.ZbinNormalized       = ZbinNormalized;
-
+        LatticeBin.Zbin                 = ZbinRaw;
         LatticeBin.Site2Pixel           = @(n1,n2) A*([n1;n2]+[p1;p2]);
         LatticeBin.a1                   = a1;
         LatticeBin.a2                   = a2;
         LatticeBin.p                    = [p1 p2];
         LatticeBin.LatticeSpacingPx     = mean([norm(a1) norm(a2)]);
-
-        LatticeBin.ClusterThreshold     = ClusterThresholds;
-        LatticeBin.ClusterCentroids     = ClusterCentroids;
-        LatticeBin.ClusterRadii         = ClusterRadii;
-
-        LatticeBin.PDF1                 = PDF1;
-        LatticeBin.PDF1_Distribution    = PDF1_Distribution;
-        LatticeBin.PDF1_Center          = PDF1_Center;
-        LatticeBin.PDF1_Radius          = PDF1_Radius;
-        LatticeBin.PDF1_Center_Bounds   = PDF1_Center_Bounds;
-        LatticeBin.PDF1_Radius_Bounds   = PDF1_Radius_Bounds;
-
-        disp('done');
-
         data(kk).LatticeBin(rr) = LatticeBin;
-        
+        disp('done');
     end
 end
 

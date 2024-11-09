@@ -23,10 +23,8 @@ n2 = n2i:n2f;
 % sites
 Zbin_all = zeros(length(n2),length(n1),length(bindata),length(bindata(1).LatticeBin));
 for n = 1:length(bindata)
-    LB = bindata(n).LatticeBin;
-    
+    LB = bindata(n).LatticeBin;    
     for kk=1:length(LB)
-
         n1i0 = LB(kk).n1(1); 
         n2i0 = LB(kk).n2(1); 
         dI1 = length(LB(kk).n1);
@@ -34,9 +32,7 @@ for n = 1:length(bindata)
         i1 = find(n1==n1i0,1);
         i2 = find(n2==n2i0,1);
         Zthis = nan(length(n2),length(n1));
-
-        Zthis(i2:(i2+dI2-1),i1:(i1+dI1-1)) = LB(kk).Zbin;
-    
+        Zthis(i2:(i2+dI2-1),i1:(i1+dI1-1)) = LB(kk).Zbin;    
         Zbin_all(:,:,n,kk) = Zthis;
     end
 end

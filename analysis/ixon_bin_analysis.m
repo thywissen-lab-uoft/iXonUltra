@@ -82,9 +82,6 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 
 %% Flags
 
-% Recenter all binned data to have same limits
-bin_BinRecenter                         = 1;
-
 % Histogram for accumalted data
 bin_BinAcummulateHist                   = 1;
 bin_BinAcummulateHist_Zmax              = 30000;
@@ -92,7 +89,6 @@ bin_BinAcummulateHist_Nbins             = 100;
 
 % Rescale
 bin_BinReScale                          = 1;
-
 
 % Stripe fit Data
 bin_BinStripe                           = 0;
@@ -144,9 +140,11 @@ bindata = bindata(inds);
 
 %% Recenter
 
-if bin_BinRecenter
-    bindata = bin_recenter(bindata);
-end
+bindata = ixon_ProcessPostBin(bindata);
+
+% if bin_BinRecenter
+%     bindata = bin_recenter(bindata);
+% end
 
  
 %% Histogram
@@ -156,9 +154,7 @@ if bin_BinAcummulateHist
     opts.Bins =  linspace(0,bin_BinAcummulateHist_Zmax,...
     bin_BinAcummulateHist_Nbins);  
     opts.Nthresh =dig_DigitizationThreshold;
-
-    opts.saveDir = bin_opts.saveDir;
-    
+    opts.saveDir = bin_opts.saveDir;    
     opts.doAnimate = 1;
     
     % Full Cloud
@@ -198,8 +194,7 @@ if bin_BinReScale
          'bin_Compensate',bin_opts);  
      ixon_saveFigure2(hF_BinFluor,...
          'bin_FluorPerAtom',bin_opts);  
-    end
-    
+    end    
 end
 
 
@@ -262,8 +257,6 @@ if bin_BinStripe
          'bin_StripeSummary',opts);     
     end
 end
-
-
 
 %% Bin Stripe Animation
 % if bin_BinStripe && bin_BinStripeAnimate
