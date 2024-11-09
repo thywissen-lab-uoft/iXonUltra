@@ -32,7 +32,7 @@ for n = 1:length(bindata)
         i1 = find(n1==n1i0,1);
         i2 = find(n2==n2i0,1);
         Zthis = nan(length(n2),length(n1));
-        Zthis(i2:(i2+dI2-1),i1:(i1+dI1-1)) = LB(kk).Zbin;    
+        Zthis(i2:(i2+dI2-1),i1:(i1+dI1-1)) = LB(kk).ZbinRaw;    
         Zbin_all(:,:,n,kk) = Zthis;
     end
 end
@@ -42,6 +42,7 @@ for n = 1:length(bindata)
     for kk=1:K
     bindata(n).LatticeBin(kk).n1 = n1; 
     bindata(n).LatticeBin(kk).n2 = n2; 
+    bindata(n).LatticeBin(kk).ZbinRaw = Zbin_all(:,:,n,kk);
     bindata(n).LatticeBin(kk).Zbin = Zbin_all(:,:,n,kk);
     end
 end

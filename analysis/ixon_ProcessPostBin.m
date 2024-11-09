@@ -2,6 +2,8 @@ function data = ixon_ProcessPostBin(data,opts)
 %% Options
 if nargin == 1
     opts = struct;
+    
+    opts.CompensateMethod           ='gauss';'none','custom';
     % If radially compensating
     opts.CompensateGaussRadius      = 50;
     opts.CompensateMax              = 1.5;
@@ -23,6 +25,8 @@ end
 %% Preparing
 for kk=1:length(data)
     for rr = 1:length(data(kk).LatticeBin)
+        fprintf(['(' num2str(kk) '/' num2str(length(data)) ')' num2str(rr) ' '])
+
         %% Spatial Compensation
         fprintf('spatial compensate...');
         ZbinRaw = data(kk).LatticeBin(rr).ZbinRaw;
@@ -34,8 +38,12 @@ for kk=1:length(data)
                 n1 = data(kk).LatticeBin(rr).n1;
                 n2 = data(kk).LatticeBin(rr).n2;
                 [nn1,nn2]=meshgrid(n1,n2);
-                n1c=sum(sum(ZbinRaw,3).*nn1,'all')/sum(ZbinRaw,'all');
-                n2c=sum(sum(ZbinRaw,3).*nn2,'all')/sum(ZbinRaw,'all');
+                Ztemp = ZbinRaw;
+                Ztemp(isnan(Ztemp)) = 0;
+                Ztemp(isinf(Ztemp)) = 0;
+                
+                n1c=sum(sum(Ztemp,3).*nn1,'all')/sum(Ztemp,'all');
+                n2c=sum(sum(Ztemp,3).*nn2,'all')/sum(Ztemp,'all');
                 s=opts.CompensateGaussRadius;   
                 N = opts.CompensateMax;
                 map = exp(-(nn1-n1c).^2/(2*s^2)).*exp(-(nn2-n2c).^2/(2*s^2));
@@ -51,6 +59,7 @@ for kk=1:length(data)
         fprintf('kmeans...');
 
         z=Zbin(:);z(z==0)=[];       % Get histogram of all counts
+        z(isnan(z))=[];
         % Sort into clusters
         [idx,ClusterCentroids,sumD,D]=kmeans(z,opts.ClusterNumber);
         
@@ -96,6 +105,7 @@ for kk=1:length(data)
         data(kk).LatticeBin(rr).PDF1_Radius          = PDF1_Radius;
         data(kk).LatticeBin(rr).PDF1_Center_Bounds   = PDF1_Center_Bounds;
         data(kk).LatticeBin(rr).PDF1_Radius_Bounds   = PDF1_Radius_Bounds;
+        disp('done');
     end
 end
 end

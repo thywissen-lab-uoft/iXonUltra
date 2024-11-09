@@ -99,7 +99,7 @@ bin_BinStripeAnimate                    = 1;
 bin_BinStripe_LGuess                    = 26.5;
 % bin_BinStripe_ColorThreshold            = [3000 5000];
 bin_BinStripe_ColorThreshold            = [2500 6000];
-
+bin_RawVersusProcessed=1;
 % Digitzation
 bin_Digitize                            = 1; 
 dig_DigitizationThreshold               = 6000;
@@ -186,17 +186,22 @@ end
 
 %%
 
+% hF_binCounts = bin_showThresh(bindata,opts);
 % if bin_BinReScale
 %     bin_opts.ROI = 'max';
-%     [bindata,hF_BinCompensate,hF_BinFluor] = bin_rescale(bindata,bin_opts);    
-%     if bin_opts.doSave
-%         ixon_saveFigure2(hF_BinCompensate,...
-%          'bin_Compensate',bin_opts);  
-%      ixon_saveFigure2(hF_BinFluor,...
-%          'bin_FluorPerAtom',bin_opts);  
-%     end    
-% end
+%     [bindata,hF_BinCompensate,hF_BinFluor] = bin_rescale(bindata,bin_opts); 
 
+if bin_RawVersusProcessed
+    [hF_binCompares,hF_fluorperatom] = bin_compareHistograms(bindata,opts); 
+    if bin_opts.doSave
+        for kk=1:length(hF_binCompares)
+            ixon_saveFigure2(hF_binCompares(kk),...
+                ['bin_Compensate_' num2str(kk)],bin_opts);  
+        end
+        ixon_saveFigure2(hF_fluorperatom,...
+            'bin_FluorPerAtom',bin_opts);  
+    end 
+end
 
 %% Bin Stripe
 if bin_BinStripe    

@@ -27,7 +27,7 @@ end
 %% Error Checking
 
 ProcessOptions = [data.ProcessOptions];
-if sum([ProcessOptions.doPSF]~=length(ProcessOptions));error('Cannot bin without PSF');end
+if (sum([ProcessOptions.doPSF])~=length(ProcessOptions));error('Cannot bin without PSF');end
 if ~isfield(data,'LatticeK') && isequal(opts.BasisSource,'fft')
     error('lattice basis vectors not calculated');
 end
@@ -81,12 +81,12 @@ for kk = 1 :length(data)
     [XX,YY]=meshgrid(X,Y);                  % matrix of X and Y
     R = [XX(:) YY(:)]'; 
 
-    for rr = 1:size(data.Z,3)        
+    for rr = 1:size(data(kk).Z,3)        
         fprintf(['(' num2str(kk) '/' num2str(length(data)) ')' num2str(rr) ' '])
         Z = data(kk).Z(:,:,rr);
 
         %% Get Data
-        Z = Z(iy_1:iy_2,ix_1:ix_2,kk);   
+        Z = Z(iy_1:iy_2,ix_1:ix_2,rr);   
         %% Pixel Thresholding 
         fprintf('thresh...');
         Z(Z<opts.PixelThreshold)=0;
