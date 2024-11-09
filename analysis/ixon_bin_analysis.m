@@ -104,7 +104,8 @@ bin_RawVersusProcessed=1;
 bin_Digitize                            = 1; 
 dig_DigitizationThreshold               = 6000;
 
-bin_Digitize_Source                     = 'compensated';
+bin_Digitize_Source                     = '
+% bin_Digitize_Source                     = 'compensated';
 % bin_Digitize_Source                     = 'uncompensated';
 
 %% X Variable and Units
