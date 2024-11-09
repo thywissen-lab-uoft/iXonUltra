@@ -88,7 +88,7 @@ bin_BinAcummulateHist_Zmax              = 30000;
 bin_BinAcummulateHist_Nbins             = 100;
 
 % Rescale
-bin_BinReScale                          = 1;
+% bin_BinReScale                          = 1;
 
 % Stripe fit Data
 bin_BinStripe                           = 0;
@@ -186,16 +186,16 @@ end
 
 %%
 
-if bin_BinReScale
-    bin_opts.ROI = 'max';
-    [bindata,hF_BinCompensate,hF_BinFluor] = bin_rescale(bindata,bin_opts);    
-    if bin_opts.doSave
-        ixon_saveFigure2(hF_BinCompensate,...
-         'bin_Compensate',bin_opts);  
-     ixon_saveFigure2(hF_BinFluor,...
-         'bin_FluorPerAtom',bin_opts);  
-    end    
-end
+% if bin_BinReScale
+%     bin_opts.ROI = 'max';
+%     [bindata,hF_BinCompensate,hF_BinFluor] = bin_rescale(bindata,bin_opts);    
+%     if bin_opts.doSave
+%         ixon_saveFigure2(hF_BinCompensate,...
+%          'bin_Compensate',bin_opts);  
+%      ixon_saveFigure2(hF_BinFluor,...
+%          'bin_FluorPerAtom',bin_opts);  
+%     end    
+% end
 
 
 %% Bin Stripe
@@ -235,7 +235,6 @@ if bin_BinStripe
 end  
 
 %%
-
 bin_opts.nCenter = [100 100];
 
 %% Bin Stripe Summary
