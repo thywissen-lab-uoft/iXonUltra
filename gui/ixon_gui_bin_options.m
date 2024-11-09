@@ -1,37 +1,27 @@
-function output = ixon_gui_bin_options
+function opts = ixon_gui_bin_options
 
-output = struct;
+%% Options for binning
+% Use this if you want to use FFT to specify basis
+opts.BasisSource                = 'fft';'manual';
+opts.BasisManual                =   [0.1923 0.3244 .3;
+                                    .3208 -0.1862 0.3];
+% Bin PreProcess Options
+opts.ResizeFactor               = 8;
+opts.PixelThreshold             = 150;
 
-%% Bin Basis
-% Set LatticeSource to FFT to use if you want to fit using the results from
-% the FFT (recommended).
-% In certain cases it is useful to use a manual specification
-output.BinBasis.LatticeSource = 'manual';
-output.BinBasis.BasisManual = [0.1923 0.3244 .3;
-                        .3208 -0.1862 0.3];
+% Post Binning Processing
+opts.CompensateMethod           = 'gauss';'none';'custom';
 
-% Use the FFT to find the basis. (Recomended)
-output.BinBasis.LatticeSource = 'fft'; 
+% If radially compensating
+opts.CompensateGaussRadius           = 50;
+opts.CompensateMax              = 1.5;
 
-%% Binning Pre-Processing Options
-% Before binning it is useful to manipulate the raw image to get better
-% results
-%
-% Image Rescaling : Smooth issues from pixelsize~lattice spacing
-% PixelThreshold  : Ignores pixels that are clearly in the noise.
+% If using a custom map
+opts.CompensateCustomMap        = 'asdfassdf.mat';
+opts.ClusterNumber              =2;
 
-output.PreBinOptions.RescaleFactor          = 8;   
-output.PreBinOptions.PixelThreshold         = 150; 
-
-%% Binning Post-Processing Options
-
-output.PostBinOptions.RescaleRadialSigma    = 22;
-output.PostBinOptions.RescaleRadialMax      = 1.2;
-output.PostBinOptions.RescaleCustomFile     = 'rescale_map.mat';
-
-%% Bin Special Function
-output.StripeThreshold = [3000 7000];
-
+%% Options for special bin alaysis
+opts.StripeThreshold = [3000 7000];
 
 end
 
