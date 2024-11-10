@@ -26,8 +26,13 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     kB= 1.380649e-23;           % J/K
 
     site2Vr_Hz = @(n) 0.5*m*opts.TrapOmega^2*aL^2*n.^2/h;
+    sigma2T_nK = @(sigmaR) 1e9*sigmaR^2*m*opts.TrapOmega^2/kB;
 
-    trap_str = ['$V(r)=0.5 m\omega^2r^2,~\omega=2\pi~' num2str(opts.TrapOmega/(2*pi)) '~\mathrm{Hz}$'];
+    nstar = linspace(0,100,1e4);
+    istar=find([site2Vr_Hz(nstar)]>=4*opts.Tunneling,1);
+    rstar=nstar(istar)*0.527;
+
+
 
     %% Do it
     rlist={};
@@ -63,19 +68,18 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     % pdf fit
     r_all = rlist{:};
 
-    % pdf_r = @(r,sigma) sqrt(2*pi)/sigma*r.*normpdf(r,0,sigma);
-
-     pdf_r = @(r,sigma) r.*exp(-r.^2/(2*sigma^2))/sigma^2;
+    pdf_r = @(r,sigma) 2*pi*r.*exp(-r.^2/(2*sigma^2))/(2*pi*sigma^2);
     cdf_r = @(r,sigma) 1-exp(-r.^2/(2*sigma^2));
-
-    iMinGauss = find(flip(nr_mean)>0.05,1);
+    N0=trapz([0 rcen],[mean(nr_mean(1:2)); nr_mean]);
+    foo= @(s,r) sqrt(2/pi)*N0/s*exp(-r.^2/(2*s.^2));
+    iMinGauss = find(flip(nr_mean)>0.1,1);
 
     if isempty(iMinGauss)
         rMinGauss=0;
     else
         rMinGauss = rcen(length(rcen)-iMinGauss);
     end
-    % rMinGauss=0;
+    rMinGauss=0;
     r_all_sub=r_all;
     r_all_sub(r_all_sub<=rMinGauss)=[];
 
@@ -84,10 +88,16 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
         'Start',[20], ...
     'LowerBound',0,'TruncationBounds',[rMinGauss inf]);
     sigmaR = pdf_r_vals(1);
-    sigmaR_err =(pdf_r_cints(2,1)-pdf_r_cints(2,1))*0.5;
+    sigmaR_err =(pdf_r_cints(2,1)-pdf_r_cints(1,1))*0.5;
 
-    foo= @(s,r) 2*exp(-r.^2/(2*s.^2))/sqrt(2*pi*s^2);
-    
+
+    sigmaR_um = sigmaR*0.527;
+    sigmaR_err_um = sigmaR_err*0.527;
+    T_HO = sigma2T_nK(sigmaR_um*1e-6);
+
+    % Empircal CDF
+    [f,x]=ecdf(r_all*0.527);
+
     %% String Stuff
     Z   = [digdata.Zdig];
     P   = [digdata.Params];
@@ -104,10 +114,14 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
         num2str(round(mean(digdata.Ys_um),1)) ')~\mu\mathrm{m},~'  ...
         '(' num2str(round(mean(digdata.Xs_site),1)) ',' ...
         num2str(round(mean(digdata.Ys_site),1)) ')~\mathrm{site}$'];
-    
+    trap_str = ['$V(r)=0.5 m\omega^2r^2$' newline ...
+        '$\omega=2\pi~' num2str(opts.TrapOmega/(2*pi)) '~\mathrm{Hz},t='...
+        num2str(opts.Tunneling) '~\mathrm{Hz}$' newline ...
+        '$\rightarrow r^*= ' ...
+        num2str(round(rstar,1)) '~\mu\mathrm{m},T_\mathrm{HO}=' num2str(round(T_HO,1)) '~\mathrm{nK}$'];    
     %% Find Center   
     Xc  = [digdata.Xc_site];
-      Yc  = [digdata.Yc_site];  
+    Yc  = [digdata.Yc_site];  
     Xcbar = round(mean(Xc));
     Ycbar = round(mean(Yc));    
     n1 = digdata.n1;
@@ -233,7 +247,10 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     
     strSummary = ['$n=' num2str(Npics) ' $ images' newline ...
         '$N=' num2str(round(mean(digdata.Natoms))) '\pm' ...        
-        num2str(round(std(digdata.Natoms,1))) '$ atoms'];
+        num2str(round(std(digdata.Natoms,1))) '$ atoms' newline ...
+        '$\sigma_r = ' num2str(round(sigmaR_um,1))  '\pm' ...
+         num2str(round(sigmaR_err_um,1)) '\mu\mathrm{m}$'];
+
     text(1,1,strSummary,'units','pixels','fontsize',10,...
         'horizontalalignment','left','verticalalignment','bottom',...
         'color','r','interpreter','latex','parent',ax1);  
@@ -246,8 +263,6 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
         'color','r','parent',ax1,'interpreter','latex','fontname','arial');
         ax1.XAxisLocation='Top';
         set(ax1,'FontSize',8);
-
-
 
     cc1=colorbar(ax1);
     cc1.Label.String = 'charge occupation';
@@ -272,7 +287,6 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
      hold(ax2,'on')
     xlabel(ax2,'radial distance (sites)');
     ylabel(ax2,'$n(r)$','interpreter','latex','fontsize',14);
-    title(ax2,'radial density');        
     text(.99,.99,strSummary,'units','normalized','fontsize',12,'horizontalalignment','right',...
         'verticalalignment','top','interpreter','latex','parent',ax2);
     
@@ -287,12 +301,10 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     strRadialBin = ['radial bin ' char(916) 'r:' num2str(opts.BinStep)];
     text(.99,.01,strRadialBin,'units','normalized','horizontalalignment','right',...
         'verticalalignment','bottom','fontsize',10,'parent',ax2);
-    N = sum(nr)
-    rVec=0:1:100;
-    dr=rVec(2)-rVec(1);
-    plot(rVec,3.5*foo(sigmaR,rVec)/dr,'-')
-    % foo= @(s,r) 2*exp(-r.^2/(2*s.^2))/sqrt(2*pi*s^2);
-
+    rVec=linspace(0,100,100);
+    plot(rVec,foo(sigmaR,rVec),'-')
+    set(ax2,'box','on','linewidth',1,'fontsize',12,...
+        'yaxislocation','right')
 
     % Plot radial average ndet std
     hF.UserData.Axes{3}=subplot(2,2,4,'parent',hF);
@@ -302,18 +314,29 @@ function [hF,out] = dig_radialAnalysis(digdata,opts)
     [x0, y0, w, h]=getAxesPos(2,2,4,W,H);
     ax3.Position = [x0 y0 w h];
     c=[0    0.4470    0.7410];
-    errorbar(1e-3*site2Vr_Hz(rcen),nr_mean,nr_std,'o-','linewidth',1, ...
-        'markerfacecolor',c,'markeredgecolor',c*.5,'linewidth',1,'parent',ax3)
-    xlim(ax3,[0 10]);
-    xlabel(ax3,'$V(r)~(\mathrm{kHz})$','interpreter','latex','fontsize',14)
-    ylabel(ax3,'$n(r)$','interpreter','latex','fontsize',14);
+
+%     errorbar(1e-3*site2Vr_Hz(rcen),nr_mean,nr_std,'o-','linewidth',1, ...
+%         'markerfacecolor',c,'markeredgecolor',c*.5,'linewidth',1,'parent',ax3)
+%     xlim(ax3,[0 10]);
+%     xlabel(ax3,'$V(r)~(\mathrm{kHz})$','interpreter','latex','fontsize',14)
+%     ylabel(ax3,'$n(r)$','interpreter','latex','fontsize',14);
+%     set(ax3,'box','on','linewidth',1,'fontsize',12,...
+%         'yaxislocation','right')
+
+    plot(x,100*f,'k-','linewidth',2,'parent',ax3);
+    xlabel(ax3,'radial position (\mum)')
+    xlim(ax3,[0 max(x)]);
+    ylim([0 102]);
     set(ax3,'box','on','linewidth',1,'fontsize',12,...
         'yaxislocation','right')
+    ylabel('% within radius')
+    hold(ax3,'on');
+        
+
+    plot([1 1]*rstar,[0 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1);
+    plot([rstar x(end)],[1 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1);
 text(.99,.01,trap_str,'interpreter','latex','horizontalalignment','right',...
     'verticalalignment','bottom','fontsize',12,'units','normalized')
-
-
-
     % 
     % plot(rVec(2:end),radial_charge_mean_std(2:end)/sqrt(Npics),...
     %     'ko','markerfacecolor',[.5 .5 .5],...
