@@ -1,4 +1,16 @@
 function digdata = bin_makeDigData2(bindata,opts)
+
+if nargin ==1
+    opts=struct;
+end
+
+if ~isfield(opts,'xVar')
+    opts.xVar='ExecutionDate';
+end
+
+if ~isfield(opts,'NumSigmaThresh')
+    opts.NumSigmaThresh=2.5;
+end
     P = [bindata.Params];
     F = [bindata.Flags];
     U = [bindata.Units];

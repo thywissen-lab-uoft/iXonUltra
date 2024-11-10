@@ -123,23 +123,23 @@ end
 end
 
 function [axX,axY,axWidth,axHeight]=getAxesPos(nInd,nTot,xSize,ySize)
-nInd=nInd-1;
-yTop=30;
-yBot=30;
-
-xLeft=35;
-xRight=20;
-
-ySpace=35;
-xSpace=35;
-
-nRow=ceil(sqrt(nTot));
-
-axHeight=(ySize-yTop-yBot-ySpace*(nRow-1))/nRow;
-axWidth=(xSize-xLeft-xRight-xSpace*(nRow-1))/nRow;
-
-axX=xLeft+(axWidth+xSpace)*mod(nInd,nRow);
-axY=(ySize-yTop-axHeight)-floor(nInd/nRow)*(axHeight+ySpace);
+    nInd=nInd-1;
+    yTop=30;
+    yBot=30;
+    
+    xLeft=35;
+    xRight=20;
+    
+    ySpace=35;
+    xSpace=35;
+    
+    nRow=ceil(sqrt(nTot));
+    
+    axHeight=(ySize-yTop-yBot-ySpace*(nRow-1))/nRow;
+    axWidth=(xSize-xLeft-xRight-xSpace*(nRow-1))/nRow;
+    
+    axX=xLeft+(axWidth+xSpace)*mod(nInd,nRow);
+    axY=(ySize-yTop-axHeight)-floor(nInd/nRow)*(axHeight+ySpace);
 end
 
 

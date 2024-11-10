@@ -70,8 +70,8 @@ centerval = median(centerval);
 iH = ~iL; 
 %% Initialize Figure
 if ~isfield(opts,'Parent')
-    opts.Parent = figure('color','w',[100 100 1300 400],...
-        'Name','BinHistogram');
+    opts.Parent = figure('color','w','Position',[100 100 1300 400],...
+        'Name','BinHistogram','NumberTitle','off');
     fig = opts.Parent;
 else
     fig = opts.Parent;

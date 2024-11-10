@@ -49,8 +49,8 @@ data=data.data;
 data.Z=data.RawImages(:,:,2)-data.RawImages(:,:,1);
 Z=data.Z;
 
-
-
+digdata=[]
+bindata = [];
 
 %% Initialize Drivers and GUI
 
@@ -1657,6 +1657,9 @@ function analyze_bin(src,evt)
 
         data = ixon_ProcessImagesToBin(data,ixon_gui_bin_options());
         data = ixon_ProcessPostBin(data,ixon_gui_bin_options());
+        saveOpts=struct;
+        saveOpts.saveDir='GUI';
+        bindata = ixon_makeBinData(data,saveOpts);
 
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
@@ -1786,28 +1789,34 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
         
         hb_Diganalyze.BackgroundColor=[255 219 88]/255;
         drawnow;
-        
-        dig_threshold = tblDig.Data;
-        data = ixon_digitize(data,dig_threshold);
 
-         if hcDigFidelity.Value             
-            opts=struct;
-            opts.threshold = dig_threshold;            
-            opts.Label = data.Name;
-            n1 = data.LatticeDig(1).n1;
-            n2 = data.LatticeDig(1).n2;
-            Zdig = zeros(length(n2),length(n1),length(data.LatticeDig));            
-            for jj = 1 :length(data.LatticeDig)
-                Zdig(:,:,jj) = data.LatticeDig(jj).Zdig;
-            end
-            opts.FigureNumber = 4001; 
-            bin_Fidelity(data,opts);            
-            opts.FigureNumber = 4002; 
-            out = dig_Fidelity(Zdig,n1,n2,opts);  
-            data.DigFideltiy = out; 
-        end          
+        digdata = bin_makeDigData2(bindata);
 
-        updateDigitalGraphics;        
+        opts=struct;
+        opts.Parent = tabD;
+        opts.BinStep = 3;
+         dig_radialAnalysis(digdata,opts);
+        % dig_threshold = tblDig.Data;
+        % data = ixon_digitize(data,dig_threshold);
+        % 
+        %  if hcDigFidelity.Value             
+        %     opts=struct;
+        %     opts.threshold = dig_threshold;            
+        %     opts.Label = data.Name;
+        %     n1 = data.LatticeDig(1).n1;
+        %     n2 = data.LatticeDig(1).n2;
+        %     Zdig = zeros(length(n2),length(n1),length(data.LatticeDig));            
+        %     for jj = 1 :length(data.LatticeDig)
+        %         Zdig(:,:,jj) = data.LatticeDig(jj).Zdig;
+        %     end
+        %     opts.FigureNumber = 4001; 
+        %     bin_Fidelity(data,opts);            
+        %     opts.FigureNumber = 4002; 
+        %     out = dig_Fidelity(Zdig,n1,n2,opts);  
+        %     data.DigFideltiy = out; 
+        % end          
+
+        % updateDigitalGraphics;        
         hb_Diganalyze.BackgroundColor=[80 200 120]/255;
         drawnow;
     end
