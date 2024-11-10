@@ -8,16 +8,16 @@ opts=struct;
 opts.DigitizeMethod     = 'pdf_kmeans_threshold'; % recommended (uses kmeans+pdf)
 opts.pdf_Sigma          = 2.5;
 
-% Use kmeans clustering to find threshold
-opts.DigitzeMethod      = 'kmeans';
-
-% Use a manual threshold
-opts.DigitizeMethod     = 'manual';
-opts.ManualThreshold    = 2000;
+% % Use kmeans clustering to find threshold
+% opts.DigitzeMethod      = 'kmeans';
+% 
+% % Use a manual threshold
+% opts.DigitizeMethod     = 'manual';
+% opts.ManualThreshold    = 2000;
 
 % For future useful to not just do simple thresholding by somekind of
 % algorithm to calculate
-opts.MaximumLikeliHoodAlgorithm = false;
+% opts.MaximumLikeliHoodAlgorithm = false;
 
 %% Analysis Options
 
