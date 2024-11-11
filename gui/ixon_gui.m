@@ -1619,31 +1619,6 @@ hb_Binanalyze=uicontrol(hpBin,'style','pushbutton','string','binned analysis',..
     'units','pixels','callback',@analyze_bin,'parent',hpBin,'backgroundcolor',[80 200 120]/255);
 hb_Binanalyze.Position=[3 1 hpBin.Position(3)-8 18];
 
-    function [a1, a2, p1, p2] = getLattice        
-        switch bgBasis.SelectedObject.UserData
-            case 'fft'
-                if isfield(data,'LatticePhase')
-                    a1 = data.LatticePhase(kk).a1;
-                    a2 = data.LatticePhase(kk).a2;                        
-                    p1 = data.LatticePhase(kk).p1;
-                    p2 = data.LatticePhase(kk).p2;    
-                    
-                    a1 = data.LatticePhase(1).a1;
-                    a2 = data.LatticePhase(1).a2;                        
-                    p1 = data.LatticePhase(1).p1;
-                    p2 = data.LatticePhase(1).p2;   
-                else
-                    errordlg('Lattice phase not calculated yet.');
-                    beep
-                    return;                        
-                end
-            case 'manual'
-                a1 = tblBasis.Data(1,(1:2))';
-                a2 = tblBasis.Data(2,(1:2))';
-                p1 = tblBasis.Data(1,3);
-                p2 = tblBasis.data(2,3);
-        end
-    end
 
 function analyze_bin(src,evt)
     if isfield(data,'LatticeBin')
@@ -1777,45 +1752,18 @@ hb_Diganalyze=uicontrol(hpDig,'style','pushbutton','string','digital analysis',.
     'units','pixels','callback',@analyze_dig,'parent',hpDig,'backgroundcolor',[80 200 120]/255);
 hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
 
-    function chBasis(src,evt)
-       defaultBasis = src.Data;
-    end
-
     function analyze_dig(src,evt)
         if ~isfield(data,'LatticeBin')
             warning('No binnined data to digitize');
             return;
-        end
-        
+        end        
         hb_Diganalyze.BackgroundColor=[255 219 88]/255;
         drawnow;
-
         digdata = bin_makeDigData2(bindata);
-
         opts=struct;
         opts.Parent = tabD;
         opts.BinStep = 3;
-         dig_radialAnalysis(digdata,opts);
-        % dig_threshold = tblDig.Data;
-        % data = ixon_digitize(data,dig_threshold);
-        % 
-        %  if hcDigFidelity.Value             
-        %     opts=struct;
-        %     opts.threshold = dig_threshold;            
-        %     opts.Label = data.Name;
-        %     n1 = data.LatticeDig(1).n1;
-        %     n2 = data.LatticeDig(1).n2;
-        %     Zdig = zeros(length(n2),length(n1),length(data.LatticeDig));            
-        %     for jj = 1 :length(data.LatticeDig)
-        %         Zdig(:,:,jj) = data.LatticeDig(jj).Zdig;
-        %     end
-        %     opts.FigureNumber = 4001; 
-        %     bin_Fidelity(data,opts);            
-        %     opts.FigureNumber = 4002; 
-        %     out = dig_Fidelity(Zdig,n1,n2,opts);  
-        %     data.DigFideltiy = out; 
-        % end          
-
+        dig_radialAnalysis(digdata,opts);          
         % updateDigitalGraphics;        
         hb_Diganalyze.BackgroundColor=[80 200 120]/255;
         drawnow;
