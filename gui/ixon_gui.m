@@ -1633,7 +1633,7 @@ function analyze_bin(src,evt)
         data = ixon_ProcessImagesToBin(data,ixon_gui_bin_options());
         data = ixon_ProcessPostBin(data,ixon_gui_bin_options());
         saveOpts=struct;
-        saveOpts.saveDir='GUI';
+        saveOpts.saveDir='GUI\figures';
         bindata = ixon_makeBinData(data,saveOpts);
 
         updateBinnedGraphics;     
@@ -1736,12 +1736,12 @@ hb_DigOptions.Position(1:2)=hc_anlD_auto.Position(1:2) + ...
 % Thresholding Fidelity
 hcDigStandard=uicontrol(hpDig,'style','checkbox','string','standard','fontsize',7,...
     'backgroundcolor','w','Position',[1 hb_DigOptions.Position(2)-20 100 15],'Value',1,...
-    'enable','on');
+    'enable','off');
 
 % Thresholding Fidelity
 hcDigCorrelator=uicontrol(hpDig,'style','checkbox','string','correlators','fontsize',7,...
-    'backgroundcolor','w','Position',[1 hcDigStandard.Position(2)-16 100 15],'Value',1,...
-    'enable','on');
+    'backgroundcolor','w','Position',[1 hcDigStandard.Position(2)-16 100 15],'Value',0,...
+    'enable','off');
 
 % Thresholding Fidelity
 hcDigFidelity=uicontrol(hpDig,'style','checkbox','string','two-shot fidelity','fontsize',7,...
@@ -1760,6 +1760,7 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
         hb_Diganalyze.BackgroundColor=[255 219 88]/255;
         drawnow;
         digdata = bin_makeDigData2(bindata);
+        digdata = dig_basic(digdata);
         opts=struct;
         opts.Parent = tabD;
         opts.BinStep = 3;
@@ -3367,6 +3368,8 @@ end
         end
         opts.ImageNum= menuSelectImg.Value; % get image to analyze
         opts.Parent = tabHB;
+
+        opts.FigLabel = data.Name;
         bin_showHistogram(data,opts);      
     end
 

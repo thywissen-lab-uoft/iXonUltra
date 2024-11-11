@@ -31,46 +31,75 @@ end
 
 if ~isfield(opts,'BinSource')
     opts.BinSource = 'Zbin';
-    % opts.BinSource = 'ZbinRaw';
 end
 
+%% Colormap
+ca = [1 1 1];
+cb = [0.6 0 .5];
+white2purple = [linspace(ca(1),cb(1),1000)' ...
+    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
+
+
+ca = [0 0 0];       
+cb = [0.7 .1 .6];
+black2purple = [linspace(ca(1),cb(1),1000)' ...
+    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
 %% Get ROI
 
 n1 = bindata(1).LatticeBin(opts.ImageNum).n1;
 n2 = bindata(1).LatticeBin(opts.ImageNum).n2;
 
-if isequal(opts.ROI,'max')
-   opts.ROI = [min(n1) max(n1) min(n2) max(n2)]; 
-end    
-R = opts.ROI;
-%% Prepare Data
+[nn1,nn2]=meshgrid(n1,n2);
+
+
+%% Acrew all data
 Zall = zeros(length(n2),length(n1),length(bindata));
 for nn = 1:length(bindata)        
     Zthis = bindata(nn).LatticeBin(opts.ImageNum).(opts.BinSource);    
     Zall(:,:,nn) =  Zthis;
     threshes(nn)=bindata.LatticeBin(opts.ImageNum).ClusterThreshold;    
     centerval(nn) = bindata.LatticeBin(1).PDF1_Center;
+
+    Zthis(isnan(Zthis))=0;
+
+    n1c(nn) = sum(Zthis.*nn1,'all')/sum(Zthis,'all');
+    n2c(nn) = sum(Zthis.*nn2,'all')/sum(Zthis,'all');
+
+    n1c_sq(nn) = sum(Zthis.*nn1.^2,'all')/sum(Zthis,'all');
+    n2c_sq(nn) = sum(Zthis.*nn2.^2,'all')/sum(Zthis,'all');
+
+    n1_sigma(nn) = sqrt(n1c_sq-n1c^2);
+    n2_sigma(nn) = sqrt(n2c_sq-n2c^2);
 end
 
-in1i = find(n1==R(1),1);in1f = find(n1==R(2),1);    
-in2i = find(n2==R(3),1);in2f = find(n2==R(4),1);
- 
+n_sigma_med =[median(n1_sigma) median(n2_sigma)];
+nc_med = [median(n1c) median(n2c)];
+
+n1_lim = nc_med(1)+2*[-1 1]*n_sigma_med(1);
+n2_lim = nc_med(2)+2*[-1 1]*n_sigma_med(2);
+
+
 z=Zall;
 z(z==0)=[];
 [N,edges] = histcounts(z,opts.Bins);  
 centers = (edges(1:end-1) + edges(2:end))/2;   
 
 thresh = median(threshes);
-
 centerval = median(centerval);
-% if isequal(opts.BinSource,'ZbinNormalized')
-%     thresh = thresh/centerval;
-% end
-    iL = centers<=thresh;
+iL = centers<=thresh;
 iH = ~iL; 
+Nall={};
+
+for nn=1:length(bindata)
+    zthis = Zall(:,:,nn); zthis=zthis(:);
+    zthis(zthis==0)=[];
+    zthis(isnan(zthis))=[];
+    Nall{nn}=histcounts(z,edges);
+end
+
 %% Initialize Figure
 if ~isfield(opts,'Parent')
-    opts.Parent = figure('color','w','Position',[100 100 1300 400],...
+    opts.Parent = figure('color','w','Position',[100 100 550 400],...
         'Name','BinHistogram','NumberTitle','off');
     fig = opts.Parent;
 else
@@ -83,12 +112,12 @@ end
 if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
     tFig=uicontrol('style','text','string',opts.FigLabel,...
         'units','pixels','backgroundcolor',...
-        'w','horizontalalignment','left');
+        'w','horizontalalignment','left','parent',fig);
     tFig.Position(4)=tFig.Extent(4);
     tFig.Position(3)=400;
     tFig.Position(1:2)=[1 1];
 end    
-    
+
 % Histogram Axis
 ax1 = axes('parent',opts.Parent);
 
@@ -110,21 +139,19 @@ xlim(ax1,[0 max(edges)]);
 % Image Axis
 axImg = axes('parent',opts.Parent);
 axImg.Position=[ax1.Position(1) ...
-    ax1.Position(2)+ax1.Position(4)-0.35*ax1.Position(4) ...
-    ax1.Position(3)*0.35 ...
-    ax1.Position(4)*0.35];
+    ax1.Position(2)+ax1.Position(4)-0.4*ax1.Position(4) ...
+    ax1.Position(3)*0.4 ...
+    ax1.Position(4)*0.4];
 hImg = imagesc(n1,n2,sum(Zall,3),'parent',axImg);   
 set(axImg,'visible','off','ydir','normal')
 axis(axImg,'equal');
 axis(axImg,'tight');
-ca = [0 0 0];       
-cb = [0.7 .1 .6];
-cc = [linspace(ca(1),cb(1),1000)' ...
-    linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
-colormap(axImg,cc);
-
-rectangle('Position',[R(1) R(3) R(2)-R(1) R(4)-R(3)],...
-    'EdgeColor','r','parent',axImg)
+colormap(axImg,black2purple);
+% caxis(axImg,[0 thresh]);
+set(axImg,'XLim',n1_lim,'YLim',n2_lim);
+colorbar(axImg);
+% rectangle('Position',[R(1) R(3) R(2)-R(1) R(4)-R(3)],...
+%     'EdgeColor','r','parent',axImg)
 
     
     %% Populate with data

@@ -19,24 +19,47 @@ opts.pdf_Sigma          = 2.5;
 % algorithm to calculate
 % opts.MaximumLikeliHoodAlgorithm = false;
 
-%% Analysis Options
+%% Digital Trap Calibrations
+opts.doHubbardAnalysis = true;
+
 
 % Trap Frequency
-opts.TrapOmega      = 2*pi*[65 65];
+% The overall harmonic trap frequency
+opts.TrapOmega      = 2*pi*65;
 
-% Lattice Depth/Tunneling
-opts.LatticeDepth   = [2.5 2.5 2.5]; % For Manual specification of depth
-opts.LatticeDepth   = {'l','1','1'};    % Pull depth from these params
+% Lattice Depth V0 [Er]
+% In analyzing the images, the lattice depth tells you the 
+opts.LatticeDepth   = 2.5; % For Manual specification of depth
+opts.LatticeDepth   = 'lattice_depth_var_name';    % Pull depth from these params
 
-% Tunneling Source
-% How to convert lattice depth in tunneling
+% Tunneling t [Hz]
+% The single particle tunneling element.
+opts.Tunneling = [];    % keep empty if auto-calculate from V0 
+opts.Tunneling = 563;
+
+% Magnetic Field
+% The magnetic field is used to calculate the s-wave scattering length.
+opts.MagneticField  = 'varname';    % 
+opts.MagneticField  = 201.5;        % Specify magnetic field manually
 
 % Wannier Source
-% How to calculate the wannier interaction overlap
+opts.WannierOverlap = [];           % keep empty if auto-calculate from V0
 
-% Magnetic Field (interactions)
-opts.MagneticField  = 201.5;
-opts.MagneticField  = 'varname';        % Pull field from this param
+% Interaction Strength U [Hz]
+% The hubbard can calculated from V0 and a_s.  In the perturbative limit
+% the hubbard U is given by the WannierOverlap function.
+opts.U = [];    % Keep this empty for automatic calculation
+
+
+
+%% Digital Analysis Options
+
+% Gauss Fitting Options
+% Fit the radial distribution to a radial gaussian.  To account for pauli
+% and interactino effects, only fit the wings where the density lower.
+opts.GaussFitDensityMax = [];       % empty if you don't want gauss fit
+opts.GaussFitDensityMax =[0.05 1];  % Maximum density to fit to gaussian
+
 
 end
 
