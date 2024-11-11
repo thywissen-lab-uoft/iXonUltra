@@ -86,7 +86,7 @@ for kk = 1 :length(data)
         Z = data(kk).Z(:,:,rr);
 
         %% Get Data
-        Z = Z(iy_1:iy_2,ix_1:ix_2,rr);   
+        Z = Z(iy_1:iy_2,ix_1:ix_2);   
         %% Pixel Thresholding 
         fprintf('thresh...');
         Z(Z<opts.PixelThreshold)=0;
