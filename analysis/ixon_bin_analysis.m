@@ -84,29 +84,26 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 
 % Histogram for accumalted data
 bin_BinAcummulateHist                   = 1;
-bin_BinAcummulateHist_Zmax              = 30000;
-bin_BinAcummulateHist_Nbins             = 100;
-
-% Rescale
-% bin_BinReScale                          = 1;
-
-% Stripe fit Data
-bin_BinStripe                           = 0;
-
-bin_BinStripeIndex                      = 1;% 1 for trees, 2 for fallen tree
-
-bin_BinStripeAnimate                    = 1;
-bin_BinStripe_LGuess                    = 26.5;
-% bin_BinStripe_ColorThreshold            = [3000 5000];
-bin_BinStripe_ColorThreshold            = [2500 6000];
-bin_RawVersusProcessed=1;
-% Digitzation
+bin_FluorPerAtom                        = 1;
+bin_RawVersusProcessed                  = 1;
 bin_Digitize                            = 1; 
-dig_DigitizationThreshold               = 6000;
 
+% CJF 2024/11/12 : These are now obsolete, use them at your risk
+% Rescale
+% bin_BinReScale                         = 1;
+% Stripe fit Data
+% bin_BinStripe                           = 0;
+% bin_BinStripeIndex                      = 1;% 1 for trees, 2 for fallen tree
+% bin_BinStripeAnimate                    = 1;
+% bin_BinStripe_LGuess                    = 26.5;
+% bin_BinStripe_ColorThreshold          = [3000 5000];
+% bin_BinStripe_ColorThreshold            = [2500 6000];
+% Digitzation
 % bin_Digitize_Source                     = '
 % bin_Digitize_Source                     = 'compensated';
 % bin_Digitize_Source                     = 'uncompensated';
+
+
 
 %% X Variable and Units
 % If auto unit and variable are chosen, search through the parameters and
@@ -139,25 +136,25 @@ P = [bindata.Params];
 [~,inds] =  sort([P.(bin_opts.xVar)]);
 bindata = bindata(inds);
 
-%% Recenter
+%% Standard Bin Post Processing
+% After the raw bin analysis is completed from bin_initialize, there are 
+% some standard things that need to be done to the binned images.
+% 
+% (1) Recentering : match images with same nlims (only affects displayed images)
+% (2) Spatial compensation : account for fluorescence spatial inhomegeneities
+% (3) intensity fluctuations : account for fluoresnece drifts
 
-bindata = ixon_ProcessPostBin(bindata);
-
-% if bin_BinRecenter
-%     bindata = bin_recenter(bindata);
-% end
-
+bindata = ixon_ProcessPostBin(bindata,ixon_gui_bin_options());
  
 %% Histogram
 
 if bin_BinAcummulateHist
     opts = bin_opts;
-    opts.Bins =  linspace(0,bin_BinAcummulateHist_Zmax,...
-    bin_BinAcummulateHist_Nbins);  
-    opts.Nthresh =dig_DigitizationThreshold;
+    opts.Bins =  linspace(0,30e3,100);  
+    opts.Nthresh =6000;
     opts.saveDir = bin_opts.saveDir;    
-    opts.doAnimate = 1;
-    
+    opts.doAnimate = 1;    
+
     % Full Cloud
     opts.ROI = 'max';
     opts.filename = 'bin_BinAnimateFull.gif';    
@@ -165,8 +162,8 @@ if bin_BinAcummulateHist
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinHistogramFull,...
          'bin_BinHistogramFull',bin_opts);  
-    end
-       
+    end       
+
     % Center Cloud
     opts.ROI = [85 105 80 100];
     opts.filename = 'bin_BinAnimateCenter.gif';    
@@ -174,8 +171,8 @@ if bin_BinAcummulateHist
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinHistogramFull,...
          'bin_BinHistogramCenter',bin_opts);  
-    end
-    
+    end    
+
     % Partition
     opts.NumGrid = [3 3];
     hF_BinGridHistgoram = bin_gridHistogram(bindata,opts);    
@@ -185,63 +182,73 @@ if bin_BinAcummulateHist
     end
 end
 
-%%
+%% Show FluorPerAtom
+
+if bin_FluorPerAtom
+    hF_fluorPeratom  = bin_showFluorPerAtom(bindata,opts);
+    if bin_opts.doSave       
+        ixon_saveFigure2(hF_fluorperatom,...
+            'bin_FluorPerAtom',bin_opts);  
+    end 
+end
+
+%% Show Efficacy of Raw Versus Processed
+
+if bin_RawVersusProcessed
+    hF_binCompares= bin_compareHistograms(bindata,opts); 
+    if bin_opts.doSave
+        for kk=1:length(hF_binCompares)
+            ixon_saveFigure2(hF_binCompares(kk),...
+                ['bin_Compensate_' num2str(kk)],bin_opts);  
+        end       
+    end 
+end
+
+%% Bin Stripe
+
 
 % hF_binCounts = bin_showThresh(bindata,opts);
 % if bin_BinReScale
 %     bin_opts.ROI = 'max';
 %     [bindata,hF_BinCompensate,hF_BinFluor] = bin_rescale(bindata,bin_opts); 
 
-if bin_RawVersusProcessed
-    [hF_binCompares,hF_fluorperatom] = bin_compareHistograms(bindata,opts); 
-    if bin_opts.doSave
-        for kk=1:length(hF_binCompares)
-            ixon_saveFigure2(hF_binCompares(kk),...
-                ['bin_Compensate_' num2str(kk)],bin_opts);  
-        end
-        ixon_saveFigure2(hF_fluorperatom,...
-            'bin_FluorPerAtom',bin_opts);  
-    end 
-end
-
-%% Bin Stripe
-if bin_BinStripe    
-    if ~isfield(bindata,'LatticeBin')
-        return;
-    end
-    clear out
-    if isfield(bindata,'BinStripe')
-    bindata=rmfield(bindata,'BinStripe');
-    end
-    for n = 1:length(bindata)    
-        fprintf(['(' num2str(n) '/' num2str(numel(bindata))...
-            ') lattice stripe fit']);
-        tic
-        kk=1;
-        % for kk = 1:length(bindata(n).LatticeBin)
-            fprintf(['...' num2str(kk)]);
-            n1 = bindata(n).LatticeBin(kk).n1;
-            n2 = bindata(n).LatticeBin(kk).n2;
-            Zb = bindata(n).LatticeBin(kk).Zbin(:,:,1);    
-
-            opts_stripe.LGuess = bin_BinStripe_LGuess;
-            opts_stripe.FigNum=3000+10*(n-1)+kk-1;
-            opts_stripe.FigNum=3000;
-            opts_stripe.Threshold = bin_BinStripe_ColorThreshold;
-            opts_stripe.SumIndex = bin_BinStripeIndex; % 1 for trees % 2 for fallen trees
-            opts_stripe.doDebug=0;
-            % bindata(n).BinStripe(kk) = ...
-            %     bin_StripeFit(n1,n2,Zb,opts_stripe);
-            %             
-            bindata(n).BinStripeCircular(kk) = ...
-                bin_StripeFitCircular(n1,n2,Zb,opts_stripe);
-        % end
-        disp([' done (' num2str(toc,'%.2f') 's)']); 
-    end
-end  
+% if bin_BinStripe    
+%     if ~isfield(bindata,'LatticeBin')
+%         return;
+%     end
+%     clear out
+%     if isfield(bindata,'BinStripe')
+%     bindata=rmfield(bindata,'BinStripe');
+%     end
+%     for n = 1:length(bindata)    
+%         fprintf(['(' num2str(n) '/' num2str(numel(bindata))...
+%             ') lattice stripe fit']);
+%         tic
+%         kk=1;
+%         % for kk = 1:length(bindata(n).LatticeBin)
+%             fprintf(['...' num2str(kk)]);
+%             n1 = bindata(n).LatticeBin(kk).n1;
+%             n2 = bindata(n).LatticeBin(kk).n2;
+%             Zb = bindata(n).LatticeBin(kk).Zbin(:,:,1);    
+% 
+%             opts_stripe.LGuess = bin_BinStripe_LGuess;
+%             opts_stripe.FigNum=3000+10*(n-1)+kk-1;
+%             opts_stripe.FigNum=3000;
+%             opts_stripe.Threshold = bin_BinStripe_ColorThreshold;
+%             opts_stripe.SumIndex = bin_BinStripeIndex; % 1 for trees % 2 for fallen trees
+%             opts_stripe.doDebug=0;
+%             % bindata(n).BinStripe(kk) = ...
+%             %     bin_StripeFit(n1,n2,Zb,opts_stripe);
+%             %             
+%             bindata(n).BinStripeCircular(kk) = ...
+%                 bin_StripeFitCircular(n1,n2,Zb,opts_stripe);
+%         % end
+%         disp([' done (' num2str(toc,'%.2f') 's)']); 
+%     end
+% end  
 
 %%
-bin_opts.nCenter = [100 100];
+% bin_opts.nCenter = [100 100];
 
 %% Bin Stripe Summary
 % if bin_BinStripe       
@@ -255,13 +262,13 @@ bin_opts.nCenter = [100 100];
 % end
 
 %% Bin Stripe Summary
-if bin_BinStripe       
-    hF_StripeSummary = bin_showStripeBinSummaryCircular(bindata,bin_opts.xVar,bin_opts);    
-    if bin_opts.doSave
-        ixon_saveFigure2(hF_StripeSummary,...
-         'bin_StripeSummary',opts);     
-    end
-end
+% if bin_BinStripe       
+%     hF_StripeSummary = bin_showStripeBinSummaryCircular(bindata,bin_opts.xVar,bin_opts);    
+%     if bin_opts.doSave
+%         ixon_saveFigure2(hF_StripeSummary,...
+%          'bin_StripeSummary',opts);     
+%     end
+% end
 
 %% Bin Stripe Animation
 % if bin_BinStripe && bin_BinStripeAnimate

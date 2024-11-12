@@ -21,8 +21,6 @@ addpath(a);addpath(genpath(a));
 
 dig_opts=bin_opts;
 dig_opts.NumSigmaThresh=2.5;
-
-
 digdata = bin_makeDigData2(bindata,dig_opts);
 
 % CJF new stuff is happening.

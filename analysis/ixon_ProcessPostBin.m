@@ -3,7 +3,7 @@ function data = ixon_ProcessPostBin(data,opts)
 if nargin == 1
     opts = struct;
     
-    opts.CompensateMethod           ='gauss';'none','custom';
+    opts.CompensateMethod           ='gauss';'none';'custom';
     % If radially compensating
     opts.CompensateGaussRadius      = 50;
     opts.CompensateMax              = 1.5;
@@ -29,7 +29,11 @@ for kk=1:length(data)
 
         %% Spatial Compensation
         fprintf('spatial compensate...');
-        ZbinRaw = data(kk).LatticeBin(rr).ZbinRaw;
+        if ~isfield(data(kk).LatticeBin(rr),'ZbinRaw')
+            ZbinRaw = data(kk).LatticeBin(rr).Zbin;
+        else
+            ZbinRaw = data(kk).LatticeBin(rr).ZbinRaw;
+        end
 
         switch opts.CompensateMethod
             case 'none'

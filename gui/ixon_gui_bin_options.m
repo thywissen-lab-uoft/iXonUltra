@@ -13,7 +13,7 @@ opts.PixelThreshold             = 150;
 opts.CompensateMethod           = 'gauss';'none';'custom';
 
 % If radially compensating
-opts.CompensateGaussRadius           = 50;
+opts.CompensateGaussRadius      = 50;
 opts.CompensateMax              = 1.5;
 
 % If using a custom map

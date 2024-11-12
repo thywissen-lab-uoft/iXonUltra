@@ -1,12 +1,23 @@
 function [hF,output] = dig_radialAnalysis(digdata,opts)
 if nargin == 1;opts = struct;end    
-if ~isfield(opts,'RemoveOutliers'); opts.RemoveOutliers = 1;end     
+
+% How to calculate n(r)
 if ~isfield(opts,'BinStep');        opts.BinStep = 3;end   
 if ~isfield(opts,'Bin0');           opts.Bin0 = 5;end   
-if ~isfield(opts,'TrapOmega');      opts.TrapOmega = 2*pi*65;end
-if ~isfield(opts,'Tunneling');      opts.Tunneling = 563;end
 if ~isfield(opts,'rMax');           opts.rMax = 110;end
+
+% Fittng n(r)
 if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [.05 1];end
+%% Parameters Relvant do Fermi-Hubbard Model
+
+if ~isfield(opts,'TrapOmega');      opts.TrapOmega = [];end
+if ~isfield(opts,'Tunneling');      opts.Tunneling = [];end
+if ~isfield(opts,'U');              opts.Tunneling = [];end
+
+
+if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*65;end
+if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
+if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 
 %% Constants
 
@@ -37,65 +48,63 @@ else
 end
 
 %% Get Data
-    Z   = [digdata.Zdig];
-    Zbar = mean(Z,3);
-    P   = [digdata.Params];
-   Npics = size(Z,3);    
+Z   = [digdata.Zdig];
+Zbar = mean(Z,3);
+P   = [digdata.Params];
 
 %% Calculate radial profile
-    rlist={};
-    % Compute distance to the center of every atom
-    for kk=1:size(digdata.Zdig,3)
-        R = digdata.Ratom{kk}-[digdata.Xc_px(kk);digdata.Yc_px(kk)];
-        r = sqrt(R(1,:).^2+R(2,:).^2)/a_px;
-        r=r(:);
-        rlist{kk} = r;
-    end
+rlist={};
+% Compute distance to the center of every atom
+for kk=1:size(digdata.Zdig,3)
+    R = digdata.Ratom{kk}-[digdata.Xc_px(kk);digdata.Yc_px(kk)];
+    r = sqrt(R(1,:).^2+R(2,:).^2)/a_px;
+    r=r(:);
+    rlist{kk} = r;
+end
 
-    % Calculate the bins
-    % Around r=0, find all a points within pi*Bin0^2
-    % For all other radii bin are separated by BinStep
+% Calculate the bins
+% Around r=0, find all a points within pi*Bin0^2
+% For all other radii bin are separated by BinStep
 
-    stepMax=floor(opts.rMax/opts.BinStep);                   % # of r steps
-    redges = [0 opts.Bin0];                                  % About r=0
-    redges = [redges opts.Bin0+[1:1:stepMax]*opts.BinStep];  % Rest of edges
-    rcen = (redges(1:end-1) + redges(2:end))/2;             % bin centers
+stepMax=floor(opts.rMax/opts.BinStep);                   % # of r steps
+redges = [0 opts.Bin0];                                  % About r=0
+redges = [redges opts.Bin0+[1:1:stepMax]*opts.BinStep];  % Rest of edges
+rcen = (redges(1:end-1) + redges(2:end))/2;             % bin centers
 
-    % Jacobian via ideal circle
-    areas = pi*redges.^2;areas=areas(:);                % Area of each bin edge
-    dN = diff(areas);                                   % Jacobian
-    dN = dN(:);                                         % Resize
+% Jacobian via ideal circle
+areas = pi*redges.^2;areas=areas(:);                % Area of each bin edge
+dN = diff(areas);                                   % Jacobian
+dN = dN(:);                                         % Resize
 
-    % Jacobian via numerical circle
-    n = [-opts.rMax:1:opts.rMax];
-    [nn1,nn2]=meshgrid(n,n);
-    R=(nn1.^2+nn2.^2).^(1/2);
-    Nr = zeros(length(redges),1);
-    for rr=1:length(redges)
-        Nr(rr)=sum(R(:)<redges(rr));
-    end
-    dN2 = diff(Nr);
+% Jacobian via numerical circle
+n = [-opts.rMax:1:opts.rMax];
+[nn1,nn2]=meshgrid(n,n);
+R=(nn1.^2+nn2.^2).^(1/2);
+Nr = zeros(length(redges),1);
+for rr=1:length(redges)
+    Nr(rr)=sum(R(:)<redges(rr));
+end
+dN2 = diff(Nr);
 
-    % Calculate the histograms
-    nr = zeros(length(rcen),size(digdata.Zdig,3));
-    for kk=1:size(digdata.Zdig,3)
-        n = histcounts(rlist{kk},redges);
-        nr(:,kk) = n(:)./dN2;       % normalize by discrete jacboian
-        % nr(:,kk) = n(:)./dN;      % normalize by continuous jacboian
-    end
+% Calculate the histograms
+nr = zeros(length(rcen),size(digdata.Zdig,3));
+for kk=1:size(digdata.Zdig,3)
+    n = histcounts(rlist{kk},redges);
+    nr(:,kk) = n(:)./dN2;       % normalize by discrete jacboian
+    % nr(:,kk) = n(:)./dN;      % normalize by continuous jacboian
+end
 
-    % take the average
-    nr_mean = mean(nr,2);
-    nr_std = std(nr,0,2)/sqrt(size(nr,2));
+% take the average
+nr_mean = mean(nr,2);
+nr_std = std(nr,0,2)/sqrt(size(nr,2));
 
 %% Get all r for all atoms
-r_all = rlist{:}; % all r vectors
-
-[f,x]=ecdf(r_all*aL_um);     % Empircal CDF
+r_all = rlist{:};               % r for all atoms
+[f,x]=ecdf(r_all*aL_um);        % Empircal CDF
 %% Calculate numerical second moment
 % The gaussian radius assuming a symmetric gaussian distribution is
 % related to the expectation value of the radius.
-%
+
 % integral (2*pi*r)*P(r)*r = sigma_R*sqrt(pi/2)
 r_expect = mean(r_all,'all');            % expected r
 sigma_r_numerical = r_expect*sqrt(2/pi); % expected r to sigma_R
@@ -104,49 +113,50 @@ T_HOt = sigma2Tovert(sigma_r_numerical*aL);
 T_HO_nK = 1e9*sigma2Tovert(sigma_r_numerical*aL)*h*opts.Tunneling/kB;
 
 %% Fit Data to Gaussian PDf
-
+% Fit the measured atoms to a probability density function
 rMin = zeros(length(opts.GaussFitDensityMax),1);
 sigma_r_gauss_fit = zeros(length(opts.GaussFitDensityMax),1);
 sigma_r_gauss_fit_err = zeros(length(opts.GaussFitDensityMax),1);
 
-
-
 % Numerical integral of n(r)
 I0=trapz([0 rcen],[mean(nr_mean(1:2)); nr_mean]);
 
+% Iterate over max density fit
 for nn=1:length(opts.GaussFitDensityMax)
     iMinFlip = find(flip(nr_mean)>opts.GaussFitDensityMax(nn),1);    
     if isempty(iMinFlip)
-        iMin = 1;
-        rMin(nn)=0;
-        Iouter(nn) = I0;
+        iMin = 1;           % 
+        rMin(nn)=0;         % Fit all radii
+        Iouter(nn) = I0;    % Total integral is the max
     else
-        iMin = length(rcen)-iMinFlip;
-        rMin(nn) = rcen(iMin);
-        Iouter(nn) = trapz(rcen(iMin:end),nr_mean(iMin:end));
+        iMin = length(rcen)-iMinFlip; % index at which n(r(ind))=n_limit
+        rMin(nn) = rcen(iMin);% radies at which n(rMin)=n_limit
+        Iouter(nn) = trapz(rcen(iMin:end),nr_mean(iMin:end)); % partial integral
     end
+    % Fit the distribution
     [sigma_r_gauss_fit(nn),sigma_r_gauss_fit_err(nn)]=pdf_gauss_fit(r,rMin(nn));
 end
 
-   nr_partial_cdf = @(s,R) 1-erf(R./sqrt(2*s^2)); % integral of foo [R,infinity]
-   nr_fit= @(s,r,N0) sqrt(2/pi)/s*exp(-r.^2/(2*s.^2))*N0;
+% Convert the fit into n(r)
+nr_partial_cdf  = @(s,R) 1-erf(R./sqrt(2*s^2)); % integral of foo [R,infinity]
+nr_fit          = @(s,r,N0) sqrt(2/pi)/s*exp(-r.^2/(2*s.^2))*N0;
+     
 
-       
+%% String Stuff
 
+% Center of the cloud
+strC = ['$(x_c,y_c):' ...
+    '(' num2str(round(mean(digdata.Xc_px),0)) ',' ...
+    num2str(round(mean(digdata.Yc_px),0)) ')~\mathrm{px},~'  ...
+    '(' num2str(round(mean(digdata.Xc_site),0)) ',' ...
+    num2str(round(mean(digdata.Yc_site),0)) ')~\mathrm{site}$'];
 
-    %% String Stuff
-
-    strC = ['$(x_c,y_c):' ...
-        '(' num2str(round(mean(digdata.Xc_px),0)) ',' ...
-        num2str(round(mean(digdata.Yc_px),0)) ')~\mathrm{px},~'  ...
-        '(' num2str(round(mean(digdata.Xc_site),0)) ',' ...
-        num2str(round(mean(digdata.Yc_site),0)) ')~\mathrm{site}$'];
-
-    strS = ['$(x_\sigma,y_\sigma):' ...
-        '(' num2str(round(mean(digdata.Xs_um),1)) ',' ...
-        num2str(round(mean(digdata.Ys_um),1)) ')~\mu\mathrm{m},~'  ...
-        '(' num2str(round(mean(digdata.Xs_site),1)) ',' ...
-        num2str(round(mean(digdata.Ys_site),1)) ')~\mathrm{site}$'];
+% Second moment of cloud
+strS = ['$(x_\sigma,y_\sigma):' ...
+    '(' num2str(round(mean(digdata.Xs_um),1)) ',' ...
+    num2str(round(mean(digdata.Ys_um),1)) ')~\mu\mathrm{m},~'  ...
+    '(' num2str(round(mean(digdata.Xs_site),1)) ',' ...
+    num2str(round(mean(digdata.Ys_site),1)) ')~\mathrm{site}$'];
     
 
     if ~isnan(opts.TrapOmega) && ~isnan(opts.Tunneling)
@@ -162,17 +172,13 @@ end
     end
 
     lineN = ['$' num2str(round(mean(digdata.Natoms))) '\pm' ...        
-        num2str(round(std(digdata.Natoms,1))) '$ atoms (n=' num2str(Npics) ')'];
+        num2str(round(std(digdata.Natoms,1))) '$ atoms (n=' num2str(size(Z,3)) ')'];
     lineSigmaExpect = ['$\langle \sigma_r \rangle=' ...
         num2str(round(aL_um*sigma_r_numerical,1)) '~\mu\mathrm{m}$'];
 
     strRadialSummary = [ lineN newline ...
         lineSigmaExpect];
-    % 
-    % strRadialSummary = [ lineN newline ...
-    %     lineSigmaExpect newline ...
-    %     '$\sigma_r = ' num2str(round(sigmaR_um,1))  '\pm' ...
-    %      num2str(round(sigmaR_err_um,1)) '\mu\mathrm{m}$'];
+
     %% Find Center and limits in site space
     n1 = digdata.n1;
     n2 = digdata.n2;        
@@ -224,7 +230,7 @@ end
     %% Assign to output
     output = struct;
     output.Z                        = Zbar;
-    output.NumImages                = Npics;
+    output.NumImages                = size(Z,3);
     output.RadialOccupation         = nr;
     output.RadialOccupationMean     = nr_mean;
     output.RadialOccupationError    = nr_std;

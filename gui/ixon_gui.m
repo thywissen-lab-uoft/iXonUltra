@@ -1759,13 +1759,12 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
         end        
         hb_Diganalyze.BackgroundColor=[255 219 88]/255;
         drawnow;
+
         digdata = bin_makeDigData2(bindata);
         digdata = dig_basic(digdata);
-        opts=struct;
+        opts = ixon_gui_dig_options;
         opts.Parent = tabD;
-        opts.BinStep = 3;
         dig_radialAnalysis(digdata,opts);          
-        % updateDigitalGraphics;        
         hb_Diganalyze.BackgroundColor=[80 200 120]/255;
         drawnow;
     end
@@ -3371,6 +3370,7 @@ end
 
         opts.FigLabel = data.Name;
         bin_showHistogram(data,opts);      
+
     end
 
 %% 

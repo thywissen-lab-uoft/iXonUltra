@@ -19,13 +19,28 @@ opts.pdf_Sigma          = 2.5;
 % algorithm to calculate
 % opts.MaximumLikeliHoodAlgorithm = false;
 
-%% Digital Trap Calibrations
-opts.doHubbardAnalysis = true;
+%% Radial Digital Analysis Options
 
+
+opts.BinStep = 3;   % radial step size in lattice sites
+opts.Bin0 = 5;      % radius of bin size at r=0
+opts.rMax = 110;    % maximum radius
+
+% Gauss Fitting Options
+% Fit the radial distribution to a radial gaussian.  To account for pauli
+% and interactino effects, only fit the wings where the density lower.
+opts.GaussFitDensityMax = [];       % empty if you don't want gauss fit
+opts.GaussFitDensityMax =[0.05 1];  % Maximum density to fit to gaussian
+
+
+opts.doHubbardAnalysis = true;
+%% Digital Trap Calibrations
 
 % Trap Frequency
 % The overall harmonic trap frequency
 opts.TrapOmega      = 2*pi*65;
+
+%% Hubbard Parameters
 
 % Lattice Depth V0 [Er]
 % In analyzing the images, the lattice depth tells you the 
@@ -50,15 +65,6 @@ opts.WannierOverlap = [];           % keep empty if auto-calculate from V0
 % the hubbard U is given by the WannierOverlap function.
 opts.U = [];    % Keep this empty for automatic calculation
 
-
-
-%% Digital Analysis Options
-
-% Gauss Fitting Options
-% Fit the radial distribution to a radial gaussian.  To account for pauli
-% and interactino effects, only fit the wings where the density lower.
-opts.GaussFitDensityMax = [];       % empty if you don't want gauss fit
-opts.GaussFitDensityMax =[0.05 1];  % Maximum density to fit to gaussian
 
 
 end

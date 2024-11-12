@@ -5,33 +5,13 @@ if nargin == 1
     opts = struct;
 end
 
-if ~isfield(opts,'ROI')
-    opts.ROI = 'max';
-end  
-
-if ~isfield(opts,'Bins')
-    opts.Bins = 80;
-end   
-
-if ~isfield(opts,'doAnimate')
-   opts.doAnimate = 0; 
-end
-
-if ~isfield(opts,'ManualThresh')
-   opts.ManualThresh = 2000; 
-end
-
-if ~isfield(opts,'ImageNum')
-    opts.ImageNum = 1;
-end
-
-if ~isfield(opts,'useManualThresh')
-    opts.useManualThresh = false';
-end
-
-if ~isfield(opts,'BinSource')
-    opts.BinSource = 'Zbin';
-end
+if ~isfield(opts,'ROI');opts.ROI = 'max';end  
+if ~isfield(opts,'Bins');opts.Bins = 80;end   
+if ~isfield(opts,'doAnimate');opts.doAnimate = 0;end
+if ~isfield(opts,'ManualThresh');opts.ManualThresh = 2000;end
+if ~isfield(opts,'ImageNum');opts.ImageNum = 1;end
+if ~isfield(opts,'useManualThresh');opts.useManualThresh = false';end
+if ~isfield(opts,'BinSource');opts.BinSource = 'Zbin';end
 
 %% Colormap
 ca = [1 1 1];
