@@ -80,10 +80,11 @@ dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
 dig_doRadialAnalysis                    = 1;
 dig_doRadialSkewAnalysis                = 0;
-
+dig_doRadialAnalysis2                   = 1;
 %% Redo Basic Analysis
 digdata = dig_basic(digdata);
-%% Show CLoud
+
+%% Show Cloud
 
 if dig_doShowCloud
     opts = dig_opts;
@@ -91,7 +92,6 @@ if dig_doShowCloud
     opts.ROI = 'max';
     opts.filename = 'dig_animateFull.gif';
     hF_digCloud = dig_showCloud(digdata,opts);
-
     if dig_opts.doSave
         ixon_saveFigure2(hF_digCloud,...
          'dig_average',dig_opts);  
@@ -108,13 +108,21 @@ if dig_standardAnalysis
     end
 end
 
+%% Radial Analysis Better
+
+if dig_doRadialAnalysis2
+    hF = dig_radialAnalysis(digdata);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF_digStandard,...
+         'dig_radial',dig_opts);  
+    end
+end
+
 %% Radial Analysis
 
 if dig_doRadialAnalysis
     opts = dig_opts;   
     opts.BinStep = 3;                   % delta r bin size    
-
-
     opts.useAverageCenter = 0;
 
     if isequal(digdata.xVar,'conductivity_mod_time')
