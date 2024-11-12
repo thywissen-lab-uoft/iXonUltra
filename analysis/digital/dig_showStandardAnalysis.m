@@ -39,7 +39,7 @@ if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
 end    
 co=get(gca,'colororder');
 
-subplot(241)
+subplot(231)
 plot(digdata.X,digdata.Xc_um,'o','markerfacecolor',co(1,:),...
 'linewidth',1,'markeredgecolor',co(1,:)*.5);
 ylabel('mean(X) (\mum)');
@@ -49,7 +49,7 @@ if isequal(digdata.xVar,'ExecutionDate')
 end
 
 
-subplot(245)
+subplot(234)
 plot(digdata.X,digdata.Xs_um,'o','markerfacecolor',co(1,:),...
 'linewidth',1,'markeredgecolor',co(1,:)*.5);
 ylabel('\sigma_x (\mum)');
@@ -58,7 +58,7 @@ if isequal(digdata.xVar,'ExecutionDate')
     datetick x
 end
 
-subplot(242)
+subplot(232)
 plot(digdata.X,digdata.Yc_um,'o','markerfacecolor',co(2,:),...
 'linewidth',1,'markeredgecolor',co(2,:)*.5);
 ylabel('mean(Y) (\mum)');
@@ -67,7 +67,7 @@ if isequal(digdata.xVar,'ExecutionDate')
     datetick x
 end
 
-subplot(246)
+subplot(235)
 plot(digdata.X,digdata.Ys_um,'o','markerfacecolor',co(2,:),...
 'linewidth',1,'markeredgecolor',co(2,:)*.5);
 ylabel('\sigma_y (\mum)');
@@ -76,7 +76,7 @@ if isequal(digdata.xVar,'ExecutionDate')
     datetick x
 end
 
-subplot(243)
+subplot(233)
 plot([digdata.X],[digdata.Natoms],'ko','markerfacecolor',[.5 .5 .5],...
 'linewidth',1);
 xlabel(digdata.xVar,'interpreter','none');
@@ -109,7 +109,7 @@ end
 text(0.01,.01,str,'units','normalized','fontsize',8,...
     'horizontalalignment','left','verticalalignment','bottom')
 
-subplot(247)
+subplot(236)
 plot([digdata.X],[digdata.nPeakGauss],'o','markerfacecolor',co(6,:),'markeredgecolor',0.5*co(6,:),...
         'linewidth',2,'color',co(6,:)*.5);
 ylabel('peak gauss density n_{0,\uparrow}');

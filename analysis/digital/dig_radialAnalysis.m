@@ -10,9 +10,9 @@ if ~isfield(opts,'rMax');           opts.rMax = 110;end
 if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [.05 1];end
 %% Parameters Relvant do Fermi-Hubbard Model
 
-if ~isfield(opts,'TrapOmega');      opts.TrapOmega = [];end
-if ~isfield(opts,'Tunneling');      opts.Tunneling = [];end
-if ~isfield(opts,'U');              opts.Tunneling = [];end
+% if ~isfield(opts,'TrapOmega');      opts.TrapOmega = [];end
+% if ~isfield(opts,'Tunneling');      opts.Tunneling = [];end
+% if ~isfield(opts,'U');              opts.Tunneling = [];end
 
 
 if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*65;end

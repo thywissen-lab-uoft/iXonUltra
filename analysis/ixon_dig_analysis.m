@@ -113,12 +113,12 @@ end
 if dig_doRadialAnalysis2
     hF = dig_radialAnalysis(digdata);
     if dig_opts.doSave
-        ixon_saveFigure2(hF_digStandard,...
-         'dig_radial',dig_opts);  
+        ixon_saveFigure2(hF,'dig_radial',dig_opts);  
     end
 end
 
 %% Radial Analysis
+% CJF Thinks is becoming obsolte
 
 if dig_doRadialAnalysis
     opts = dig_opts;   
@@ -210,10 +210,8 @@ end
 
 %% Radial Skew Analysis
 
-if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')
-    
+if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')    
     [digdata] = dig_compute_radial_skew(digdata,opts);
-    
     [hFs_radial_skew] = dig_radialAnalysis_average_images_skew(digdata,opts);
     if dig_opts.doSave
        for kk=1:length(hFs_radial_skew)
@@ -221,8 +219,7 @@ if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')
                 ['dig_radial_skew_' num2str(kk)],dig_opts);   
        end
     end
-    
-end
+    end
 
 %% Conductivity Analysis
 

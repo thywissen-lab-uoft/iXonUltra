@@ -1,6 +1,13 @@
 function [digdata] = dig_basic(digdata)
+    if ~isfield(digdata,'Lattice_px') || ~isfield(digdata,'Lattice_um')
+        digdata.Lattice_px          = 2.68;
+        digdata.Lattice_um          = 1.054/2;
+    end
     a_px = digdata.Lattice_px;
     a_um = digdata.Lattice_um;
+    
+
+
             
     for nn=1:length(digdata.FileNames)
         Ratom = digdata.Ratom{nn};

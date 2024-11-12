@@ -96,7 +96,7 @@ end
             sNW = [num2str(nn) '/' num2str(size(digdata.Zdig,3))];
             set(tNW,'String',sNW,'Visible','on');
 
-            sSE = ['threshold : ' num2str(unique(digdata.Threshold)) newline ...
+            sSE = ['threshold : ' num2str(digdata.Threshold(nn)) newline ...
                 num2str(sum(digdata.Zdig(:,:,nn),'all')) ' atoms'];
             set(tSE,'String',sSE,'Visible','on');   
             
@@ -137,7 +137,7 @@ end
 
             set(tNW,'String',[num2str(size(digdata.Zdig,3)) ' images']);
 
-            sSE = ['threshold :' num2str(unique(digdata.Threshold)) newline ...
+            sSE = ['avg threshold :' num2str(mean(digdata.Threshold)) newline ...
                 num2str(round(mean(sum(digdata.Zdig,[1 2])))) '\pm' ...
                 num2str(round(std(sum(digdata.Zdig,[1 2])))) ' atoms'];
 
