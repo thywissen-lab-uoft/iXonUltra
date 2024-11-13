@@ -21,7 +21,6 @@ opts.pdf_Sigma          = 2.5;
 
 %% Radial Digital Analysis Options
 
-
 opts.BinStep = 3;   % radial step size in lattice sites
 opts.Bin0 = 5;      % radius of bin size at r=0
 opts.rMax = 110;    % maximum radius
@@ -64,7 +63,6 @@ opts.WannierOverlap = [];           % keep empty if auto-calculate from V0
 % The hubbard can calculated from V0 and a_s.  In the perturbative limit
 % the hubbard U is given by the WannierOverlap function.
 opts.U = [];    % Keep this empty for automatic calculation
-
 
 
 end

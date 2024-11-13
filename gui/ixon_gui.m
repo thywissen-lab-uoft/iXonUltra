@@ -1759,51 +1759,31 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
         end        
         hb_Diganalyze.BackgroundColor=[255 219 88]/255;
         drawnow;
-
         digdata = bin_makeDigData2(bindata);
         digdata = dig_basic(digdata);
         opts = ixon_gui_dig_options;
         opts.Parent = tabD;
         dig_radialAnalysis(digdata,opts);          
         hb_Diganalyze.BackgroundColor=[80 200 120]/255;
+        updateDigitalGraphics;
         drawnow;
     end
 
     function updateDigitalGraphics    
-         if ~isfield(data,'LatticeDig')
+        if isempty(digdata)
+            pAtoms.Visible='off';
             return;
-         end  
-        
-        imgnum = menuSelectImg.Value; % get image to analyze
-        dig = data.LatticeDig(imgnum);  
-        set(hImg_D,'XData',dig.n1,'YData',dig.n2,'CData',dig.Zdig);  
-        % Update box count string
-        str=[ num2str(dig.Natoms) ' atoms' newline ...
-            '$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(dig.Xc_site,1)) ',' ...
-            num2str(round(dig.Yc_site,1)) ')$' newline ...
-            '$(\sigma_X,\sigma_Y) = ' '('  num2str(round(dig.Xs_site,1)) ',' ...
-            num2str(round(dig.Ys_site,1)) ')$' newline ...
-            'thresh = ' num2str(dig.Threshold)]; 
-        %Update box count string object
-        set(tD_SE,'String',str); 
-        set(tD_SW,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);  
-        
-        drawAtomsCB;
-        set(pAtoms,'XData',dig.Rn(1,:),'YData',dig.Rn(2,:));
-        
+        end
+        set(pAtoms,'XData',digdata.Ratom{1}(1,:),'YData',digdata.Ratom{1}(2,:));        
         pAtoms.DataTipTemplate.DataTipRows(3:end)=[];
-
-        row = dataTipTextRow('Counts',dig.Counts);
-        pAtoms.DataTipTemplate.DataTipRows(3) = row;
-        
-        row = dataTipTextRow('n1',dig.N(1,:));
-        pAtoms.DataTipTemplate.DataTipRows(4) = row;
-        
-         row = dataTipTextRow('n2',dig.N(2,:));
+        row = dataTipTextRow('Counts',digdata.Counts{1});
+        pAtoms.DataTipTemplate.DataTipRows(3) = row;        
+        row = dataTipTextRow('n1',digdata.Siteatom{1}(1,:));
+        pAtoms.DataTipTemplate.DataTipRows(4) = row;        
+         row = dataTipTextRow('n2',digdata.Siteatom{1}(2,:));
         pAtoms.DataTipTemplate.DataTipRows(5) = row;
-        
-        drawnow;
-        
+        drawAtomsCB;
+        drawnow;        
     end
 
 %% Image Number Selector
@@ -2970,28 +2950,28 @@ caxis([0 1]);
 
 %% Digital Image
 
-axImg_D=axes('parent',tabD);
-hImg_D=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_D);
-set(axImg_D,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
-    'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
-    'YAxisLocation','left');
-hold on
-axis equal tight
-xlabel('lattice site (a_1)','fontsize',8);
-ylabel('lattice site (a_2)','fontsize',8);
-caxis([0 1]);
-
-% Box Count Analysis String
-tD_SE=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
-    'horizontalalignment','right','verticalalignment','bottom','margin',1,...
-    'interpreter','latex',...
-    'color','k','backgroundcolor',[1 1 1 .7]);
-
-
-% file name string
-tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
-    'horizontalalignment','left','verticalalignment','bottom','margin',1,...
-    'interpreter','none','backgroundcolor',[1 1 1 .5]);
+% axImg_D=axes('parent',tabD);
+% hImg_D=imagesc(1:500,1:500,zeros(500,500),'parent',axImg_D);
+% set(axImg_D,'box','on','linewidth',.1,'fontsize',8,'units','normalized',...
+%     'XAxisLocation','bottom','colormap',colormap(cmap),'YDir','normal','UserData','B',...
+%     'YAxisLocation','left');
+% hold on
+% axis equal tight
+% xlabel('lattice site (a_1)','fontsize',8);
+% ylabel('lattice site (a_2)','fontsize',8);
+% caxis([0 1]);
+% 
+% % Box Count Analysis String
+% tD_SE=text(.99,0.01,'FILENAME','units','normalized','fontsize',9,'fontweight','bold',...
+%     'horizontalalignment','right','verticalalignment','bottom','margin',1,...
+%     'interpreter','latex',...
+%     'color','k','backgroundcolor',[1 1 1 .7]);
+% 
+% 
+% % file name string
+% tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
+%     'horizontalalignment','left','verticalalignment','bottom','margin',1,...
+%     'interpreter','none','backgroundcolor',[1 1 1 .5]);
 
 
 %% Graphical Callbacks
@@ -3047,11 +3027,10 @@ tD_SW=text(3,3,'FILENAME','units','pixels','fontsize',8,'fontweight','bold',...
 
 
 function drawAtomsCB(~,~)
-    if ~isfield(data,'LatticeDig')
+    if isempty(digdata)
        pAtoms.Visible='off';
        return;
-    end
-    
+    end   
     
    if cDrawAtoms.Value        
         pAtoms.Visible='on';

@@ -55,12 +55,14 @@ end
     Ratom = {};
     Natoms=[];
     lattice_spacing_px=[];
+    Counts={};
     for nn=1:length(bindata)
         rr=1;
         Zbin = bindata(nn).LatticeBin(rr).Zbin;
         Zscaled = Zbin/count_center(nn,rr);
         Thresh = 1 - opts.NumSigmaThresh*sigma_norm(rr);   
         zdig_this = Zscaled>=Thresh;
+
         Zdig(:,:,nn) = zdig_this;    
         
         Site2PixelsFuncs{nn}=bindata(nn).LatticeBin(rr).Site2Pixel;
@@ -77,17 +79,15 @@ end
         Siteatom{nn} =[N1;N2];        
         Ratom{nn}=bindata(nn).LatticeBin(rr).Site2Pixel(N1,N2);
         Natoms(nn) = sum(zdig_this,'all');
-        
+        Counts{nn} = Zscaled(zdig_this);
+
         a1=norm(bindata(nn).LatticeBin(rr).a1);
         a2=norm(bindata(nn).LatticeBin(rr).a1);
         lattice_spacing_px(nn) = mean([a1 a2]);
-    end    
+    end        
     
     
-    
-   %% Output
-
-    
+   %% Output    
     digdata                     = struct;    
     digdata.SourceDirectory     = unique({bindata.SourceDirectory});
     digdata.FileNames           = {bindata.Name}';
@@ -100,14 +100,15 @@ end
     digdata.Flags               = F;      
     
     % Actual Digital Data
-    digdata.Zdig                = logical(Zdig);
-    digdata.n1                  = n1;
-    digdata.n2                  = n2;
-    digdata.Ratom               = Ratom;
-    digdata.Siteatom            = Siteatom;
-    digdata.Natoms              = Natoms;
-    digdata.Lattice_px          = mean(lattice_spacing_px);
-    digdata.Lattice_um          = 1.054/2;
+    digdata.n1                  = n1;           % site vector
+    digdata.n2                  = n2;           % site vector
+    digdata.Zdig                = logical(Zdig);% digitized image
+    digdata.Counts              = Counts;       % counts for each atom
+    digdata.Ratom               = Ratom;        % pixel position of each atom
+    digdata.Siteatom            = Siteatom;     % site index of each atom
+    digdata.Natoms              = Natoms;       % number of atoms
+    digdata.Lattice_px          = mean(lattice_spacing_px); % lattice spacing
+    digdata.Lattice_um          = 1.054/2;      % lattice spacing
 
     % Lattice Spacing
 
