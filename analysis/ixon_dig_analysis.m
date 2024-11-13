@@ -200,11 +200,7 @@ if dig_doRadialAnalysis
         filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
         disp(['Saving ' filename ' ...']);
         save(filename, '-struct','dig_radial_data');
-    end
-     
-    % obsolte analysis
-%     [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);        
-
+    end    
 
 end
 
