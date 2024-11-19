@@ -78,9 +78,33 @@ dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
-dig_doRadialAnalysis                    = 1; % OBSOLETE
-dig_doRadialSkewAnalysis                = 0;% OBSOLETE
+dig_doRadialAnalysis                    = 1; % has issues
+dig_doRadialSkewAnalysis                = 0; % has issues
 dig_doRadialAnalysis2                   = 1;
+
+
+do_qpd_analysis                            = 1;
+%% QPD Analysis
+
+if do_qpd_analysis
+    P=[digdata.Params];
+    D=[P.ExecutionDate];
+   [figs,output] = qpd_main(D,dig_opts) ;
+      if dig_opts.doSave
+          for kk=1:length(figs)
+              if ~isempty(figs{kk})
+                ixon_saveFigure2(figs{kk},...
+                 figs{kk}.Name,dig_opts);  
+              end
+          end
+           try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+            filename = fullfile(dig_opts.saveDir,'qpd.mat');
+            disp(['Saving ' filename ' ...']);
+            save(filename, '-struct','output');      
+      end  
+end
+
+
 %% Redo Basic Analysis
 digdata = dig_basic(digdata);
 
