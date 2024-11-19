@@ -97,14 +97,9 @@ text(.01,.99,Nstr,'units','normalized','fontsize',7,...
     'interpreter','latex','verticalalignment','top',...
     'horizontalalignment','left');
 
+str =  ['threshold : ' digdata.ThresholdType ' ' num2str(round(mean([digdata.Threshold]),2))];
 
-if isfield(digdata,'ThresholdingType')
-    if isequal(digdata.ThresholdingType,'CompensatedInd')
-        str = ['compensated threshold'];
-    end     
-else
-    str = ['$\mathrm{thresh} = ' num2str(unique([digdata.Threshold])) '$'];
-end
+
 
 text(0.01,.01,str,'units','normalized','fontsize',8,...
     'horizontalalignment','left','verticalalignment','bottom')

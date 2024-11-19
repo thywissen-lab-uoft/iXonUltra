@@ -78,8 +78,8 @@ dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
-dig_doRadialAnalysis                    = 1;
-dig_doRadialSkewAnalysis                = 0;
+dig_doRadialAnalysis                    = 0; % OBSOLETE
+dig_doRadialSkewAnalysis                = 0;% OBSOLETE
 dig_doRadialAnalysis2                   = 1;
 %% Redo Basic Analysis
 digdata = dig_basic(digdata);

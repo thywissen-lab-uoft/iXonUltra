@@ -23,6 +23,11 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
     if ~isfield(opts,'doAnimate')
        opts.doAnimate = 0; 
     end
+    
+    if ~isfield(opts,'Source')
+       opts.Source = 'Zbin';
+%       opts.Source = 'ZbinRaw';
+    end
 %% Get ROI
     
     n1 = bindata(1).LatticeBin(1).n1;
@@ -33,9 +38,10 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
     end    
     R = opts.ROI;
     %% Prepare Data
-    Zall = zeros(length(n2),length(n1));
+    Zall = zeros(length(n2),length(n1));   
+    
     for nn = 1:length(bindata)        
-        Zthis = bindata(nn).LatticeBin(1).Zbin;    
+        Zthis = bindata(nn).LatticeBin(1).(opts.Source);    
         Zall(:,:,nn) =  Zthis;
     end
     
@@ -61,7 +67,34 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
         tFig.Position(4)=tFig.Extent(4);
         tFig.Position(3)=hF.Position(3);
         tFig.Position(1:2)=[5 hF.Position(4)-tFig.Position(4)];
-    end    
+    end
+    
+    
+    bStr = ['source : ' opts.Source ];
+    bpost = bindata(1).LatticeBin(1).PostBinOptions;
+    
+    if ~isequal(opts.Source,'ZbinRaw')        
+        if isequal(bpost.CompensateMethod,'gauss')
+            bStr=[bStr newline ...
+                'spatial gauss compensate' newline ...
+                'sigma : '  num2str(bpost.CompensateGaussRadius) newline ...
+                'max scale : x' num2str(bpost.CompensateMax)];
+        end        
+        if isequal(bpost.CompensateMethod,'custom')
+            bStr=[bStr newline ...
+                'custom map compensate' newline ...
+                'file : '  num2str(bpost.CompensateCustomMap)];
+        end
+        
+        if isequal(bpost.CompensateMethod,'none')
+            bStr=[bStr newline ...
+                'no mods'];
+        end                    
+    end
+        
+        
+    
+    
     
     % Histogram Axis
     ax1 = subplot(121);        
@@ -108,6 +141,9 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
     cc = [linspace(ca(1),cb(1),1000)' ...
         linspace(ca(2),cb(2),1000)' linspace(ca(3),cb(3),1000)'];
     colormap(hF,cc);
+    
+    text(.01,.01,bStr,'units','normalized','color','r','fontsize',8,...
+        'verticalalignment','bottom','horizontalalignment','left');
     
     %% Populate with data
     
