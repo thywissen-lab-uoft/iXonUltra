@@ -27,7 +27,7 @@ Z(isinf(Z))=0;
 zf = fft2(Z,2^12+1,2^12+1);              % 2D FFT
 zf = fftshift(zf);                      % Shift so zero at center
 f  = 0.5*linspace(-1,1,size(zf,2));     % Frequency Vector
-df=f(2)-f(1);                           % Frequecny spacing
+df=f(2)-f(1);                           % Frequency spacing
 zfnorm=abs(zf);                         % Norm of data
 %% Find Rotation Angle
 
