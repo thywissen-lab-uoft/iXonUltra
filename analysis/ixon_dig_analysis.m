@@ -140,12 +140,12 @@ if dig_doRadialAnalysis2
         ixon_saveFigure2(hF,'dig_radial',dig_opts);  
     end
     
-    
-    hF2 = dig_TrackPeakCharge(digdata);
-    if dig_opts.doSave
-        ixon_saveFigure2(hF2,'dig_radial_peak_charge',dig_opts);  
-
-    end
+%     
+%     hF2 = dig_TrackPeakCharge(digdata);
+%     if dig_opts.doSave
+%         ixon_saveFigure2(hF2,'dig_radial_peak_charge',dig_opts);  
+% 
+%     end
 end
 
 %% Radial Analysis
