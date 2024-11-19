@@ -97,7 +97,6 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 % autoVar_Ignore = {};
 
 %% Analysis Options
-
 ixon_doBoxCount                     = 1;
 ixon_doGaussFit                     = 1;
 
@@ -165,9 +164,7 @@ img_opt.FFTFilterRadius     = 1;        % FFT Filter radius (1/px)
 % perform analysis on.
 
 % Full ROI 
-ixonROI = [1 512 1 512]; 
-
-    
+ixonROI = [1 512 1 512];     
     
 
 %% Load the data

@@ -75,9 +75,9 @@ end
         'bottom','horizontalalignment','left','fontsize',8,'color','r',...
         'Visible','off','interpreter','none');
 
-    tSE = text(.99,.01,'','units','normalized','verticalalignment',...
-        'bottom','horizontalalignment','right','fontsize',8,'color','r',...
-        'Visible','off');
+%     tSE = text(.99,.01,'','units','normalized','verticalalignment',...
+%         'bottom','horizontalalignment','right','fontsize',8,'color','r',...
+%         'Visible','off');
     %% Populate with data
     
     if opts.doAnimate
@@ -96,9 +96,9 @@ end
             sNW = [num2str(nn) '/' num2str(size(digdata.Zdig,3))];
             set(tNW,'String',sNW,'Visible','on');
 
-            sSE = ['threshold : ' num2str(unique(digdata.Threshold)) newline ...
-                num2str(sum(digdata.Zdig(:,:,nn),'all')) ' atoms'];
-            set(tSE,'String',sSE,'Visible','on');   
+%             sSE = ['threshold : ' num2str(digdata.Threshold(nn)) newline ...
+%                 num2str(sum(digdata.Zdig(:,:,nn),'all')) ' atoms'];
+%             set(tSE,'String',sSE,'Visible','on');   
             
             frame=getframe(hF);
             im = frame2im(frame);
@@ -137,11 +137,11 @@ end
 
             set(tNW,'String',[num2str(size(digdata.Zdig,3)) ' images']);
 
-            sSE = ['threshold :' num2str(unique(digdata.Threshold)) newline ...
+            sSE = ['avg threshold :' num2str(mean(digdata.Threshold)) newline ...
                 num2str(round(mean(sum(digdata.Zdig,[1 2])))) '\pm' ...
                 num2str(round(std(sum(digdata.Zdig,[1 2])))) ' atoms'];
 
-            set(tSE,'String',sSE);
+%             set(tSE,'String',sSE);
 
 end
 

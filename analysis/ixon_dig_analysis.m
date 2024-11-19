@@ -78,8 +78,10 @@ dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
-dig_doRadialAnalysis                    = 1;
-dig_doRadialSkewAnalysis                = 0;
+dig_doRadialAnalysis                    = 1; % has issues
+dig_doRadialSkewAnalysis                = 0; % has issues
+dig_doRadialAnalysis2                   = 1;
+
 
 do_qpd_analysis                            = 1;
 %% QPD Analysis
@@ -105,7 +107,8 @@ end
 
 %% Redo Basic Analysis
 digdata = dig_basic(digdata);
-%% Show CLoud
+
+%% Show Cloud
 
 if dig_doShowCloud
     opts = dig_opts;
@@ -113,7 +116,6 @@ if dig_doShowCloud
     opts.ROI = 'max';
     opts.filename = 'dig_animateFull.gif';
     hF_digCloud = dig_showCloud(digdata,opts);
-
     if dig_opts.doSave
         ixon_saveFigure2(hF_digCloud,...
          'dig_average',dig_opts);  
@@ -130,13 +132,28 @@ if dig_standardAnalysis
     end
 end
 
+%% Radial Analysis Better
+
+if dig_doRadialAnalysis2
+    hF = dig_radialAnalysis(digdata);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF,'dig_radial',dig_opts);  
+    end
+    
+    
+    hF2 = dig_TrackPeakCharge(digdata);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF2,'dig_radial_peak_charge',dig_opts);  
+
+    end
+end
+
 %% Radial Analysis
+% CJF Thinks is becoming obsolte
 
 if dig_doRadialAnalysis
     opts = dig_opts;   
     opts.BinStep = 3;                   % delta r bin size    
-
-
     opts.useAverageCenter = 0;
 
     if isequal(digdata.xVar,'conductivity_mod_time')
@@ -214,20 +231,14 @@ if dig_doRadialAnalysis
         filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
         disp(['Saving ' filename ' ...']);
         save(filename, '-struct','dig_radial_data');
-    end
-     
-    % obsolte analysis
-%     [hF_digRadial_2,dig_radial_data] = dig_radialAnalysis(digdata,opts);        
-
+    end    
 
 end
 
 %% Radial Skew Analysis
 
-if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')
-    
+if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')    
     [digdata] = dig_compute_radial_skew(digdata,opts);
-    
     [hFs_radial_skew] = dig_radialAnalysis_average_images_skew(digdata,opts);
     if dig_opts.doSave
        for kk=1:length(hFs_radial_skew)
@@ -235,8 +246,7 @@ if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')
                 ['dig_radial_skew_' num2str(kk)],dig_opts);   
        end
     end
-    
-end
+    end
 
 %% Conductivity Analysis
 

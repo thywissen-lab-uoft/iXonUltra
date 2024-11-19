@@ -57,7 +57,6 @@ for kk=1:length(data)
 %% Remove wipe pics
 
 if size(Z,3)>1
-
     if isfield(data(kk).Params,'qgm_MultiExposures') && isfield(data(kk).Params,'qgm_MultiPiezos')
         wipePics = isnan([data(kk).Params.qgm_MultiExposures]);
         Z(:,:,wipePics)=[];      

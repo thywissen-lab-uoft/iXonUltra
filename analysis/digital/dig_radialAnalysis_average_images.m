@@ -14,17 +14,7 @@ function [hFs,hF2,out] = dig_radialAnalysis_average_images(digdata,opts)
     
     animateFileName = fullfile(opts.saveDir,'radial_animation');            
 
-    
-            
         
-        
-            
-        
-
-
-    
-  
-    
     %% 
     
     

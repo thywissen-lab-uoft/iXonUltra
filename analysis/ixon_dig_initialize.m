@@ -19,13 +19,18 @@ addpath(a);addpath(genpath(a));
 
 %% Initialize Digdata
 
-if exist('bin_Digitize_Source','var') && isequal(bin_Digitize_Source,'compensated')
-    digdata = bin_makeDigDataScaled(bindata,bin_opts);
+dig_opts=bin_opts;
+dig_opts.NumSigmaThresh=2.5;
+digdata = bin_makeDigData2(bindata,dig_opts);
 
-else
-    bindata = ixon_digitize(bindata,dig_DigitizationThreshold);    
-    digdata = bin_makeDigData(bindata,bin_opts);
-end
+% CJF new stuff is happening.
+% if exist('bin_Digitize_Source','var') && isequal(bin_Digitize_Source,'compensated')
+%     digdata = bin_makeDigDataScaled(bindata,bin_opts);
+% 
+% else
+%     bindata = ixon_digitize(bindata,dig_DigitizationThreshold);    
+%     digdata = bin_makeDigData(bindata,bin_opts);
+% end
     
 if bin_opts.doSave 
     filename = fullfile(bin_opts.saveDir,'digdata.mat');

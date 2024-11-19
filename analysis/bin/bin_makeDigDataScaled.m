@@ -38,12 +38,9 @@ function [digdata] = bin_makeDigDataScaled(bindata,opts)
                 thresh_abs(nn) = thresh_abs_med;
             end
             Zdig(:,:,nn) = Zscaled>=thresh(nn);  
-
-        end
-        
+        end        
         Natoms(nn) = sum(Zdig(:,:,nn),[1 2]);
-    end
-    
+    end    
     
     digdata                     = struct;    
     digdata.SourceDirectory     = unique({bindata.SourceDirectory});
