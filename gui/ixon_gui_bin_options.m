@@ -20,8 +20,6 @@ opts.CompensateMax              = 1.5;
 opts.CompensateCustomMap        = 'asdfassdf.mat';
 opts.ClusterNumber              =2;
 
-%% Options for special bin alaysis
-opts.StripeThreshold = [3000 7000];
 
 end
 

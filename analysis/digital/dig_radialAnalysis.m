@@ -413,6 +413,7 @@ function [sigmaR,sigmaR_err]=pdf_gauss_fit(r,rMin)
         'pdf',pdf_r,'cdf',cdf_r,...
         'Start',r_expect*sqrt(2/pi), ...
         'LowerBound',0,'TruncationBounds',[rMin inf]);
+    
     sigmaR = pdf_r_vals(1);
     sigmaR_err =(pdf_r_cints(2,1)-pdf_r_cints(1,1))*0.5;
 end

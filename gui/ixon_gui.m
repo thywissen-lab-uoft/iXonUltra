@@ -4109,8 +4109,8 @@ addlistener(axImg_K,'XLim','PostSet',@foo3);
 addlistener(axImg_K,'YLim','PostSet',@foo3); 
 addlistener(axImg_B,'XLim','PostSet',@foo4); 
 addlistener(axImg_B,'YLim','PostSet',@foo4); 
-addlistener(axImg_D,'XLim','PostSet',@foo5); 
-addlistener(axImg_D,'YLim','PostSet',@foo5); 
+% addlistener(axImg_D,'XLim','PostSet',@foo5); 
+% addlistener(axImg_D,'YLim','PostSet',@foo5); 
 
 % set(hF,'WindowState','maximized');
     function foo5(~,~)
@@ -4197,7 +4197,7 @@ function enableInteractivity
     enableDefaultInteractivity(axImg);
     enableDefaultInteractivity(axImg_K);
     enableDefaultInteractivity(axImg_B);
-    enableDefaultInteractivity(axImg_D);
+    % enableDefaultInteractivity(axImg_D);
     enableDefaultInteractivity(axImg);
 end
 
