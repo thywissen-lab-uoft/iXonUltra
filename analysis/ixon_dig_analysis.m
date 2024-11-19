@@ -78,7 +78,7 @@ dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
-dig_doRadialAnalysis                    = 0; % OBSOLETE
+dig_doRadialAnalysis                    = 1; % OBSOLETE
 dig_doRadialSkewAnalysis                = 0;% OBSOLETE
 dig_doRadialAnalysis2                   = 1;
 %% Redo Basic Analysis
@@ -114,6 +114,13 @@ if dig_doRadialAnalysis2
     hF = dig_radialAnalysis(digdata);
     if dig_opts.doSave
         ixon_saveFigure2(hF,'dig_radial',dig_opts);  
+    end
+    
+    
+    hF2 = dig_TrackPeakCharge(digdata);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF2,'dig_radial_peak_charge',dig_opts);  
+
     end
 end
 
