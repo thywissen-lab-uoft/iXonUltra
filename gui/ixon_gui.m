@@ -49,7 +49,7 @@ data=data.data;
 data.Z=data.RawImages(:,:,2)-data.RawImages(:,:,1);
 Z=data.Z;
 
-digdata=[]
+digdata=[];
 bindata = [];
 
 %% Initialize Drivers and GUI
