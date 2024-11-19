@@ -29,7 +29,8 @@ opts.rMax = 110;    % maximum radius
 % Fit the radial distribution to a radial gaussian.  To account for pauli
 % and interactino effects, only fit the wings where the density lower.
 opts.GaussFitDensityMax = [];       % empty if you don't want gauss fit
-opts.GaussFitDensityMax =[0.05 1];  % Maximum density to fit to gaussian
+opts.GaussFitDensityMax =[0.05 1];  % Maximum density to fit to gaussian NEED BETTER VERSINO OF MATLAB
+opts.GaussFitDensityMax =[1];  % Maximum density to fit to gaussian
 
 
 opts.doHubbardAnalysis = true;

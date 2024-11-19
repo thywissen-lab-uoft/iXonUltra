@@ -7,13 +7,16 @@ if ~isfield(opts,'Bin0');           opts.Bin0 = 5;end
 if ~isfield(opts,'rMax');           opts.rMax = 110;end
 
 % Fittng n(r)
-if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [.05 1];end
+% if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [.05 1];end
+
+% YOU NEED A BETTER VERSION OF MATLAB TO DO OTHER DENSITY MAXIMUMS
+if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [1];end
+
 %% Parameters Relvant do Fermi-Hubbard Model
 
 % if ~isfield(opts,'TrapOmega');      opts.TrapOmega = [];end
 % if ~isfield(opts,'Tunneling');      opts.Tunneling = [];end
 % if ~isfield(opts,'U');              opts.Tunneling = [];end
-
 
 if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*65;end
 if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
@@ -408,11 +411,19 @@ function [sigmaR,sigmaR_err]=pdf_gauss_fit(r,rMin)
     r_expect = mean(r,'all');   % expected r
     r(r<rMin)=[];                   % remove data points smaller rMin
 
-    % Fit it
+    % Fit it THIS ONLY WORKS WITH VERSION OF MATLAB HIGHER THAN r2019b
+    try
     [pdf_r_vals,pdf_r_cints] = mle(r,...
         'pdf',pdf_r,'cdf',cdf_r,...
         'Start',r_expect*sqrt(2/pi), ...
         'LowerBound',0,'TruncationBounds',[rMin inf]);
+    catch ME
+         [pdf_r_vals,pdf_r_cints] = mle(r,...
+        'pdf',pdf_r,'cdf',cdf_r,...
+        'Start',r_expect*sqrt(2/pi), ...
+        'LowerBound',0);
+    end
+    
     sigmaR = pdf_r_vals(1);
     sigmaR_err =(pdf_r_cints(2,1)-pdf_r_cints(1,1))*0.5;
 end

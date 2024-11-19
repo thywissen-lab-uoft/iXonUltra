@@ -154,6 +154,10 @@ if bin_BinAcummulateHist
     opts.Nthresh =6000;
     opts.saveDir = bin_opts.saveDir;    
     opts.doAnimate = 1;    
+    
+    % Choose which bin data to show
+%     opts.Source = 'ZbinRaw';
+    opts.Source = 'Zbin';
 
     % Full Cloud
     opts.ROI = 'max';
@@ -175,11 +179,15 @@ if bin_BinAcummulateHist
 
     % Partition
     opts.NumGrid = [3 3];
+    opts.Source ='ZbinRaw';
     hF_BinGridHistgoram = bin_gridHistogram(bindata,opts);    
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinGridHistgoram,...
          'bin_GridHistgoram',bin_opts);  
     end
+    
+    opts.Source ='Zbin';
+
 end
 
 %% Show FluorPerAtom
@@ -187,7 +195,7 @@ end
 if bin_FluorPerAtom
     hF_fluorPeratom  = bin_showFluorPerAtom(bindata,opts);
     if bin_opts.doSave       
-        ixon_saveFigure2(hF_fluorperatom,...
+        ixon_saveFigure2(hF_fluorPeratom,...
             'bin_FluorPerAtom',bin_opts);  
     end 
 end

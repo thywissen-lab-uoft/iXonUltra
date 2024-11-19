@@ -99,6 +99,7 @@ for kk=1:length(data)
         PDF1_Radius_Bounds = pdf1_cint(2,:);
         PDF1 = @(x) pdf('normal',x,PDF1_Center,PDF1_Radius);
 
+        data(kk).LatticeBin(rr).PostBinOptions=opts;
         data(kk).LatticeBin(rr).Zbin=Zbin;
         data(kk).LatticeBin(rr).ClusterThreshold     = ClusterThresholds;
         data(kk).LatticeBin(rr).ClusterCentroids     = ClusterCentroids;

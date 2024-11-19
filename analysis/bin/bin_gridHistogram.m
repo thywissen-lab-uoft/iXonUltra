@@ -18,6 +18,10 @@ function hF = bin_gridHistogram(bindata,opts)
    if ~isfield(opts,'NumGrid')
       opts.NumGrid=[3 3]; 
    end
+   
+   if ~isfield(opts,'Source')
+      opts.Source='Zbin'; 
+   end
     
     edges = linspace(0,6*opts.Nthresh,opts.NumBins);
     n1 = bindata(1).LatticeBin(1).n1;
@@ -26,7 +30,7 @@ function hF = bin_gridHistogram(bindata,opts)
     
     Zall = zeros(length(n2),length(n1),length(bindata));
     for nn = 1:length(bindata)        
-        Zthis = bindata(nn).LatticeBin(1).Zbin;    
+        Zthis = bindata(nn).LatticeBin(1).(opts.Source);    
         Zall(:,:,nn) =  Zthis;
     end
     
@@ -177,6 +181,32 @@ function hF = bin_gridHistogram(bindata,opts)
        rectangle('Position',R{nn},'EdgeColor',chsv(nn,:)); 
     end
     title('average binned imaged');
+    
+    
+    
+       
+    bStr = ['source : ' opts.Source ];
+    bpost = bindata(1).LatticeBin(1).PostBinOptions;    
+    if ~isequal(opts.Source,'ZbinRaw')        
+        if isequal(bpost.CompensateMethod,'gauss')
+            bStr=[bStr newline ...
+                'spatial gauss compensate' newline ...
+                'sigma : '  num2str(bpost.CompensateGaussRadius) newline ...
+                'max scale : x' num2str(bpost.CompensateMax)];
+        end        
+        if isequal(bpost.CompensateMethod,'custom')
+            bStr=[bStr newline ...
+                'custom map compensate' newline ...
+                'file : '  num2str(bpost.CompensateCustomMap)];
+        end
+        
+        if isequal(bpost.CompensateMethod,'none')
+            bStr=[bStr newline ...
+                'no mods'];
+        end                    
+    end
+   text(.01,.01,bStr,'units','normalized','color','r','fontsize',8,...
+        'verticalalignment','bottom','horizontalalignment','left');
     
 
 end

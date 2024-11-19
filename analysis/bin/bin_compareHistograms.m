@@ -1,4 +1,4 @@
-function  figs = bin_compareHistograms(bindata)
+function  figs = bin_compareHistograms(bindata,opts)
 % This function accounts for 
 
 
