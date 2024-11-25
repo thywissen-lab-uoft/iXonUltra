@@ -278,7 +278,7 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     ax1.Position = [x0 y0 w h];
     
     if size(digdata.Zdig,3)>1
-        imagesc(n1,n2,imboxfilt(Zbar))
+        imagesc(n1,n2,imboxfilt(Zbar),'parent',ax1)
         strBoxCar = ['boxcar avg: ' num2str(opts.BinStep) '\times' num2str(opts.BinStep)];
         text(.99,.01,strBoxCar,'units','normalized','fontsize',10,...
         'verticalalignment','top','horizontalalignment','right',...
@@ -286,7 +286,7 @@ strS = ['$(x_\sigma,y_\sigma):' ...
         ax1.XAxisLocation='Top';
         set(ax1,'FontSize',8);
     else
-        imagesc(n1,n2,Zbar)
+        imagesc(n1,n2,Zbar,'parent',ax1)
     end
     xlabel(ax1,'position (sites)');
     ylabel(ax1,'position (sites)');    
@@ -360,7 +360,7 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     end
     if ~isempty(opts.GaussFitDensityMax)
     legend(pGaussFits,legStr,'interpreter','latex','fontsize',8,...
-        'location','southeast');
+        'location','southeast','parent',hF);
     end
 
     set(ax2,'box','on','linewidth',1,'fontsize',12,...
@@ -377,20 +377,20 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     plot(x,100*f,'k-','linewidth',2,'parent',ax3);
     xlabel(ax3,'radial distance (\mum)')
     xlim(ax3,[0 max(x)]);
-    ylim([0 102]);
+    % ylim(ax3,[0 102]);
     set(ax3,'box','on','linewidth',1,'fontsize',12,...
         'yaxislocation','right')
-    ylabel('% within radius')
+    ylabel(ax3,'% within radius')
     hold(ax3,'on');
         
 
-    plot([1 1]*rstar,[0 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1);
-    plot([rstar x(end)],[1 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1);
+    plot([1 1]*rstar,[0 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
+    plot([rstar x(end)],[1 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
 
     if ~isempty(trap_str)    
         text(.98,.02,trap_str,'interpreter','latex','horizontalalignment','right',...
         'verticalalignment','bottom','fontsize',10,'units','normalized',...
-        'backgroundcolor','w','margin',1)
+        'backgroundcolor','w','margin',1,'parent',ax3)
     end
     hF.UserData.Axes{1}.UserData.subplot_inds = [1 2 1];
     hF.UserData.Axes{2}.UserData.subplot_inds = [2 2 2];
