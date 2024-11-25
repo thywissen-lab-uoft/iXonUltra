@@ -725,14 +725,28 @@ composite_data= struct;
 composite_data.Runs = runs;
 composite_data.Name = 'non linearity check';
 
+runs = [     
+       2024 11 22 19;
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = 'plane shift';
+
+runs = [     
+       2024 11 22 17;
+       2024 11 22 18;
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = 'pulse shake';
 
 %%
 super_opts=struct;
-super_opts.do_ixon_main = 1;
-super_opts.do_ixon_bin_analysis = 1;
+super_opts.do_ixon_main = 0;
+super_opts.do_ixon_bin_analysis = 0;
 super_opts.do_ixon_dig_analysis = 1;
 
 
 ixon_super(composite_data,super_opts);
  %% Gather Data
-composite_data = gatherCompositeData(composite_data);
+% composite_data = gatherCompositeData(composite_data);

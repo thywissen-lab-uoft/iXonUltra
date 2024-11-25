@@ -640,7 +640,7 @@ hcAdwinCamera=uicontrol(hpAcq,'style','checkbox','string','auto camera config?',
 % boop.ReadTime = [];
 % boop.
 acqTimer.UserData=[0 0];
-acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
+acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.2,...
     'TimerFcn',@acqTimerFcn,'ExecutionMode','FixedSpacing','StartFcn',@acqTimerStartFcn);
 
     function acqTimerStartFcn(src,evt)
@@ -708,7 +708,6 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
             case 'DRV_IDLE'      
                 % Grab the images from the camera
                 imgs=ixon_grabRawImages; 
-                toc                
                 % Assign images metadata
                 mydata=makeImgDataStruct(imgs);
                 % Restart Acquisition if desired (auto-stopts)
@@ -737,7 +736,7 @@ acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',1,...
                 if ~cAutoUpdate.Value
                     currDir=defaultDir;
                     data=mydata;                       
-                    newDataCallback;                     
+                    newDataCallback;                    
 
                 else                    
                     % Just update index
