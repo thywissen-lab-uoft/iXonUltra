@@ -83,12 +83,15 @@ dig_doRadialSkewAnalysis                = 0; % has issues
 dig_doRadialAnalysis2                   = 1;
 
 
-do_qpd_analysis                            = 0;
+do_qpd_analysis                            = 1;
 %% QPD Analysis
 
 if do_qpd_analysis
     P=[digdata.Params];
     D=[P.ExecutionDate];
+    dig_opts.X = [digdata.X];
+    dig_opts.xVar = digdata.xVar;
+
    [figs,output] = qpd_main(D,dig_opts) ;
       if dig_opts.doSave
           for kk=1:length(figs)
