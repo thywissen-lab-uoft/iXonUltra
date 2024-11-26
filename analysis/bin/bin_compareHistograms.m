@@ -1,4 +1,4 @@
-function  figs = bin_compareHistograms(bindata,opts)
+function  [figs,out] = bin_compareHistograms(bindata,opts)
 % This function accounts for 
 
 
@@ -51,9 +51,11 @@ med_norm_sigma = mean([count_sigma(:)./count_center(:)]);
 std_norm_sigma = std([count_sigma(:)./count_center(:)]);
 
 NthreshNormPlot = (1-3*med_norm_sigma);
-edges_norm = linspace(0,3*NthreshNormPlot,50);
+edges_norm = linspace(0,1+3*med_norm_sigma,50);
 
+%% Normalized Fit
 
+out = bin_NormalizedStatistics(bindata);
 %%
 ca = [0 0 0];       
 cb = [0.7 .1 .6];
@@ -122,7 +124,7 @@ for rr=1:length(bindata(1).LatticeBin)
     colorbar;
     caxis([0 NthreshNormPlot]);
 
-    subplot(224);
+    ax4=subplot(224);
     pHistB1 = bar(centers_norm(iL_norm),normN(iL_norm),'linestyle','none',...
         'facecolor','k');
     xlim([0 max(edges_norm)]);    
@@ -138,7 +140,19 @@ for rr=1:length(bindata(1).LatticeBin)
     title('compensated histogram');
     set(gca,'box','on','linewidth',1,'fontsize',10,...
         'YDir','normal','Xdir','normal');
-
+    
+    i_larger_than_one = [centers_norm>=1];
+    
+    lvls = normN(i_larger_than_one);
+    
+    Ntot = 2*sum(lvls);
+    y=out.PDF1(centers_norm);
+    yN= Ntot*y/sum(y);
+    hold on
+    plot(centers_norm, yN,'r-','parent',ax4);
+    
+    
+    
       if isfield(bindata,'SourceDirectory') 
         tFig=uicontrol('style','text','string',bindata(1).SourceDirectory,...
             'units','pixels','backgroundcolor',...
@@ -147,12 +161,24 @@ for rr=1:length(bindata(1).LatticeBin)
         tFig.Position(3)=figs(rr).Position(3);
         tFig.Position(1:2)=[5 figs(rr).Position(4)-tFig.Position(4)];
       end    
+      
    descStr=['$N_0 = ' num2str(round(mean(count_center(:,rr)))) '\pm' num2str(round(std(count_center(:,rr)))) '$' ...
      newline '$\sigma_{\mathrm{counts}} = ' num2str(round(100*med_norm_sigma)) '\% \pm' num2str(round(100*std_norm_sigma)) '\% $'];
  
       text(.05,.95,descStr,'units','normalized',...
           'interpreter','latex','horizontalalignment','left',...
           'verticalalignment','cap');
+      
+      
+            
+   descStr=['$\mathrm{norm~center} = ' num2str(round(out(rr).PDF1_Center,2)) '$' ...
+     newline '$\sigma_{\mathrm{norm}} = ' num2str(round(100*out(rr).PDF1_Radius)) '\% $'];
+ 
+      text(.95,.95,descStr,'units','normalized',...
+          'interpreter','latex','horizontalalignment','right',...
+          'verticalalignment','cap');
+      
+      
 end
 
 

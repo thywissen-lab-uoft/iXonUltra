@@ -84,19 +84,25 @@ for kk=1:length(data)
         %% Fit PDF To Cluster
         fprintf('pdf...');
 
-        boundLow = ClusterCentroids(2)-1.5*ClusterRadii(2);
+        boundLow = ClusterCentroids(2)-1.5*ClusterRadii(2);% send this to be based on cluster threshold
+        boundLow = ClusterThresholds(1);
         boundHigh = 2*ClusterCentroids(2);
+        boundHigh = inf;
+        
         z_truncate =z;
         z_truncate(z_truncate<boundLow)=[];
         z_truncate(z_truncate>boundHigh)=[];
 
         [pdf1_c,pdf1_cint] = mle(z_truncate,'distribution','normal',...
             'TruncationBounds',[boundLow boundHigh]);
+        
+     
+        
         PDF1_Distribution = 'normal';
         PDF1_Center = pdf1_c(1);
         PDF1_Radius = pdf1_c(2);
-        PDF1_Center_Bounds = pdf1_cint(1,:);
-        PDF1_Radius_Bounds = pdf1_cint(2,:);
+        PDF1_Center_Bounds = pdf1_cint(:,1);
+        PDF1_Radius_Bounds = pdf1_cint(:,2);
         PDF1 = @(x) pdf('normal',x,PDF1_Center,PDF1_Radius);
 
         data(kk).LatticeBin(rr).PostBinOptions=opts;

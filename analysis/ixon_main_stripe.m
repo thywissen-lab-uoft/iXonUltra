@@ -242,7 +242,7 @@ end
     stripe_opts.ControlVariable = 'qgm_plane_uwave_frequency_offset';
     stripe_opts.nCenter =[276 256];
 
-
+%%
 
     hF_circle_stripe = ixon_showCircleStripe(ixondata,ixon_xVar,stripe_opts);
     if ixon_doSave;ixon_saveFigure2(hF_circle_stripe,'ixon_circle_stripe',saveOpts);end     

@@ -146,6 +146,8 @@ bindata = bindata(inds);
 
 bindata = ixon_ProcessPostBin(bindata,ixon_gui_bin_options());
  
+
+
 %% Histogram
 
 if bin_BinAcummulateHist
@@ -203,7 +205,7 @@ end
 %% Show Efficacy of Raw Versus Processed
 
 if bin_RawVersusProcessed
-    hF_binCompares= bin_compareHistograms(bindata,opts); 
+    [hF_binCompares,output_thresh]= bin_compareHistograms(bindata,opts); 
     if bin_opts.doSave
         for kk=1:length(hF_binCompares)
             ixon_saveFigure2(hF_binCompares(kk),...

@@ -11,6 +11,11 @@ end
 if ~isfield(opts,'NumSigmaThresh')
     opts.NumSigmaThresh=2.5;
 end
+
+if ~isfield(opts,'NormThresh')
+    opts.NormThresh=[];
+end
+
     P = [bindata.Params];
     F = [bindata.Flags];
     U = [bindata.Units];
@@ -60,7 +65,13 @@ end
         rr=1;
         Zbin = bindata(nn).LatticeBin(rr).Zbin;
         Zscaled = Zbin/count_center(nn,rr);
+        
         Thresh = 1 - opts.NumSigmaThresh*sigma_norm(rr);   
+        
+        if ~isempty(opts.NormThresh)
+            Thresh=opts.NormThresh;
+        end
+        
         zdig_this = Zscaled>=Thresh;
 
         Zdig(:,:,nn) = zdig_this;    
