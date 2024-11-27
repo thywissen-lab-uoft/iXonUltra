@@ -762,12 +762,37 @@ composite_data.Runs = runs;
 composite_data.Name = '54 HZ 201.1 G 0.8V vary evap depth';
 
 %%
+runs = [     
+    2024 11 26 12;
+    2024 11 26 13;
+    2024 11 26 14;
+    2024 11 26 16;
+    2024 11 26 16;
+    2024 11 26 17;
+    2024 11 26 18;
+    2024 11 26 19;
+    2024 11 27 01;
+    2024 11 27 02;
+    2024 11 27 03;
+    2024 11 27 04;
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = '2024_11_26 201.1 G 1.5 V Drive, Full Spectra, 70 mW Evap';
+name = '2024_11_26 201.1 G 1.5 V Drive, Full Spectra, 70 mW Evap';
+
+%%
 super_opts=struct;
 super_opts.do_ixon_main = 1;
-super_opts.do_ixon_bin_analysis = 0;
-super_opts.do_ixon_dig_analysis = 0;
-
-
+super_opts.do_ixon_bin_analysis = 1;
+super_opts.do_ixon_dig_analysis = 1;
 ixon_super(composite_data,super_opts);
  %% Gather Data
  composite_data = gatherCompositeData(composite_data);
+
+ %% Save Composite Analysis locally and to google drive
+ composite_save_opts = struct;
+ composite_save_opts.Name = name;
+ composite_save_opts.doUpload = true;
+ 
+ saveCompositeData(composite_data,composite_save_opts);
