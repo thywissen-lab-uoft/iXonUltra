@@ -65,13 +65,16 @@ strs={'EM/conventonial','conventional/NIR'};
 desc.AmpTypeIndex=strs{acq.AmpTypeIndex+1};
 
 % VSSpeedIndex
+try
 [~,sp] = GetVSSpeed(acq.VSSpeedIndex);
 desc.VSSpeedIndex = [num2str(sp) ' us'];
-
+end
 % HSSpeedIndex
 
+try
 [~,sp]=GetHSSpeed(acq.ADChannelIndex,acq.AmpTypeIndex,acq.HSSpeedIndex);
 desc.HSSpeedIndex = [num2str(sp) ' MHz'];
+end
 % keyboard
 % [ret, nfo.NumAmp] = GetNumberAmp;
 % [ret, nfo.NumADChannels] = GetNumberADChannels;

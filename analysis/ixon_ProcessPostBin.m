@@ -17,6 +17,11 @@ if ~isfield(data,'LatticeBin')
     error('no LatticeBin')
 end
 
+%% Error Checking
+if ~isfield(opts,'CountMax')
+    opts.CountMax = 30e3;
+end
+
 %% Recenter bindata
 if length(data)>1
     data = bin_recenter(data);
@@ -64,6 +69,15 @@ for kk=1:length(data)
 
         z=Zbin(:);z(z==0)=[];       % Get histogram of all counts
         z(isnan(z))=[];
+        
+        bInds = [z>opts.CountMax];
+        
+        if sum(bInds)
+            warning(['hot lattice sistes detected (N=' num2str(sum(bInds)) ') BE CAREFUL']);
+        end
+        
+        z(bInds)=[];
+        
         % Sort into clusters
         [idx,ClusterCentroids,sumD,D]=kmeans(z,opts.ClusterNumber);
         
@@ -93,9 +107,12 @@ for kk=1:length(data)
         z_truncate(z_truncate<boundLow)=[];
         z_truncate(z_truncate>boundHigh)=[];
 
+        try
         [pdf1_c,pdf1_cint] = mle(z_truncate,'distribution','normal',...
             'TruncationBounds',[boundLow boundHigh]);
-        
+        catch ME
+           keyboard 
+        end
      
         
         PDF1_Distribution = 'normal';

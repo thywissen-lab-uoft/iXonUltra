@@ -16,6 +16,10 @@ if ~isfield(opts,'NormThresh')
     opts.NormThresh=[];
 end
 
+if ~isfield(opts,'CountMax')
+    opts.CountMax = 35e3;
+end
+
     P = [bindata.Params];
     F = [bindata.Flags];
     U = [bindata.Units];
@@ -66,6 +70,9 @@ end
         Zbin = bindata(nn).LatticeBin(rr).Zbin;
         Zscaled = Zbin/count_center(nn,rr);
         
+        bInds=[Zbin>opts.CountMax];
+
+        
         Thresh = 1 - opts.NumSigmaThresh*sigma_norm(rr);   
         
         if ~isempty(opts.NormThresh)
@@ -73,6 +80,8 @@ end
         end
         
         zdig_this = Zscaled>=Thresh;
+        
+        zdig_this(bInds)=0;
 
         Zdig(:,:,nn) = zdig_this;    
         

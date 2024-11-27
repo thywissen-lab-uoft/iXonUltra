@@ -741,12 +741,33 @@ composite_data.Runs = runs;
 composite_data.Name = 'pulse shake';
 
 %%
+runs = [     
+    2024 11 25 22;
+    2024 11 25 23;
+    2024 11 25 24;
+    2024 11 26 01;
+    2024 11 26 02;
+    2024 11 26 03;
+    2024 11 26 04;
+    2024 11 26 05;
+    2024 11 26 06;
+    2024 11 26 07;
+    2024 11 26 08;
+    2024 11 26 09;
+    2024 11 26 10;
+
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = '54 HZ 201.1 G 0.8V vary evap depth';
+
+%%
 super_opts=struct;
-super_opts.do_ixon_main = 0;
+super_opts.do_ixon_main = 1;
 super_opts.do_ixon_bin_analysis = 0;
-super_opts.do_ixon_dig_analysis = 1;
+super_opts.do_ixon_dig_analysis = 0;
 
 
 ixon_super(composite_data,super_opts);
  %% Gather Data
-% composite_data = gatherCompositeData(composite_data);
+ composite_data = gatherCompositeData(composite_data);
