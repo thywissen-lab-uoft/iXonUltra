@@ -763,7 +763,7 @@ composite_data.Name = '54 HZ 201.1 G 0.8V vary evap depth';
 
 %%
 super_opts=struct;
-super_opts.do_ixon_main = 1;
+super_opts.do_ixon_main = 0;
 super_opts.do_ixon_bin_analysis = 0;
 super_opts.do_ixon_dig_analysis = 0;
 
