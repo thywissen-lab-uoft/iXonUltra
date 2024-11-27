@@ -18,7 +18,7 @@ if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [1];end
 % if ~isfield(opts,'Tunneling');      opts.Tunneling = [];end
 % if ~isfield(opts,'U');              opts.Tunneling = [];end
 
-if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*65;end
+if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*52*sqrt(1.0965);end % from 11/25/24
 if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
 if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 
@@ -143,6 +143,34 @@ end
 % Convert the fit into n(r)
 nr_partial_cdf  = @(s,R) 1-erf(R./sqrt(2*s^2)); % integral of foo [R,infinity]
 nr_fit          = @(s,r,N0) sqrt(2/pi)/s*exp(-r.^2/(2*s.^2))*N0;
+
+%% Fit Data to Gibb's estimate
+
+% Guesses
+Gz0 = 1;
+Gs = sigma_r_numerical;
+
+gibbsFit=fittype('2./(z0*exp(-r.^2./(2*s.^2)) + z0.^(-1)*exp(r.^2./(2*s.^2)) + 2)','independent',{'r'},...
+    'coefficients',{'z0','s'});
+options=fitoptions(gibbsFit);          
+options.TolFun      = 1E-14;
+options.Lower       = [-10 0];
+options.Upper       = [30 2*Gs];            
+options.StartPoint  = [Gz0 Gs];     
+options.MaxIter     = 3000;
+options.MaxFunEvals = 3000;
+
+% keyboard
+        
+GibbsFit=fit(rcen',nr_mean,gibbsFit,options);     
+
+T_HOt_g = sigma2Tovert(GibbsFit.s*aL);
+T_HO_g_nK = 1e9*sigma2Tovert(GibbsFit.s*aL)*h*opts.Tunneling/kB;
+
+npeak_g = feval(GibbsFit,0);
+n_doublon = (GibbsFit.z0).^2./((GibbsFit.z0).^2 + 2*(GibbsFit.z0) + 1);
+n_up = npeak_g/2 + n_doublon;
+
      
 
 %% String Stuff
@@ -237,6 +265,10 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     output.RadialOccupation         = nr;
     output.RadialOccupationMean     = nr_mean;
     output.RadialOccupationError    = nr_std;
+
+    output.GibbsFit                 = GibbsFit;
+    output.Gibbs_z0                 = GibbsFit.z0;
+    output.Gibbs_Rs                 = GibbsFit.s*aL_um;
 
 %% Plotting
 
@@ -358,10 +390,17 @@ strS = ['$(x_\sigma,y_\sigma):' ...
             '(' num2str(round(10*s_err*aL_um)) ')~\mu\mathrm{m}$' ...
             ' $n<' num2str(opts.GaussFitDensityMax(nn)) '$'];
     end
+
+    % Plot gibbs fit
+    pGaussFits(nn+1) = plot(rVec,feval(GibbsFit,rVec),'-');
+    legStr{nn+1} = ['Gibbs $z_0 = ' num2str(GibbsFit.z0,'%.1f') '$, $T= ' num2str(T_HOt_g,'%.1f') 't$ ' ...
+        '(' num2str(T_HO_g_nK,'%.0f') ' nK)' ];
     if ~isempty(opts.GaussFitDensityMax)
     legend(pGaussFits,legStr,'interpreter','latex','fontsize',8,...
         'location','southeast','parent',hF);
     end
+
+  
 
     set(ax2,'box','on','linewidth',1,'fontsize',12,...
         'yaxislocation','right')
@@ -397,6 +436,7 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     hF.UserData.Axes{3}.UserData.subplot_inds = [2 2 4];
 
     hF.SizeChangedFcn=@figResize;
+    
   
 end
 

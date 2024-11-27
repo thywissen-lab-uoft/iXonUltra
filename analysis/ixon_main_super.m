@@ -783,9 +783,13 @@ name = '2024_11_26 201.1 G 1.5 V Drive, Full Spectra, 70 mW Evap';
 
 %%
 super_opts=struct;
+
 super_opts.do_ixon_main = 1;
 super_opts.do_ixon_bin_analysis = 1;
 super_opts.do_ixon_dig_analysis = 1;
+
+
+
 ixon_super(composite_data,super_opts);
  %% Gather Data
  composite_data = gatherCompositeData(composite_data);

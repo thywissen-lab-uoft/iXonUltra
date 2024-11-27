@@ -83,7 +83,7 @@ dig_doRadialSkewAnalysis                = 0; % has issues
 dig_doRadialAnalysis2                   = 1;
 
 
-do_qpd_analysis                            = 1;
+do_qpd_analysis                            = 0;
 %% QPD Analysis
 
 if do_qpd_analysis
@@ -138,10 +138,15 @@ end
 %% Radial Analysis Better
 
 if dig_doRadialAnalysis2
-    hF = dig_radialAnalysis(digdata);
+    [hF,dig_radial_data] = dig_radialAnalysis(digdata);
     if dig_opts.doSave
         ixon_saveFigure2(hF,'dig_radial',dig_opts);  
     end
+
+    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+    filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
+    disp(['Saving ' filename ' ...']);
+    save(filename, '-struct','dig_radial_data');
     
 %     
 %     hF2 = dig_TrackPeakCharge(digdata);
@@ -164,6 +169,7 @@ if dig_doRadialAnalysis
     end
 
     digdata = dig_compute_radial(digdata,opts);     % Compute radial profile for all images
+
 
     
     opts.rMaxShow = 80;                 % max r to plot
