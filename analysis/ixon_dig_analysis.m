@@ -78,12 +78,12 @@ dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
-dig_doRadialAnalysis                    = 1; % has issues
-dig_doRadialSkewAnalysis                = 0; % has issues
+dig_doRadialAnalysis                    = 0; % has issues,obsolete
+dig_doRadialSkewAnalysis                = 0; % has issues,obsolete
 dig_doRadialAnalysis2                   = 1;
 
 
-do_qpd_analysis                            = 0;
+do_qpd_analysis                            = 1;
 %% QPD Analysis
 
 if do_qpd_analysis
