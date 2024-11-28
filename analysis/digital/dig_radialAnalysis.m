@@ -229,6 +229,11 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     n1_lim = nc_med(1)+4.5*[-1 1]*n_sigma_med(1);
     n2_lim = nc_med(2)+4.5*[-1 1]*n_sigma_med(2);
 
+    n1_lim(1) = max([n1_lim(1) n1(1)]);
+    n1_lim(2) = min([n1_lim(2) n1(end)]);
+
+    n2_lim(1) = max([n2_lim(1) n2(1)]);
+    n2_lim(2) = min([n2_lim(2) n2(end)]);
     %% Create radial potential vector
     
     % % Constants
