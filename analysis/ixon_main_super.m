@@ -780,6 +780,21 @@ composite_data= struct;
 composite_data.Runs = runs;
 composite_data.Name = '2024_11_26 201.1 G 1.5 V Drive, Full Spectra, 70 mW Evap';
 name = '2024_11_26 201.1 G 1.5 V Drive, Full Spectra, 70 mW Evap';
+%%
+runs = [     
+    2024 11 27 06;
+    2024 11 27 07;
+    2024 11 27 08;
+    2024 11 27 09;
+    2024 11 27 10;
+    2024 11 28 01;
+    2024 11 28 02;
+    2024 11 28 03;
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = '2024_11_27 201.1 G 2V+ variable Drive, Full Spectra, 70 mW Evap';
+name = '2024_11_27 201.1 G 2V+ variable Drive, Full Spectra, 70 mW Evap';
 
 %%
 super_opts=struct;
