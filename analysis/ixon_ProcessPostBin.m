@@ -19,7 +19,7 @@ end
 
 %% Error Checking
 if ~isfield(opts,'CountMax')
-    opts.CountMax = 30e3;
+    opts.CountMax = 15e3;
 end
 
 %% Recenter bindata

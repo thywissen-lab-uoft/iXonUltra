@@ -20,6 +20,6 @@ opts.CompensateMax              = 1.5;
 opts.CompensateCustomMap        = 'asdfassdf.mat';
 opts.ClusterNumber              =2;
 
-
+opts.CountMax = 15e3;
 end
 

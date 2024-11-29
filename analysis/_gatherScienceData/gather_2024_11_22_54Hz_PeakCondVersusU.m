@@ -1,6 +1,7 @@
 clear composite_data
 composite_data = struct;
 index=1;
+%% Introduction
 
 
 %% 2024/11/22-2024/11/23
@@ -46,7 +47,7 @@ composite_data(index).Runs= [
 %         2024 11 24 03; % bad SNR
         2024 11 24 04; 
         2024 11 24 05;
-        2024 11 24 06;
+        2024 11 24 06; 
         2024 11 24 07;
         2024 11 24 08;
         2024 11 24 09;
@@ -107,7 +108,7 @@ saveDir = fullfile(GDrive_root,output_folder_name);
 if doUpload
     try
         if ~exist(GDrive_root,'dir');mkdir(GDrive_root);end
-        if ~exist(GDrive_root,'dir');mkdir(saveDir);end
+        if ~exist(saveDir,'dir');mkdir(saveDir);end
          gFile = fullfile(saveDir,'composite_data.mat');
 
         disp(gFile);
