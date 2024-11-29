@@ -188,7 +188,7 @@ x0err2 = (cint2(2,3)-cint2(1,3))*0.5;
 v0err2 = (cint2(2,4)-cint2(1,4))*0.5;
 %a0err2 = (cint2(2,5)-cint2(1,5))*0.5;
 
-%% Make OUtput
+%% Make Output
 
 
 out = struct;

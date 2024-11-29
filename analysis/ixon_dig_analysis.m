@@ -64,7 +64,7 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 1;                % Auto detect changing variable?
+dig_opts.autoXVar       = 0;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
 % dig_opts.xVar           = 'ExecutionDate';  % Variable Name
@@ -87,6 +87,7 @@ do_qpd_analysis                            = 1;
 %% QPD Analysis
 
 if do_qpd_analysis
+    try
     P=[digdata.Params];
     D=[P.ExecutionDate];
     dig_opts.X = [digdata.X];
@@ -105,6 +106,10 @@ if do_qpd_analysis
             disp(['Saving ' filename ' ...']);
             save(filename, '-struct','output');      
       end  
+    catch ME
+       warning(getReport(ME),'extended','hyperlinks','on');
+       disp('DID YOU MAKE SURE TO ADD THE AUXLIARY_ANALYSIS GIT REPOSITORY IS LOADE?');
+    end
 end
 
 

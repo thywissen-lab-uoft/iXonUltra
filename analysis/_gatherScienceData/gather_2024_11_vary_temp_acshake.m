@@ -123,8 +123,34 @@ composite_data(index).Runs= [
     ];
 index=index+1;
 
+%201.1 G high field 50 ms mod ramp 11/05 evap to 65.5 mW
+composite_data(index).Name = '201.1 G 11/08 11/09';
+composite_data(index).Description = '201.1 G high field 50 ms mod ramp 11/08 11/09 evap to 63.8 mW';
+composite_data(index).Runs= [ 
+       2024 11 08 19;
+       2024 11 08 20;
+       2024 11 08 21;
+       2024 11 08 22;
+       2024 11 08 23;
+       2024 11 08 24;
+       2024 11 08 25;
+       2024 11 08 26;
+       2024 11 09 01;
+       2024 11 09 02;
+       2024 11 09 03;
+       2024 11 09 04;
+       2024 11 09 05;
+       2024 11 09 06;
+       2024 11 09 07;
+       2024 11 09 08;
+       2024 11 09 09;
+       2024 11 09 10;
+       2024 11 09 11;
+    ];
+index=index+1;
+
 %% Redo Analysis
-do_redo_analysis = 1;    % Do you want to run analysis on it?
+do_redo_analysis = 0;    % Do you want to run analysis on it?
 
 if do_redo_analysis
     opts=struct;
