@@ -65,7 +65,6 @@ composite_data(index).Runs= [
         2024 11 24 03; % bad SNR
         2024 11 24 04;
    
-        
         2024 11 24 05;
         2024 11 24 06;
         2024 11 24 07;
@@ -79,8 +78,35 @@ composite_data(index).Runs= [
         2024 11 24 15;
         2024 11 24 16;
         2024 11 24 17;
+
+        2024 11 24 18;
+        2024 11 24 19;
+        2024 11 24 20;
+        2024 11 24 21;
+        2024 11 24 22;
+        2024 11 24 23;
+        2024 11 24 24;
+        2024 11 24 25;
+        2024 11 24 26;
+        2024 11 24 27;
+        2024 11 25 01;
+        2024 11 25 02;
+        2024 11 25 03;
+
+        2024 11 25 04;
+        2024 11 25 05;
+        2024 11 25 06;
+        2024 11 25 07;
+        2024 11 25 08;
+        2024 11 25 09;
+        2024 11 25 10;
+        2024 11 25 11;
+        2024 11 25 12;
+        % 2024 11 25 13; %only 5 data points
     ];
-%%
+index=index+1;
+%% Define the runs
+% 201.1 G high field 50 ms mod ramp 11/23-11/24 vary evap depth 4 ER pulse, 0.8V drive
 runs = [     
     2024 11 25 22;
     2024 11 25 23;
@@ -95,6 +121,8 @@ runs = [
     2024 11 26 08;
     2024 11 26 09;
     2024 11 26 10;
+
+    2024 11 26 11;
     ];
 
 
@@ -105,7 +133,7 @@ composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 
 index=index+1;
 
 %% Redo Analysis
-do_redo_analysis = 1;    % Do you want to run analysis on it?
+do_redo_analysis = 0;    % Do you want to run analysis on it?
 
 if do_redo_analysis
     opts=struct;
