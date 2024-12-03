@@ -13,7 +13,9 @@ if nargin ==1
 end
 
 if ~isfield(opts,'MatFiles')
-    opts.MatFiles = {'conductivity_data.mat','digdata.mat','dig_radial_data.mat'};
+%     opts.MatFiles = {'conductivity_data.mat','digdata.mat','dig_radial_data.mat','qpd.mat'};
+        opts.MatFiles = {'conductivity_data.mat','digdata.mat','dig_radial_data.mat'};
+
     %opts.MatFiles = {'conductivity_data.mat','digdata.mat'};
 end
 
@@ -32,7 +34,13 @@ for kk=1:length(composite_data)
             filename = fullfile(imgdir,'Figures',opts.MatFiles{jj});
             [~,field_name,~]=fileparts(filename);
             
-            composite_data(kk).(field_name)(nn) = load(filename);
+            if exist(filename)
+            
+                composite_data(kk).(field_name)(nn) = load(filename);
+            else
+                warning('no file found')
+                composite_data(kk).(field_name)(nn) = [];
+            end
         end
     end
 

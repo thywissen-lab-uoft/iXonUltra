@@ -7,9 +7,6 @@ if nargin ==1
     opts = struct;
 end
 
-if ~isfield(opts,'Ndelta_bound')
-    opts.Ndelta_bound =  1.75;
-end
 
 if ~isfield(opts,'RemoveBadData')
     opts.RemoveBadData =  true;
@@ -30,20 +27,36 @@ T = [P.conductivity_mod_time];
 Tr = [P.conductivity_mod_ramp_time];
 
 
-% Mark bad inds
+%% Mark bad data
+
 Nmed=median(Natoms);
 Nbar = mean(Natoms);
 Nstd = std(Natoms);
-delta = (Natoms-Nbar)/Nstd;
 
-if opts.RemoveBadData
-    bad_inds=[abs(delta)>opts.Ndelta_bound];
-else
-    bad_inds=[];
-end
+b1 = [Natoms>Nmed*1.5];
+b2 = [Natoms<Nmed*0.5];
+bad_inds = logical(b1)|logical(b2);
 
+
+% delta = (Natoms-Nbar)/Nstd;
+% 
+% if ~isfield(opts,'Ndelta_bound')
+%     opts.Ndelta_bound =  1.75;
+% end
+% 
+% 
+% 
+% 
+% if opts.RemoveBadData
+%     bad_inds=[abs(delta)>opts.Ndelta_bound];
+% else
+%     bad_inds=[];
+% end
+% 
+% keyboard
 
 % [Natoms,bad_inds] = rmoutliers([digdata.Natoms]);
+%% Remove Bad inds
 % T(bad_inds)=[];
 % Tr(bad_inds)=[];
 % Ys(bad_inds)=[];
@@ -84,12 +97,11 @@ plot(Ttot(bad_inds),X(bad_inds),'o','markerfacecolor',co(2,:),...
 xlabel('total modulation time (ms)');
 ylabel('x center (um)');
 
-if opts.RemoveBadData
-    str = ['ignoring dN>' num2str(opts.Ndelta_bound) '\sigma'];
-    text(.99,.01,str,'units','normalized','verticalalignment','bottom',...
-        'HorizontalAlignment','right','fontsize',8);
-
-end
+% if opts.RemoveBadData
+%     str = ['ignoring dN>' num2str(opts.Ndelta_bound) '\sigma'];
+%     text(.99,.01,str,'units','normalized','verticalalignment','bottom',...
+%         'HorizontalAlignment','right','fontsize',8);
+% end
 
 ax2=subplot(2,3,4);
 plot(Ttot(~bad_inds),Xs(~bad_inds),'o','markerfacecolor',co(1,:),...
@@ -128,19 +140,46 @@ end
 phi = phiVec(ii);
 %%
 
-sinephasefit = fittype(@(A,phi,x0,t) -A*sin(2*pi*f*t+phi)+x0,...
-    'independent','t','coefficients',{'A','phi','x0'});
-sinephasefit_opt = fitoptions(sinephasefit);
-sinephasefit_opt.StartPoint = [Ag phi x0];
-strFit1 = '$-A\sin(2\pi f t+\phi) + x_0$';
+% sinephasefit = fittype(@(A,phi,x0,t) -A*sin(2*pi*f*t+phi)+x0,...
+%     'independent','t','coefficients',{'A','phi','x0'});
+% sinephasefit_opt = fitoptions(sinephasefit);
+% sinephasefit_opt.StartPoint = [Ag phi x0];
+% strFit1 = '$-A\sin(2\pi f t+\phi) + x_0$';
+% 
+% 
+% sinephasefit = fittype(@(A,phi,x0,v0,a0,t) ...
+%     -A*sin(2*pi*f*t+phi) + x0 + v0*t + 0.5*a0*t.^2,...
+%     'independent','t','coefficients',{'A','phi','x0','v0','a0'});
+% sinephasefit_opt = fitoptions(sinephasefit);
+% sinephasefit_opt.StartPoint = [Ag phi x0 0 0];
+% sinephasefit_opt.Weights = double(~bad_inds);
+% strFit1 = '$-A\sin(2\pi f t+\phi) + x_0 + v_0t +0.5a_0t^2$';
+% fout_sine = fit(Ttot',X',sinephasefit,sinephasefit_opt);
+% 
+% cint = confint(fout_sine,0.667);
+% Aerr = (cint(2,1)-cint(1,1))*0.5;
+% phierr = (cint(2,2)-cint(1,2))*0.5;
+% x0err = (cint(2,3)-cint(1,3))*0.5;
+% v0err = (cint(2,4)-cint(1,4))*0.5;
+% a0err = (cint(2,5)-cint(1,5))*0.5;
+% 
+% tbl_f1={['A(' char(956) 'm)'], [num2str(fout_sine.A,'%.2f') char(177) num2str(Aerr,'%.2f')];
+% [char(966) '(rad)'], [num2str(fout_sine.phi,'%.2f') char(177) num2str(phierr,'%.2f')];
+% ['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sine.x0,'%.1f') char(177) num2str(x0err,'%.1f')];
+% ['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sine.v0,'%.1e') char(177) num2str(v0err,'%.1e')];
+% ['a' char(8320) '(' char(956) 'm/ms)' char(178)], [num2str(fout_sine.a0,'%.1e') char(177) num2str(a0err,'%.1e')];
+% };
+%% Sine : x0,v0
 
 
-sinephasefit = fittype(@(A,phi,x0,v0,a0,t) ...
-    -A*sin(2*pi*f*t+phi) + x0 + v0*t + 0.5*a0*t.^2,...
-    'independent','t','coefficients',{'A','phi','x0','v0','a0'});
+
+sinephasefit = fittype(@(A,phi,x0,v0,t) ...
+    -A*sin(2*pi*f*t+phi) + x0 + v0*t,...
+    'independent','t','coefficients',{'A','phi','x0','v0'});
 sinephasefit_opt = fitoptions(sinephasefit);
-sinephasefit_opt.StartPoint = [Ag phi x0 0 0];
-strFit1 = '$-A\sin(2\pi f t+\phi) + x_0 + v_0t +0.5a_0t^2$';
+sinephasefit_opt.StartPoint = [Ag phi x0 0];
+sinephasefit_opt.Weights = double(~bad_inds);
+strFit1 = '$-A\sin(2\pi f t+\phi) + x_0 + v_0t$';
 fout_sine = fit(Ttot',X',sinephasefit,sinephasefit_opt);
 
 cint = confint(fout_sine,0.667);
@@ -148,14 +187,18 @@ Aerr = (cint(2,1)-cint(1,1))*0.5;
 phierr = (cint(2,2)-cint(1,2))*0.5;
 x0err = (cint(2,3)-cint(1,3))*0.5;
 v0err = (cint(2,4)-cint(1,4))*0.5;
-a0err = (cint(2,5)-cint(1,5))*0.5;
 
 tbl_f1={['A(' char(956) 'm)'], [num2str(fout_sine.A,'%.2f') char(177) num2str(Aerr,'%.2f')];
 [char(966) '(rad)'], [num2str(fout_sine.phi,'%.2f') char(177) num2str(phierr,'%.2f')];
 ['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sine.x0,'%.1f') char(177) num2str(x0err,'%.1f')];
 ['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sine.v0,'%.1e') char(177) num2str(v0err,'%.1e')];
-['a' char(8320) '(' char(956) 'm/ms)' char(178)], [num2str(fout_sine.a0,'%.1e') char(177) num2str(a0err,'%.1e')];
 };
+
+
+%%
+
+
+
 % strFit2 = ['$-S\sin(2\pi f t)-C\cos(2\pi f t) +$' newline ...
     % '$x_0 + v_0t +0.5a_0t^2$'];
 
@@ -293,8 +336,8 @@ hold on
 % pF2 = plot(tt,feval(fout_sinecosine,tt),'g--','linewidth',2);
 % legend([pF1 pF2],{strFit1,strFit2},'interpreter','latex','fontsize',6,'location','best');
 
-% pF1 = plot(tt,feval(fout_sine,tt),'r-','linewidth',2);
-pF2 = plot(tt,feval(fout_sinecosine,tt),'g-','linewidth',2);
+pF1 = plot(tt,feval(fout_sine,tt),'r-','linewidth',2);
+pF2 = plot(tt,feval(fout_sinecosine,tt),'g--','linewidth',2);
 legend([pF2],{strFit2},'interpreter','latex','fontsize',7,'location','best');
 
 

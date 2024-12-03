@@ -5,7 +5,7 @@ index=1;
 %% Saving and Output
 
 output_filename = '2024_11_peakCondVEvap_2.5Er_201.1G';
-doUpload = 0;
+doUpload = 1;
 GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
 
 %% Define the Runs
