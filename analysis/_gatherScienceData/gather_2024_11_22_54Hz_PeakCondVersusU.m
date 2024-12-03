@@ -1,85 +1,23 @@
 clear composite_data
 composite_data = struct;
 index=1;
-%% Introduction
 
-
-%% 2024/11/22-2024/11/23
-%201.1 G high field 50 ms mod ramp 11/22-11/23 vary evap depth
-composite_data(index).Name = '11/22-11/23 201.1 G 54 Hz';
-composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.4V, vary evap depth ';
-composite_data(index).Runs= [ 
-        2024 11 22 23;
-        2024 11 22 24;
-        2024 11 22 25;
-        2024 11 22 26;
-        2024 11 23 01;
-        2024 11 23 03;
-        2024 11 23 04;    
-        2024 11 23 09;
-        2024 11 23 10;
-        2024 11 23 11;
-        2024 11 23 12;
-        2024 11 23 14;
-        2024 11 23 16;
-        2024 11 23 17;
-        2024 11 23 19; % questionable
-    ];
-index=index+1;
-
-
-%% 2024/11/23-2024/11/24
-%201.1 G high field 50 ms mod ramp 11/23-11/24
-composite_data(index).Name = '11/23-11/24 201.1 G, 54 Hz, vary evap and 4 Er pulse';
-composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.4V, vary evap depth, pulse 4 ER lattice ';
-composite_data(index).Runs= [ 
-        2024 11 23 20; % atom number fluct affecting fit, questionalbe SNR
-        2024 11 23 21; % atom number drifting 
-%         2024 11 23 22; % bad SNR
-%         2024 11 23 23; % bad SNR
-%         2024 11 23 24; % bad SNR
-%         2024 11 23 25; % bad SNR
-%         2024 11 23 26; % bad SNR
-        2024 11 23 27;
-        2024 11 23 28;
-        2024 11 24 01;
-%         2024 11 24 02; % questionable fit
-%         2024 11 24 03; % bad SNR
-        2024 11 24 04; 
-        2024 11 24 05;
-        2024 11 24 06; 
-        2024 11 24 07;
-        2024 11 24 08;
-        2024 11 24 09;
-        2024 11 24 10;
-        2024 11 24 11;
-        2024 11 24 12;
-        2024 11 24 13;
-        2024 11 24 14;
-        2024 11 24 15;
-        2024 11 24 16;
-        2024 11 24 17;
-    ];
-index=index+1;
-
-%% 2024/11/25-2024/11/26
-%201.1 G high field 50 ms mod ramp 2024/11/25-2024/11/26 vary evap depth
-composite_data(index).Name = '54 Hz 201.1 G 0.8V vary evap depth';
-composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.8V, vary evap depth ';
+%% 2024/11/20-2024/11/21
+%201.1 G high field 50 ms mod ramp 2024/11/20-2024/11/21 vary field
+composite_data(index).Name = '54 Hz 0.4V vary field';
+composite_data(index).Description = '2.5Er, 54 Hz, 0.8V, 50ms mod ramp, vary field';
 composite_data(index).Runs =[     
-    2024 11 25 22;
-    2024 11 25 23;% questionable
-    2024 11 25 24; % bad SNR
-    2024 11 26 01;
-    2024 11 26 02;
-    2024 11 26 03;% good 68.5 mW
-    2024 11 26 04;% atom number varies
-    2024 11 26 05;
-    2024 11 26 06;% questionable fit - below 0.5um, 69.5 mW
-    2024 11 26 07;% questionable fit
-    2024 11 26 08;% questionable fit 
-    2024 11 26 09; % questionable fit 70 mW
-    2024 11 26 10;
+    2024 11 20 05;
+    2024 11 20 06;
+    2024 11 21 01;
+    2024 11 21 02;
+    2024 11 21 03;
+    2024 11 21 04;
+    2024 11 21 05;
+    2024 11 21 06;
+    2024 11 21 07;
+    2024 11 21 08;
+    2024 11 21 09;
     ];
 index=index+1;
 
@@ -88,8 +26,8 @@ do_redo_analysis = 1;    % Do you want to run analysis on it?
 
 if do_redo_analysis
     opts=struct;
-    opts.do_ixon_main           = 1;   % ixon_main
-    opts.do_ixon_bin_analysis   = 1;   % ixon_bing
+    opts.do_ixon_main           = 0;   % ixon_main
+    opts.do_ixon_bin_analysis   = 0;   % ixon_bing
     opts.do_ixon_dig_analysis   = 1;   % ixon_dig
     ixon_super(composite_data,opts)
 end
