@@ -272,6 +272,7 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     output = struct;
     output.Z                        = Zbar;
     output.NumImages                = size(Z,3);
+    output.RadialVec                = rcen'.*aL_um;
     output.RadialOccupation         = nr;
     output.RadialOccupationMean     = nr_mean;
     output.RadialOccupationError    = nr_std;

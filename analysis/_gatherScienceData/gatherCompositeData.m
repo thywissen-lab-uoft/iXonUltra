@@ -35,7 +35,6 @@ for kk=1:length(composite_data)
             [~,field_name,~]=fileparts(filename);
             
             if exist(filename)
-            
                 composite_data(kk).(field_name)(nn) = load(filename);
             else
                 warning('no file found')

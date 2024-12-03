@@ -68,6 +68,7 @@ composite_data(index).Runs= [
         2024 12 03 08;
         2024 12 03 10;
         2024 12 03 12;
+        2024 12 03 14;
     ];
 index=index+1;
 
@@ -77,8 +78,8 @@ do_redo_analysis = 0;    % Do you want to run analysis on it?
 
 if do_redo_analysis
     opts=struct;
-    opts.do_ixon_main           = 1;   % ixon_main
-    opts.do_ixon_bin_analysis   = 1;   % ixon_bing
+    opts.do_ixon_main           = 0;   % ixon_main
+    opts.do_ixon_bin_analysis   = 0;   % ixon_bing
     opts.do_ixon_dig_analysis   = 1;   % ixon_dig
     ixon_super(composite_data,opts)
 end
