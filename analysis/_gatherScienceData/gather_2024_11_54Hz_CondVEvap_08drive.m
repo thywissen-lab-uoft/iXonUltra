@@ -5,14 +5,15 @@ index=1;
 %% Saving and Output
 
 output_filename = '2024_11_peakCondVEvap_2.5Er_201.1G_0.8Vdrive';
-doUpload = 0;
-GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
+doUpload = 1;
+GDrive_root =['G:\.shortcut-targets-by-id\17Vhjo1DGvmYRlwZkru9Q6dHcECulimTQ\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
 
 %% Define the Runs
 
 %201.1 G high field 50 ms mod ramp 11/25-11/26 vary evap depth
 composite_data(index).Name = '201.1 G 11/25 26';
 composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.8V, vary evap depth ';
+composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
         2024 11 25 22; 
         2024 11 25 23; % questionable

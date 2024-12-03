@@ -6,13 +6,14 @@ index=1;
 
 output_filename = '2024_11_peakCondVEvap_2.5Er_201.1G';
 doUpload = 1;
-GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
+GDrive_root =['G:\.shortcut-targets-by-id\17Vhjo1DGvmYRlwZkru9Q6dHcECulimTQ\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
 
 %% Define the Runs
 
 %201.1 G high field 50 ms mod ramp 11/22-11/23 vary evap depth
 composite_data(index).Name = '201.1 G 11/22 23';
 composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.4V, vary evap depth ';
+composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
         2024 11 22 20; % bad SNR
         2024 11 22 21; % bad SNR, number fluctuating
@@ -50,6 +51,7 @@ index=index+1;
 %201.1 G high field 50 ms mod ramp 11/23-11/24 vary evap depth 4 ER pulse
 composite_data(index).Name = '201.1 G 11/23 24';
 composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.4V, vary evap depth, pulse 4 ER lattice ';
+composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
         2024 11 23 20; % atom number fluct affecting fit, questionalbe SNR
         2024 11 23 21; % atom number drifting 
@@ -105,31 +107,29 @@ composite_data(index).Runs= [
         % 2024 11 25 13; %only 5 data points
     ];
 index=index+1;
-%% Define the runs
-% 201.1 G high field 50 ms mod ramp 11/23-11/24 vary evap depth 4 ER pulse, 0.8V drive
-runs = [     
-    2024 11 25 22;
-    2024 11 25 23;
-    2024 11 25 24;
-    2024 11 26 01;
-    2024 11 26 02;
-    2024 11 26 03;
-    2024 11 26 04;
-    2024 11 26 05;
-    2024 11 26 06;
-    2024 11 26 07;
-    2024 11 26 08;
-    2024 11 26 09;
-    2024 11 26 10;
 
-    2024 11 26 11;
-    ];
+%% Define the Runs
 
-
-composite_data(index).Name = '54 HZ 201.1 G 0.8V vary evap depth';
-composite_data(index).Runs = runs;
+%201.1 G high field 50 ms mod ramp 11/25-11/26 vary evap depth
+composite_data(index).Name = '201.1 G 11/25 26';
 composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.8V, vary evap depth ';
+composite_data(index).Type = 'peak';
+composite_data(index).Runs= [ 
+        2024 11 25 22; 
+        2024 11 25 23; % questionable
+        2024 11 25 24; % bad SNR
+        2024 11 26 01; 
+        2024 11 26 02; 
+        2024 11 26 03; % good 68.5 mW
+        2024 11 26 04; % atom number varies
+        2024 11 26 05;
+        2024 11 26 06; % questionable fit - below 0.5um, 69.5 mW
+        2024 11 26 07; % questionable fit
+        2024 11 26 08; % questionable fit 
+        2024 11 26 09;
+        2024 11 26 10; % questionable fit 70 mW
 
+    ];
 index=index+1;
 
 %% Redo Analysis
