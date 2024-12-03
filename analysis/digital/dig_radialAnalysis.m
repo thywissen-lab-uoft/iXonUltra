@@ -162,7 +162,12 @@ options.MaxFunEvals = 3000;
 
 % keyboard
         
-GibbsFit=fit(rcen',nr_mean,gibbsFit,options);     
+GibbsFit=fit(rcen',nr_mean,gibbsFit,options);
+cint = confint(GibbsFit,0.683);
+Gz0Err = (cint(2,1)-cint(1,1))*0.5;
+GsErr = (cint(2,2)-cint(1,2))*0.5;
+
+
 
 T_HOt_g = sigma2Tovert(GibbsFit.s*aL);
 T_HO_g_nK = 1e9*sigma2Tovert(GibbsFit.s*aL)*h*opts.Tunneling/kB;
@@ -273,7 +278,9 @@ strS = ['$(x_\sigma,y_\sigma):' ...
 
     output.GibbsFit                 = GibbsFit;
     output.Gibbs_z0                 = GibbsFit.z0;
-    output.Gibbs_Rs                 = GibbsFit.s*aL_um;
+    output.Gibbs_z0Err              = Gz0Err;
+    output.Gibbs_Rs                 = GibbsFit.s*aL_um; % in um
+    output.Gibbs_RsErr              = GsErr*aL_um;      % in um
 
 %% Plotting
 
