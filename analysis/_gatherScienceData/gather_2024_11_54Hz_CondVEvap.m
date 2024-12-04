@@ -12,7 +12,7 @@ GDrive_root =['G:\.shortcut-targets-by-id\17Vhjo1DGvmYRlwZkru9Q6dHcECulimTQ\Latt
 
 %201.1 G high field 50 ms mod ramp 11/22-11/23 vary evap depth
 composite_data(index).Name = '201.1 G 11/22 23';
-composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.4V, vary evap depth ';
+composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.4V, vary evap depth';
 composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
         2024 11 22 20; % bad SNR
@@ -110,9 +110,9 @@ index=index+1;
 
 %% Define the Runs
 
-%201.1 G high field 50 ms mod ramp 11/25-11/26 vary evap depth
+%201.1 G high field 50 ms mod ramp 11/25-11/26 vary evap depth, 4Er pulse
 composite_data(index).Name = '201.1 G 11/25 26';
-composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.8V, vary evap depth ';
+composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.8V, vary evap depth, pulse 4 ER lattice ';
 composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
         2024 11 25 22; 
@@ -128,6 +128,7 @@ composite_data(index).Runs= [
         2024 11 26 08; % questionable fit 
         2024 11 26 09;
         2024 11 26 10; % questionable fit 70 mW
+        2024 11 26 11;
 
     ];
 index=index+1;
