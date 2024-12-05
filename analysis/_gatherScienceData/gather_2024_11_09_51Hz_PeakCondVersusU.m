@@ -96,12 +96,12 @@ composite_data(index).Runs= [
 index=index+1;
 
 %% Redo Analysis
-do_redo_analysis = 0;    % Do you want to run analysis on it?
+do_redo_analysis = 1;    % Do you want to run analysis on it?
 
 if do_redo_analysis
     opts=struct;
-    opts.do_ixon_main           = 1;   % ixon_main
-    opts.do_ixon_bin_analysis   = 1;   % ixon_bing
+    opts.do_ixon_main           = 0;   % ixon_main
+    opts.do_ixon_bin_analysis   = 0;   % ixon_bing
     opts.do_ixon_dig_analysis   = 1;   % ixon_dig
     ixon_super(composite_data,opts)
 end
@@ -120,7 +120,7 @@ saveDir = fullfile(GDrive_root,output_folder_name);
 if doUpload
     try
         if ~exist(GDrive_root,'dir');mkdir(GDrive_root);end
-        if ~exist(GDrive_root,'dir');mkdir(saveDir);end
+        if ~exist(saveDir,'dir');mkdir(saveDir);end
          gFile = fullfile(saveDir,'composite_data.mat');
 
         disp(gFile);

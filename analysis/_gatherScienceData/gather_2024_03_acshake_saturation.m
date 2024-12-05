@@ -1,10 +1,5 @@
 clear composite_data
 composite_data = struct;
-%% Saving and Output
-
-output_filename = '2024_03_shake_2.5Er_saturation';
-doUpload = 1;
-GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
 
 %%
 % 200.4 G
@@ -203,17 +198,26 @@ composite_data(1)=[];
 %% Gather All Data
 composite_data = gatherCompositeData(composite_data);
 
-%% Upload the data
+%% Upload
 
- try
-     if ~exist(GDrive_root,'dir')
-     mkdir(GDrive_root);
-     end
- end
- 
- if  doUpload && exist(GDrive_root,'dir')   
-     fprintf('upload to google drive ...');
-    gFile = fullfile(GDrive_root,[output_filename '.mat']);
-    save(gFile,'composite_data'); 
-    disp('done!')
- end
+doUpload = true;
+
+
+GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
+output_folder_name ='2024_03_04 Full Spectrum versus U';
+saveDir = fullfile(GDrive_root,output_folder_name);
+
+if doUpload
+    try
+        if ~exist(GDrive_root,'dir');mkdir(GDrive_root);end
+        if ~exist(GDrive_root,'dir');mkdir(saveDir);end
+         gFile = fullfile(saveDir,'composite_data.mat');
+
+        disp(gFile);
+        fprintf('upload to google drive ...');        
+        save(gFile,'composite_data'); 
+        disp('done!')   
+    catch ME
+        error('OH NO I COUD NOT UPL<OD');
+    end
+end 

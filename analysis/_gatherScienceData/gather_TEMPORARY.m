@@ -39,6 +39,7 @@ index=1;
 % 2.5 Er, 50 ms mod ramp, 68 mW
 composite_data(index).Name = '12/02 0.4V 68 mW 54 Hz';
 composite_data(index).Description = '12/02 0.4V 68 mW 54 Hz';
+composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
         2024 12 02 16;
         2024 12 02 18
@@ -50,6 +51,8 @@ composite_data(index).Runs= [
         2024 12 03 09;
         2024 12 03 11;
         2024 12 03 13;
+        2024 12 03 15;
+
     ];
 index=index+1;
 %% 2024/12/02-2024/12/03
@@ -58,6 +61,7 @@ index=index+1;
 % 2.5 Er, 50 ms mod ramp, 68 mW
 composite_data(index).Name = '12/02 0.8V 68 mW 54 Hz';
 composite_data(index).Description = '12/02 0.8V 68 mW 54 Hz';
+composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
         2024 12 02 17;
         2024 12 02 19
@@ -69,12 +73,71 @@ composite_data(index).Runs= [
         2024 12 03 10;
         2024 12 03 12;
         2024 12 03 14;
+        2024 12 03 16;
     ];
 index=index+1;
 
+%% 2024/12/03-2024/12/04
+% 
+% %Single frequency 54 Hz, vary field evap depth and pulse depth
+% 
+% % 2.5 Er, 50 ms mod ramp, 190 G, 64-70 mW, 0 Er
+% composite_data(index).Name = '2024_12_03 54 Hz, 190 G, 64-70 mW, 0 Er, 0.4 V';
+% composite_data(index).Description = '54 Hz, 2.5 Er, 50 ms mod ramp, 190 G, 64-70 mW, 0 Er pulse, 0.4 V';
+% composite_data(index).Type = 'peak';
+% composite_data(index).Runs = [     
+%     2024 12 03 19;
+%     2024 12 03 21;
+%     2024 12 03 23;
+%     2024 12 04 02;
+%     2024 12 04 12;
+%     ];
+% 
+% index=index+1;
+% 
+% % 2.5 Er, 50 ms mod ramp, 190 G, 64-70 mW, 4 Er pulse
+% composite_data(index).Name = '2024_12_03 54 Hz, 190 G, 64-70 mW, 4 Er, 0.4 V';
+% composite_data(index).Description = '54 Hz, 2.5 Er, 50 ms mod ramp, 190 G, 64-70 mW, 4 Er pulse, 0.4 V';
+% composite_data(index).Type = 'peak';
+% composite_data(index).Runs = [     
+%     2024 12 03 18;
+%     2024 12 03 20;
+%     2024 12 03 22;
+%     2024 12 04 01;
+%     2024 12 04 11;
+%     2024 12 04 13;
+%     ];
+% 
+% index=index+1;
+% 
+% % 2.5 Er, 50 ms mod ramp, 200G, 64-70 mW, 0 Er pulse
+% composite_data(index).Name = '2024_12_03 54 Hz, 200 G, 64-70 mW, 0 Er, 0.8 V';
+% composite_data(index).Description = '54 Hz, 2.5 Er, 50 ms mod ramp, 200G, 64-70 mW, 0 Er pulse, 0.8 V';
+% composite_data(index).Type = 'peak';
+% composite_data(index).Runs = [     
+%     2024 12 04 04;
+%     2024 12 04 06;
+%     2024 12 04 08;
+%     2024 12 04 10;
+%     ];
+% 
+% index=index+1;
+% 
+% % 2.5 Er, 50 ms mod ramp, 200G, 64-70 mW, 4 Er pulse
+% composite_data(index).Name = '2024_12_03 54 Hz, 200 G, 64-70 mW, 4 Er, 0.8 V';
+% composite_data(index).Description = '54 Hz, 2.5 Er, 50 ms mod ramp, 200G, 64-70 mW, 4 Er pulse, 0.8 V';
+% composite_data(index).Type = 'peak';
+% composite_data(index).Runs = [     
+%     2024 12 04 03;
+%     2024 12 04 05;
+%     2024 12 04 07;
+%     2024 12 04 09;
+%     ];
+% 
+% index=index+1;
 
 %% Redo Analysis
-do_redo_analysis = 0;    % Do you want to run analysis on it?
+do_redo_analysis =0;    % Do you want to run analysis on it?
 
 if do_redo_analysis
     opts=struct;

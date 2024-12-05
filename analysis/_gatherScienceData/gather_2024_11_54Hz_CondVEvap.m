@@ -3,7 +3,6 @@ composite_data = struct;
 index=1;
 
 %% Saving and Output
-
 output_filename = '2024_11_peakCondVEvap_2.5Er_201.1G';
 doUpload = 1;
 GDrive_root =['G:\.shortcut-targets-by-id\17Vhjo1DGvmYRlwZkru9Q6dHcECulimTQ\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
@@ -11,8 +10,10 @@ GDrive_root =['G:\.shortcut-targets-by-id\17Vhjo1DGvmYRlwZkru9Q6dHcECulimTQ\Latt
 %% Define the Runs
 
 %201.1 G high field 50 ms mod ramp 11/22-11/23 vary evap depth
-composite_data(index).Name = '201.1 G 11/22 23';
-composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.4V, vary evap depth';
+
+composite_data(index).Name = '11/22 201.1 G, 54 Hz, 0.4V, vary evap';
+composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.4V, vary evap depth ';
+
 composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
         2024 11 22 20; % bad SNR
@@ -49,7 +50,7 @@ index=index+1;
 
 %% Define the Runs
 %201.1 G high field 50 ms mod ramp 11/23-11/24 vary evap depth 4 ER pulse
-composite_data(index).Name = '201.1 G 11/23 24';
+composite_data(index).Name = '11/23 201.1 G, 54 Hz, 0.4V, 4Er pulse, vary evap';
 composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.4V, vary evap depth, pulse 4 ER lattice ';
 composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
@@ -110,9 +111,10 @@ index=index+1;
 
 %% Define the Runs
 
-%201.1 G high field 50 ms mod ramp 11/25-11/26 vary evap depth, 4Er pulse
-composite_data(index).Name = '201.1 G 11/25 26';
-composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.8V, vary evap depth, pulse 4 ER lattice ';
+
+%201.1 G high field 50 ms mod ramp 11/25-11/26 vary evap depth
+composite_data(index).Name =  '11/25 201.1 G, 54 Hz, 0.8V, vary evap';
+composite_data(index).Description = '201.1 G high field, 2.5Er, 50 ms mod ramp, 54 Hz 0.8V, vary evap depth ';
 composite_data(index).Type = 'peak';
 composite_data(index).Runs= [ 
         2024 11 25 22; 

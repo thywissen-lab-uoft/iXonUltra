@@ -937,7 +937,7 @@ runs = [
 %     2024 12 03 12;
 %     2024 12 03 13;
     2024 12 03 14;
-
+    
 
     ];
 composite_data= struct;
@@ -960,11 +960,37 @@ composite_data.Name = '2024_12_02-03 68 mW vary U 54 Hz';
 % composite_data.Name = '2024_11_27 201.1 G 2V+ variable Drive, Full Spectra, 70 mW Evap';
 % name = '2024_11_27 201.1 G 2V+ variable Drive, Full Spectra, 70 mW Evap';
 
+
+%%
+runs = [     
+%     2024 12 03 17;
+%     2024 12 03 18;
+%     2024 12 03 19;
+%     2024 12 03 20;
+%     2024 12 03 21;
+%     2024 12 03 22;
+%     2024 12 04 01;
+%     2024 12 04 02;
+%     2024 12 04 03;
+%     2024 12 04 04;
+%     2024 12 04 05;
+%     2024 12 04 06;
+%     2024 12 04 07;
+%     2024 12 04 08;
+%     2024 12 04 09;
+%     2024 12 04 10;
+%     2024 12 04 11;
+%     2024 12 04 12;
+    2024 12 04 13;
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = '2024_12_03 54 Hz temp U scan';
 %%
 super_opts=struct;
 
-super_opts.do_ixon_main = 1;
-super_opts.do_ixon_bin_analysis = 1;
+super_opts.do_ixon_main = 0;
+super_opts.do_ixon_bin_analysis = 0;
 super_opts.do_ixon_dig_analysis = 1;
 
 
