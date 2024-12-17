@@ -149,6 +149,9 @@ nr_fit          = @(s,r,N0) sqrt(2/pi)/s*exp(-r.^2/(2*s.^2))*N0;
 % Guesses
 Gz0 = 1;
 Gs = sigma_r_numerical;
+w       = 1./(nr_std.^2); % weights as 1/variance
+w(isinf(w)|isnan(w)) = 0;
+
 
 gibbsFit=fittype('2./(z0*exp(-r.^2./(2*s.^2)) + z0.^(-1)*exp(r.^2./(2*s.^2)) + 2)','independent',{'r'},...
     'coefficients',{'z0','s'});
@@ -159,6 +162,7 @@ options.Upper       = [30 2*Gs];
 options.StartPoint  = [Gz0 Gs];     
 options.MaxIter     = 3000;
 options.MaxFunEvals = 3000;
+options.Weights     = w;
 
 % keyboard
         

@@ -145,7 +145,6 @@ composite_data(index).Runs = [
 ];
 index=index+1;
 
-
 %% Redo Analysis
 do_redo_analysis = 0;    % Do you want to run analysis on it?
 

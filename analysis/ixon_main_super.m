@@ -987,13 +987,84 @@ composite_data= struct;
 composite_data.Runs = runs;
 composite_data.Name = '2024_12_03 54 Hz temp U scan';
 %%
+runs = [     
+    2024 12 05 01;
+    2024 12 05 02;
+    2024 12 05 03;
+    2024 12 05 04;
+    2024 12 05 05;
+    2024 12 06 01;
+    2024 12 06 02;
+    2024 12 06 03;
+    2024 12 06 04;
+    2024 12 06 05;
+    2024 12 06 06;
+    2024 12 06 07;
+    2024 12 06 08;
+    2024 12 06 09;
+    2024 12 06 10;
+    2024 12 06 11;
+    2024 12 06 12;
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = '2024_12_05 201.1 64.5 mW G full spectrum';
+%%
+runs = [     
+    2024 12 09 02;
+    2024 12 09 03;
+    2024 12 09 04;
+    2024 12 09 05;
+    2024 12 09 06;
+    2024 12 10 01;
+    2024 12 10 02;
+    2024 12 10 03;
+    2024 12 10 04;
+    2024 12 10 05;
+    2024 12 10 06;
+    2024 12 10 07;
+    2024 12 10 08;
+    2024 12 10 09;
+    2024 12 10 10;
+    2024 12 10 11;
+    2024 12 10 12;
+    2024 12 10 13;
+    2024 12 10 14;
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = '2024_12_09 201.1 G 66.5 mW 5 Er full spectrum';
+%%
+runs = [     
+    2024 12 12 15;
+    2024 12 12 16;
+    2024 12 12 17;
+    2024 12 12 18;
+    2024 12 12 19;
+    2024 12 12 20;
+    2024 12 12 21;
+    2024 12 13 01;
+    2024 12 13 02;
+    2024 12 13 03;
+    2024 12 13 04;
+    2024 12 13 05;
+    2024 12 13 06;
+    2024 12 13 07;
+    2024 12 13 08;
+    2024 12 13 09;
+    2024 12 13 10;
+    2024 12 13 11;
+    2024 12 13 12;
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = '2024_12_12 54 Hz 66.5 mW 5 Er';
+%%
 super_opts=struct;
 
-super_opts.do_ixon_main = 0;
-super_opts.do_ixon_bin_analysis = 0;
+super_opts.do_ixon_main = 1;
+super_opts.do_ixon_bin_analysis = 1;
 super_opts.do_ixon_dig_analysis = 1;
-
-
 
 ixon_super(composite_data,super_opts);
  %% Gather Data

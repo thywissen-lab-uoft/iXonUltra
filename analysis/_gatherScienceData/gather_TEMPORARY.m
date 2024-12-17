@@ -33,50 +33,6 @@ index=1;
 %     ];
 % index=index+1;
 
-%% 2024/12/02-2024/12/03
-
-%Single frequency 54 Hz, 0.4 V, Variable Field
-% 2.5 Er, 50 ms mod ramp, 68 mW
-composite_data(index).Name = '12/02 0.4V 68 mW 54 Hz';
-composite_data(index).Description = '12/02 0.4V 68 mW 54 Hz';
-composite_data(index).Type = 'peak';
-composite_data(index).Runs= [ 
-        2024 12 02 16;
-        2024 12 02 18
-        2024 12 02 20;
-        2024 12 03 01;
-        2024 12 03 03;
-        2024 12 03 05;
-        2024 12 03 07;
-        2024 12 03 09;
-        2024 12 03 11;
-        2024 12 03 13;
-        2024 12 03 15;
-
-    ];
-index=index+1;
-%% 2024/12/02-2024/12/03
-
-%Single frequency 54 Hz, 0.8 V, Variable Field
-% 2.5 Er, 50 ms mod ramp, 68 mW
-composite_data(index).Name = '12/02 0.8V 68 mW 54 Hz';
-composite_data(index).Description = '12/02 0.8V 68 mW 54 Hz';
-composite_data(index).Type = 'peak';
-composite_data(index).Runs= [ 
-        2024 12 02 17;
-        2024 12 02 19
-        2024 12 02 21;
-        2024 12 03 02;
-        2024 12 03 04;
-        2024 12 03 06;
-        2024 12 03 08;
-        2024 12 03 10;
-        2024 12 03 12;
-        2024 12 03 14;
-        2024 12 03 16;
-    ];
-index=index+1;
-
 %% 2024/12/03-2024/12/04
 % 
 % %Single frequency 54 Hz, vary field evap depth and pulse depth
@@ -136,13 +92,182 @@ index=index+1;
 % 
 % index=index+1;
 
+% % 2.5 Er, 50 ms mod ramp, 200G, 64-70 mW, 4 Er pulse
+% composite_data(index).Name = '2024_12_05 201.1 G 64.5 mW spectrum';
+% composite_data(index).Description = '2.5 Er, 50 ms mod ramp, 201.1 G, 64.5 mW';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [    
+%     2024 12 05 01;
+%     2024 12 05 02;
+%     2024 12 05 03;
+%     2024 12 05 04;
+%     2024 12 05 05;
+%     2024 12 06 01;
+%     2024 12 06 02;
+%     2024 12 06 03;
+%     2024 12 06 04;
+%     2024 12 06 05;
+%     2024 12 06 06;
+%     2024 12 06 07;
+%     2024 12 06 08;
+%     2024 12 06 09;
+%     2024 12 06 10;
+%     2024 12 06 11;
+%     2024 12 06 12;
+%     ];
+% 
+% index=index+1;
+
+% %% 12/11-12/12
+% 
+% % 2.5 Er, 50 ms mod ramp, 200G, 64-70 mW, 4 Er pulse
+% composite_data(index).Name = '2024_12_11 201.1 G 66.5 mW 5 Er pulse spectrum, -12 plane shift';
+% composite_data(index).Description = '2.5 Er, 50 ms mod ramp, 66.5 mW 5 Er pulse spectrum, -12 plane shift';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [    
+%     2024 12 11 19;
+%     2024 12 11 20;
+%     2024 12 11 21;
+%     2024 12 11 22;
+%     2024 12 11 23;
+%     2024 12 11 24;
+%     2024 12 11 25;
+%     2024 12 12 01;
+%     2024 12 12 02;
+%     2024 12 12 03;
+%     ];
+% 
+% index=index+1;
+% 
+% % 2.5 Er, 50 ms mod ramp, 201.1 G, 66.5 mW, 5 Er pulse
+% composite_data(index).Name = '2024_12_11 201.1 G 66.5 mW 5 Er pulse spectrum, -8 plane shift';
+% composite_data(index).Description = '2.5 Er, 50 ms mod ramp, 66.5 mW 5 Er pulse spectrum, -8 plane shift';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [    
+%     2024 12 12 04;
+%     2024 12 12 05;
+%     2024 12 12 06;
+%     2024 12 12 07;
+%     2024 12 12 08;
+%     2024 12 12 09;
+%     2024 12 12 10;
+%     2024 12 12 11;
+%     2024 12 12 12;
+%     2024 12 12 13;
+%     ];
+% 
+% index=index+1;
+% %% 54 Hz cond v U, 66.5 mW, 5 Er pulse
+% composite_data(index).Name = '2024_12_12 54 Hz 66.5 mW 5 Er pulse vary U';
+% composite_data(index).Description = '2.5 Er, 54 Hz, 50 ms mod ramp, 66.5 mW 5 Er pulse, vary U';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+%     2024 12 12 15;
+%     2024 12 12 16;
+%     2024 12 12 17;
+%     2024 12 12 18;
+%     2024 12 12 19;
+%     2024 12 12 20;
+%     2024 12 12 21;
+%     2024 12 13 01;
+%     2024 12 13 02;
+%     2024 12 13 03;
+%     2024 12 13 04;
+%     2024 12 13 05;
+%     2024 12 13 06;
+%     2024 12 13 07;
+%     2024 12 13 08;
+%     2024 12 13 09;
+%     2024 12 13 10;
+%     2024 12 13 11;
+%     2024 12 13 12;
+%     2024 12 13 13;
+%     2024 12 13 14;
+%     2024 12 13 15;
+%     ];
+%% Retake March data
+% 200.9 G
+composite_data(index).Name = '2024_12_12 200.9 G spectrum';
+composite_data(index).Description = '2.5 Er, 200.9 G, 66.5 mW 4.5 Er pulse';
+% composite_data(index).Type = 'spectrum';
+composite_data(index).Runs = [     
+    2024 12 13 16;
+    2024 12 13 17;
+    2024 12 13 18;
+    2024 12 13 19;
+    2024 12 13 20;
+    2024 12 13 21;
+    2024 12 13 22;
+    2024 12 14 01;
+    2024 12 14 02;
+    2024 12 14 03;
+    ];
+index = index +1;
+
+% 190 G, 6.5 Er pulse
+composite_data(index).Name = '2024_12_12 190 G spectrum';
+composite_data(index).Description = '2.5 Er, 190 G, 66.5 mW 6.5 Er pulse';
+% composite_data(index).Type = 'spectrum';
+composite_data(index).Runs = [     
+    2024 12 14 04;
+    2024 12 14 05;
+    2024 12 14 06;
+    2024 12 14 07;
+    2024 12 14 08;
+    2024 12 14 09;
+    2024 12 14 10;
+    2024 12 14 11;
+    2024 12 14 12;
+    2024 12 14 13;
+    ];
+index = index +1;
+
+% 200.65 G, 5 Er pulse
+composite_data(index).Name = '2024_12_12 200.65 G spectrum';
+composite_data(index).Description = '2.5 Er, 200.65 G, 66.5 mW 5 Er pulse';
+% composite_data(index).Type = 'spectrum';
+composite_data(index).Runs = [     
+    2024 12 14 14;
+    2024 12 14 15;
+    2024 12 14 16;
+    2024 12 14 17;
+    2024 12 14 18;
+    2024 12 14 19;
+    2024 12 14 20;
+    2024 12 14 21;
+    2024 12 14 22;
+    2024 12 14 23;
+    
+
+    ];
+index = index +1;
+
+% 195 G, 6 Er pulse
+composite_data(index).Name = '2024_12_12 195 G spectrum';
+composite_data(index).Description = '2.5 Er, 195 G, 66.5 mW 6 Er pulse';
+% composite_data(index).Type = 'spectrum';
+composite_data(index).Runs = [     
+    2024 12 14 24;
+    2024 12 14 25;
+    2024 12 14 26;
+    2024 12 14 27;
+    2024 12 15 01;
+    2024 12 15 02;
+    2024 12 15 03;
+    2024 12 15 04;
+%     2024 12 15 05;no atom :-(
+%     2024 12 15 06;
+    
+
+    ];
+index = index +1;
 %% Redo Analysis
 do_redo_analysis =0;    % Do you want to run analysis on it?
 
 if do_redo_analysis
     opts=struct;
-    opts.do_ixon_main           = 0;   % ixon_main
-    opts.do_ixon_bin_analysis   = 0;   % ixon_bing
+    opts.do_ixon_main           = 1;   % ixon_main
+    opts.do_ixon_bin_analysis   = 1;   % ixon_bing
     opts.do_ixon_dig_analysis   = 1;   % ixon_dig
     ixon_super(composite_data,opts)
 end
