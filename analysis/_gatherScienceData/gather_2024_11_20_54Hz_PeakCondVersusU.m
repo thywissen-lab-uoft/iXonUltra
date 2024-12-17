@@ -3,9 +3,9 @@ composite_data = struct;
 index=1;
 
 %% 2024/11/20-2024/11/21
-%201.1 G high field 50 ms mod ramp 2024/11/20-2024/11/21 vary field
-composite_data(index).Name = '54 Hz 0.4V vary field';
-composite_data(index).Description = '2.5Er, 54 Hz, 0.4V, 50ms mod ramp, vary field';
+% 50 ms mod ramp 2024/11/20-2024/11/21 vary field
+composite_data(index).Name = '11/20 0.4V 54 Hz';
+composite_data(index).Description = '2.5Er, 54 Hz, 0.4V, 65 mW, vary field';
 composite_data(index).Type = 'peak';
 composite_data(index).Runs =[     
     2024 11 20 05;
@@ -38,7 +38,6 @@ composite_data = gatherCompositeData(composite_data);
 %% Upload
 
 doUpload = true;
-
 
 GDrive_root =['G:\.shortcut-targets-by-id\17Vhjo1DGvmYRlwZkru9Q6dHcECulimTQ\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
 output_folder_name = '2024_11_20 Peak Cond 54 Hz Versus U';
