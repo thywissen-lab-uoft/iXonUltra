@@ -82,7 +82,7 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 0;      % Auto detect changing variable?
+ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'conductivity_mod_time'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
@@ -99,7 +99,7 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 
 %% Analysis Options
 ixon_doBoxCount                     = 1;
-ixon_doGaussFit                     = 0;
+ixon_doGaussFit                     = 1;
 
 % Analysis to run
 ixon_doStandardAnalysis             = 1;
@@ -114,7 +114,7 @@ ixon_showFOffset                    = 1;
 %% QGM Single Plane Analysis
 
 % Master flag for QGM stuff
-ixon_doQGM                          = 1;
+ixon_doQGM                          = 0;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
