@@ -1060,6 +1060,37 @@ composite_data= struct;
 composite_data.Runs = runs;
 composite_data.Name = '2024_12_12 54 Hz 66.5 mW 5 Er';
 %%
+runs = [     
+    2025 01 14 06;
+    2025 01 14 07;
+    2025 01 14 08;
+    2025 01 14 09;
+    2025 01 14 10;
+    2025 01 14 11;
+    
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_01_14 200G specta 66 mW 3 Er pulse';
+
+%%
+runs = [     
+    2025 01 15 11;
+    2025 01 15 12;
+    2025 01 15 13;
+    2025 01 15 14;
+    2025 01 15 15;
+    2025 01 15 16;
+    2025 01 16 01;
+    2025 01 16 02;
+    2025 01 16 03;
+    2025 01 16 04;
+    
+    ];
+composite_data= struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_01_15 200G specta 66 mW 3.5 Er pulse';
+%%
 super_opts=struct;
 
 super_opts.do_ixon_main = 1;
