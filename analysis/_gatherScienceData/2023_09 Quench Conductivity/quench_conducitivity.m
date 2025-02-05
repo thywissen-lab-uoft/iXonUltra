@@ -414,7 +414,7 @@ set(gca,'fontsize',12,'xgrid','on','ygrid','on');
  xl=get(gca,'xlim');
  xlim([0 xl(2)]);
 %% Save and UPload data
-doUpload = 1;
+doUpload = 0;
 GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_2023' filesep varname];
 doSave = 1;
  

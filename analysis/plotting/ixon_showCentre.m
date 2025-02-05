@@ -521,7 +521,7 @@ iHigh=find((Y-gD)/gA>.8,1);
 iLow=find((Y-gD)/gA<-.8,1);
 gB=abs(X(iHigh)-X(iLow))*2.2;
 
-gB=14;
+gB=18;
 
 minValues=X(Y==min(Y));
 maxValues=X(Y==max(Y));
@@ -529,14 +529,15 @@ maxValues=X(Y==max(Y));
 % gB=range(X)/2;
 
 
-
+gA = 20;
 
 gC=maxValues(1);
-gC=pi;
+
 gD=0.5*(max(Y)+min(Y));
 
-gC=pi;
+gC=0;
 gE = range(X)/2;
+% gE = 7;
 
 cosFit=fittype('A*cos(2*pi*t/B+C)*exp(-t/E)+D','independent',{'t'},...
     'coefficients',{'A','B','C','D','E'});
