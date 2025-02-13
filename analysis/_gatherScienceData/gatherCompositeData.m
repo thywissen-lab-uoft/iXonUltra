@@ -30,10 +30,11 @@ for kk=1:length(composite_data)
     disp(['Bulk load ' composite_data(kk).Name ' ' num2str(length(dir_list)) ' runs.']);
     for nn=1:length(dir_list)
         imgdir = dir_list{nn};
+%         keyboard
         for jj=1:length(opts.MatFiles)
             filename = fullfile(imgdir,'Figures',opts.MatFiles{jj});
             [~,field_name,~]=fileparts(filename);
-            
+%             keyboard
             if exist(filename)
                 composite_data(kk).(field_name)(nn) = load(filename);
             else

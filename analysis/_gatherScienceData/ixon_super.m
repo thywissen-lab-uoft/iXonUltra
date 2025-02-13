@@ -41,6 +41,8 @@ for super_composite_data_index=1:length(composite_data)
             filename = fullfile(dir_list{super_directory_index},'figures','digdata.mat');
             ixon_dig_analysis;
         end
+       
+            
     end   
 end
 

@@ -82,9 +82,9 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'conductivity_ODT2_mod_amp'; % Variable Name
+ixon_xVar           = 'conductivity_mod_time'; % Variable Name
 % ixon_xVar           = 'z_repop_ramptime'; % Variable Name
 % ixon_xVar           = 'ExecutionDate';
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
@@ -116,7 +116,7 @@ ixon_showFOffset                    = 1;
 %% QGM Single Plane Analysis
 
 % Master flag for QGM stuff
-ixon_doQGM                          = 0;
+ixon_doQGM                          = 1;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
@@ -405,7 +405,7 @@ if ~ixon_doQGM
      ixon_animateOpts.CLim='auto';
 %      ixon_animateOpts.CLim=[0 10000];
 end
-%       ixon_animateOpts.CLim=[0 1000];   % Automatically choose CLIM?
+      ixon_animateOpts.CLim=[0 500];   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end
