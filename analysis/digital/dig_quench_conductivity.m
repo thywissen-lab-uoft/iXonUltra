@@ -1,4 +1,4 @@
-function [hF,out] = dig_ac_conductivity(digdata,opts)
+function [hF,out] = dig_quench_conductivity(digdata,opts)
 
 
 
@@ -23,8 +23,9 @@ Y = [digdata.Yc_um];
 Ys = [digdata.Ys_um];
 
 P = [digdata.Params];
-T = [P.conductivity_mod_time];
+% T = [P.conductivity_mod_time];
 Tr = [P.conductivity_mod_ramp_time];
+T = [P.conductivity_snap_and_hold_time];
 
 
 %% Mark bad data
@@ -65,7 +66,7 @@ bad_inds = logical(b1)|logical(b2);
 % X(bad_inds)=[];
 % Natoms(bad_inds)=[];
 
-Ttot = T + Tr;
+Ttot = T;
 
 %%
 
@@ -73,7 +74,7 @@ hF = figure;
 hF.Color='w';
 hF.Position = [100 100 800 400];
 
-hF.Name = 'Digital AC Conductivity';
+hF.Name = 'Digital Quench Conductivity';
 
 if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
     tFig=uicontrol('style','text','string',opts.FigLabel,...
@@ -94,7 +95,7 @@ plot(Ttot(bad_inds),X(bad_inds),'o','markerfacecolor',co(2,:),...
     'linewidth',1,'markeredgecolor',co(2,:)*.3);
 
 
-xlabel('total modulation time (ms)');
+xlabel('snap and hold time (ms)');
 ylabel('x center (um)');
 
 % if opts.RemoveBadData
@@ -109,7 +110,7 @@ plot(Ttot(~bad_inds),Xs(~bad_inds),'o','markerfacecolor',co(1,:),...
 hold on
 plot(Ttot(bad_inds),Xs(bad_inds),'o','markerfacecolor',co(2,:),...
     'linewidth',1,'markeredgecolor',co(2,:)*.3);
-xlabel('total modulation time (ms)');
+xlabel('snap and hold time (ms)');
 ylabel('x sigma (um)');
 
 ax3=subplot(2,3,5);
@@ -119,7 +120,7 @@ hold on
 plot(Ttot(bad_inds),Natoms(bad_inds),'o','markerfacecolor',co(2,:),...
     'linewidth',1,'markeredgecolor','k');
 ylabel('atom number');
-xlabel('total modulation time (ms)');
+xlabel('snap and hold time (ms)');
 
 %% Initial Fit Guess
 
@@ -171,12 +172,13 @@ phi = phiVec(ii);
 % };
 %% Sine : x0,v0
 
-% Offset phase by fit QPD phase
-qphi = opts.QPD_phi;
+
 
 sinephasefit = fittype(@(A,phi,x0,v0,t) ...
-    -A*sin(2*pi*f*t+phi+qphi) + x0 + v0*t,...
+    -A*sin(2*pi*f*t+phi) + x0 + v0*t,...
     'independent','t','coefficients',{'A','phi','x0','v0'});
+
+
 sinephasefit_opt = fitoptions(sinephasefit);
 sinephasefit_opt.StartPoint = [Ag phi x0 0];
 sinephasefit_opt.Weights = double(~bad_inds);
@@ -211,11 +213,14 @@ tbl_f1={['A(' char(956) 'm)'], [num2str(fout_sine.A,'%.2f') char(177) num2str(Ae
 %strFit2 = ['$-S\sin(2\pi f t)-C\cos(2\pi f t) + x_0 + v_0t +0.5a_0t^2$'];
 
 
-sinecosinefit = fittype(@(S,C,x0,v0,t) ...
-    -S*sin(2*pi*f*t+qphi)-C*cos(2*pi*f*t+qphi) + x0 + v0*t,...
-    'independent','t','coefficients',{'S','C','x0','v0'});
+sinecosinefit = fittype(@(t0,A,G,f,x0,v0,t) ...
+    -A.*exp(-G/2*(t+t0)).*(G/2/(2*pi*f).*sin(2*pi*f*(t+t0))+cos(2*pi*f*(t+t0))) + x0 + v0*t,...
+    'independent','t','coefficients',{'t0','A','G','f','x0','v0'});
+
 sinecosinefit_opt = fitoptions(sinecosinefit);
-sinecosinefit_opt.StartPoint = [Ag*cos(fout_sine.phi) Ag*sin(fout_sine.phi) x0 0];
+sinecosinefit_opt.StartPoint = [4 2 150*1e-3 55*1e-3 x0 0];
+sinecosinefit_opt.Lower = [0 0 0 0 0 0];
+% sinecosinefit_opt.Upper = [-0.5 2 50*1e-3 55*1e-3 x0 0];
 if opts.RemoveBadData
     sinecosinefit_opt.Weights = double(~bad_inds);
 end
@@ -228,44 +233,46 @@ fout_sinecosine = fit(Ttot',X',sinecosinefit,sinecosinefit_opt);
 cint2 = confint(fout_sinecosine,0.667);
 Serr2 = (cint2(2,1)-cint2(1,1))*0.5;
 Cerr2 = (cint2(2,2)-cint2(1,2))*0.5;
-x0err2 = (cint2(2,3)-cint2(1,3))*0.5;
-v0err2 = (cint2(2,4)-cint2(1,4))*0.5;
+Gerr2 = (cint2(2,3)-cint2(1,3))*0.5*1e3;
+ferr2 = (cint2(2,4)-cint2(1,4))*0.5*1e3;
+x0err2 = (cint2(2,5)-cint2(1,5))*0.5;
+v0err2 = (cint2(2,6)-cint2(1,6))*0.5;
 %a0err2 = (cint2(2,5)-cint2(1,5))*0.5;
 
 %% Make Output
-
-
-out = struct;
-out.SourceDirecotry = digdata.SourceDirectory;
-out.T = Ttot;
-out.X = X;
-out.Xs = Xs;
-out.Y = Y;
-out.Ys = Ys;
-out.Natoms = Natoms;
-out.Params = [digdata.Params];
-out.Flags = [digdata.Flags];
-out.Units = [digdata.Units];
-out.FitSinePhase = fout_sine;
-out.FitSineCosine = fout_sinecosine;
-
-out.A = fout_sine.A;
-out.phi = fout_sine.phi;
-out.S = fout_sinecosine.S;
-out.C = fout_sinecosine.C;
-out.x0 = fout_sinecosine.x0;
-out.v0 = fout_sinecosine.v0;
-%out.a0 = fout_sinecosine.a0;
-
-
-out.Aerr = Aerr;
-out.phierr = phierr;
-out.Serr =Serr2;
-out.Cerr = Cerr2;
-out.x0err = x0err2;
-out.v0err = v0err2;
-%out.a0err = a0err2;
-
+% 
+% 
+% out = struct;
+% out.SourceDirecotry = digdata.SourceDirectory;
+% out.T = Ttot;
+% out.X = X;
+% out.Xs = Xs;
+% out.Y = Y;
+% out.Ys = Ys;
+% out.Natoms = Natoms;
+% out.Params = [digdata.Params];
+% out.Flags = [digdata.Flags];
+% out.Units = [digdata.Units];
+% out.FitSinePhase = fout_sine;
+% out.FitSineCosine = fout_sinecosine;
+% 
+% out.A = fout_sine.A;
+% out.phi = fout_sine.phi;
+% out.S = fout_sinecosine.S;
+% out.C = fout_sinecosine.C;
+% out.x0 = fout_sinecosine.x0;
+% out.v0 = fout_sinecosine.v0;
+% %out.a0 = fout_sinecosine.a0;
+% 
+% 
+% out.Aerr = Aerr;
+% out.phierr = phierr;
+% out.Serr =Serr2;
+% out.Cerr = Cerr2;
+% out.x0err = x0err2;
+% out.v0err = v0err2;
+% %out.a0err = a0err2;
+% 
 Ysreal = Ys(~bad_inds);
 Xsreal = Xs(~bad_inds);
 Natomsreal = Natoms(~bad_inds);
@@ -319,8 +326,10 @@ out.SpatialMaxUpDensityErr = nerr;
 % };
 
 tbl_f3={
-['S(' char(956) 'm)'], [num2str(fout_sinecosine.S,'%.2f') ' ' char(177) ' ' num2str(Serr2,'%.2f')];
-['C(' char(956) 'm)'], [num2str(fout_sinecosine.C,'%.2f') ' ' char(177) ' ' num2str(Cerr2,'%.2f')];
+['t0(ms)'], [num2str(fout_sinecosine.t0,'%.2f') ' ' char(177) ' ' num2str(Serr2,'%.2f')];
+['A(' char(956) 'm)'], [num2str(fout_sinecosine.A,'%.2f') ' ' char(177) ' ' num2str(Cerr2,'%.2f')];
+['G(s^-1)'], [num2str(fout_sinecosine.G*1e3,'%.2f') ' ' char(177) ' ' num2str(Gerr2,'%.2f')];
+['f(Hz)'], [num2str(fout_sinecosine.f*1e3,'%.2f') ' ' char(177) ' ' num2str(ferr2,'%.2f')];
 ['x' char(8320) '(' char(956) 'm)'], [num2str(fout_sinecosine.x0,'%.1f') ' ' char(177) ' ' num2str(x0err2,'%.1f')];
 ['v' char(8320) '(' char(956) 'm/ms)'], [num2str(fout_sinecosine.v0,'%.1e') ' ' char(177) ' ' num2str(v0err2,'%.1e')];
 ['N'], [num2str(round(mean(Natomsreal))) ' ' char(177) ' ' num2str(round(std(Natomsreal))) ];

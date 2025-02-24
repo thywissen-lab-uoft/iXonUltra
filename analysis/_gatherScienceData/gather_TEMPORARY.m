@@ -219,79 +219,79 @@ index=1;
 %     ];
 %% Retake March data
 % 200.9 G
-composite_data(index).Name = '2024_12_12 200.9 G spectrum';
-composite_data(index).Description = '2.5 Er, 200.9 G, 66.5 mW 4.5 Er pulse';
-% composite_data(index).Type = 'spectrum';
-composite_data(index).Runs = [     
-    2024 12 13 16;
-    2024 12 13 17;
-    2024 12 13 18;
-    2024 12 13 19;
-    2024 12 13 20;
-    2024 12 13 21;
-    2024 12 13 22;
-    2024 12 14 01;
-    2024 12 14 02;
-    2024 12 14 03;
-    ];
-index = index +1;
-
-% 190 G, 6.5 Er pulse
-composite_data(index).Name = '2024_12_12 190 G spectrum';
-composite_data(index).Description = '2.5 Er, 190 G, 66.5 mW 6.5 Er pulse';
-% composite_data(index).Type = 'spectrum';
-composite_data(index).Runs = [     
-    2024 12 14 04;
-    2024 12 14 05;
-    2024 12 14 06;
-    2024 12 14 07;
-    2024 12 14 08;
-    2024 12 14 09;
-    2024 12 14 10;
-    2024 12 14 11;
-    2024 12 14 12;
-    2024 12 14 13;
-    ];
-index = index +1;
-
-% 200.65 G, 5 Er pulse
-composite_data(index).Name = '2024_12_12 200.65 G spectrum';
-composite_data(index).Description = '2.5 Er, 200.65 G, 66.5 mW 5 Er pulse';
-% composite_data(index).Type = 'spectrum';
-composite_data(index).Runs = [     
-    2024 12 14 14;
-    2024 12 14 15;
-    2024 12 14 16;
-    2024 12 14 17;
-    2024 12 14 18;
-    2024 12 14 19;
-    2024 12 14 20;
-    2024 12 14 21;
-    2024 12 14 22;
-    2024 12 14 23;
-    
-
-    ];
-index = index +1;
-
-% 195 G, 6 Er pulse
-composite_data(index).Name = '2024_12_12 195 G spectrum';
-composite_data(index).Description = '2.5 Er, 195 G, 66.5 mW 6 Er pulse';
-% composite_data(index).Type = 'spectrum';
-composite_data(index).Runs = [     
-    2024 12 14 24;
-    2024 12 14 25;
-    2024 12 14 26;
-    2024 12 14 27;
-    2024 12 15 01;
-    2024 12 15 02;
-    2024 12 15 03;
-    2024 12 15 04;
-%     2024 12 15 05;no atom :-(
-%     2024 12 15 06;
-
-    ];
-index = index +1;
+% composite_data(index).Name = '2024_12_12 200.9 G spectrum';
+% composite_data(index).Description = '2.5 Er, 200.9 G, 66.5 mW 4.5 Er pulse';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+%     2024 12 13 16;
+%     2024 12 13 17;
+%     2024 12 13 18;
+%     2024 12 13 19;
+%     2024 12 13 20;
+%     2024 12 13 21;
+%     2024 12 13 22;
+%     2024 12 14 01;
+%     2024 12 14 02;
+%     2024 12 14 03;
+%     ];
+% index = index +1;
+% 
+% % 190 G, 6.5 Er pulse
+% composite_data(index).Name = '2024_12_12 190 G spectrum';
+% composite_data(index).Description = '2.5 Er, 190 G, 66.5 mW 6.5 Er pulse';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+%     2024 12 14 04;
+%     2024 12 14 05;
+%     2024 12 14 06;
+%     2024 12 14 07;
+%     2024 12 14 08;
+%     2024 12 14 09;
+%     2024 12 14 10;
+%     2024 12 14 11;
+%     2024 12 14 12;
+%     2024 12 14 13;
+%     ];
+% index = index +1;
+% 
+% % 200.65 G, 5 Er pulse
+% composite_data(index).Name = '2024_12_12 200.65 G spectrum';
+% composite_data(index).Description = '2.5 Er, 200.65 G, 66.5 mW 5 Er pulse';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+%     2024 12 14 14;
+%     2024 12 14 15;
+%     2024 12 14 16;
+%     2024 12 14 17;
+%     2024 12 14 18;
+%     2024 12 14 19;
+%     2024 12 14 20;
+%     2024 12 14 21;
+%     2024 12 14 22;
+%     2024 12 14 23;
+%     
+% 
+%     ];
+% index = index +1;
+% 
+% % 195 G, 6 Er pulse
+% composite_data(index).Name = '2024_12_12 195 G spectrum';
+% composite_data(index).Description = '2.5 Er, 195 G, 66.5 mW 6 Er pulse';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+%     2024 12 14 24;
+%     2024 12 14 25;
+%     2024 12 14 26;
+%     2024 12 14 27;
+%     2024 12 15 01;
+%     2024 12 15 02;
+%     2024 12 15 03;
+%     2024 12 15 04;
+% %     2024 12 15 05;no atom :-(
+% %     2024 12 15 06;
+% 
+%     ];
+% index = index +1;
 
 % Retake retake March data
 %200 G, 5 Er pulse
@@ -364,6 +364,133 @@ index = index +1;
 %     ];
 % index = index +1;
 
+ %% 
+% % 190G, 4.5 Er pulse
+% composite_data(index).Name = '2025_01_16 190 G spectrum';
+% composite_data(index).Description = '2.5 Er, 190 G, 66 mW 4.5 Er pulse';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+%     2025 01 16 05;
+%     2025 01 16 06;
+%     2025 01 16 07;
+% %     2025 01 16 08; could not bin, too out of focus
+%     2025 01 16 09;
+%     2025 01 16 10;
+%     2025 01 16 11;
+%     2025 01 16 12;
+%     2025 01 16 13;
+%     2025 01 16 14;
+%     ];
+% index = index +1;
+
+%% 
+% % 201.1G, 4 Er pulse
+% composite_data(index).Name = '2025_01_23 201.1 G spectrum';
+% composite_data(index).Description = '2.5 Er, 201.1 G, 64 mW 4 Er pulse';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+%     2025 01 23 07;
+%     2025 01 23 08;
+%     2025 01 23 09;
+%     2025 01 23 10;
+%     2025 01 23 11;
+%     2025 01 23 12;
+%     2025 01 24 01;
+%     2025 01 24 02;
+%     2025 01 24 03;
+%     2025 01 24 04;
+%     2025 01 24 05;
+%     2025 01 24 06;
+%     2025 01 24 07;
+%     2025 01 24 08;
+%     2025 01 24 09;
+%     2025 01 24 10; %repeat
+%     2025 01 24 11; %repeat
+%     2025 01 24 12; %repeat
+%     ];
+% index = index +1;
+
+% %% 
+% % 201.1G, 4 Er pulse
+% composite_data(index).Name = '2025_01_29 201.1 G 55Hz vary vert disp';
+% composite_data(index).Description = '2.5 Er, 201.1 G, 63.7 mW 1 Er pulse';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+%     2025 01 29 04;
+%     2025 01 29 05;
+%     2025 01 29 06;
+%     2025 01 30 01;
+% %     2025 01 30 02; bad
+%     2025 01 30 03;
+% %     2025 01 30 04; bad
+%     2025 01 30 05;
+%     2025 01 30 06;
+%     2025 01 30 07;
+%     2025 01 30 08;
+%     2025 01 30 09;
+% %     2025 01 30 10; %bad
+%     ];
+% index = index +1;
+
+%% 
+% Vary ODT2 V piezo
+% composite_data(index).Name = '2025_01_31 201.1 G 55Hz vary vert disp';
+% composite_data(index).Description = '2.5 Er, 201.1 G, 64.5 mW 3 Er pulse';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+%     2025 01 30 18
+%     2025 01 30 19
+%     2025 01 30 20
+% %     2025 01 30 21
+%     2025 01 30 22
+% %     2025 01 30 23
+% %     2025 01 31 01 % bad cond fit
+%     2025 01 31 02
+%     2025 01 31 03
+% %     2025 01 31 04 % bad FL --> bad cond fit 
+%     2025 01 31 05
+%     2025 01 31 06
+%     2025 01 31 07
+%     2025 01 31 08
+%     2025 01 31 09
+%     2025 01 31 10
+%     2025 01 31 11
+%     2025 01 31 12
+% %     2025 01 31 13 % bad cond fit
+%     2025 01 31 14
+%     2025 01 31 15
+%     ];
+% index = index +1;
+
+%% 
+% Vary ODT2 V piezo
+composite_data(index).Name = '2025_02_08 200.9 G spectra 64.8 mW 4.5Er pulse';
+composite_data(index).Description = '2.5 Er, 200.9 G, 64.8 mW 4.5 Er pulse';
+% composite_data(index).Type = 'spectrum';
+composite_data(index).Runs = [     
+
+    2025 02 08 25
+    2025 02 08 26
+    2025 02 08 27
+    2025 02 08 28
+    2025 02 09 01
+    2025 02 09 02
+    2025 02 09 03
+    2025 02 09 04
+    2025 02 09 05
+    2025 02 09 06
+    2025 02 09 07
+    2025 02 09 08
+    2025 02 09 09
+    2025 02 09 10
+    2025 02 09 11
+%     2025 02 09 12
+%     2025 02 09 13
+%     2025 02 09 14
+%     2025 02 09 15
+%     2025 02 09 16
+    ];
+index = index +1;
 
 %% Redo Analysis
 do_redo_analysis =0;    % Do you want to run analysis on it?

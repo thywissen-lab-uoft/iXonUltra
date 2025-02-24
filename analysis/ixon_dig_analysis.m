@@ -67,8 +67,8 @@ dig_opts.varType        = 'param';          % always select 'param' for now
 dig_opts.autoXVar       = 1;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
-dig_opts.xVar           = 'tilt_notilt_shift_list';
-% dig_opts.xVar           = 'ExecutionDate';  % Variable Name
+% dig_opts.xVar           = 'conductivity_snap_and_hold_time';  % Variable Name
+
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 dig_opts.doSave         = 1;                % Save Analysis?
 
@@ -78,13 +78,15 @@ dig_opts.doSave         = 1;                % Save Analysis?
 dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
-dig_ac_conductivity_fit                 = 0;
+dig_ac_conductivity_fit                 = 1;
+dig_quench_conductivity_fit             = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
+
 dig_doRadialAnalysis2                   = 0;
 dig_doFidelity                          = 0;
 
-do_qpd_analysis                            = 0;
+
 %% QPD Analysis
 
 if do_qpd_analysis
@@ -93,6 +95,9 @@ if do_qpd_analysis
     D=[P.ExecutionDate];
     dig_opts.X = [digdata.X];
     dig_opts.xVar = digdata.xVar;
+    
+    dig_opts.Frequency = unique([digdata.Params.conductivity_mod_freq]);
+    dig_opts.RampTime  = unique([digdata.Params.conductivity_mod_ramp_time]);
 
    [figs,output] = qpd_main(D,dig_opts) ;
       if dig_opts.doSave
@@ -111,6 +116,8 @@ if do_qpd_analysis
        warning(getReport(ME),'extended','hyperlinks','on');
        disp('DID YOU MAKE SURE TO ADD THE AUXLIARY_ANALYSIS GIT REPOSITORY IS LOADE?');
     end
+    
+%     keyboard
 end
 
 
@@ -268,6 +275,8 @@ if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')
 if dig_ac_conductivity_fit
 opts = dig_opts;
 
+opts.QPD_phi = mean([output.QPD_Modulation.Phi1 output.QPD_Modulation.Phi2]);
+% opts.QPD_phi = 0;
 [hF_conductivity,conductivity_data] = dig_ac_conductivity(digdata,opts);
     if dig_opts.doSave
         ixon_saveFigure2(hF_conductivity,...
@@ -277,6 +286,22 @@ opts = dig_opts;
     filename = fullfile(dig_opts.saveDir,'conductivity_data.mat');
     disp(['Saving ' filename ' ...']);
     save(filename, '-struct','conductivity_data');
+% keyboard
+
+end
+
+if dig_quench_conductivity_fit
+opts = dig_opts;
+
+[hF_quench,quench_data] = dig_quench_conductivity(digdata,opts);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF_quench,...
+         'dig_quench',dig_opts);  
+    end
+    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+    filename = fullfile(dig_opts.saveDir,'quench_data.mat');
+    disp(['Saving ' filename ' ...']);
+    save(filename, '-struct','quench_data');
 
 
 end
