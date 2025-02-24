@@ -1,4 +1,8 @@
-function out = dig_Fidelity(Zdig,n1,n2,opts)
+% function out = dig_Fidelity(Zdig,n1,n2,opts)
+function out = dig_Fidelity(digdata,opts)
+Zdig = digdata.Zdig;
+n1 = digdata.n1;
+n2 = digdata.n2;
 
 if nargin <4
     opts=struct;

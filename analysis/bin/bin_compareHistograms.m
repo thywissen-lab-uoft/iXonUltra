@@ -44,14 +44,16 @@ for rr=1:length(bindata(1).LatticeBin)
     processed{rr}=ZProcessed;
 end
 
-NthreshPlot = median(count_center(:))-3*median(count_sigma(:));
+NthreshPlot = median(count_center(:))-1*median(count_sigma(:));
 edges=linspace(0,3*NthreshPlot,50);
 
 med_norm_sigma = mean([count_sigma(:)./count_center(:)]);
 std_norm_sigma = std([count_sigma(:)./count_center(:)]);
 
-NthreshNormPlot = (1-3*med_norm_sigma);
+NthreshNormPlot = (1-1*med_norm_sigma);
 edges_norm = linspace(0,1+3*med_norm_sigma,50);
+
+% keyboard
 
 %% Normalized Fit
 
@@ -146,7 +148,8 @@ for rr=1:length(bindata(1).LatticeBin)
     lvls = normN(i_larger_than_one);
     
     Ntot = 2*sum(lvls);
-    y=out.PDF1(centers_norm);
+
+    y=out(rr).PDF1(centers_norm);
     yN= Ntot*y/sum(y);
     hold on
     plot(centers_norm, yN,'r-','parent',ax4);

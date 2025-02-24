@@ -68,6 +68,7 @@ dig_opts.autoXVar       = 0;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
 % dig_opts.xVar           = 'conductivity_snap_and_hold_time';  % Variable Name
+
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 dig_opts.doSave         = 1;                % Save Analysis?
 
@@ -82,9 +83,8 @@ dig_quench_conductivity_fit             = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
 dig_doRadialAnalysis2                   = 1;
-
-
 do_qpd_analysis                         = 1;
+
 %% QPD Analysis
 
 if do_qpd_analysis
@@ -302,4 +302,11 @@ opts = dig_opts;
     save(filename, '-struct','quench_data');
 
 
+end
+
+%% Two-shot fidelity
+do_dig_Fidelity = 0;
+if do_dig_Fidelity
+    opts = dig_opts;
+    [output74] = dig_Fidelity(digdata);
 end

@@ -20,7 +20,6 @@ addpath(a);addpath(genpath(a));
 
 %% Select image directory
 
-
 % Choose the directory where the images to analyze are stored
 disp([datestr(now,13) ' Choose an image analysis folder...']);
 dialog_title='Choose the root directory of the images';
