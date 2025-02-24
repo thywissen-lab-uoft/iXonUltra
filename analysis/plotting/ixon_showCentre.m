@@ -529,13 +529,14 @@ maxValues=X(Y==max(Y));
 % gB=range(X)/2;
 
 
-gA = 20;
+% gA = 20;
 
 gC=maxValues(1);
 
 gD=0.5*(max(Y)+min(Y));
 
 gC=0;
+gC=pi/2;
 gE = range(X)/2;
 % gE = 7;
 

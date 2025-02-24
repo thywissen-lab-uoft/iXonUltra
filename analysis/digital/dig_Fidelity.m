@@ -1,15 +1,18 @@
-% function out = dig_Fidelity(Zdig,n1,n2,opts)
-function out = dig_Fidelity(digdata,opts)
-Zdig = digdata.Zdig;
-n1 = digdata.n1;
-n2 = digdata.n2;
+function out = dig_Fidelity(Zdig,n1,n2,opts)
+% function out = dig_Fidelity(digdata,opts)
+
+% n1 = digdata.n1;
+% n2 = digdata.n2;
 
 if nargin <4
     opts=struct;
     opts.FigureNumber = 4001;
 end
+% img1 = digdata.Zdig(:,:,4);
+% img2 = digdata.Zdig_img2(:,:,4);
 img1 = Zdig(:,:,1);
 img2 = Zdig(:,:,2);
+
 dImg = img2-img1;
 
 N1 = sum(img1,'all');
@@ -29,6 +32,8 @@ Zmap = (img1+img2);
 Zmap = Zmap/sum(Zmap,'all');
 
 [xx,yy]=meshgrid(n1,n2);
+
+% keyboard
 
 xc = round(sum(xx.*Zmap,'all'));
 yc = round(sum(yy.*Zmap,'all'));
@@ -162,6 +167,14 @@ xlabel('radial position (sites)')
 set(gca,'box','on','linewidth',1,'fontname','times','fontsize',8);
 %%
 out = struct;
+out.N1 = N1;
+out.N2 = N2;
+out.Nlost = Nlost;
+out.Nlost_percent = Nlost_percent;
+out.Nhop = Nhop;
+out.Nhop_percent = Nhop_percent;
+
+
 
 end
 

@@ -69,7 +69,7 @@ for rr=1:length(bindata(1).LatticeBin)
     end
     ClusterThresholds(end)=[];     
     
-    
+ 
 
 
     boundLow  = ClusterThresholds(1);

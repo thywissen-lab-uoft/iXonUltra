@@ -64,7 +64,7 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 0;                % Auto detect changing variable?
+dig_opts.autoXVar       = 1;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
 dig_opts.xVar           = 'tilt_notilt_shift_list';
@@ -82,6 +82,7 @@ dig_ac_conductivity_fit                 = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
 dig_doRadialAnalysis2                   = 0;
+dig_doFidelity                          = 0;
 
 do_qpd_analysis                            = 0;
 %% QPD Analysis
@@ -281,8 +282,16 @@ opts = dig_opts;
 end
 
 %% Two-shot fidelity
-do_dig_Fidelity = 0;
-if do_dig_Fidelity
+
+if dig_doFidelity
     opts = dig_opts;
-    [output74] = dig_Fidelity(digdata);
+    [dig_fidelity,hF_fidelity] = dig_showFidelity(digdata);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF_fidelity,...
+         'dig_fidelity',dig_opts);  
+    end
+    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+    filename = fullfile(dig_opts.saveDir,'dig_fidelity.mat');
+    disp(['Saving ' filename ' ...']);
+    save(filename, 'dig_fidelity');
 end

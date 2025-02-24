@@ -44,13 +44,14 @@ for rr=1:length(bindata(1).LatticeBin)
     processed{rr}=ZProcessed;
 end
 
-NthreshPlot = median(count_center(:))-1*median(count_sigma(:));
+nsigma = 3;
+NthreshPlot = median(count_center(:))-nsigma*median(count_sigma(:));
 edges=linspace(0,3*NthreshPlot,50);
 
 med_norm_sigma = mean([count_sigma(:)./count_center(:)]);
 std_norm_sigma = std([count_sigma(:)./count_center(:)]);
 
-NthreshNormPlot = (1-1*med_norm_sigma);
+NthreshNormPlot = (1-nsigma*med_norm_sigma);
 edges_norm = linspace(0,1+3*med_norm_sigma,50);
 
 % keyboard

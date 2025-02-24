@@ -29,7 +29,10 @@ dig_opts.NumSigmaThresh=2.5;
 % I think this is more accureate and handldes outliers better (CJF);
 output_thresh;
 dig_opts.NormThresh=0.5; % manual
-dig_opts.NormThresh=1-2.5*output_thresh.PDF1_Radius;
+
+% Sets digitization threshold
+num_sigma = 2.5; % Normally 2.5 for 4s, 1 for 2s exposure
+dig_opts.NormThresh=1-num_sigma*output_thresh(1).PDF1_Radius;
 
 
 digdata = bin_makeDigData2(bindata,dig_opts);
