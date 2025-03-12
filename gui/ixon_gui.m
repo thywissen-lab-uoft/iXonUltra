@@ -3275,6 +3275,7 @@ end
 %% Binned Callbacks
     function updateBinnedGraphics
         if ~isfield(data,'LatticeBin')
+            clearBinnedGraphics;
             return;
         end         
         imgnum = menuSelectImg.Value;        
@@ -3314,6 +3315,16 @@ end
         latticeTextCB(cTextLattice);   
     end
 
+    function clearBinnedGraphics            
+        sz = size(hImg_B.CData);
+        set(hImg_B,'CData',zeros(sz(1),sz(2)));  % set it to zero.     
+        for jj=1:length(tabHB.Children)
+            delete(tabHB.Children(1))
+        end    
+    end
+
+
+
 %% Digital Callbacks
     function updateCoM_D
         if ~isfield(data,'LatticeDig') 
@@ -3336,7 +3347,12 @@ end
 %% Binned Histgoram Callbacks
 
     function updateBinnedHistogramGraphics   
-         opts=struct;
+        if ~isfield(data,'LatticeBin')
+            clearBinnedGraphics;
+            return;
+        end 
+        
+        opts=struct;
         switch menuSelectBinType.Value
             case 1
                 opts.BinSource = 'ZbinRaw';
@@ -3348,7 +3364,6 @@ end
 
         opts.FigLabel = data.Name;
         bin_showHistogram(data,opts);      
-
     end
 
 %% 

@@ -109,9 +109,7 @@ for kk=1:length(data)
     data(kk).KFocusing = focus;
     
 
-    if opts.doDebug
-
-    
+    if opts.doDebug    
         if ~isfield(opts,'Parent')
             FigName = 'StripeCircular';
             ff=get(groot,'Children');
@@ -186,6 +184,7 @@ for kk=1:length(data)
         legend({'data',str},'location','south','interpreter','latex','parent',fig)               
         set(ax_score,'box','on','linewidth',1,'fontsize',10,'xgrid','on','ygrid','on');
     end
+%     keyboard
 end
 
 end
