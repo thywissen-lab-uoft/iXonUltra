@@ -1553,18 +1553,19 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
                 &&  (data.Flags.lattice_fluor_multi_mode==2)
             
 
-            try
-                opts=struct;
-                opts.doDebug=1;
-                opts.Parent = tabFocus;
-                opts.ROI = tbl_dROI_focus.Data;
+            try    
+                opts = ixon_gui_K_options;
+                opts_K_gui = opts.KFocus;
+                opts_K_gui.Parent = tabFocus;
                 if isfield(data,'KFocusing')
                     data=rmfield(data,'KFocusing');
                 end             
-
-                data=ixon_fft_multi_shot_focusing(data,opts); 
+                data=ixon_fft_multi_shot_focusing(data,opts_K_gui); 
             catch ME
-                warning('OH NO');                
+               warning('Multi-Shot Focusing failed.');
+                for tt=1:length(ME.stack)
+                    disp([ME.stack(tt).file ' (' num2str(ME.stack(tt).line) ']']);        
+                end
             end
         end
     end
@@ -2013,16 +2014,6 @@ hpFocus = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpFocus.Position=[160 500 160 190];
 set(hpFocus,'parent',hpDispOpt.Children(3))
 hpFocus.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
-
-
-% Table for changing display limits
-tbl_dROI_focus=uitable('parent',hpFocus,'units','pixels','RowName',{},...
-    'columnname',{'x1','x2','y1','y2'},'UserData','X',...
-    'ColumnEditable',[true true true true],...
-    'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[260 300 150 300],...
-    'ColumnFormat',{'numeric', 'numeric','numeric','numeric'});
-tbl_dROI_focus.Position(3:4)=tbl_dROI_focus.Extent(3:4);
-tbl_dROI_focus.Position(1:2)=[2 5];
 
 %% Display Options Panel
 
