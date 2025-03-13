@@ -12,9 +12,9 @@ if nargin == 1
     opts.doGaussFilter      = 0;
     opts.GaussFilterRadius  = 1;
     opts.doMask             = 0;
-%     opts.Mask               = ones(512,512);
-load('C:\Users\Sephora\Documents\GitHub\iXonUltra\analysis\ixon_mask.mat');
-opts.Mask = BW;
+    %     opts.Mask               = ones(512,512);
+    load('C:\Users\Sephora\Documents\GitHub\iXonUltra\analysis\ixon_mask.mat');
+    opts.Mask = BW;
     opts.doPSF              = 0;    
     opts.PSF                = [1.3 50 5];    
     opts.DetectNoise        = 1;
@@ -36,22 +36,17 @@ for kk=1:length(data)
     if ~isfield(data(kk),'Flags')    
         data(kk).Flags = struct;
     end
-
-
     tic
     fprintf([num2str(kk) ' of ' num2str(length(data)) ': '])
     data(kk).X = 1:size(data(kk).RawImages,2);
-    data(kk).Y = 1:size(data(kk).RawImages,1);   
-    
+    data(kk).Y = 1:size(data(kk).RawImages,1);       
     Z = data(kk).RawImages;   
     
 %% Subtract Digital Bias
 % Subtract digital bias of 200 counts
     if opts.doSubtractBias  
         fprintf(' biasing ...');
-%         Z = Z - 200;
-        Z = Z - 185;
-
+        Z = Z - 200; % This is a digital biasing (ie. from computer)
     end      
     
 %% Remove wipe pics
@@ -88,14 +83,6 @@ if opts.doSubtractBG
     end
     Z_bg_removed = zeros(size(Z,1),size(Z,2),L/2);
     for n=1:L/2
-        % r=[220 320 480 500];
-        % n1=Z(r(3):r(4),r(1):r(2),n);
-        % n2=Z(r(3):r(4),r(1):r(2),n+L/2);
-        % sc = sum(n1,'all')/sum(n2,'all');
-        % sc = 1/sc;
-        % sc=1;
-        % keyboard
-
         Z_bg_removed(:,:,n) = Z(:,:,n) -  Z(:,:,n+L/2);
     end
     Z=Z_bg_removed;
@@ -112,27 +99,12 @@ if opts.doSubtractBG
             BW(BW==0)=nan;
             Zb = Zthis.*BW;
             Zc = Zb(:);
-            Zc(isnan(Zc)) = [];
-            
+            Zc(isnan(Zc)) = [];            
             Zd = Zc;
             Zd(Zd>0)=[];
-            Zd = [Zd; -Zd];
-            
-            s = std(Zd);
-            
+            Zd = [Zd; -Zd];            
+            s = std(Zd);            
             data(kk).NoiseEstimation(n) = s ;
-
-            
-%             Zneg = Zthis(Zthis<0);
-%             [N,edges] = histcounts(Zneg);
-%             % iZero = find(edges>=0,1);
-%             centers = (edges(1:end-1) + edges(2:end))/2;
-% 
-%             vals = cumsum(N,'reverse')/sum(N);
-%             ind = find(vals<=.5,1);
-%             thresh = -centers(ind);
-%             data(kk).NoiseEstimation(n) = thresh;      
-%             keyboard
         catch ME
             data(kk).NoiseEstimation(n) = 0;
         end

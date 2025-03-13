@@ -1426,19 +1426,25 @@ hbposition=uicontrol(hpPosition,'style','pushbutton','string','position analysis
 
 
 %% Momentum Panel
-% hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
-% hpKspace.Position=[0 hpAnl.Position(2)-90 160 105];
-
+% Panel for momentum analysis
 hpKspace=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpPosition.Position(2)-110 160 130],'title','momentum analysis');
+    'Position',[0 hpPosition.Position(2)-110 160 170],'title','momentum analysis');
 hpKspace.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
 hpKspace.Position(2)=hpNav.Position(2)-hpKspace.Position(4);
 
-% Checkbox for center of mass and sigma 
+% Checkbox for automatic analysis
 ttstr='Automatically perform analysis on new image';
 hc_anlK_auto=uicontrol(hpKspace,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
     'backgroundcolor','w','Position',[1 hpKspace.Position(4)-35 hpKspace.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
+
+% Button to open options file
+hb_KOptions=uicontrol('style','pushbutton','string',...
+    'open(ixon_gui_K_options.m)','units','pixels','parent',hpKspace,...
+    'fontsize',7,'Callback',@(src,evt) open('ixon_gui_K_options.m'));
+hb_KOptions.Position(3:4)=[150 18];
+hb_KOptions.Position(1:2)=hc_anlK_auto.Position(1:2) + ...
+    [0 -hb_KOptions.Position(4)-2];   
 
 % Table of ROIs
 tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{30 30 30 30},...
@@ -1446,7 +1452,7 @@ tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{30 30 30 30},...
     'Data',[-.5 .5 -.5 .5],'FontSize',6,...
     'CellEditCallback',@chROIK,'RowName',{});
 tblROIK.Position(3:4)=tblROIK.Extent(3:4)+0*[18 0];
-tblROIK.Position(1:2)=[5 hc_anlK_auto.Position(2)-tblROIK.Position(4)];
+tblROIK.Position(1:2)=[5 hb_KOptions.Position(2)-tblROIK.Position(4)];
 
 % Callback function for changing ROI via table
     function chROIK(src,evt)
@@ -1484,24 +1490,22 @@ tblROIK.Position(1:2)=[5 hc_anlK_auto.Position(2)-tblROIK.Position(4)];
     end
 
 
-% Mask IR Checkbox
+% Checkbox to analyze lattice basis and phase
 hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','lattice basis and phase','fontsize',7,...
     'backgroundcolor','w','Position',[5 20 120 15],...
     'ToolTipString',ttstr,'enable','on','value',1);
 hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 
-% Mask IR Checkbox
+% Checkbox to analyze the focuing degree of freedom with multi-shot imaging
 hcKFocus=uicontrol(hpKspace,'style','checkbox','string','multi-shot focusing','fontsize',7,...
     'backgroundcolor','w','Position',[5 5 120 15],...
     'ToolTipString',ttstr,'enable','on','value',1);
 hcKFocus.Position(2) = hcFindLattice.Position(2) - 15;
 
-% Refit button
+% Button to analyze momentum space
 hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','momentum analysis',...
     'units','pixels','callback',@analyze_k,'parent',hpKspace,'backgroundcolor',[80 200 120]/255);
 hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
-
-
 
 % Callback function for redoing fits button
     function analyze_k(~,~)
