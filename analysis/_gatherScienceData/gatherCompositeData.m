@@ -13,8 +13,8 @@ if nargin ==1
 end
 
 if ~isfield(opts,'MatFiles')
-%     opts.MatFiles = {'conductivity_data.mat','digdata.mat','dig_radial_data.mat','qpd.mat'};
-        opts.MatFiles = {'conductivity_data.mat','digdata.mat','dig_radial_data.mat'};
+    opts.MatFiles = {'conductivity_data.mat','digdata.mat','dig_radial_data.mat','qpd.mat'};
+%         opts.MatFiles = {'conductivity_data.mat','digdata.mat','dig_radial_data.mat'};
 
     %opts.MatFiles = {'conductivity_data.mat','digdata.mat'};
 end

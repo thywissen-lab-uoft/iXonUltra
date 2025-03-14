@@ -1426,19 +1426,25 @@ hbposition=uicontrol(hpPosition,'style','pushbutton','string','position analysis
 
 
 %% Momentum Panel
-% hpKspace=uipanel(hF,'units','pixels','backgroundcolor','w','title','momentum analysis');
-% hpKspace.Position=[0 hpAnl.Position(2)-90 160 105];
-
+% Panel for momentum analysis
 hpKspace=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpPosition.Position(2)-110 160 130],'title','momentum analysis');
+    'Position',[0 hpPosition.Position(2)-110 160 170],'title','momentum analysis');
 hpKspace.Position(1)=hpProcess.Position(1)+hpProcess.Position(3);
 hpKspace.Position(2)=hpNav.Position(2)-hpKspace.Position(4);
 
-% Checkbox for center of mass and sigma 
+% Checkbox for automatic analysis
 ttstr='Automatically perform analysis on new image';
 hc_anlK_auto=uicontrol(hpKspace,'style','checkbox','string','auto-analyze on new image?','fontsize',7,...
     'backgroundcolor','w','Position',[1 hpKspace.Position(4)-35 hpKspace.Position(3)-1 15],...
     'ToolTipString',ttstr,'enable','on','Value',0);
+
+% Button to open options file
+hb_KOptions=uicontrol('style','pushbutton','string',...
+    'open(ixon_gui_K_options.m)','units','pixels','parent',hpKspace,...
+    'fontsize',7,'Callback',@(src,evt) open('ixon_gui_K_options.m'));
+hb_KOptions.Position(3:4)=[150 18];
+hb_KOptions.Position(1:2)=hc_anlK_auto.Position(1:2) + ...
+    [0 -hb_KOptions.Position(4)-2];   
 
 % Table of ROIs
 tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{30 30 30 30},...
@@ -1446,7 +1452,7 @@ tblROIK=uitable(hpKspace,'units','pixels','ColumnWidth',{30 30 30 30},...
     'Data',[-.5 .5 -.5 .5],'FontSize',6,...
     'CellEditCallback',@chROIK,'RowName',{});
 tblROIK.Position(3:4)=tblROIK.Extent(3:4)+0*[18 0];
-tblROIK.Position(1:2)=[5 hc_anlK_auto.Position(2)-tblROIK.Position(4)];
+tblROIK.Position(1:2)=[5 hb_KOptions.Position(2)-tblROIK.Position(4)];
 
 % Callback function for changing ROI via table
     function chROIK(src,evt)
@@ -1484,24 +1490,22 @@ tblROIK.Position(1:2)=[5 hc_anlK_auto.Position(2)-tblROIK.Position(4)];
     end
 
 
-% Mask IR Checkbox
+% Checkbox to analyze lattice basis and phase
 hcFindLattice=uicontrol(hpKspace,'style','checkbox','string','lattice basis and phase','fontsize',7,...
     'backgroundcolor','w','Position',[5 20 120 15],...
     'ToolTipString',ttstr,'enable','on','value',1);
 hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 
-% Mask IR Checkbox
+% Checkbox to analyze the focuing degree of freedom with multi-shot imaging
 hcKFocus=uicontrol(hpKspace,'style','checkbox','string','multi-shot focusing','fontsize',7,...
     'backgroundcolor','w','Position',[5 5 120 15],...
     'ToolTipString',ttstr,'enable','on','value',1);
 hcKFocus.Position(2) = hcFindLattice.Position(2) - 15;
 
-% Refit button
+% Button to analyze momentum space
 hb_Kanalyze=uicontrol(hpKspace,'style','pushbutton','string','momentum analysis',...
     'units','pixels','callback',@analyze_k,'parent',hpKspace,'backgroundcolor',[80 200 120]/255);
 hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
-
-
 
 % Callback function for redoing fits button
     function analyze_k(~,~)
@@ -1549,18 +1553,19 @@ hb_Kanalyze.Position=[3 1 hpKspace.Position(3)-8 18];
                 &&  (data.Flags.lattice_fluor_multi_mode==2)
             
 
-            try
-                opts=struct;
-                opts.doDebug=1;
-                opts.Parent = tabFocus;
-                opts.ROI = tbl_dROI_focus.Data;
+            try    
+                opts = ixon_gui_K_options;
+                opts_K_gui = opts.KFocus;
+                opts_K_gui.Parent = tabFocus;
                 if isfield(data,'KFocusing')
                     data=rmfield(data,'KFocusing');
                 end             
-
-                data=ixon_fft_multi_shot_focusing(data,opts); 
+                data=ixon_fft_multi_shot_focusing(data,opts_K_gui); 
             catch ME
-                warning('OH NO');                
+               warning('Multi-Shot Focusing failed.');
+                for tt=1:length(ME.stack)
+                    disp([ME.stack(tt).file ' (' num2str(ME.stack(tt).line) ']']);        
+                end
             end
         end
     end
@@ -2009,16 +2014,6 @@ hpFocus = uipanel(hF,'units','pixels','backgroundcolor','w');
 hpFocus.Position=[160 500 160 190];
 set(hpFocus,'parent',hpDispOpt.Children(3))
 hpFocus.Position=[1 1 hpDispOpt.Position(3) hpDispOpt.Position(4)];
-
-
-% Table for changing display limits
-tbl_dROI_focus=uitable('parent',hpFocus,'units','pixels','RowName',{},...
-    'columnname',{'x1','x2','y1','y2'},'UserData','X',...
-    'ColumnEditable',[true true true true],...
-    'ColumnWidth',{30 30 30 30},'FontSize',8,'Data',[260 300 150 300],...
-    'ColumnFormat',{'numeric', 'numeric','numeric','numeric'});
-tbl_dROI_focus.Position(3:4)=tbl_dROI_focus.Extent(3:4);
-tbl_dROI_focus.Position(1:2)=[2 5];
 
 %% Display Options Panel
 
@@ -3275,6 +3270,7 @@ end
 %% Binned Callbacks
     function updateBinnedGraphics
         if ~isfield(data,'LatticeBin')
+            clearBinnedGraphics;
             return;
         end         
         imgnum = menuSelectImg.Value;        
@@ -3314,6 +3310,16 @@ end
         latticeTextCB(cTextLattice);   
     end
 
+    function clearBinnedGraphics            
+        sz = size(hImg_B.CData);
+        set(hImg_B,'CData',zeros(sz(1),sz(2)));  % set it to zero.     
+        for jj=1:length(tabHB.Children)
+            delete(tabHB.Children(1))
+        end    
+    end
+
+
+
 %% Digital Callbacks
     function updateCoM_D
         if ~isfield(data,'LatticeDig') 
@@ -3336,7 +3342,12 @@ end
 %% Binned Histgoram Callbacks
 
     function updateBinnedHistogramGraphics   
-         opts=struct;
+        if ~isfield(data,'LatticeBin')
+            clearBinnedGraphics;
+            return;
+        end 
+        
+        opts=struct;
         switch menuSelectBinType.Value
             case 1
                 opts.BinSource = 'ZbinRaw';
@@ -3348,7 +3359,6 @@ end
 
         opts.FigLabel = data.Name;
         bin_showHistogram(data,opts);      
-
     end
 
 %% 
