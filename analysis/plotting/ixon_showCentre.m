@@ -255,32 +255,28 @@ if isfield(fit_opts,'Center_SineDecay') && fit_opts.Center_SineDecay && length(x
     cInt=confint(fit1);
     
     data={};
-    
-    data{1,3}=range(cInt(:,1))/2;
-    data{2,3}=range(cInt(:,2))/2;
-
-    data{3,3}=(range(cInt(:,2))/2)./(cX(2)).^2;
-    data{4,3}=range(cInt(:,3))/2;
-    data{5,3}=range(cInt(:,4))/2;
-    data{6,3}=range(cInt(:,5))/2;
-
-    
+   
     sTblX.Data={};
     data{1,1}='amp (px)';
-    data{2,1}='period';
-    data{3,1}='freq';
-
+    data{2,1}='freq';
+    data{3,1}='period';
     data{4,1}='phase (rad)';
-    data{5,1}='offset (px)';
-    data{6,1}='tau ';
+    data{6,1}='offset (px)';
+    data{5,1}='tau ';
 
     data{1,2}=cX(1);
     data{2,2}=cX(2);
     data{3,2}=1/cX(2);
-
     data{4,2}=cX(3);
     data{5,2}=cX(4);
     data{6,2}=cX(5);
+
+    data{1,3}=range(cInt(:,1))/2;
+    data{2,3}=range(cInt(:,2))/2;
+    data{3,3}=(range(cInt(:,2))/2)./(cX(2)).^2;
+    data{4,3}=range(cInt(:,3))/2;
+    data{5,3}=range(cInt(:,4))/2;
+    data{6,3}=range(cInt(:,5))/2;
     
     data{7,1}='<HTML> &Delta;X (px)</HTML>';
     data{7,2}=range(Xc(:,nn));
@@ -314,11 +310,11 @@ if isfield(fit_opts,'Center_SineDecay') && fit_opts.Center_SineDecay && length(x
     
     sTblY.Data={};
     data{1,1}='amp (px)';
-    data{2,1}='period';
-    data{3,1}='freq';
+    data{2,1}='freq';
+    data{3,1}='period';
     data{4,1}='phase (rad)';
-    data{5,1}='offset (px)';
-    data{6,1}='tau ';
+    data{6,1}='offset (px)';
+    data{5,1}='tau ';
 
     data{1,2}=cY(1);
     data{2,2}=cY(2);
@@ -510,79 +506,170 @@ end
 ixon_resizeFig(hF,t)
 end
 
+% function fitResult=makeSineDecayFit(X,Y,W)
+% 
+% % Guess the amplitude and offset
+% gA=0.5*range(Y);
+% gD=(max(Y)+min(Y))*.5;
+% 
+% % Guess the period
+% iHigh=find((Y-gD)/gA>.8,1);
+% iLow=find((Y-gD)/gA<-.8,1);
+% gB=abs(X(iHigh)-X(iLow))*2.2;
+% 
+% gB=18;
+% 
+% minValues=X(Y==min(Y));
+% maxValues=X(Y==max(Y));
+% % gB=1*abs(maxValues(1)-minValues(1));
+% % gB=range(X)/2;
+% 
+% 
+% % gA = 20;
+% 
+% gC=maxValues(1);
+% 
+% gD=0.5*(max(Y)+min(Y));
+% 
+% gC=0;
+% gC=pi/2;
+% gE = range(X)/2;
+% % gE = 7;
+% 
+% cosFit=fittype('A*cos(2*pi*t/B+C)*exp(-t/E)+D','independent',{'t'},...
+%     'coefficients',{'A','B','C','D','E'});
+% options=fitoptions(cosFit);          
+%         % set(options, 'TolFun', 1E-14);
+%         % set(options,'Lower', [0.25*gA,...
+%         %     .1*gB,...
+%         %     0, ...
+%         %     0.75*gD, ...
+%         %     0]);
+%         options.Lower = [0.25*gA,...
+%             .1*gB,...
+%             0, ...
+%             0.75*gD, ...
+%             0];
+%         % set(options, 'Upper', [5*gA, ...
+%         %     20*gB,...
+%         %     2*pi, ...
+%         %     1.5*gD, ...
+%         %     inf]);
+%         options.Upper = [5*gA, ...
+%             20*gB,...
+%             2*pi, ...
+%             1.5*gD, ...
+%             inf];
+%         % set(options, 'StartPoint', [gA, gB,...
+%         %     gC,gD, gE]);   
+%         options.StartPoint = [gA, gB,...
+%             gC,gD, gE];   
+%         % set(options, 'MaxIter',3000);
+%         options.MaxIter = 3000;
+%         % set(options, 'MaxFunEvals',3000);
+%         options.MaxFunEvals = 3000;
+%         % set(options,'TolFun',10^-9);
+%         options.TolFun = 10^-9;
+% 
+%         if nargin==3
+%            set(options,'Weights',W); 
+%         end        
+% 
+%         fitResult=fit(X,Y,cosFit,options);      
+% 
+% disp(fitResult)
+% end
+
 function fitResult=makeSineDecayFit(X,Y,W)
 
-% Guess the amplitude and offset
-gA=0.5*range(Y);
-gD=(max(Y)+min(Y))*.5;
+% GUESS : AMPLITUDE
+guess_amp = 0.5*range(Y);
 
-% Guess the period
-iHigh=find((Y-gD)/gA>.8,1);
-iLow=find((Y-gD)/gA<-.8,1);
-gB=abs(X(iHigh)-X(iLow))*2.2;
+% GUESS : OFFSET
+guess_off = (max(Y)+min(Y))*.5;
 
-gB=18;
+% GUESS : FREQUENCY
+dX = diff(sort(unique(X),'ascend'));
+dXMin = min(dX);             % Minimum separation sets highest freq
+dXMax = max(X) - min(X);     % Total range sets lowest freq
 
-minValues=X(Y==min(Y));
-maxValues=X(Y==max(Y));
-% gB=1*abs(maxValues(1)-minValues(1));
-% gB=range(X)/2;
+% Set reasonable frequency guess bounds
+freq_min = 1.5*(1/dXMax);
+freq_max = 0.2*(1/dXMin);
+% freq_min = 0.03;
+% freq_max = 0.05;
+N=1e4;
 
-
-% gA = 20;
-
-gC=maxValues(1);
-
-gD=0.5*(max(Y)+min(Y));
-
-gC=0;
-gC=pi/2;
-gE = range(X)/2;
-% gE = 7;
-
-cosFit=fittype('A*cos(2*pi*t/B+C)*exp(-t/E)+D','independent',{'t'},...
-    'coefficients',{'A','B','C','D','E'});
-options=fitoptions(cosFit);          
-        % set(options, 'TolFun', 1E-14);
-        % set(options,'Lower', [0.25*gA,...
-        %     .1*gB,...
-        %     0, ...
-        %     0.75*gD, ...
-        %     0]);
-        options.Lower = [0.25*gA,...
-            .1*gB,...
-            0, ...
-            0.75*gD, ...
-            0];
-        % set(options, 'Upper', [5*gA, ...
-        %     20*gB,...
-        %     2*pi, ...
-        %     1.5*gD, ...
-        %     inf]);
-        options.Upper = [5*gA, ...
-            20*gB,...
-            2*pi, ...
-            1.5*gD, ...
-            inf];
-        % set(options, 'StartPoint', [gA, gB,...
-        %     gC,gD, gE]);   
-        options.StartPoint = [gA, gB,...
-            gC,gD, gE];   
-        % set(options, 'MaxIter',3000);
-        options.MaxIter = 3000;
-        % set(options, 'MaxFunEvals',3000);
-        options.MaxFunEvals = 3000;
-        % set(options,'TolFun',10^-9);
-        options.TolFun = 10^-9;
-        
-        if nargin==3
-           set(options,'Weights',W); 
-        end        
-        
-        fitResult=fit(X,Y,cosFit,options);      
-        
-disp(fitResult)
+% Do a correlation measurement with the frequency vector
+fVec = linspace(freq_min,freq_max,N);
+CC=zeros(N,1);
+Yosc = Y(:)-guess_off;
+for nn=1:N
+    fme = fVec(nn);
+    Yf = exp(1i*2*pi*fme*X(:));
+    CC(nn) = sum(Yf.*Yosc);
 end
+
+% Find the index whose frequency has the highest correlation
+[~,ind] = max(abs(CC).^2);
+
+% Get the frequency
+guess_freq = fVec(ind);
+% Get the phase
+guess_phi = atan2(imag(CC(ind)),real(CC(ind))); 
+
+% keyboard
+
+% Tau Guess
+guess_tau = max(X) - min(X);
+guess_tau = 40;
+
+% In case of sine grow
+if max(Y(1:round(length(Y)/2))) < max(Y(round(length(Y)/2):end))
+    guess_tau = -guess_tau;
+end
+
+% Override Guess
+% guess_tau = 1000;           % manual override
+% guess_freq = .3; % manual overide
+
+
+cosFit=fittype('amp*cos(2*pi*freq*t-phi)*exp(-t/tau)+off','independent',{'t'},...
+    'coefficients',{'amp','freq','phi','tau','off'});
+options=fitoptions(cosFit);          
+
+options.TolFun = 1E-14;
+options.Lower  = [...
+    0.5*guess_amp,...
+    .5*guess_freq,...
+    guess_phi-pi, ...
+    -abs(guess_tau)*20, ...
+    guess_off-100];
+options.Upper  = [...
+    2*guess_amp, ...
+    2.0*guess_freq,...
+    guess_phi+pi, ...
+    abs(guess_tau)*20, ...
+    guess_off+100];
+options.StartPoint = [guess_amp, guess_freq,...
+    guess_phi,guess_tau, guess_off];
+options.MaxIter = 3000;
+options.MaxFunEvals = 3000;
+options.TolFun = 1E-9;
+
+if nargin==3
+   options.Weights = W;
+end                
+
+fitResult=fit(X,Y,cosFit,options);             
+disp(fitResult);
+
+
+
+end
+
+
+
 
 function fitResult=makeSineGrowFit(X,Y,W)
 

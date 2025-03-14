@@ -38,7 +38,7 @@ opts.doHubbardAnalysis = true;
 
 % Trap Frequency
 % The overall harmonic trap frequency
-opts.TrapOmega      = 2*pi*57;
+opts.TrapOmega      = 2*pi*67;57;
 
 %% Hubbard Parameters
 
