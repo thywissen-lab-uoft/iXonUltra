@@ -51,7 +51,7 @@ FigLabel=[strs{end-1} filesep strs{end}];
 varType             = 'param'; % always select 'param' for now 
 ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'ExecutionDate'; % Variable Name
+ixon_xVar           = 'objective_piezo'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification  = 83;        % Magnification of imaging system
@@ -233,15 +233,15 @@ if ixon_doBoxCount
 end
 
 %% Foocusing
-focus_opts = struct;
-focus_opts.kmag = 0.3727;
-focus_opts.kdelta = 0.01;
-focus_opts.ControlVariable = 'qgm_MultiPiezos';
-focus_opts.ROI=[1 512 1 512];
-focus_opts.doDebug = 0;
-data=ixon_fft_multi_shot_focusing(data,focus_opts);
-
-
+% focus_opts = struct;
+% focus_opts.kmag = 0.3727;
+% focus_opts.kdelta = 0.01;
+% focus_opts.ControlVariable = 'qgm_MultiPiezos';
+% focus_opts.ROI=[1 512 1 512];
+% focus_opts.doDebug = 0;
+% data=ixon_fft_multi_shot_focusing(data,focus_opts);
+% 
+% keyboard
 
 end
 

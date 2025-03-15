@@ -100,7 +100,7 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 %% Analysis Options
 
 ixon_doBoxCount                     = 1;
-ixon_doGaussFit                     = 1;
+ixon_doGaussFit                     = 0;
 
 % Analysis to run
 ixon_doStandardAnalysis             = 1;
@@ -114,7 +114,7 @@ ixon_showFOffset                    = 1;
 %% QGM Single Plane Analysis
 
 % Master flag for QGM stuff
-ixon_doQGM                          = 1;
+ixon_doQGM                          = 0;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
