@@ -2,9 +2,15 @@ function [data,focus_data,hF] = ixon_multi_shot_focusing2(data,opts)
 % Author : CF Fujiwara
 %
 % This code compares the focusing properties of subsequent images
+% 
+% It assume that the image stack comprises of three images where image 2
+% and image 3 are taken at different focus positions of the microscope.  We
+% do not use the 1st image as we allow for atoms leave to exit the trap
+% just in case they are not properly cooled. While the analysis compares
+% the normalized count profile between the images, it works best if the
+% light source (ie. atomic distribution) is identical from shot to shot.
 
 
-qgm_MultiExposures: [NaN 300 1500 1500 NaN 300 1500 1500]
 %% Default Settings
 
 if nargin==1; opts=struct;end
