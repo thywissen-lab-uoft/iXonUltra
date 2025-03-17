@@ -1,4 +1,4 @@
-function [data,focus_data,hF] = ixon_multi_shot_focusing2(data,opts)
+function [data,focus_data,hF,hF_Summary] = ixon_multi_shot_focusing2(data,opts)
 % Author : CF Fujiwara
 %
 % This code compares the focusing properties of subsequent images
@@ -10,23 +10,33 @@ function [data,focus_data,hF] = ixon_multi_shot_focusing2(data,opts)
 % the normalized count profile between the images, it works best if the
 % light source (ie. atomic distribution) is identical from shot to shot.
 
-%% Helper functions
+focus_data=struct;
+hF=[];
+hF_Summary=[];
 
+
+% This variable stores the piezo values, it is an array
+PiezoVariableName = 'qgm_MultiPiezos';
+PiezoIndex1 = 3;
+PiezoIndex2 = 4;
+
+
+ImageSource = 'ZNoFilter';
+ImageIndex1 = 2;
+ImageIndex2 = 3;
+
+%% Get Piezo Values
 % In variable exposure mode, there are a total of eight exposures.
 % [Wipe Image1 Image2 Image3 Wipe Image4 Image5 Image6]
 %
 % As the code is updated, this function may need to change.
-function piezos = getPiezoValues(data)
-    piezos = zeros(length(data),2);
-    P=[data.Params];
-    i1 = 3;                     % Image index
-    i2 = 4;                     % Image Index
-    varName= 'qgm_MultiPiezos'; % This variable stores the piezo values, it is an array
-    for kk=1:length(data)
-        vals=[P(kk).(varName)]; 
-        piezos(kk,1)=vals(i1);
-        piezos(kk,2)=vals(i2);
-    end
+
+piezos = zeros(length(data),2);
+P=[data.Params];
+for kk=1:length(data)
+    vals=[P(kk).(PiezoVariableName)]; 
+    piezos(kk,1)=vals(PiezoIndex1);
+    piezos(kk,2)=vals(PiezoIndex2);
 end
 
 %% Default Settings
@@ -45,6 +55,38 @@ if ~isfield(opts,'ImageIndeces')
     opts.ImageIndeces = [2 3];
 end
 
+%%
+ROI = opts.ROI;
+
+for kk=1:length(data)
+    % Get the Images
+    i1      = data(kk).(ImageSource)(:,:,ImageIndex1);
+    i2      = data(kk).(ImageSource)(:,:,ImageIndex2);
+
+    % Crop the Images
+    i1_crop = i1(ROI(3):ROI(4),ROI(1):ROI(2));
+    i2_crop = i2(ROI(3):ROI(4),ROI(1):ROI(2));
+
+    % Calculate Peak Correlator
+    [tform,peakcorr]=imregcorr(i2_crop,i1_crop,"translation");    
+    Rfixed  = imref2d(size(i1_crop));
+    i2_warp = imwarp(i2_crop,tform,"OutputView",Rfixed);
+
+    % Take fft
+    Zf_i1   = abs(fftshift(fft2(i1_crop)));
+    Zf_i2   = abs(fftshift(fft2(i2_crop)));
+    f1      = linspace(-1,1,size(Zf_i1,1));
+    f2      = linspace(-1,1,size(Zf_i1,2));
+
+    [ffx,ffy]=meshgrid(f2,f1);
+    ffr=sqrt(ffx.^2+ffy.^2);
+    s1(kk)=sum(Zf_i1.*ffr,'all');
+    s2(kk)=sum(Zf_i2.*ffr,'all');
+
+
+    x = ixondata(n).X;
+    y = ixondata(n).Y;
+end
 
 end
 
