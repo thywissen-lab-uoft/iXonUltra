@@ -10,6 +10,24 @@ function [data,focus_data,hF] = ixon_multi_shot_focusing2(data,opts)
 % the normalized count profile between the images, it works best if the
 % light source (ie. atomic distribution) is identical from shot to shot.
 
+%% Helper functions
+
+% In variable exposure mode, there are a total of eight exposures.
+% [Wipe Image1 Image2 Image3 Wipe Image4 Image5 Image6]
+%
+% As the code is updated, this function may need to change.
+function piezos = getPiezoValues(data)
+    piezos = zeros(length(data),2);
+    P=[data.Params];
+    i1 = 3;                     % Image index
+    i2 = 4;                     % Image Index
+    varName= 'qgm_MultiPiezos'; % This variable stores the piezo values, it is an array
+    for kk=1:length(data)
+        vals=[P(kk).(varName)]; 
+        piezos(kk,1)=vals(i1);
+        piezos(kk,2)=vals(i2);
+    end
+end
 
 %% Default Settings
 
@@ -30,16 +48,5 @@ end
 
 end
 
-function piezos = getPiezoValues(data)
-    piezos = zeros(length(data),2);
-    P=[data.Params];
-    i1 = 3;
-    i2 = 4;
 
-    for kk=1:length(data)
-        vals=[P(kk).qgm_MultiPiezos];
-        piezos(kk,1)=vals(i1);
-        piezos(kk,2)=vals(i2);
-    end
-end
 
