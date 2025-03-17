@@ -88,7 +88,7 @@ ixon_xVar           = 'conductivity_mod_time'; % Variable Name
 ixon_xVar           = 'tilt_notilt_shift'; % Variable Name
 ixon_xVar           = 'qgm_planeShift_N'; % Variable Name
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
-ixon_doSave         = 1;    % Save Analysis?
+ixon_doSave         = 0;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 
