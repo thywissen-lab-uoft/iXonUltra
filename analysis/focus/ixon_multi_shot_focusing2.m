@@ -172,6 +172,9 @@ for kk=1:length(data)
     Zf_i1   = abs(fftshift(fft2(i1_crop,Nfft,Nfft)));
     Zf_i2   = abs(fftshift(fft2(i2_crop,Nfft,Nfft)));
     Zf_ig   = abs(fftshift(fft2(i_gauss,Nfft,Nfft)));
+
+
+    
     f1      = linspace(-1,1,size(Zf_i1,1));
     f2      = linspace(-1,1,size(Zf_i1,2));
 
@@ -238,3 +241,25 @@ end
 
 
 
+
+function [Tics,Average,dev,n]=radial_profile(data,radial_step)
+%main axii cpecified:
+x=(1:size(data,2))-size(data,2)/2;
+y=(1:size(data,1))-size(data,1)/2;
+% coordinate grid:
+[X,Y]=meshgrid(x,y);
+% creating circular layers
+Z_integer=round(abs(X+1i*Y)/radial_step)+1;
+% % illustrating the principle:
+% % figure;imagesc(Z_integer.*data)
+% very fast MatLab calculations:
+Tics=accumarray(Z_integer(:),abs(X(:)+1i*Y(:)),[],@mean);
+Average=accumarray(Z_integer(:),data(:),[],@mean);
+
+
+% dev=accumarray(Z_integer(:),data(:),[],@std);
+dev=accumarray(Z_integer(:),data(:),[],@(x) std(x,1));
+
+n= accumarray(Z_integer(:),data(:),[],@(x) numel(x));
+
+end
