@@ -66,7 +66,9 @@ l = 150;
 % Threshold
 Nt = 0;
 
-Nfft = 2*l+1;
+% Radial FFT bin
+nBin = 6;
+N = 2*l+1;
 
 disp(['     Blur Radius    : ' num2str(s)]);
 disp(['     Hanning Radius : ' num2str(l)]);
@@ -83,8 +85,10 @@ Z_stack_1 = zeros(size(W,1),size(W,2),length(data));
 Z_stack_2 = zeros(size(W,1),size(W,2),length(data));
 Z_stack_g = zeros(size(W,1),size(W,2),length(data));
 
-Zf_stack_1 = zeros(Nfft,Nfft,length(data));
-Zf_stack_2 = zeros(Nfft,Nfft,length(data));
+Zf_stack_1 = zeros(N,N,length(data));
+Zf_stack_2 = zeros(N,N,length(data));
+Zf_stack_g =  zeros(N,N,length(data));
+
 
 score_1   = zeros(length(data),1);
 score_2   = zeros(length(data),1);
@@ -168,15 +172,26 @@ for kk=1:length(data)
     % i2_warp = imwarp(i2_crop,tform,"OutputView",Rfixed);
     score_corr(kk) = peakcorr;
 
-    % Take fft
-    Zf_i1   = abs(fftshift(fft2(i1_crop,Nfft,Nfft)));
-    Zf_i2   = abs(fftshift(fft2(i2_crop,Nfft,Nfft)));
-    Zf_ig   = abs(fftshift(fft2(i_gauss,Nfft,Nfft)));
+    % Take FFT
+    Zf_i1   = abs(fftshift(fft2(i1_crop)));
+    Zf_i2   = abs(fftshift(fft2(i2_crop)));
+    Zf_ig   = abs(fftshift(fft2(i_gauss)));
 
+    % Radial Sum of FFT (for plotting purposes)
+    [r,Zf_i1_r,~,~] = radial_profile(Zf_i1,nBin);
+    [r,Zf_i2_r,~,~] = radial_profile(Zf_i2,nBin);
+    [r,Zf_ig_r,~,~] = radial_profile(Zf_ig,nBin);
+    fr      = r/N;    % Radial Frequency Vector 1/px
 
-    
-    f1      = linspace(-1,1,size(Zf_i1,1));
-    f2      = linspace(-1,1,size(Zf_i1,2));
+    if kk==1
+        Zfr_stack_1 = zeros(length(r),length(data));
+        Zfr_stack_2 = zeros(length(r),length(data));
+        Zfr_stack_g = zeros(length(r),length(data));
+    end
+
+    % Cartesian Frequency Vector 1/px
+    f1      = linspace(-0.5,0.5,size(Zf_i1,1));
+    f2      = linspace(-0.5,0.5,size(Zf_i1,2));
 
     % Compute Momentum Score
     [ffx,ffy]=meshgrid(f2,f1);
@@ -190,8 +205,13 @@ for kk=1:length(data)
     Z_stack_2(:,:,kk) = i2_crop*N2;
     Z_stack_g(:,:,kk) = i_gauss*(N1+N2)*0.5;
 
+    Zfr_stack_1(:,kk) = Zf_i1_r;
+    Zfr_stack_2(:,kk) = Zf_i2_r;
+    Zfr_stack_g(:,kk) = Zf_ig_r;
+
     Zf_stack_1(:,:,kk) = Zf_i1;
     Zf_stack_2(:,:,kk) = Zf_i2;
+    Zf_stack_g(:,:,kk) = Zf_ig;
 
     Counts1(kk) = N1;
     Counts2(kk) = N2;
@@ -212,9 +232,16 @@ focus.dSdV          = ((score_1-score_2)./score_g)./(piezos(:,1)-piezos(:,2));
 
 focus.Image1            = Z_stack_1;
 focus.Image2            = Z_stack_2;
+% focus.ImageG            = Z_stack_g;
+% 
+% focus.Image1_FFT        = Zf_stack_1;
+% focus.Image2_FFT        = Zf_stack_2;foc
+% focus.ImageG_FFT        = Zf_stack_g;
 
-focus.Image1_FFT        = Zf_stack_1;
-focus.Image2_FFT        = Zf_stack_2;
+focus.Image1_FFT_radial = Zfr_stack_1;
+focus.Image2_FFT_radial = Zfr_stack_2;
+focus.ImageG_FFT_radial = Zfr_stack_g;
+focus.RadialFrequency   = fr;
 
 focus.BoxCount1         = Counts1;
 focus.BoxCount2         = Counts2;
@@ -243,23 +270,21 @@ end
 
 
 function [Tics,Average,dev,n]=radial_profile(data,radial_step)
-%main axii cpecified:
-x=(1:size(data,2))-size(data,2)/2;
-y=(1:size(data,1))-size(data,1)/2;
-% coordinate grid:
-[X,Y]=meshgrid(x,y);
-% creating circular layers
-Z_integer=round(abs(X+1i*Y)/radial_step)+1;
-% % illustrating the principle:
-% % figure;imagesc(Z_integer.*data)
-% very fast MatLab calculations:
-Tics=accumarray(Z_integer(:),abs(X(:)+1i*Y(:)),[],@mean);
-Average=accumarray(Z_integer(:),data(:),[],@mean);
-
-
-% dev=accumarray(Z_integer(:),data(:),[],@std);
-dev=accumarray(Z_integer(:),data(:),[],@(x) std(x,1));
-
-n= accumarray(Z_integer(:),data(:),[],@(x) numel(x));
-
+    %main axii cpecified:
+    x=(1:size(data,2))-size(data,2)/2;
+    y=(1:size(data,1))-size(data,1)/2;
+    % coordinate grid:
+    [X,Y]=meshgrid(x,y);
+    % creating circular layers
+    Z_integer=round(abs(X+1i*Y)/radial_step)+1;
+    % % illustrating the principle:
+    % % figure;imagesc(Z_integer.*data)
+    % very fast MatLab calculations:
+    Tics=accumarray(Z_integer(:),abs(X(:)+1i*Y(:)),[],@mean);
+    Average=accumarray(Z_integer(:),data(:),[],@sum);
+    
+    
+    % dev=accumarray(Z_integer(:),data(:),[],@std);
+    dev=accumarray(Z_integer(:),data(:),[],@(x) std(x,1));
+    n= accumarray(Z_integer(:),data(:),[],@(x) numel(x));
 end
