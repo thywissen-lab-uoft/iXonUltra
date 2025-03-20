@@ -1237,7 +1237,7 @@ hbfeedback=uicontrol(hpFeedback,'style','pushbutton','string','evaluate feedback
 % hpAnl.Position=[0 hpADV.Position(2)-130 160 180];
 
 hpPosition=uipanel(hpControl,'units','pixels','backgroundcolor','w',...
-    'Position',[0 hpFeedback.Position(2)-170 160 170],'title','position analysis');
+    'Position',[0 hpFeedback.Position(2)-185 160 185],'title','position analysis');
 
 
 % Checkbox for center of mass and sigma 
@@ -1417,6 +1417,12 @@ ttstr='Analyze stripe pattern in image to measure field stability';
 hcStripe=uicontrol(hpPosition,'style','checkbox','string','stripe pattern','fontsize',7,...
     'backgroundcolor','w','Position',[5 hc_anlX_Gauss.Position(2)-15 100 15],...
     'ToolTipString',ttstr);
+
+ttstr='Analyze focus of multi shot imaging';
+hcFocus=uicontrol(hpPosition,'style','checkbox','string','2shot focus','fontsize',7,...
+    'backgroundcolor','w','Position',[5 hcStripe.Position(2)-15 100 15],...
+    'ToolTipString',ttstr);
+
 
 % Do Position space analysis
 hbposition=uicontrol(hpPosition,'style','pushbutton','string','position analysis',...
@@ -2730,81 +2736,6 @@ drawnow
 linkaxes([axImg hAxY],'y');
 linkaxes([axImg hAxX],'x');
 
-%% Stripe
-% 
-% ax_stripe_img = subplot(2,3,[1 2 4 5],'parent',tabStripe);
-% stripe_hImgStripe=imagesc(data.X,data.Y,data.Z,'parent',ax_stripe_img);
-% set(ax_stripe_img,'box','on','linewidth',.1,'fontsize',10,...
-%     'XAxisLocation','bottom','colormap',colormap(cmap),...
-%     'YDir','normal');
-% hold on
-% axis equal tight
-% 
-% stripe_pFringe=plot(0,0,'-','color',co(1,:),'linewidth',1);
-% stripe_pPerp=plot(0,0,'-','color',co(5,:),'linewidth',1);     
-% stripe_pBar=plot(0,0,'-','color','w','linewidth',1);     
-% stripe_pAngleCirc=plot(0,0,'-','color','w','linewidth',1);     
-% stripe_pCloudEllipse=plot(0,0,'-','color','w','linewidth',1);     
-% 
-% 
-% % clear stripe_lines
-% % stripe_lines(1) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % stripe_lines(2) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % stripe_lines(3) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % stripe_lines(4) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % stripe_lines(5) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % stripe_lines(6) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % stripe_lines(7) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % stripe_lines(8) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % stripe_lines(9) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % stripe_lines(10) = plot(0,0,'-','color','r','linewidth',1,'parent',axImg_K,'Visible','off','hittest','off');
-% % 
-% 
-% % file name string
-% stripe_str_bottom_left=text(3,3,'FILENAME','units','pixels','fontsize',10,'fontweight','bold',...
-%     'horizontalalignment','left','verticalalignment','bottom','margin',1,...
-%     'interpreter','none','backgroundcolor',[1 1 1 .5]);
-% 
-% % Box Count Analysis String
-% stripe_str_bottom_right=text(.99,0.01,'FILENAME','units','normalized','fontsize',10,'fontweight','normal',...
-%     'horizontalalignment','right','verticalalignment','bottom','margin',1,...
-%     'interpreter','latex',...
-%     'color','k','backgroundcolor',[1 1 1 .7]);
-% 
-% 
-% ax_stripe_fit = subplot(2,3,3,'parent',tabStripe);
-% set(ax_stripe_fit,'box','on','fontsize',10,...
-%     'XAxisLocation','Bottom');
-% 
-% % Add X data data and fit plots
-% stripe_pSum2_fit=plot(0,0,'k--','linewidth',1,'parent',ax_stripe_fit);
-% hold on
-% stripe_pSum2_data=plot(0,0,'-','color',co(5,:),'linewidth',1,'parent',ax_stripe_fit);
-% 
-% stripe_pSum1_fit=plot(0,0,'-','linewidth',2,'color',co(2,:),'parent',ax_stripe_fit);
-% hold on
-% stripe_pSum1_data=plot(0,0,'-','color',co(1,:),'linewidth',1,'parent',ax_stripe_fit);
-% xlabel('rotated position (px)');
-% ylabel('sum counts');
-% 
-% legend([stripe_pSum1_data, stripe_pSum1_fit, stripe_pSum2_data, stripe_pSum2_fit],...
-%     {'fringe','fringe fit','perp','perp fit'},'fontsize',6,...
-%     'location','northeast')
-% text(.01,.98,'projected sum counts','units','normalized',...
-%     'verticalalignment','top','fontsize',6,'parent',ax_stripe_fit);
-% 
-% ax_stripe_focus = subplot(2,3,6,'parent',tabStripe);
-% set(ax_stripe_focus,'box','on','fontsize',10,...
-%     'XAxisLocation','Bottom');
-% 
-% stripe_pFocus=plot(0,0,'o-','color','k','linewidth',1);     
-% hold on
-% stripe_pFocusFit=plot(0,0,'--','color','k','linewidth',1);     
-% 
-% yyaxis right
-% 
-% stripe_pFocus2=plot(0,0,'o-','color','r','linewidth',1);     
-% yyaxis left
 %% Histgoram
 
 ax_h1 = subplot(2,2,1,'parent',tabH);
@@ -3410,7 +3341,15 @@ end
         myz=sum(data.Z,3);    
         data.StripeCircular = ...
                 StripeCircle(X,Y,myz,opts);
-    end          
+    end  
+
+    %% Focus Analysis
+
+    if hcFocus.Value 
+        opts=struct;
+        opts.Parent=tabFocus;
+        opts.Name = data.Name;
+    end
 
         updateDispPosImg;   
         updatePositionAnalysisGraphics

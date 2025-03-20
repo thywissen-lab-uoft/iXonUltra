@@ -18,7 +18,7 @@ if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [1];end
 % if ~isfield(opts,'Tunneling');      opts.Tunneling = [];end
 % if ~isfield(opts,'U');              opts.Tunneling = [];end
 
-if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*52*sqrt(1.0965);end % from 11/25/24
+if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*67;end % 2025/03 sqrt(1.0965) % from 11/25/24
 if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
 if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 

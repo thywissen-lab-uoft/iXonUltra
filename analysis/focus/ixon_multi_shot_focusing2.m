@@ -66,6 +66,8 @@ l = 150;
 % Threshold
 Nt = 0;
 
+Nfft = 2*l+1;
+
 disp(['     Blur Radius    : ' num2str(s)]);
 disp(['     Hanning Radius : ' num2str(l)]);
 %% Create Window
@@ -81,8 +83,8 @@ Z_stack_1 = zeros(size(W,1),size(W,2),length(data));
 Z_stack_2 = zeros(size(W,1),size(W,2),length(data));
 Z_stack_g = zeros(size(W,1),size(W,2),length(data));
 
-Zf_stack_1 = zeros(size(W,1),size(W,2),length(data));
-Zf_stack_2 = zeros(size(W,1),size(W,2),length(data));
+Zf_stack_1 = zeros(Nfft,Nfft,length(data));
+Zf_stack_2 = zeros(Nfft,Nfft,length(data));
 
 score_1   = zeros(length(data),1);
 score_2   = zeros(length(data),1);
@@ -115,6 +117,12 @@ for kk=1:length(data)
     % Find Center of Mass
     xc = round(sum(xx.*i1,'all')/sum(i1,'all'));
     yc = round(sum(yy.*i2,'all')/sum(i2,'all'));
+
+    xc = max([xc l+1]);
+    xc = min([xc 512-l-1]);
+
+    yc = max([yc l+1]);
+    yc = min([yc 512-l-1]);
 
     xR = xc + [-l:l];
     yR = yc + [-l:l]; 
@@ -161,9 +169,9 @@ for kk=1:length(data)
     score_corr(kk) = peakcorr;
 
     % Take fft
-    Zf_i1   = abs(fftshift(fft2(i1_crop)));
-    Zf_i2   = abs(fftshift(fft2(i2_crop)));
-    Zf_ig   = abs(fftshift(fft2(i_gauss)));
+    Zf_i1   = abs(fftshift(fft2(i1_crop,Nfft,Nfft)));
+    Zf_i2   = abs(fftshift(fft2(i2_crop,Nfft,Nfft)));
+    Zf_ig   = abs(fftshift(fft2(i_gauss,Nfft,Nfft)));
     f1      = linspace(-1,1,size(Zf_i1,1));
     f2      = linspace(-1,1,size(Zf_i1,2));
 
@@ -172,7 +180,7 @@ for kk=1:length(data)
     ffr     = sqrt(ffx.^2+ffy.^2);
     s1      = sum(Zf_i1.*ffr,'all');
     s2      = sum(Zf_i2.*ffr,'all');
-    sg      = sum(Zf_ig,'all');
+    sg      = sum(Zf_ig.*ffr,'all');
 
     % Make Outputs
     Z_stack_1(:,:,kk) = i1_crop*N1;
@@ -197,23 +205,34 @@ end
 %% Construct Output
 
 focus = struct;
-focus.Image1 = Z_stack_1;
-focus.Image2 = Z_stack_2;
+focus.dSdV          = ((score_1-score_2)./score_g)./(piezos(:,1)-piezos(:,2));
 
-focus.Image1_FFT = Zf_stack_1;
-focus.Image2_FFT = Zf_stack_2;
+focus.Image1            = Z_stack_1;
+focus.Image2            = Z_stack_2;
 
-focus.BoxCount1 = Counts1;
-focus.BoxCount2 = Counts2;
+focus.Image1_FFT        = Zf_stack_1;
+focus.Image2_FFT        = Zf_stack_2;
 
-focus.Piezo1 = piezos(:,1);
-focus.Piezo2 = piezos(:,2);
-focus.Score1 = score_1;
-focus.Score2 = score_2;
-focus.ScoreGauss = score_g;
-focus.Correlator = score_corr;
-focus.ExecutionDate = D;
-focus.Params = P;
+focus.BoxCount1         = Counts1;
+focus.BoxCount2         = Counts2;
+
+focus.Piezo1            = piezos(:,1);
+focus.Piezo2            = piezos(:,2);
+focus.Score1            = score_1;
+focus.Score2            = score_2;
+focus.ScoreGauss        = score_g;
+focus.Correlator        = score_corr;
+focus.ExecutionDate     = D;
+focus.Params            = P;
+
+focus.PiezoVariableName = 'qgm_MultiPiezos';
+focus.PiezoIndeces      = [PiezoIndex1 PiezoIndex2];
+focus.ImageSource       = ImageSource;
+focus.ImageIndeces      = [ImageIndex1 ImageIndex2];
+focus.BlurRadius        = s;
+focus.WindowRadius      = l;
+
+
 
 end
 

@@ -1,4 +1,4 @@
-function [hF]= ixon_show_multi_shot_focusing(focus,xVar,opts)
+function [hF]= ixon_show2ShotFocusSummary(focus,xVar,opts)
 
 if nargin ==1
     xVar = 'ExecutionDate';
@@ -22,10 +22,8 @@ X = [P.(xVar)];
 s1 = [focus.Score1];
 s2 = [focus.Score2];
 sg = [focus.ScoreGauss];
-
 V1 = [focus.Piezo1];
 V2 = [focus.Piezo2];
-
 Vc = [P.objective_piezo];
 
 dV = mean((V2-V1))/2;
