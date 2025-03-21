@@ -82,22 +82,6 @@ scores      = zeros(length(data),length(PiezoIndeces));
 % Correlation Scores
 score_corr  = zeros(length(data),length(PiezoIndeces)-1);
 
-% Z_stack_1 = zeros(size(W,1),size(W,2),length(data));
-% Z_stack_2 = zeros(size(W,1),size(W,2),length(data));
-% Z_stack_g = zeros(size(W,1),size(W,2),length(data));
-% Zf_stack_1 = zeros(N,N,length(data));
-% Zf_stack_2 = zeros(N,N,length(data));
-% Zf_stack_g =  zeros(N,N,length(data));
-
-% 
-% score_1   = zeros(length(data),1);
-% score_2   = zeros(length(data),1);
-% score_g   = zeros(length(data),1);
-
-% score_corr = zeros(length(data),1);
-
-% Counts1 = zeros(length(data),1);
-% Counts2 = zeros(length(data),1);
 
 %%
 
@@ -157,123 +141,19 @@ for kk=1:length(data)
         
     end
 
-
-    % % Get the Images
-    % i1      = data(kk).(ImageSource)(:,:,ImageIndex1);
-    % i2      = data(kk).(ImageSource)(:,:,ImageIndex2);
-    % 
-    % 
-    % % Blur Data
-    % i1      = imgaussfilt(i1,s);
-    % i2      = imgaussfilt(i2,s);
-    % 
-    % % Find Center of Mass
-    % xc = round(sum(xx.*i1,'all')/sum(i1,'all'));
-    % yc = round(sum(yy.*i2,'all')/sum(i2,'all'));
-    % 
-    % 
-    % 
-    % xR = xc + [-l:l];
-    % yR = yc + [-l:l]; 
-    % 
-    % % Crop the Images
-    % i1_crop = i1(yR,xR);
-    % i2_crop = i2(yR,xR);
-    % 
-    % % Remove negative values
-    % i1_crop(i1_crop<Nt)=0;
-    % i1_crop(i1_crop<Nt)=0;
-    % 
-    % % Apply Window
-    % i1_crop = i1_crop.*W;
-    % i2_crop = i2_crop.*W;
-    % 
-    % N1 = sum(i1_crop,'all');
-    % N2 = sum(i2_crop,'all');
-    % 
-    % % Normalize
-    % i1_crop = i1_crop/N1;
-    % i2_crop = i2_crop/N2;
-    % 
-    % % Find second moment on the windowed data
-    % [xx2,yy2] = meshgrid([-l:l],[-l:l]);
-    % xc = sum(xx2.*(i1_crop+i2_crop),'all')/sum(i1_crop+i2_crop,'all');
-    % yc = sum(yy2.*(i1_crop+i2_crop),'all')/sum(i1_crop+i2_crop,'all');
-    % x2 = sum(xx2.^2.*(i1_crop+i2_crop),'all')/sum(i1_crop+i2_crop,'all');
-    % y2 = sum(yy2.^2.*(i1_crop+i2_crop),'all')/sum(i1_crop+i2_crop,'all');
-    % 
-    % % Gaussian Radius
-    % xs = sqrt(x2-xc^2);
-    % ys = sqrt(y2-yc^2);
-    % rs = sqrt(xs.*ys);
-    % 
-    % % Construct fake image
-    % i_gauss = exp(-(xx2-xc).^2/(2*rs^2)).*exp(-(yy2-yc).^2/(2*rs^2)).*W;
-    % i_gauss = i_gauss/sum(i_gauss,'all');
-    % 
-    % % Calculate Peak Correlator
+    % Calculate Peak Correlator
     % [tform,peakcorr]=imregcorr(i2_crop,i1_crop,"translation");    
     % % Rfixed  = imref2d(size(i1_crop));
     % % i2_warp = imwarp(i2_crop,tform,"OutputView",Rfixed);
-    % score_corr(kk) = peakcorr;
-    % 
-    % % Take FFT
-    % Zf_i1   = abs(fftshift(fft2(i1_crop)));
-    % Zf_i2   = abs(fftshift(fft2(i2_crop)));
-    % Zf_ig   = abs(fftshift(fft2(i_gauss)));
-    % 
-    % % Radial Sum of FFT (for plotting purposes)
-    % [r,Zf_i1_r,~,~] = radial_profile(Zf_i1,nBin);
-    % [r,Zf_i2_r,~,~] = radial_profile(Zf_i2,nBin);
-    % [r,Zf_ig_r,~,~] = radial_profile(Zf_ig,nBin);
-    % fr      = r/N;    % Radial Frequency Vector 1/px
-    % 
-    % if kk==1
-    %     Zfr_stack_1 = zeros(length(r),length(data));
-    %     Zfr_stack_2 = zeros(length(r),length(data));
-    %     Zfr_stack_g = zeros(length(r),length(data));
-    % end
-    % 
-    % % Cartesian Frequency Vector 1/px
-    % f1      = linspace(-0.5,0.5,size(Zf_i1,1));
-    % f2      = linspace(-0.5,0.5,size(Zf_i1,2));
-    % 
-    % % Compute Momentum Score
-    % [ffx,ffy]=meshgrid(f2,f1);
-    % ffr     = sqrt(ffx.^2+ffy.^2);
-    % s1      = sum(Zf_i1.*ffr,'all');
-    % s2      = sum(Zf_i2.*ffr,'all');
-    % sg      = sum(Zf_ig.*ffr,'all');
-    % 
-    % % Make Outputs
-    % Z_stack_1(:,:,kk) = i1_crop*N1;
-    % Z_stack_2(:,:,kk) = i2_crop*N2;
-    % Z_stack_g(:,:,kk) = i_gauss*(N1+N2)*0.5;
-    % 
-    % Zfr_stack_1(:,kk) = Zf_i1_r/nBin;
-    % Zfr_stack_2(:,kk) = Zf_i2_r/nBin;
-    % Zfr_stack_g(:,kk) = Zf_ig_r/nBin;
-    % 
-    % Zf_stack_1(:,:,kk) = Zf_i1;
-    % Zf_stack_2(:,:,kk) = Zf_i2;
-    % Zf_stack_g(:,:,kk) = Zf_ig;
-    % 
-    % Counts1(kk) = N1;
-    % Counts2(kk) = N2;
-    % 
-    % score_1(kk) = s1;
-    % score_2(kk) = s2;
-    % score_g(kk) = sg;
+    % score_corr(kk) = peakcorr;   
 
     t2=toc;
-
     disp([' done (' num2str(round(1e3*t2)) ' ms)'])
 end
 
 %% Construct Output
 
 focus = struct;
-
 focus.Scores            = scores;
 focus.Counts            = counts;
 focus.RadialFrequency   = fr;
@@ -281,37 +161,8 @@ focus.RadialFFT         = Zfr_stack;
 focus.Images_Pos        = Z_stack;
 focus.Images_Freq       = Zf_stack;
 focus.Piezos            = piezos;
-
-
-% 
-% focus.dSdV          = ((score_1-score_2)./score_g)./(piezos(:,1)-piezos(:,2));
-% 
-% focus.Image1            = Z_stack_1;
-% focus.Image2            = Z_stack_2;
-% % focus.ImageG            = Z_stack_g;
-% % 
-% focus.Image1_FFT        = Zf_stack_1;
-% focus.Image2_FFT        = Zf_stack_2;
-% % focus.ImageG_FFT        = Zf_stack_g;
-% 
-% focus.Image1_FFT_radial = Zfr_stack_1;
-% focus.Image2_FFT_radial = Zfr_stack_2;
-% focus.ImageG_FFT_radial = Zfr_stack_g;
-% 
-% focus.BoxCount1         = Counts1;
-% focus.BoxCount2         = Counts2;
-% 
-% focus.Piezo1            = piezos(:,1);
-% focus.Piezo2            = piezos(:,2);
-% focus.Score1            = score_1;
-% focus.Score2            = score_2;
-% focus.ScoreGauss        = score_g;
-% focus.Correlator        = score_corr;
-
-
 focus.ExecutionDate     = D;
 focus.Params            = P;
-
 focus.PiezoVariableName = 'qgm_MultiPiezos';
 focus.PiezoIndeces      = PiezoIndeces;
 focus.ImageSource       = ImageSource;
@@ -319,7 +170,6 @@ focus.ImageIndeces      = ImageIndeces;
 focus.BlurRadius        = s;
 focus.WindowRadius      = l;
 focus.FreqnBin          = nBin;
-
 
 end
 
