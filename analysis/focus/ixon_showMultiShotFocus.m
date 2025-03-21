@@ -1,4 +1,4 @@
-function [hF] = ixon_show2ShoftFocus(focus,opts)
+function [hF] = ixon_showMultiShotFocus(focus,opts)
 
 if nargin ==1
     opts=struct;
@@ -10,8 +10,12 @@ for kk=1:numel([focus.ExecutionDate])
         hF(kk) = figure;
         set(hF(kk),'color','w');
         hF(kk).Position=[50 50 600 550];
+        my_parent = hF(kk);
     else
         hF = opts.Parent;
+        clf(hF);
+        set(hF,'color','w');
+        my_parent=hF;
     end
 
     N = size(focus.Images_Pos,4);
@@ -26,14 +30,14 @@ for kk=1:numel([focus.ExecutionDate])
     end
 
     for jj=1:N
-        ax(jj) = subplot(m,n,jj,'parent',hF(kk));
+        ax(jj) = subplot(m,n,jj,'parent',my_parent);
         imagesc(focus.Images_Pos(:,:,kk,jj)*focus.Counts(kk,jj),'parent',ax(jj));
         axis equal tight
         set(ax(jj),'XTickLabel',{},'YTickLabel',{});
         title(ax(jj),['Image ' num2str(jj) ' : ' ...
             num2str(focus.Piezos(kk,jj)) ' V']);
 
-        axFreq = subplot(m,n,4,'parent',hF(kk));
+        axFreq = subplot(m,n,4,'parent',my_parent);
         ps(jj) = plot(focus.RadialFrequency,...
             focus.RadialFFT(:,kk,jj),'.-',...
             'parent',axFreq);  
@@ -47,6 +51,10 @@ for kk=1:numel([focus.ExecutionDate])
             'units','normalized','verticalalignment','bottom',...
             'parent',ax(jj),'color','w');
     end
+
+    uicontrol('parent',my_parent,'style','text','backgroundcolor','w',...
+        'Position',[1 1 300 20],'string',focus.Params(kk).ExecutionDateStr,...
+        'horizontalalignment','left')
     
     for jj=1:N
         set(ax(jj),'CLim',[0 max(cL)]);

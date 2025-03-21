@@ -136,10 +136,7 @@ if isequal(xVar,'objective_piezo') || opts.ForceFit
 
     str1b = ['$m(x-x_C) ~ (' num2str(round(fout1b.m,1)) '/\mathrm{V},' ...
         num2str(round(fout1b.xc,2)) '\mathrm{V})$'];
-
     legend([pF2],{str1b},'interpreter','latex');
-
-
 
 end
 

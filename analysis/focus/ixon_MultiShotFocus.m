@@ -1,24 +1,36 @@
-function focus = ixon_multi_shot_focusing2(data,opts)
+function focus = ixon_MultiShotFocus(data,opts)
 % Author : CF Fujiwara
 %
 % This code compares the focusing properties of multi shot single plane images.
 
+if nargin == 1
+    opts = struct;
+end
 disp('Two-Shot Focusing : ixon_multi_shot_focusing2');
-%% Principle of Technique
+%% Default Settings
+
+if ~isfield(opts,'PiezoVariableName')
+    opts.PiezoVariableName = 'qgm_MultiPiezos';
+end
+
+if ~isfield(opts,'PiezoIndeces')
+    opts.PiezoIndeces = [3 4 5];
+end
+
+if ~isfield(opts,'ImageIndeces')
+    opts.ImageIndeces = [2 3 4];
+end
+
+if ~isfield(opts,'ImageSource')
+    opts.ImageSource = 'ZNoFilter';
+end
+%% Store Values
 
 % Variable which stores the piezo values, it is an array
-PiezoVariableName = 'qgm_MultiPiezos';
-
-% Indeces in the piezo array which correspond to the objective piezo value
-PiezoIndeces = [3 4 5];
-% PiezoIndeces = [3 4];
-
-% Variable which stores the images (want to use unsharpenend images)
-ImageSource = 'ZNoFilter';
-
-% Indeces in the image stack to analyze
-ImageIndeces = [2 3 4];
-% ImageIndeces = [2 3];
+PiezoVariableName = opts.PiezoVariableName;
+PiezoIndeces = opts.PiezoIndeces;
+ImageSource = opts.ImageSource;
+ImageIndeces = opts.ImageIndeces;
 
 disp(['     PiezoIndeces   : ' num2str(PiezoIndeces)]);
 disp(['     ImageIndeces   : ' num2str(ImageIndeces)]);
@@ -172,9 +184,6 @@ focus.WindowRadius      = l;
 focus.FreqnBin          = nBin;
 
 end
-
-
-
 
 function [Tics,Average,dev,n]=radial_profile(data,radial_step)
     %main axii cpecified:
