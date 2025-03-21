@@ -4,19 +4,31 @@ if nargin ==1
     opts=struct;
 end
 
-for kk=1:numel([focus.ExecutionDate])
+for kk=1:size([focus.Scores],1)
 
-    if ~isfield(opts,'Parent') || isempty(opts.Parent)
-        hF(kk) = figure;
-        set(hF(kk),'color','w');
-        hF(kk).Position=[50 50 600 550];
-        my_parent = hF(kk);
+
+  if ~isfield(opts,'Parent')
+    FigName = 'Focus';      
+    fig=figure;
+    fig.Color='w';
+    fig.Name=FigName;
+    % fig.ToolBar='none';
+    % fig.MenuBar='none';
+    fig.Position=[5 50 600 500];
+    clf(fig);
+    my_parent=fig;
+    hF(kk)=my_parent;
+
     else
-        hF = opts.Parent;
-        clf(hF);
-        set(hF,'color','w');
-        my_parent=hF;
+        fig = opts.Parent;
+        for ll=1:length(fig.Children)
+            delete(fig.Children(1))
+        end
+        my_parent=fig;
+        hF=my_parent;
     end
+
+
 
     N = size(focus.Images_Pos,4);
     legStr={};
@@ -30,7 +42,8 @@ for kk=1:numel([focus.ExecutionDate])
     end
 
     for jj=1:N
-        ax(jj) = subplot(m,n,jj,'parent',my_parent);
+        ax(jj) = subplot(m,n,jj,'parent',my_parent);   
+        
         imagesc(focus.Images_Pos(:,:,kk,jj)*focus.Counts(kk,jj),'parent',ax(jj));
         axis equal tight
         set(ax(jj),'XTickLabel',{},'YTickLabel',{});
@@ -49,7 +62,7 @@ for kk=1:numel([focus.ExecutionDate])
         cL(jj)=c(2);
         text(.01,.01,[num2str(focus.Counts(kk,jj),'%.2e') ' counts'],...
             'units','normalized','verticalalignment','bottom',...
-            'parent',ax(jj),'color','w');
+            'parent',ax(jj),'color','k');
     end
 
     uicontrol('parent',my_parent,'style','text','backgroundcolor','w',...

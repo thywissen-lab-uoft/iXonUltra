@@ -3345,10 +3345,22 @@ end
 
     %% Focus Analysis
 
-    if hcFocus.Value 
+    if hcFocus.Value && size(data.Z,3)>1 && ~data.Flags.plane_selection_dotilt ...
+            && data.Flags.lattice_fluor_multi_mode
         opts=struct;
         opts.Parent=tabFocus;
         opts.Name = data.Name;
+        try
+            Focus = ixon_MultiShotFocus(data,opts);
+            
+            ixon_showMultiShotFocus(Focus,opts)
+            data.Focus=Focus;
+            
+        catch ME
+          for tt=1:length(ME.stack)
+                warning([ME.stack(tt).file ' (' num2str(ME.stack(tt).line) ']']);        
+            end
+        end
     end
 
         updateDispPosImg;   
@@ -3404,6 +3416,10 @@ end
             
             if isfield(data,'MultiShotFocusing')
                gui_saveData.MultiShotFocusing = data.MultiShotFocusing; 
+            end
+
+            if isfield(data,'Focus')
+               gui_saveData.Focus = data.Focus; 
             end
            
             filenames=dir([saveDir filesep '*.mat']);
