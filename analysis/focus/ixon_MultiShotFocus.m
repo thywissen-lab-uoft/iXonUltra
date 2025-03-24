@@ -108,7 +108,14 @@ for kk=1:length(data)
 
     for jj=1:length(PiezoIndeces)
         img = data(kk).(ImageSource)(:,:,ImageIndeces(jj));
-        img = imgaussfilt(img,s);
+        pd = fitdist(img(:),'normal');
+
+        % H = pd.mu + 2*pd.sigma;
+        sigma = 30;
+        H = 50;
+        inds = img<H;
+        img(inds)=img(inds).*exp(-img(inds).^2/(2*sigma^2));
+        img = imgaussfilt(img,s);        
     
         % x center of mass
         xc = round(sum(xx.*img,'all')/sum(img,'all'));

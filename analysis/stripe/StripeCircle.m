@@ -46,33 +46,76 @@ F = fmat<=fmax;
 
 zfnorm_sub = zfnorm(px_lims,px_lims).*F;
 
+%% Find Initial Angle Guess via covariance
+
+A = zfnorm_sub;
+A = A/sum(A,'all');
+y = 1:size(A,1);
+x = 1:size(A,2);
+[xx,yy]=meshgrid(x,y);
+% % Find Center of mass
+muX = sum(xx.*A,'all');
+muY = sum(yy.*A,'all');
+% %% Compute Covariances
+% % Variance
+varXX = sum((xx-muX).^2.*A,'all');
+varYY = sum((yy-muY).^2.*A,'all');
+% 
+% % Covariance
+varXY = sum((xx-muX).*(yy-muY).*A,'all');
+% 
+% % Covariance matrix
+C = [varXX varXY;
+    varXY varYY];
+
+% Eigenvalues of covariance matrix
+[U,D] = eig(C);
+D=diag(D);
+
+v1 = U(:,1);    % Small Vector
+v2 = U(:,2);    % Big Vector
+
+% Angle of small waist
+theta0 = atan(v2(2)/v2(1));
+
+%% Caluclate sum correlator near covariance guess
+
 % Find angle with maximum value (at the correct rotation angle, everything
 % sums up)
-thetaVec = linspace(-pi/4,-pi/4+pi,360);
+% thetaVec = linspace(-pi/4,-pi/4+pi,360);
+
+thetaVec = theta0 + linspace(-45,45,30)*pi/180;
 valTheta = zeros(length(thetaVec),1);
-tic
 for tt=1:length(thetaVec)
-    % valTheta(tt)=max(sum(imrotate(zfnorm,thetaVec(tt)*180/pi,'crop'),2));
     valTheta(tt)=max(sum(imrotate(zfnorm_sub,thetaVec(tt)*180/pi,'crop'),2));
 end
-tRotate=toc;
 [valTheta0,ind]=max(valTheta);
-
 inds=[valTheta>0.9*valTheta0];
+pp=polyfit(thetaVec(inds),valTheta(inds),2);
+guess_theta = -pp(2)/(2*pp(1));
 
+thetaVec = guess_theta + linspace(-5,5,50)*pi/180;
+valTheta = zeros(length(thetaVec),1);
+for tt=1:length(thetaVec)
+    valTheta(tt)=max(sum(imrotate(zfnorm_sub,thetaVec(tt)*180/pi,'crop'),2));
+end
+[valTheta0,ind]=max(valTheta);
+inds=[valTheta>0.9*valTheta0];
+pp=polyfit(thetaVec(inds),valTheta(inds),2);
+guess_theta = -pp(2)/(2*pp(1));
 
 % Rotation Angle
 % guess_theta = thetaVec(ind);
-guess_theta = sum(valTheta(inds).*thetaVec(ind))/sum(valTheta(inds));
-guess_theta = median(thetaVec(inds));
+% guess_theta = sum(valTheta(inds).*thetaVec(ind))/sum(valTheta(inds));
+% guess_theta = median(thetaVec(inds));
+
+% keyboard
 
 %% Wavelength 
 
 zfnorm_rotate = imrotate(zfnorm,180/pi*guess_theta,'crop');
-
 iCenter = (size(zfnorm_rotate,1)+1)*0.5;
 zfnorm_rotate_sub = zfnorm_rotate((iCenter-10:iCenter+10),:);
-
 zfnorm_rotate_sub_sum=sum(zfnorm_rotate_sub,1);
 
 lambdaMin = 40; % in pixels

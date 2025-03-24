@@ -45,7 +45,8 @@ for kk=1:size([focus.Scores],1)
         ax(jj) = subplot(m,n,jj,'parent',my_parent);   
         
         imagesc(focus.Images_Pos(:,:,kk,jj)*focus.Counts(kk,jj),'parent',ax(jj));
-        axis equal tight
+        axis(ax(jj),'equal');
+        axis(ax(jj),'tight');
         set(ax(jj),'XTickLabel',{},'YTickLabel',{});
         title(ax(jj),['Image ' num2str(jj) ' : ' ...
             num2str(focus.Piezos(kk,jj)) ' V']);
@@ -54,7 +55,7 @@ for kk=1:size([focus.Scores],1)
         ps(jj) = plot(focus.RadialFrequency,...
             focus.RadialFFT(:,kk,jj),'.-',...
             'parent',axFreq);  
-        hold on
+        hold(axFreq,'on');
         s=['(' num2str(jj) ') ' num2str(focus.Piezos(kk,jj)) ' V, ' ...
             num2str(focus.Scores(kk,jj),'%.1f') '/px'];
         legStr{jj}=s;
