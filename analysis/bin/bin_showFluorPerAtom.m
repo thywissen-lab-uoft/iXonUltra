@@ -7,7 +7,7 @@ X = [P.(opts.xVar)];
 
 for kk=1:length(bindata)
     for rr=1:length(bindata(kk).LatticeBin)
-        if isfield(bindata(kk).LatticeBin,'PDF1_Center') && ~isempty(bindata(kk).LatticeBin.PDF1_Center)
+        if isfield(bindata(kk).LatticeBin(rr),'PDF1_Center') && ~isempty(bindata(kk).LatticeBin(rr).PDF1_Center)
 
             Y(kk,rr)=bindata(kk).LatticeBin(rr).PDF1_Center;
             Ys(kk,rr)=bindata(kk).LatticeBin(rr).PDF1_Radius;
@@ -25,10 +25,12 @@ hF2.Position=[1000 50 600 400];
 hF2.Name = 'FluorPerAtom';
 ax =axes;       
 co=get(gca,'colororder');
+legStr={};
     
 for rr=1:length(bindata(1).LatticeBin) 
-    ps(rr)=errorbar(X,Y(:,rr),2*Ys(:,rr),'o','linewidth',2,'markersize',10,'markerfacecolor',co(1,:),...
-        'markeredgecolor',co(1,:)*.5);
+    ps(rr)=errorbar(X,Y(:,rr),2*Ys(:,rr),'o','linewidth',2,'markersize',6,'markerfacecolor',co(rr,:),...
+        'markeredgecolor',co(rr,:)*.5);
+    legStr{rr}=['image ' num2str(rr)];
     hold on   
 end
 
@@ -42,6 +44,8 @@ set(gca,'box','on','linewidth',1,'fontsize',10);
 grid on;
 yL=get(gca,'YLim');
 set(gca,'YLim',[0 yL(2)]);
+
+legend([ps],legStr)
 
 
 if isfield(bindata,'SourceDirectory') 

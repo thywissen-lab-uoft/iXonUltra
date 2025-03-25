@@ -11,7 +11,7 @@ count_sigma  = zeros(length(bindata),Npics);
 for kk=1:length(bindata)
     for rr=1:length(bindata(kk).LatticeBin)
 
-        if isfield(bindata(kk).LatticeBin(rr),'PDF1_Center') && ~isempty(bindata(kk).LatticeBin.PDF1_Center)
+        if isfield(bindata(kk).LatticeBin(rr),'PDF1_Center') && ~isempty(bindata(kk).LatticeBin(rr).PDF1_Center)
        
             count_center(kk,rr) = bindata(kk).LatticeBin(rr).PDF1_Center;
             count_sigma(kk,rr) = bindata(kk).LatticeBin(rr).PDF1_Radius; 

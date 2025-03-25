@@ -64,13 +64,14 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 0;                % Auto detect changing variable?
+dig_opts.autoXVar       = 1;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
  % dig_opts.xVar           = 'qgm_planeShift_N';  % Variable Name
 
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 dig_opts.doSave         = 1;                % Save Analysis?
+autoVar_Ignore = {'f_offset','piezo_offset'};
 
 %% Flags
 
@@ -130,7 +131,7 @@ if dig_doShowCloud
     opts = dig_opts;
     opts.doAnimate = 1;
     opts.ROI = 'max';
-    opts.filename = 'dig_animateFull.gif';
+    opts.filename = 'dig_animateFull';
     hF_digCloud = dig_showCloud(digdata,opts);
     if dig_opts.doSave
         ixon_saveFigure2(hF_digCloud,...
@@ -146,6 +147,12 @@ if dig_standardAnalysis
         ixon_saveFigure2(hF_digStandard,...
          'dig_standard',dig_opts);  
     end
+end
+
+%% Fidelity
+if dig_fidelity && size(digdata.Zdig,4)==2
+    % CF Needs to finish writing this
+
 end
 
 %% Radial Analysis Better

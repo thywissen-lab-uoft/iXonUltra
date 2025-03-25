@@ -31,6 +31,7 @@ end
 Nc = zeros(length(data),1);
 for kk=1:length(data)
     Zb = data(kk).LatticeBin(1).ZbinRaw;
+    Zb(isnan(Zb))=[];
     Nc(kk) = sum(Zb,'all');
 end
 
