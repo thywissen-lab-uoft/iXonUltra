@@ -243,7 +243,7 @@ end
 
 %%
 
-    hF_circle_stripe = ixon_showCircleStripe(ixondata,ixon_xVar,stripe_opts);
+    hF_circle_stripe = ixon_showCircleStripe([ixondata.StripeCircular],ixon_xVar,stripe_opts);
     if ixon_doSave;ixon_saveFigure2(hF_circle_stripe,'ixon_circle_stripe',saveOpts);end     
 
 
