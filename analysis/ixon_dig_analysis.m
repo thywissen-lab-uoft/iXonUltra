@@ -150,9 +150,22 @@ if dig_standardAnalysis
 end
 
 %% Fidelity
+dig_fidelity=1;
 if dig_fidelity && size(digdata.Zdig,4)==2
     % CF Needs to finish writing this
-
+    [fidelity,hF_fidelity1,hF_fidelity2] = dig_Fidelity(digdata,opts);
+    if dig_opts.doSave
+        if ~isempty(hF_fidelity2)
+            for kk=1:length(hF_fidelity2(kk))
+                ixon_saveFigure2(hF_fidelity2(kk),...
+                    hF_fidelity2(kk).Name,dig_opts);  
+            end
+        end
+        if ~isempty(hF_fidelity1)
+                ixon_saveFigure2(hF_fidelity1,...
+                    hF_fidelity1.Name,dig_opts);  
+        end           
+    end
 end
 
 %% Radial Analysis Better
