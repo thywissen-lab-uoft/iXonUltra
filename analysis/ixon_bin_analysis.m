@@ -146,8 +146,6 @@ bindata = bindata(inds);
 
 bindata = ixon_ProcessPostBin(bindata,ixon_gui_bin_options());
  
-
-
 %% Histogram
 
 if bin_BinAcummulateHist
@@ -186,10 +184,8 @@ if bin_BinAcummulateHist
     if bin_opts.doSave
         ixon_saveFigure2(hF_BinGridHistgoram,...
          'bin_GridHistgoram',bin_opts);  
-    end
-    
+    end    
     opts.Source ='Zbin';
-
 end
 
 %% Show FluorPerAtom
@@ -214,79 +210,6 @@ if bin_RawVersusProcessed
     end 
 end
 
-%% Bin Stripe
-
-% hF_binCounts = bin_showThresh(bindata,opts);
-% if bin_BinReScale
-%     bin_opts.ROI = 'max';
-%     [bindata,hF_BinCompensate,hF_BinFluor] = bin_rescale(bindata,bin_opts); 
-
-% if bin_BinStripe    
-%     if ~isfield(bindata,'LatticeBin')
-%         return;
-%     end
-%     clear out
-%     if isfield(bindata,'BinStripe')
-%     bindata=rmfield(bindata,'BinStripe');
-%     end
-%     for n = 1:length(bindata)    
-%         fprintf(['(' num2str(n) '/' num2str(numel(bindata))...
-%             ') lattice stripe fit']);
-%         tic
-%         kk=1;
-%         % for kk = 1:length(bindata(n).LatticeBin)
-%             fprintf(['...' num2str(kk)]);
-%             n1 = bindata(n).LatticeBin(kk).n1;
-%             n2 = bindata(n).LatticeBin(kk).n2;
-%             Zb = bindata(n).LatticeBin(kk).Zbin(:,:,1);    
-% 
-%             opts_stripe.LGuess = bin_BinStripe_LGuess;
-%             opts_stripe.FigNum=3000+10*(n-1)+kk-1;
-%             opts_stripe.FigNum=3000;
-%             opts_stripe.Threshold = bin_BinStripe_ColorThreshold;
-%             opts_stripe.SumIndex = bin_BinStripeIndex; % 1 for trees % 2 for fallen trees
-%             opts_stripe.doDebug=0;
-%             % bindata(n).BinStripe(kk) = ...
-%             %     bin_StripeFit(n1,n2,Zb,opts_stripe);
-%             %             
-%             bindata(n).BinStripeCircular(kk) = ...
-%                 bin_StripeFitCircular(n1,n2,Zb,opts_stripe);
-%         % end
-%         disp([' done (' num2str(toc,'%.2f') 's)']); 
-%     end
-% end  
-
-%%
-% bin_opts.nCenter = [100 100];
-
-%% Bin Stripe Summary
-% if bin_BinStripe       
-% 
-% 
-%     hF_StripeSummary = bin_showStripeBinSummary(bindata,bin_opts.xVar,bin_opts);    
-%     if bin_opts.doSave
-%         ixon_saveFigure2(hF_StripeSummary,...
-%          'bin_StripeSummary',opts);     
-%     end
-% end
-
-%% Bin Stripe Summary
-% if bin_BinStripe       
-%     hF_StripeSummary = bin_showStripeBinSummaryCircular(bindata,bin_opts.xVar,bin_opts);    
-%     if bin_opts.doSave
-%         ixon_saveFigure2(hF_StripeSummary,...
-%          'bin_StripeSummary',opts);     
-%     end
-% end
-
-%% Bin Stripe Animation
-% if bin_BinStripe && bin_BinStripeAnimate
-%     opts = bin_opts;
-%     opts.Threshold = bin_BinStripe_ColorThreshold;
-%     opts.filename = 'bin_BinStripeAnimation.gif';
-% 
-%     bin_showStripeBin(bindata,bin_opts.xVar,opts);
-% end
 %% Digitization Stuff
 if bin_Digitize
     ixon_dig_initialize;
