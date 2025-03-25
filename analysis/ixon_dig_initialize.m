@@ -17,32 +17,34 @@ addpath(curpath);addpath(genpath(curpath));
 a = fileparts(curpath);
 addpath(a);addpath(genpath(a));
 
+%% Description
+% Once all of the binning has been completed, the next stage of the
+% analysis comes to the digitization. Likewise with the binning protocol,
+% there is quite a large range of complicated protocols that can be
+% applied.  In most cases, you can just run the code, but I (CJF) highly
+% recommends that you fully understand the pros/cons of the various
+% protocols.
+%
+% After binning, the following information should be known :
+%   - All fluoresnce counts are binned into lattice sites
+%   - Images with few atoms have lattices wavevectors chosen based upon
+%   other images in the data set
+%   - All fluorescence counts are scaled based on there distance from the
+%   center of the cloud. This is mean to account for inhomogeneities in the
+%   fluoresnce pattern.
+%   - a statistical analysis of the binned counts is done.
+
 %% Initialize Digdata
 
 dig_opts=bin_opts;
-
-% Use invidivual images theshold
-% dig_opts.NumSigmaThresh=2.5;
-% % Sets digitization threshold
-% num_sigma = 2.5; % Normally 2.5 for 4s, 1 for 2s exposure
-% dig_opts.NormThresh=1-num_sigma*output_thresh(1).PDF1_Radius;
-
-% Specify the lower bound threshold.
-output_thresh;
-dig_opts.NormThresh=0.5; 
-
+dig_opts.NormalizedCenter = 1.07;       % Center point of normalized distribution (close to unity)
+dig_opts.NormalizedSigma  = 0.24;       % Gaussian radius of normalized distribution
+dig_opts.NormalizedThreshold = ...      % Simple thresholding
+    dig_opts.NormalizedCenter - 2.5*dig_opts.NormalizedSigma;
 
 digdata = bin_makeDigData2(bindata,dig_opts);
 
-% CJF new stuff is happening.
-% if exist('bin_Digitize_Source','var') && isequal(bin_Digitize_Source,'compensated')
-%     digdata = bin_makeDigDataScaled(bindata,bin_opts);
-% 
-% else
-%     bindata = ixon_digitize(bindata,dig_DigitizationThreshold);    
-%     digdata = bin_makeDigData(bindata,bin_opts);
-% end
-    
+
 if bin_opts.doSave 
     filename = fullfile(bin_opts.saveDir,'digdata.mat');
     disp(['Saving ' filename ' ...']);
