@@ -1,5 +1,7 @@
 function digdata = bin_makeDigData2(bindata,opts)
-
+% Author : CJ Fujiwara
+% Last Edited : 2025/03/25
+%% Settings
 if nargin ==1
     opts=struct;
 end
@@ -20,14 +22,20 @@ if ~isfield(opts,'CountMax')
     opts.CountMax = 35e3;
 end
 
+%% Grab Basic Data Information
     P = [bindata.Params];
     F = [bindata.Flags];
     U = [bindata.Units];
     B = [bindata.LatticeBin];
-    PH =[bindata.LatticePhase];
-    
-    Zdig = zeros(size(bindata(1).LatticeBin(1).Zbin,1),...
-        size(bindata(1).LatticeBin(1).Zbin,2),length(bindata));
+    PH =[bindata.LatticePhase];    
+
+%% Initialize Data Structures
+    Zdig = zeros(...
+        size(bindata(1).LatticeBin(1).Zbin,1),...
+        size(bindata(1).LatticeBin(1).Zbin,2),...
+        length(bindata),...
+        length(bindata(1).LatticeBin));
+
     n1 = bindata(1).LatticeBin.n1;
     n2 = bindata(1).LatticeBin.n2;
     
@@ -35,16 +43,21 @@ end
     N1_all = nn1(:);
     N2_all = nn2(:);
     
-%     Zdig = zeros(numel(n2),numel(n1),length(bindata),length(bindata(1).LatticeBin));
-        Zdig = zeros(numel(n2),numel(n1),length(bindata));
-
-    %% Get all Count Centers
-    for kk=1:length(bindata)
-        for rr=1:length(bindata(kk).LatticeBin)
+%% Acquire all thresholds
+for kk=1:length(bindata)
+    for rr=1:length(bindata(kk).LatticeBin)
+        if ~isempty(bindata(kk).LatticeBin(rr).PDF1_Center)
             count_center(kk,rr) = bindata(kk).LatticeBin(rr).PDF1_Center;
             count_sigma(kk,rr) = bindata(kk).LatticeBin(rr).PDF1_Radius; 
-        end
-    end 
+        else
+            count_center(kk,rr) = NaN;
+            count_sigma(kk,rr) = NaN;    
+        end            
+    end
+end
+
+%% Reassign Bad Thresholds
+% Bad thresholds can be those that sit outside the 2 standard deviations
     
     % Flag outliers
     for nn=1:length(bindata)

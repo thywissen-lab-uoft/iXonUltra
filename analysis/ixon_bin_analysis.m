@@ -216,7 +216,6 @@ end
 
 %% Bin Stripe
 
-
 % hF_binCounts = bin_showThresh(bindata,opts);
 % if bin_BinReScale
 %     bin_opts.ROI = 'max';

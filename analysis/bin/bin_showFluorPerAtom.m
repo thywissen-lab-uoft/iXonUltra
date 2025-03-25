@@ -7,8 +7,14 @@ X = [P.(opts.xVar)];
 
 for kk=1:length(bindata)
     for rr=1:length(bindata(kk).LatticeBin)
-        Y(kk,rr)=bindata(kk).LatticeBin(rr).PDF1_Center;
-        Ys(kk,rr)=bindata(kk).LatticeBin(rr).PDF1_Radius;
+        if isfield(bindata(kk).LatticeBin,'PDF1_Center') && ~isempty(bindata(kk).LatticeBin.PDF1_Center)
+
+            Y(kk,rr)=bindata(kk).LatticeBin(rr).PDF1_Center;
+            Ys(kk,rr)=bindata(kk).LatticeBin(rr).PDF1_Radius;
+        else
+            Y(kk,rr) = NaN;
+            Ys(kk,rr) = NaN;
+        end
     end
 end
 %% Plot it
@@ -26,7 +32,7 @@ for rr=1:length(bindata(1).LatticeBin)
     hold on   
 end
 
-xlabel(opts.xVar)
+xlabel(opts.xVar,'interpreter','none')
 if isequal(opts.xVar,'ExecutionDate')
     datetick x
 end

@@ -19,20 +19,17 @@ addpath(a);addpath(genpath(a));
 
 %% Initialize Digdata
 
-
 dig_opts=bin_opts;
 
 % Use invidivual images theshold
-dig_opts.NumSigmaThresh=2.5;
+% dig_opts.NumSigmaThresh=2.5;
+% % Sets digitization threshold
+% num_sigma = 2.5; % Normally 2.5 for 4s, 1 for 2s exposure
+% dig_opts.NormThresh=1-num_sigma*output_thresh(1).PDF1_Radius;
 
-
-% I think this is more accureate and handldes outliers better (CJF);
+% Specify the lower bound threshold.
 output_thresh;
-dig_opts.NormThresh=0.5; % manual
-
-% Sets digitization threshold
-num_sigma = 2.5; % Normally 2.5 for 4s, 1 for 2s exposure
-dig_opts.NormThresh=1-num_sigma*output_thresh(1).PDF1_Radius;
+dig_opts.NormThresh=0.5; 
 
 
 digdata = bin_makeDigData2(bindata,dig_opts);
