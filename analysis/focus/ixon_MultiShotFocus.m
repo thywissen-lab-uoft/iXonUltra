@@ -15,10 +15,12 @@ end
 
 if ~isfield(opts,'PiezoIndeces')
     opts.PiezoIndeces = [3 4 5];
+    opts.PiezoIndeces = [2 3 4];
+
 end
 
 if ~isfield(opts,'ImageIndeces')
-    opts.ImageIndeces = [2 3 4];
+    opts.ImageIndeces = [1 2 3];
 end
 
 if ~isfield(opts,'ImageSource')
