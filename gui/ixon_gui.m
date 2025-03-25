@@ -1163,7 +1163,7 @@ tbl_process_1.Position(1:2)=[1 hpProcess.Position(4)-tbl_process_1.Position(4)-1
 %     'ToolTipString',ttstr,'enable','on');
 
 tblPSF=uitable('parent',hpProcess,'units','pixels',...
-    'columnname',{char(963),'size','iter','noise'},'rowname',{},'Data',[1.32 11 31 25],'columneditable',[true],...
+    'columnname',{char(963),'size','iter','noise'},'rowname',{},'Data',[1.32 11 41 25],'columneditable',[true],...
     'columnwidth',{35 25 25 35},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
 tblPSF.Position(3:4) = tblPSF.Extent(3:4);
 % tblPSF.Position(1:2)=[20 hcPSF_noise.Position(2)-tblPSF.Extent(4)];  
@@ -1175,7 +1175,7 @@ tbl_process_2 = uitable('parent',hpProcess,'columnformat',{'logical','char'},...
 tbl_process_2.Data={
     false 'gauss filter (px)' 1;
      false 'scale (factor)' 2;
-    false 'rotate (deg)' 60;
+    true 'rotate (deg)' 60;
     false 'fft filter (px)' 1;
     false 'fft ir mask (1/px)' 1;
    };
@@ -3503,7 +3503,7 @@ end
         hbprocess.BackgroundColor=	[255 219 88]/255;
         drawnow;
         data = ixon_ProcessImages(data,opt);  
-        
+
         tblPSF.Data(4) =  round(data.NoiseEstimation(1));
         hbprocess.BackgroundColor=[80 200 120]/255;
         
