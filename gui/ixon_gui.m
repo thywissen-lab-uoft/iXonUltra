@@ -114,8 +114,6 @@ set(hF,'Color','w','units','pixels','Name',guiname,...
     'Position',[50 50 1200 630],'SizeChangedFcn',@SizeChangedFcn,...
     'toolbar','none');
 
-topBarHeight = 40;
-
 % Callback for when the GUI is requested to be closed.
     function closeGUI(fig,~)
         answer = questdlg('Close the iXon GUI?','Close iXon?',...
@@ -149,36 +147,23 @@ function SizeChangedFcn(~,~)
         % This resize fucntion ensures that the X and Y cut/sum plot has
         % commenserate positioning with respect the actual image shown
         x0=hpControl.Position(1)+hpControl.Position(3);
-        Wfig=hF.Position(3);Hfig=hF.Position(4);                          % Figure size
-        
+        Wfig=hF.Position(3);Hfig=hF.Position(4);                          % Figure size        
         if (Wfig>360 && Hfig>55)
             hp.Position=[x0 1 max([hF.Position(3)-x0 5]) Hfig]; 
         end             
         resizePlots;                                                % Resize plots                          
         drawnow;
-
         % Control Panel
-        hpControl.Position(4) = hF.Position(4);
-
-        hpCam.Position(2) = hpControl.Position(4)-hpCam.Position(4);
-        hpAcq.Position(2) = hpCam.Position(2)-hpAcq.Position(4);
-        % hpSave.Position(2) = hpAcq.Position(2)-hpSave.Position(4);
-        hpNav.Position(2)       = hpAcq.Position(2)-hpNav.Position(4);
-
- 
-        hpProcess.Position(2)           = hpNav.Position(2)-hpProcess.Position(4);
-
-        hpFeedback.Position(2)      = hpProcess.Position(2)-hpFeedback.Position(4);
-        hpPosition.Position(2)       = hpFeedback.Position(2)-hpPosition.Position(4);   
-
-        % hpKspace.Position(2)    = hpPosition.Position(2)-hpKspace.Position(4);
-
-        hpKspace.Position(2)   = hpNav.Position(2)-hpKspace.Position(4);
-      hpBin.Position(2)       = hpKspace.Position(2) - hpBin.Position(4);   
-
-        % hpBin.Position(2)       = hpNav.Position(2) - hpBin.Position(4);   
+        hpControl.Position(4)   = hF.Position(4);
+        hpCam.Position(2)       = hpControl.Position(4)-hpCam.Position(4);
+        hpAcq.Position(2)       = hpCam.Position(2)-hpAcq.Position(4);
+        hpNav.Position(2)       = hpAcq.Position(2)-hpNav.Position(4); 
+        hpProcess.Position(2)   = hpNav.Position(2)-hpProcess.Position(4);
+        hpFeedback.Position(2)  = hpProcess.Position(2)-hpFeedback.Position(4);
+        hpPosition.Position(2)  = hpFeedback.Position(2)-hpPosition.Position(4);   
+        hpKspace.Position(2)    = hpNav.Position(2)-hpKspace.Position(4);
+        hpBin.Position(2)       = hpKspace.Position(2) - hpBin.Position(4);   
         hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
-
         hpDisp_Select.Position(2)=hpNav.Position(2)-hpDisp_Select.Position(4);
         hpDispOpt.Position(2)=hpDisp_Select.Position(2)-hpDispOpt.Position(4);
         if hpDispOpt.Position(2)>0
@@ -186,11 +171,7 @@ function SizeChangedFcn(~,~)
         else
             hpFit.Position(4) = 1;
         end
-
-
         hpFit.Position(4) = max([hpDispOpt.Position(2) 5]);
-
-        % strstatus.Position(1)   = hpCam.Position(3)-strstatus.Position(3)-2;        
         drawnow;       
 end
 %% Control Panel Container
