@@ -43,14 +43,14 @@ currDir=defaultDir;                             % Current directory of navigator
 if ~exist(defaultDir,'dir'); mkdir(defaultDir);end % Make temp directory if necessary
 
 % Dummy file to load on startup
-fname='example_data_EIT_RAMAN.mat';
-data=load(fname);
-data=data.data;
-data.Z=data.RawImages(:,:,2)-data.RawImages(:,:,1);
-Z=data.Z;
+fname       = 'example_data_EIT_RAMAN.mat';
+data        = load(fname);
+data        = data.data;
+data.Z      = data.RawImages(:,:,2)-data.RawImages(:,:,1);
+Z           = data.Z;
 
-digdata = [];
-bindata = [];
+digdata     = [];
+bindata     = [];
 
 %% Initialize Drivers and GUI
 
@@ -68,6 +68,8 @@ end
 % Add all subdirectories for this m file
 mpath = fileparts(mfilename('fullpath'));
 addpath(mpath);addpath(genpath(mpath))
+
+%% Bring Open GUIs into focus
 % Find any instances of the GUI and bring it to focus, this is tof avoid
 % restarting the GUI which may leave the shutter open.
 h = findall(0,'tag','GUI');
@@ -144,35 +146,35 @@ javaFrame.setFigureIcon(javax.swing.ImageIcon(fullfile(mpath,'icons','ixon_pic.P
 warning on
 
 function SizeChangedFcn(~,~)
-        % This resize fucntion ensures that the X and Y cut/sum plot has
-        % commenserate positioning with respect the actual image shown
-        x0=hpControl.Position(1)+hpControl.Position(3);
-        Wfig=hF.Position(3);Hfig=hF.Position(4);                          % Figure size        
-        if (Wfig>360 && Hfig>55)
-            hp.Position=[x0 1 max([hF.Position(3)-x0 5]) Hfig]; 
-        end             
-        resizePlots;                                                % Resize plots                          
-        drawnow;
-        % Control Panel
-        hpControl.Position(4)   = hF.Position(4);
-        hpCam.Position(2)       = hpControl.Position(4)-hpCam.Position(4);
-        hpAcq.Position(2)       = hpCam.Position(2)-hpAcq.Position(4);
-        hpNav.Position(2)       = hpAcq.Position(2)-hpNav.Position(4); 
-        hpProcess.Position(2)   = hpNav.Position(2)-hpProcess.Position(4);
-        hpFeedback.Position(2)  = hpProcess.Position(2)-hpFeedback.Position(4);
-        hpPosition.Position(2)  = hpFeedback.Position(2)-hpPosition.Position(4);   
-        hpKspace.Position(2)    = hpNav.Position(2)-hpKspace.Position(4);
-        hpBin.Position(2)       = hpKspace.Position(2) - hpBin.Position(4);   
-        hpDig.Position(2)       = hpBin.Position(2) - hpDig.Position(4);   
-        hpDisp_Select.Position(2)=hpNav.Position(2)-hpDisp_Select.Position(4);
-        hpDispOpt.Position(2)=hpDisp_Select.Position(2)-hpDispOpt.Position(4);
-        if hpDispOpt.Position(2)>0
-            hpFit.Position(4)=hpDispOpt.Position(2);
-        else
-            hpFit.Position(4) = 1;
-        end
-        hpFit.Position(4) = max([hpDispOpt.Position(2) 5]);
-        drawnow;       
+    % This resize fucntion ensures that the X and Y cut/sum plot has
+    % commenserate positioning with respect the actual image shown
+    x0=hpControl.Position(1)+hpControl.Position(3);
+    Wfig=hF.Position(3);Hfig=hF.Position(4);                          % Figure size        
+    if (Wfig>360 && Hfig>55)
+        hp.Position=[x0 1 max([hF.Position(3)-x0 5]) Hfig]; 
+    end             
+    resizePlots;                                                % Resize plots                          
+    drawnow;
+    % Control Panel
+    hpControl.Position(4)       = hF.Position(4);
+    hpCam.Position(2)           = hpControl.Position(4)-hpCam.Position(4);
+    hpAcq.Position(2)           = hpCam.Position(2)-hpAcq.Position(4);
+    hpNav.Position(2)           = hpAcq.Position(2)-hpNav.Position(4); 
+    hpProcess.Position(2)       = hpNav.Position(2)-hpProcess.Position(4);
+    hpFeedback.Position(2)      = hpProcess.Position(2)-hpFeedback.Position(4);
+    hpPosition.Position(2)      = hpFeedback.Position(2)-hpPosition.Position(4);   
+    hpKspace.Position(2)        = hpNav.Position(2)-hpKspace.Position(4);
+    hpBin.Position(2)           = hpKspace.Position(2) - hpBin.Position(4);   
+    hpDig.Position(2)           = hpBin.Position(2) - hpDig.Position(4);   
+    hpDisp_Select.Position(2)   = hpNav.Position(2)-hpDisp_Select.Position(4);
+    hpDispOpt.Position(2)       = hpDisp_Select.Position(2)-hpDispOpt.Position(4);
+    if hpDispOpt.Position(2)>0
+        hpFit.Position(4)=hpDispOpt.Position(2);
+    else
+        hpFit.Position(4) = 1;
+    end
+    hpFit.Position(4) = max([hpDispOpt.Position(2) 5]);
+    drawnow;       
 end
 %% Control Panel Container
 hpControl = uipanel(hF,'units','pixels',...
@@ -258,28 +260,25 @@ hbDisconnect=uicontrol(hpCam,'style','pushbutton','string','disconnect','units',
         strstatus.String='DRV_NOT_INITIALIZED';
         drawnow;
           
-        cam_status.isConnected=0;
-        cam_status.isCooling=0;
-        cam_status.isTempStable=0;
-        cam_status.Temperature=NaN;
+        cam_status.isConnected          = 0;
+        cam_status.isCooling            = 0;
+        cam_status.isTempStable         = 0;
+        cam_status.Temperature          = NaN;
         
-        hbDisconnect.Enable='off';
-        hbConnect.Enable='on'; 
-        hbCool.Enable='off';
-        hbCoolOff.Enable='off';
-        tblTemp.Enable='off';
-        hbCamInfo.Enable='off';
-        hbCamAbilities.Enable='off';
-        
-        hbOpenShutter.Enable='off';
-        hbCloseShutter.Enable='off';
-        rbSingle.Enable='off';
-        rbLive.Enable='off';
-        
-        hbstart.Enable='off';
-        hbstop.Enable='off';
-        tbl_acq.Enable='off';
-
+        hbDisconnect.Enable             = 'off';
+        hbConnect.Enable                = 'on'; 
+        hbCool.Enable                   = 'off';
+        hbCoolOff.Enable                = 'off';
+        tblTemp.Enable                  = 'off';
+        hbCamInfo.Enable                = 'off';
+        hbCamAbilities.Enable           = 'off';        
+        hbOpenShutter.Enable            = 'off';
+        hbCloseShutter.Enable           = 'off';
+        rbSingle.Enable                 = 'off';
+        rbLive.Enable                   = 'off';        
+        hbstart.Enable                  = 'off';
+        hbstop.Enable                   = 'off';
+        tbl_acq.Enable                  = 'off';
         set(strtemp,'ForegroundColor','r','String','NaN','Enable','off');
     end
 
@@ -988,20 +987,7 @@ hbNavLast.Position=[hbNavRight.Position(1)+hbNavRight.Position(3) 18 24 20];
                end
            case  'absolute'               
                i1 = max([min([state length(filenames)]) 1]); 
-       end
-
- 
-
-        % switch state
-        %     case -1
-        %         i1=max([i0-1 1]);            
-        %     case 1
-        %         i1=min([i0+1 length(filenames)]);
-        %     case 0
-        %         i1=1;    
-        %     case nan
-        %         i1 = length(filename);
-        % end   
+       end   
         
         newfilename=fullfile(currDir,filenames{i1});
         % tNavInd.String=sprintf('%03d',i1);
@@ -1053,92 +1039,6 @@ tbl_process_1.Data={true 'subtract bias';
 tbl_process_1.Position(3:4)=tbl_process_1.Extent(3:4);
 tbl_process_1.Position(1:2)=[1 hpProcess.Position(4)-tbl_process_1.Position(4)-15];
 
-
-
-% 
-% 
-% 
-% 
-% 
-% ttstr='Apply gaussian filter to smooth image';
-% cKGaussFilter=uicontrol('style','checkbox','string','fft filter (px)',...
-%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-%     'value',1,'ToolTipString',ttstr,'fontsize',7);
-% cKGaussFilter.Position=[5 1 80 15];
-% 
-% % Fitlering the FFT
-% tblKGaussFilter=uitable('parent',hpADV,'units','pixels',...
-%     'rowname',{},'columnname',{},'Data',1,'columneditable',[true],...
-%     'columnwidth',{25},'fontsize',7,'ColumnFormat',{'numeric'});
-% tblKGaussFilter.Position=[80 cKGaussFilter.Position(2)-3 30 20];
-% 
-% % Mask IR Checkbox
-% hcIRMask=uicontrol(hpADV,'style','checkbox','string','mask IR (1/px)','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 18 100 15],...
-%     'ToolTipString',ttstr,'enable','on','value',1);
-% 
-% % IR Mask Value
-% tblIRMask=uitable('parent',hpADV,'units','pixels',...
-%     'rowname',{},'columnname',{},'Data',.01,'columneditable',[true],...
-%     'columnwidth',{45},'fontsize',7,'ColumnFormat',{'numeric'});
-% tblIRMask.Position=[hpADV.Position(3)-55 hcIRMask.Position(2)+1 50 20];
-% 
-% 
-% % Checkbox for computing FFT
-% ttstr='compute fft';
-% hcFFT=uicontrol(hpADV,'style','checkbox','string','compute FFT','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 33 80 15],...
-%     'ToolTipString',ttstr,'enable','off','Value',1);
-% 
-% % Checkbox for enabling 2D gauss fitting
-% ttstr='Apply gaussian filter to smooth image';
-% cGaussFilter=uicontrol('style','checkbox','string','gauss filter (px)',...
-%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-%     'value',0,'ToolTipString',ttstr,'fontsize',7);
-% cGaussFilter.Position=[5 hcFFT.Position(2)+16 100 15];
-% 
-% tblGaussFilter=uitable('parent',hpADV,'units','pixels',...
-%     'rowname',{},'columnname',{},'Data',.25,'columneditable',[true],...
-%     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
-% tblGaussFilter.Position=[hpADV.Position(3)-50 cGaussFilter.Position(2)-2 45 20];
-% 
-% % Rotate data (makes it easier for lattice grid stuff)
-% ttstr='Rotate data';
-% cRotate=uicontrol('style','checkbox','string','rotate (deg.)',...
-%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-%     'value',0,'ToolTipString',ttstr,'fontsize',7);
-% cRotate.Position=[5 cGaussFilter.Position(2)+15 80 15];
-% 
-% tblTheta=uitable('parent',hpADV,'units','pixels',...
-%     'rowname',{},'columnname',{},'Data',59.81,'columneditable',[true],...
-%     'columnwidth',{60},'fontsize',8,'ColumnFormat',{'numeric'});
-% tblTheta.Position=[hpADV.Position(3)-70 cRotate.Position(2)+3 65 20];
-% 
-% 
-% % Rotate data (makes it easier for lattice grid stuff)
-% ttstr='scale up image';
-% cScale=uicontrol('style','checkbox','string','scale factor',...
-%     'units','pixels','parent',hpADV,'backgroundcolor','w',...
-%     'value',0,'ToolTipString',ttstr,'fontsize',7);
-% cScale.Position=[5 cRotate.Position(2)+18 80 15];
-% 
-% tblScale=uitable('parent',hpADV,'units','pixels',...
-%     'rowname',{},'columnname',{},'Data',2,'columneditable',[true],...
-%     'columnwidth',{40},'fontsize',8,'ColumnFormat',{'numeric'});
-% tblScale.Position=[hpADV.Position(3)-70 cScale.Position(2) 50 20];
-% 
-% 
-% % Checkbox for applying point spread function 
-% ttstr='Deconvolve data with point spread function using the Richardson-Lucy algorithm.';
-% hcPSF=uicontrol(hpADV,'style','checkbox','string','denconvolve psf Rich-Lucy','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 tblScale.Position(2)+70 155 20],...
-%     'ToolTipString',ttstr,'enable','on');
-% 
-% ttstr='Calculate noise statistics from image?';
-% hcPSF_noise=uicontrol(hpADV,'style','checkbox','string','auto detect noise?','fontsize',6,...
-%     'backgroundcolor','w','Position',[15 hcPSF.Position(2)-10 155 14],'Value',1,...
-%     'ToolTipString',ttstr,'enable','on');
-
 tblPSF=uitable('parent',hpProcess,'units','pixels',...
     'columnname',{char(963),'size','iter','noise'},'rowname',{},'Data',[1.32 11 41 25],'columneditable',[true],...
     'columnwidth',{35 25 25 35},'fontsize',7,'ColumnFormat',{'numeric'},'CellEditCallback',{@(src,evt) updatePSFKGraphic});
@@ -1158,26 +1058,6 @@ tbl_process_2.Data={
    };
 tbl_process_2.Position(3:4)=tbl_process_2.Extent(3:4);
 tbl_process_2.Position(1:2)=[1 tblPSF.Position(2)-tbl_process_2.Position(4)-5];
-
-
-% % Subtract background image
-% ttstr='Subtract off background image from atoms images.';
-% hcSubBG=uicontrol(hpADV,'style','checkbox','string','subtract bgd','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 hcPSF.Position(2)+15 80 15],...
-%     'ToolTipString',ttstr,'enable','on','Value',1);
-% 
-% ttstr='Apply mask to image to eliminate aperture clipping';
-% hcMask=uicontrol(hpADV,'style','checkbox','string','apply image mask','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 hcSubBG.Position(2)+15 120 13],...
-%     'ToolTipString',ttstr,'enable','on','Value',0);
-% 
-% % Subtract bias
-% ttstr='Subtract off electronic/software bias of 200 counts from raw images.';
-% hcSubBias=uicontrol(hpADV,'style','checkbox','string','subtract bias','fontsize',7,...
-%     'backgroundcolor','w','Position',[5 hcMask.Position(2)+13 80 15],...
-%     'ToolTipString',ttstr,'enable','on','Value',1);
-
-
 
 % process button
 hbprocess=uicontrol(hpProcess,'style','pushbutton','string','process',...
@@ -1391,7 +1271,7 @@ hc_anlX_GaussRot=uicontrol(hpPosition,'style','checkbox','string','rotatable?','
     'ToolTipString',ttstr,'enable','off');
 
 ttstr='Analyze stripe pattern in image to measure field stability';
-hcStripe=uicontrol(hpPosition,'style','checkbox','string','stripe pattern','fontsize',7,...
+hcStripe=uicontrol(hpPosition,'style','checkbox','string','circle stripe pattern','fontsize',7,...
     'backgroundcolor','w','Position',[5 hc_anlX_Gauss.Position(2)-15 100 15],...
     'ToolTipString',ttstr);
 
@@ -3411,15 +3291,10 @@ end
             filename=fullfile(saveDir,filename);
             fprintf('%s',[filename ' ...']);
             save(filename,"-struct",'gui_saveData');
-
-
             disp(' done');      
             catch ME
                 warning('Unable to save GUI data.')
             end
-
-
-
         end 
     end
 
@@ -3591,94 +3466,6 @@ function updateDataPlots(data)
         drawnow;
     end   
 end
-
-  % 
-  % 
-  % function updateStripeGraphics
-  %        if ~isfield(data,'StripeFit') 
-  %           return;
-  %       end
-  %       imgnum = menuSelectImg.Value;   
-  % 
-  %       x = data.X;
-  %       y = data.Y;
-  %       z = data.ZNoFilter(:,:,imgnum);
-  %       stripe = data.StripeFit(imgnum);
-  %       focus = data.StripeFocus(imgnum);
-  % 
-  %       [xx,yy] = meshgrid(x,y);        
-  %       Zfit=feval(stripe.Fit,xx,yy);        
-  %       theta=stripe.theta;
-  %       L = stripe.L;
-  %       phi = stripe.phi;
-  %       xC = stripe.xC;
-  %       yC = stripe.yC;
-  %       s1 = stripe.s1;
-  %       s2 = stripe.s2;        
-  %       set(stripe_str_bottom_left,'String',[data.Name ' (' num2str(menuSelectImg.Value) ')']);
-  % 
-  %       str=['$(X_\mathrm{c},Y_\mathrm{c}) = ' '('  num2str(round(xC,1)) ',' ...
-  %           num2str(round(yC,1)) ')$' newline ...
-  %           '$(\sigma_1,\sigma_2) = ' '('  num2str(round(s1,1)) ',' ...
-  %           num2str(round(s2,1)) ')$' newline ...
-  %           '$(\theta,\phi,\lambda) = (' num2str(round(theta,2)) '^\circ,' ...
-  %           num2str(round(phi/(2*pi),2)) '\cdot 2\pi,' ...
-  %           num2str(round(L,1)) ')$']; 
-  %       set(stripe_str_bottom_right,'String',str);
-  %       % Update Image
-  %       set(stripe_hImgStripe,'XData',x,'YData',y,'CData',z);       
-  % 
-  %       % Update Image markers
-  %       set(stripe_pFringe,'XData',xC+[-2 2]*s1*cosd(theta),...
-  %           'Ydata',yC+[-2 2]*s1*sind(theta));
-  %       set(stripe_pPerp,'XData',xC+[-2 2]*s2*cosd(theta+90),...
-  %           'Ydata',yC+[-2 2]*s2*sind(theta+90));
-  %        set(stripe_pBar,'XData',xC+[50 0],...
-  %           'Ydata',yC*[1 1]);
-  % 
-  %       tt=linspace(0,2*pi,100);
-  %       xell = 2*s1*cosd(theta)*cos(tt)-2*s2*sind(theta)*sin(tt)+xC;
-  %       yell = 2*s2*cosd(theta)*sin(tt)+2*s1*sind(theta)*cos(tt)+yC;        
-  %       set(stripe_pCloudEllipse,'XData',xell,'YData',yell);
-  %       tt=linspace(0,theta,100);
-  %       set(stripe_pAngleCirc,'XData',xC+25*cosd(tt),...
-  %           'YData',yC+25*sind(tt));
-  %       ax_stripe_img.CLim = axImg.CLim;
-  %       set(ax_stripe_img,'XLim',[1 512],'YLim',[1 512]);
-  % 
-  %       % Update fits   
-  %       set(stripe_pSum1_fit,'XData',x,'YData',sum(imrotate(Zfit,theta,'crop'),1));
-  %       set(stripe_pSum1_data,'XData',x,'YData',sum(imrotate(z,theta,'crop'),1));
-  %       % Show the sum counts orthogonal to the stripe axis
-  %       set(stripe_pSum2_fit,'XData',y,'YData',sum(imrotate(Zfit,theta,'crop'),2));
-  %       set(stripe_pSum2_data,'XData',y,'YData',sum(imrotate(z,theta,'crop'),2));      
-  % 
-  %         % stripe=ixon_fitStripe(data,opts);   
-  %       stranl={'','';
-  %           ['stripe A (amp)'] ,stripe.A;
-  %           ['stripe xC (px)'],stripe.xC;
-  %           ['stripe yC (px)'],stripe.yC;
-  %           ['stripe ' char(963) '1 (px)'],stripe.s1;
-  %           ['stripe ' char(963) '2 (px)'],stripe.s2;
-  %           ['stripe B'],stripe.B;
-  %           ['stripe ' char(952) ' (deg)'],stripe.theta;
-  %           ['stripe ' char(955) ' (px)'],stripe.L;
-  %           ['stripe ' char(966) ' (2pi)'],stripe.phi/(2*pi);};  
-  %       tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl];     
-  % 
-  % 
-  %       set(stripe_pFocus,'Xdata',focus.y_coms,'YData',focus.scores);        
-  %       tt=linspace(min([focus.y_coms]),max([focus.y_coms]),100);        
-  %       set(stripe_pFocusFit,'XData',tt,'YData',polyval(focus.poly,tt))        
-  %       axes(ax_stripe_focus);
-  %       yyaxis left
-  %       set(ax_stripe_focus,'YLim',[0 max(focus.scores)*1.1]);
-  %       set(stripe_pFocus2,'Xdata',focus.y_coms,'YData',focus.sums);
-  % 
-  % 
-  %   end
-  % 
-
 
     function updateGaussGraphics
         if ~isfield(data,'GaussFit') 
