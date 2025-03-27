@@ -122,10 +122,12 @@ for kk=1:length(data)
             try
             [pdf1_c,pdf1_cint] = mle(z_truncate,'distribution','normal',...
                 'TruncationBounds',[boundLow boundHigh]);
+            isbad =0;
             catch ME
-               keyboard 
+               isbad =1; 
             end
          
+            if ~isbad
             
             PDF1_Distribution = 'normal';
             PDF1_Center = pdf1_c(1);
@@ -143,6 +145,17 @@ for kk=1:length(data)
             data(kk).LatticeBin(rr).PDF1_Radius          = PDF1_Radius;
             data(kk).LatticeBin(rr).PDF1_Center_Bounds   = PDF1_Center_Bounds;
             data(kk).LatticeBin(rr).PDF1_Radius_Bounds   = PDF1_Radius_Bounds;
+            else
+         data(kk).LatticeBin(rr).ClusterThreshold     = [];
+            data(kk).LatticeBin(rr).ClusterCentroids     = [];
+            data(kk).LatticeBin(rr).ClusterRadii         = [];
+            data(kk).LatticeBin(rr).PDF1                 = [];
+            data(kk).LatticeBin(rr).PDF1_Distribution    = [];
+            data(kk).LatticeBin(rr).PDF1_Center          = [];
+            data(kk).LatticeBin(rr).PDF1_Radius          = [];
+            data(kk).LatticeBin(rr).PDF1_Center_Bounds   = [];
+            data(kk).LatticeBin(rr).PDF1_Radius_Bounds   = [];
+            end
         else
             data(kk).LatticeBin(rr).ClusterThreshold     = [];
             data(kk).LatticeBin(rr).ClusterCentroids     = [];
