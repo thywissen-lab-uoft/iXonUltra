@@ -49,7 +49,7 @@ data=data.data;
 data.Z=data.RawImages(:,:,2)-data.RawImages(:,:,1);
 Z=data.Z;
 
-digdata=[];
+digdata = [];
 bindata = [];
 
 %% Initialize Drivers and GUI
@@ -82,11 +82,12 @@ end
 disp('Initializing iXon GUI...');
 
 %% Load In Images
-img_Snap    = imresize(imread(fullfile(mpath,'icons','snapLim.png')),[15 15]);
-img_Select  = imresize(imread(fullfile(mpath,'icons','target.jpg')),[15 15]);
-img_Full    = imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
-
-
+img_Snap    = imresize(imread(...
+    fullfile(mpath,'icons','snapLim.png')),[15 15]);
+img_Select  = imresize(imread(...
+    fullfile(mpath,'icons','target.jpg')),[15 15]);
+img_Full    = imresize(imread(...
+    fullfile(mpath,'icons','fullLim.png')),[15 15]);
 %% Camera Settings
 % Initialization camera status structure
 
@@ -94,16 +95,16 @@ img_Full    = imresize(imread(fullfile(mpath,'icons','fullLim.png')),[15 15]);
 cam_info=struct;
 
 % Initialize Camera Status
-cam_status=struct;
-cam_status.isConnected=0;       % Are you connected to camera?
-cam_status.Temperature=NaN;     % sensor temperature
-cam_status.TemperatureSP=-80;   % temperature set point
-cam_status.isTempStable=0;      % is sensor tempreature stable?
-cam_status.isCooling=0;         % is the TEC active?4
-cam_status.isAcquiring=0;       % is the camera acquiring frames?
+cam_status                  = struct;
+cam_status.isConnected      = 0;        % Are you connected to camera?
+cam_status.Temperature      = NaN;      % sensor temperature
+cam_status.TemperatureSP    =-80;       % temperature set point
+cam_status.isTempStable     = 0;        % is sensor tempreature stable?
+cam_status.isCooling        = 0 ;       % is the TEC active?4
+cam_status.isAcquiring      = 0 ;       % is the camera acquiring frames?
 
-acq=defaultNormalAcqSettings;   % load default settings
-desc=acqDescription(acq);       % Get description of settings
+acq=defaultNormalAcqSettings;           % load default settings
+desc=acqDescription(acq);               % Get description of settings
 %% Initialize Figure
 
 % Initialize the primary figure
@@ -1597,7 +1598,7 @@ hb_BinOptions.Position(1:2)=hc_anlB_auto.Position(1:2) + ...
     [0 -hb_BinOptions.Position(4)-2];   
 
 % Checkbox for image sharpness
-ttstr='Calculate histgoram';
+ttstr='Calculate histogram';
 hc_anlB_Histogram=uicontrol(hpBin,'style','checkbox','string','histogram','fontsize',7,...
     'backgroundcolor','w','Position',[1 hb_BinOptions.Position(2)-15 100 15],...
     'ToolTipString',ttstr,'enable','off','Value',1);
@@ -3003,18 +3004,6 @@ end
 
         
     end
-
-    % function updateSharpnessGraphics
-    %     if ~isfield(data,'SharpnessScore')
-    %        t_pos_TopRight.Visible='off';
-    %        return
-    %     end
-    %     imgnum = menuSelectImg.Value;
-    %     sh1 = data.SharpnessScore(imgnum); 
-    %     sh2 = data.SharpnessScoreNoFilter(imgnum); 
-    %     str = ['sharpness scores $(' num2str(sh1,'%.4e') ',' num2str(sh2,'%.4e') ')$'];
-    %     set(t_pos_TopRight,'String',str); 
-    % end
 
     function updateBoxGraphics
         if ~isfield(data,'BoxCount')
