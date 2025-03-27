@@ -175,8 +175,8 @@ function SizeChangedFcn(~,~)
         drawnow;       
 end
 %% Control Panel Container
-hpControl = uipanel(hF,'units','pixels');
-hpControl.Position = [0 0 600 hF.Position(4)];
+hpControl = uipanel(hF,'units','pixels',...
+    'Position',[0 0 600 hF.Position(4)]);
 
 %% Camera Panel
 
@@ -615,12 +615,7 @@ hcAdwinCamera=uicontrol(hpAcq,'style','checkbox','string','auto camera config?',
     'ToolTipString',ttstr);
 
 
-
-
 % Timer to check on acquisition
-% boop = struct;
-% boop.ReadTime = [];
-% boop.
 acqTimer.UserData=[0 0];
 acqTimer=timer('Name','iXonAcquisitionWatchTimer','Period',.2,...
     'TimerFcn',@acqTimerFcn,'ExecutionMode','FixedSpacing','StartFcn',@acqTimerStartFcn);
@@ -3863,95 +3858,13 @@ function data=updateAnalysis(data)
             ['gauss nbg (counts)'],data.GaussFit{1}.nbg;
             ['gauss ' char(952) ' (deg)'],data.GaussFit{1}.theta*180/pi};
         tbl_pos_analysis.Data=[tbl_pos_analysis.Data; stranl]; 
-        % updateGaussPlot(data);
         updateGaussGraphics
-    end     
-    
-    %% Fit Results    
-    % fr=tbl_pos_analysis.Data(:,2)';    
-    % % Ensure fit results is a number
-    % for n=1:length(fr)
-    %     % If value is empty, assign a zero
-    %     if isempty(fr{n})
-    %         fr{n}=0;
-    %     end
-    % 
-    %     % If string conver to number
-    %     if isstr(fr{n})
-    %         try
-    %             fr{n}=str2double(fr{n});
-    %         catch ME
-    %             fr{n}=NaN;
-    %         end
-    %     end
-    % end
-    
-    % Get fit results variable
-    % frVar=frslct.String{frslct.Value};    
-    % val=data.Params.(frVar);
-    % 
-    % % Convert execution date into a time
-    % if isequal(frVar,'ExecutionDate') 
-    %    val=datenum(val); 
-    %    val=val-floor(val);
-    %    val=val*24*60;
-    % end
-    % 
-    % % Create fit results object
-    % fr=[data.Name frVar val fr];   
-    
-    %%%%%% Output to fit results
-    % Output some analysis to the main workspace, this is done to be
-    % comptaible with old regimens for fitting and analysis
-    
-    % try
-    %     % Read in fitresults
-    %     ixon_fitresults=evalin('base','ixon_fitresults');        
-    % catch ME
-    %     % Error means that it is probably undefined
-    %     ixon_fitresults={};
-    % end
-    % 
-    % M=size(ixon_fitresults,1)+1;                         % Find next row
-    % ixon_fitresults(M:(M+size(fr,1)-1),1:size(fr,2))=fr; % Append data        
-    % assignin('base','ixon_fitresults',ixon_fitresults);  % Rewrite fitresults
-    % 
-    
-    % if doSaveGUIAnalysis
-    %     gui_saveData = struct;
-    %     gui_saveData.Date = data.Date;
-    %     gui_saveData.FileName = data.Name; 
-    %     gui_saveData.Params = data.Params;
-    %     gui_saveData.BoxCount = data.BoxCount;    
-    %     if hcStripe.Value  
-    %         gui_saveData.Stripe = stripe;
-    %     end
-    % 
-    %    filenames=dir([GUIAnalysisSaveDir filesep '*.mat']);
-    %    filenames={filenames.name};
-    %    filenames=sort(filenames);
-    % 
-    %    % Delete old images
-    %    if length(filenames)>200
-    %        f=[GUIAnalysisSaveDir filesep filenames{1}];
-    %        delete(f);
-    %    end               
-    % 
-    %     filename=[data.Name '.mat']; 
-    %     if ~exist(GUIAnalysisSaveDir,'dir')
-    %        mkdir(GUIAnalysisSaveDir);
-    %     end        
-    %     filename=fullfile(GUIAnalysisSaveDir,filename);
-    %     fprintf('%s',[filename ' ...']);
-    %     save(filename,'gui_saveData');
-    %     disp(' done');    
-    % end
+    end 
 end
 
 %% OTHER HELPER FUNCTIONS
 
     function mydata=makeImgDataStruct(imgs)
-        mydata=struct;
         % Create the image data structure
         mydata=struct;
         mydata.Date=datevec(now);
@@ -4024,14 +3937,8 @@ end
         if isempty(ind)
           ind=1; 
         end
-
-        % Update string
-        % tNavInd.String=sprintf('%03d',ind); 
-
-        tNavMax.String=['of ' num2str(length(filenames))];        
-
-        tNavName.String=fullfile(currDir,[data.Name '.mat']);        
-
+        tNavMax.String=['of ' num2str(length(filenames))];
+        tNavName.String=fullfile(currDir,[data.Name '.mat']); 
         tNavInd.Data(1)=ind;
     end
     
@@ -4049,8 +3956,6 @@ addlistener(axImg_K,'XLim','PostSet',@foo3);
 addlistener(axImg_K,'YLim','PostSet',@foo3); 
 addlistener(axImg_B,'XLim','PostSet',@foo4); 
 addlistener(axImg_B,'YLim','PostSet',@foo4); 
-% addlistener(axImg_D,'XLim','PostSet',@foo5); 
-% addlistener(axImg_D,'YLim','PostSet',@foo5); 
 
 % set(hF,'WindowState','maximized');
     function foo5(~,~)
@@ -4141,31 +4046,6 @@ function enableInteractivity
     enableDefaultInteractivity(axImg);
 end
 
-end
-
-
-
-function savePosAnalysis(tbl,execdate,src)
-    if nargin == 1
-        src = 'X\boop.txt';
-    end
-
-%     src = 'C:\Users\coraf\OneDrive\Desktop\bob.csv';
-    src = 'Y:\ixon_gui_analysis.csv';
-
-    vals = [execdate; tbl(:,2)]';
-    names = ['ExecutionDate'; tbl(:,1)];
-
-    vals = vals(~cellfun('isempty',vals));
-    names = names(~cellfun('isempty',names));
-
-    T = cell2table(vals,'VariableNames',names);
-
-    if exist(src,'file')
-        try
-        writetable(T,src);
-        end
-    end
 end
     
 % Connect to the Andor iXon Ultra
