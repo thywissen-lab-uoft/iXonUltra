@@ -5,8 +5,11 @@ opts=struct;
 %% Digitization Method Options
 
 % Use fitted probability density function [pdf] to find the threshold
-opts.DigitizeMethod     = 'pdf_kmeans_threshold'; % recommended (uses kmeans+pdf)
-opts.pdf_Sigma          = 2.5;
+opts.DigitizeMethod         = 'pdf_kmeans_threshold'; % recommended (uses kmeans+pdf)
+opts.pdf_Sigma              = 2.5;
+opts.NormalizedThreshold    = 0.5;
+
+% count_threshold = opts.NormalizedThreshold*count_center;
 
 % % Use kmeans clustering to find threshold
 % opts.DigitzeMethod      = 'kmeans';

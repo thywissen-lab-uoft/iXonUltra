@@ -1645,7 +1645,7 @@ function analyze_bin(src,evt)
         saveOpts=struct;
         saveOpts.saveDir='GUI\figures';
         bindata = ixon_makeBinData(data,saveOpts);
-
+        
         updateBinnedGraphics;     
         updateBinnedHistogramGraphics;    
 
@@ -1769,14 +1769,20 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
         end        
         hb_Diganalyze.BackgroundColor=[255 219 88]/255;
         drawnow;
-        digdata = bin_makeDigData2(bindata);
-        digdata = dig_basic(digdata);
         opts = ixon_gui_dig_options;
         opts.Parent = tabD;
+        digdata = bin_makeDigData2(bindata,opts);
+        digdata = dig_basic(digdata);
+
+        
         dig_radialAnalysis(digdata,opts);          
         hb_Diganalyze.BackgroundColor=[80 200 120]/255;
         updateDigitalGraphics;
         drawnow;
+        if hcDigFidelity.Value
+            [fidelity,b,a] = dig_Fidelity(digdata,opts)
+        end
+
     end
 
     function updateDigitalGraphics    

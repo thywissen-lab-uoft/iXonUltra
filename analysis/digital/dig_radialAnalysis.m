@@ -52,7 +52,7 @@ end
 
 %% Get Data
 Z   = [digdata.Zdig];
-Zbar = mean(Z,3);
+Zbar = mean(Z,[3 4]);
 P   = [digdata.Params];
 
 %% Calculate radial profile

@@ -91,7 +91,7 @@ for kk = 1:length(digdata.FileNames)
         % Image 1
         subplot(131);    
         imagesc(n1,n2,z1);
-        colormap jet
+        colormap bone
         caxis([0 1]);
         set(gca,'fontsize',10,'fontname','times','box','on',...
             'linewidth',1,'ydir','normal');    
@@ -102,7 +102,7 @@ for kk = 1:length(digdata.FileNames)
         % Image 2
         subplot(132);    
         imagesc(n1,n2,z2);
-        colormap jet
+        colormap bone
         caxis([0 1]);
         set(gca,'fontsize',10,'fontname','times','box','on',...
             'linewidth',1,'ydir','normal');
@@ -113,7 +113,7 @@ for kk = 1:length(digdata.FileNames)
         % Differential Image
         subplot(133);    
         imagesc(n1,n2,dz);
-        colormap jet
+        colormap bone
         s3 = ['$\mathrm{lost}:' num2str(Nlost) ...
             '~(' num2str(round(Rlost*100,1)) ' \%),~'  ...
             '\mathrm{hop}:' num2str(Nhop) ...
