@@ -1637,6 +1637,7 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
         updateDigitalGraphics;
         drawnow;
         if hcDigFidelity.Value
+            opts.Parent = tabF;
             [fidelity,b,a] = dig_Fidelity(digdata,opts)
         end
 
@@ -1748,12 +1749,12 @@ hpDispOpt.Position(2) = hpDisp_Select.Position(2)-hpDispOpt.Position(4);
 disp_opt_tabs(1)=uitab(hpDispOpt,'Title','position','units','pixels');
 disp_opt_tabs(2)=uitab(hpDispOpt,'Title','stripe','units','pixels');
 disp_opt_tabs(3)=uitab(hpDispOpt,'Title','focus','units','pixels');
-
 disp_opt_tabs(4)=uitab(hpDispOpt,'Title','histogram','units','pixels');
 disp_opt_tabs(5)=uitab(hpDispOpt,'Title','momentum','units','pixels');
 disp_opt_tabs(6)=uitab(hpDispOpt,'Title','binned','units','pixels');
 disp_opt_tabs(7)=uitab(hpDispOpt,'Title','binned histogram','units','pixels');
 disp_opt_tabs(8)=uitab(hpDispOpt,'Title','digitized','units','pixels');
+disp_opt_tabs(9)=uitab(hpDispOpt,'Title','fidelity','units','pixels');
 
 
 %% Display Options Panel
@@ -2426,7 +2427,6 @@ hp.Position=[hpControl.Position(3) 0 hF.Position(3)-hpControl.Position(3) hF.Pos
 
     function hp_tab_cb(src,evt)
         newTitle = evt.NewValue.Title;
-
         ind = 0;
         for jj=1:length(hpDispOpt.Children)
             if isequal(hpDispOpt.Children(jj).Title,newTitle)
@@ -2435,9 +2435,7 @@ hp.Position=[hpControl.Position(3) 0 hF.Position(3)-hpControl.Position(3) hF.Pos
         end
         if ind
             hpDispOpt.SelectedTab=hpDispOpt.Children(ind);
-        end
-
-       
+        end       
     end
 
 
@@ -2449,11 +2447,12 @@ tabFocus=uitab(hp,'Title','focus','units','pixels','backgroundcolor','w');
 tabH=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
 tabK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
 tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
-
 tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
 tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
+tabF=uitab(hp,'Title','fidelity','units','pixels','backgroundcolor','w');
+
+
 % tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
-% tabFidelity=uitab(hp,'Title','fidelity','units','pixels','backgroundcolor','w');
 
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary

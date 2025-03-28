@@ -1,79 +1,49 @@
 % function out = dig_Fidelity(Zdig,n1,n2,opts)
-function [fidelity,hF_out,hF] = dig_Fidelity(digdata,opts)
+function [fidelity] = dig_Fidelity(digdata,opts)
 % Author : CJ Fujiwara
 %
 % This codes calculates the fidelity of digitized data
 hF_out=[];
 hF=[];
 
-%% Settings
-if nargin ==1
-    opts = struct;
-end
+% Should there be three figures?  
+% (1) Single Shot FIdelity 
+% (2) Average image Fidelity
+% (3) Summary of Fidelity
 
-if length(digdata.FileNames)==1
-    opts.doDebug = 1;
-else
-    opts.doDebug = 0;
-end
-
-opts.FigureNumber = 4001;
 %% Grab data
   
 n1 = digdata.n1;
 n2 = digdata.n2;
-
-% z1_all= zeros(length(n1),length(n2),length(digdata.FileNames));
 fidelity=struct;
 
-%% Iterate
+%% Calculate Fidelity
 for kk = 1:length(digdata.FileNames)
     z1 = digdata.Zdig(:,:,kk,1);    % Image 1
     z2 = digdata.Zdig(:,:,kk,2);    % Image 2
-
-    N1 = sum(z1,'all');           % Atom Number 1
-    N2 = sum(z2,'all');           % Atom Number 2
-
+    N1 = sum(z1,'all');             % Atom Number 1
+    N2 = sum(z2,'all');             % Atom Number 2
     dz = z1 - z2;                   % Differential Image
-
     Nlost = N1 - N2;                % Number Lost
-    Rlost = Nlost/N1;               % Rate of Loss
-
+    Rlost = Nlost/N1;               % Percentage Loss
     Nhop = sum(abs(dz),'all')-Nlost;% Number Hopped
-    Rhop = Nhop/N1;              % Rate of hop
-  
-    %% Radial
+    Rhop = Nhop/N1;                 % Percentage hop
+
+    fidelity(kk).z1          = z1;
+    fidelity(kk).z2          = z2;    
+    fidelity(kk).n1          = n1;
+    fidelity(kk).n2          = n2;
+    fidelity(kk).N1          = N1;
+    fidelity(kk).N2          = N2;
+    fidelity(kk).Nlost       = Nlost;
+    fidelity(kk).Rlost       = Rlost;
+    fidelity(kk).Nhop        = Nhop;
+    fidelity(kk).Rhop        = Rhop;
+end
+
+end
     
-    % Zmap = (img1+img2);
-    % Zmap = Zmap/sum(Zmap,'all');
-    % 
-    % [xx,yy]=meshgrid(n1,n2);
-    % 
-    % % keyboard
-    % 
-    % xc = round(sum(xx.*Zmap,'all'));
-    % yc = round(sum(yy.*Zmap,'all'));
-    % 
-    % R = sqrt((xx-xc).^2+(yy-yc).^2); % distance from center
-    % iEvent = logical(abs(dImg));
-    % 
-    % Revent = R(iEvent);
-    % 
-    % 
-    % nlimits = [min(n1) max(n1) min(n2) max(n2)];    
-    % L = min(abs(nlimits - [xc xc yc yc]));
-    % L = L-2;
-    % r = [xc xc yc yc]+[-1 1 -1 1]*L;
-    % 
-    % % Indeces of bounds
-    % ii = [find(n1 == r(1),1) find(n1 == r(2),1) find(n2 == r(3),1) find(n2 == r(4),1)];
-    % img_avg = 0.5*(img1+img2);
-    % img_avg_sub = img_avg(ii(3):ii(4),ii(1):ii(2));
-    % dR = 10;
-    % 
-    % [r,N_expect,dev,n]=radial_profile(img_avg_sub,dR);
-    % 
-    % edges=0:dR:max(r);
+  
     
     %%
     if opts.doDebug
@@ -170,12 +140,7 @@ for kk = 1:length(digdata.FileNames)
     % xlabel('radial position (sites)')
     % set(gca,'box','on','linewidth',1,'fontname','times','fontsize',8);
     %%
-    fidelity(kk).N1          = N1;
-    fidelity(kk).N2          = N2;
-    fidelity(kk).Nlost       = Nlost;
-    fidelity(kk).Rlost       = Rlost;
-    fidelity(kk).Nhop        = Nhop;
-    fidelity(kk).Rhop        = Rhop;
+
 end
 
 digdata.Fidelity = fidelity;
