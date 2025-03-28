@@ -153,7 +153,7 @@ end
 dig_fidelity=1;
 if dig_fidelity && size(digdata.Zdig,4)==2
     % CF Needs to finish writing this
-    [fidelity,hF_fidelity1,hF_fidelity2] = dig_Fidelity(digdata,opts);
+    [fidelity,hF_fidelity1,hF_fidelity2] = dig_Fidelity(digdata);
     if dig_opts.doSave
         if ~isempty(hF_fidelity2)
             for kk=1:length(hF_fidelity2(kk))

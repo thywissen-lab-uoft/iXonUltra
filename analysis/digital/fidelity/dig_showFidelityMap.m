@@ -43,7 +43,7 @@ end
 % Image 1
 ax1=subplot(2,2,1,'parent',hF);    
 imagesc(n1,n2,z1bar,'parent',ax1);
-colormap(ax1,'bone')
+colormap(ax1,slanCM('magma'))
 set(ax1,'fontsize',10,'fontname','times','box','on',...
     'linewidth',1,'ydir','normal');    
 title_str = ['image 1 : $\langle N \rangle=' num2str(n1bar) '$'];
@@ -51,6 +51,7 @@ title(ax1,title_str,'interpreter','latex');
 axis(ax1,'tight');
 axis(ax1,'equal');
 cL=get(ax1,'CLim');
+caxis(ax1,[0 cL(2)]);
 colorbar(ax1);
 xlabel(ax1,'site 1')
 ylabel(ax1,'site 2');
@@ -58,7 +59,7 @@ ylabel(ax1,'site 2');
 % Image 2
 ax2=subplot(2,2,2,'parent',hF);    
 imagesc(n1,n2,z2bar,'parent',ax2);
-colormap(ax2,'bone')
+colormap(ax2,slanCM('magma'))
 set(ax2,'fontsize',10,'fontname','times','box','on',...
     'linewidth',1,'ydir','normal');    
 title_str = ['image 2 : $\langle N \rangle=' num2str(n2bar) '$'];
@@ -68,17 +69,17 @@ axis(ax2,'equal');
 colorbar(ax2);
 xlabel(ax2,'site 1')
 ylabel(ax2,'site 2');
-caxis(ax2,cL);
+caxis(ax2,[0 cL(2)]);
 
 % Differential Image
 ax3=subplot(2,2,3,'parent',hF);    
 imagesc(n1,n2,z1bar-z2bar,'parent',ax3);
-colormap(ax3,'bone')
+% colormap(ax3,'bone')
+colormap(ax3,slanCM('wildfire'))
 s3 = ['$\mathrm{lost}:' num2str(lostbarN) ...
     '~(' num2str(round(lostbarP*100,1)) ' \%),~'  ...
     '\mathrm{hop}:' num2str(hopbarN) ...
     '~(' num2str(round(hopbarP*100,1)) ' \%)$'];
-% caxis([-1 1]);
 colorbar(ax3)
 xlabel(ax3,'site 1')
 ylabel(ax3,'site 2');
@@ -91,7 +92,25 @@ text(.01,.01,s3,'units','normalized','fontsize',8,'color','black',...
     'interpreter','latex','backgroundcolor',[1 1 1 .8],'margin',1,...
     'parent',ax3)
 
-    end
+% average Image
+ax4=subplot(2,2,4,'parent',hF);    
+imagesc(n1,n2,(z1bar+z2bar)*0.5,'parent',ax4);
+colormap(ax4,slanCM('magma'))
+
+colorbar(ax4)
+xlabel(ax4,'site 1')
+ylabel(ax4,'site 2');
+set(ax4,'fontsize',10,'fontname','times','box','on','linewidth',1,'ydir','normal');
+title(ax4,'0.5*(image 1 + image 2)','interpreter','latex');  
+axis(ax4,'tight');
+axis(ax4,'equal');
+text(.01,.01,s3,'units','normalized','fontsize',8,'color','black',...
+    'verticalalignment','bottom','horizontalalignment','left',...
+    'interpreter','latex','backgroundcolor',[1 1 1 .8],'margin',1,...
+    'parent',ax4)
+caxis(ax4,[0 cL(2)]);
+
+end
 
 
 

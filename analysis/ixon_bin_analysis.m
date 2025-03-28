@@ -150,14 +150,11 @@ bindata = ixon_ProcessPostBin(bindata,ixon_gui_bin_options());
 
 if bin_BinAcummulateHist
     opts = bin_opts;
-    opts.Bins =  linspace(0,30e3,100);  
-    opts.Nthresh =6000;
-    opts.saveDir = bin_opts.saveDir;    
-    opts.doAnimate = 1;    
-    
-    % Choose which bin data to show
-%     opts.Source = 'ZbinRaw';
-    opts.Source = 'Zbin';
+    opts.Bins       =  50;  
+    opts.Nthresh    = 'auto';
+    opts.saveDir    = bin_opts.saveDir;    
+    opts.doAnimate  = 1;    
+    opts.Source = 'Zbin';'ZbinRaw';
 
     % Full Cloud
     opts.ROI = 'max';
