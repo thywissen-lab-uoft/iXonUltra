@@ -1638,7 +1638,8 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
         drawnow;
         if hcDigFidelity.Value
             opts.Parent = tabF;
-            [fidelity,b,a] = dig_Fidelity(digdata,opts)
+            digdata = dig_Fidelity(digdata);
+            dig_showFidelityMap(digdata,opts);
         end
 
     end

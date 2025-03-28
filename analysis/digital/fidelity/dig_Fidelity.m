@@ -1,21 +1,18 @@
 % function out = dig_Fidelity(Zdig,n1,n2,opts)
-function [fidelity] = dig_Fidelity(digdata,opts)
+function digdata = dig_Fidelity(digdata)
 % Author : CJ Fujiwara
 %
 % This codes calculates the fidelity of digitized data
-hF_out=[];
-hF=[];
 
 % Should there be three figures?  
 % (1) Single Shot FIdelity 
 % (2) Average image Fidelity
 % (3) Summary of Fidelity
 
-%% Grab data
-  
-n1 = digdata.n1;
-n2 = digdata.n2;
-fidelity=struct;
+if size(digdata.Zdig,4)==1
+    warning('cannot compute fidelity on single shot image')
+    return;
+end
 
 %% Calculate Fidelity
 for kk = 1:length(digdata.FileNames)
@@ -29,76 +26,18 @@ for kk = 1:length(digdata.FileNames)
     Nhop = sum(abs(dz),'all')-Nlost;% Number Hopped
     Rhop = Nhop/N1;                 % Percentage hop
 
-    fidelity(kk).z1          = z1;
-    fidelity(kk).z2          = z2;    
-    fidelity(kk).n1          = n1;
-    fidelity(kk).n2          = n2;
-    fidelity(kk).N1          = N1;
-    fidelity(kk).N2          = N2;
-    fidelity(kk).Nlost       = Nlost;
-    fidelity(kk).Rlost       = Rlost;
-    fidelity(kk).Nhop        = Nhop;
-    fidelity(kk).Rhop        = Rhop;
+
+    digdata.lost_number(kk)       = Nlost;
+    digdata.lost_fraction(kk)     = Rlost;
+    digdata.hop_number(kk)        = Nhop;
+    digdata.hop_fraction(kk)      = Rhop;
 end
 
 end
     
   
     
-    %%
-    if opts.doDebug
-        hF = figure(opts.FigureNumber+kk) ;
-        set(hF,'color','w','Name',['fidelity_' num2str(kk)]);
-        clf
-        hF.Position=[0 710 1100 250];
-    if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
-        t=uicontrol('style','text','string',opts.FigLabel,'fontsize',7,...
-            'backgroundcolor','w','Position',[1 1 600 15],'horizontalalignment','left');
-        t.Position(2) = t.Parent.Position(4)-t.Position(4)-2;
-
-    end
     
-        % Image 1
-        subplot(131);    
-        imagesc(n1,n2,z1);
-        colormap bone
-        caxis([0 1]);
-        set(gca,'fontsize',10,'fontname','times','box','on',...
-            'linewidth',1,'ydir','normal');    
-        title_str = ['image 1 : $N=' num2str(N1) '$'];
-        title(title_str,'interpreter','latex');    
-        axis equal tight    
-        
-        % Image 2
-        subplot(132);    
-        imagesc(n1,n2,z2);
-        colormap bone
-        caxis([0 1]);
-        set(gca,'fontsize',10,'fontname','times','box','on',...
-            'linewidth',1,'ydir','normal');
-        title_str = ['image 1 : $N=' num2str(N2) '$'];
-        title(title_str,'interpreter','latex');
-        axis equal tight    
-        
-        % Differential Image
-        subplot(133);    
-        imagesc(n1,n2,dz);
-        colormap bone
-        s3 = ['$\mathrm{lost}:' num2str(Nlost) ...
-            '~(' num2str(round(Rlost*100,1)) ' \%),~'  ...
-            '\mathrm{hop}:' num2str(Nhop) ...
-            '~(' num2str(round(Rhop*100,1)) ' \%)$'];
-        caxis([-1 1]);
-        xlabel('site 1')
-        ylabel('site 2');
-        set(gca,'fontsize',10,'fontname','times','box','on','linewidth',1,'ydir','normal');
-        title('image 1 - image 2');  
-        axis equal tight
-        text(.01,.01,s3,'units','normalized','fontsize',8,'color','black',...
-            'verticalalignment','bottom','horizontalalignment','left',...
-            'interpreter','latex','backgroundcolor',[1 1 1 .8],'margin',1)
-        hold on
-    end
     % plot(xc,yc,'o','color','r','markersize',3,'markerfacecolor','r');
     
     % 
@@ -141,90 +80,10 @@ end
     % set(gca,'box','on','linewidth',1,'fontname','times','fontsize',8);
     %%
 
-end
-
-digdata.Fidelity = fidelity;
-
-%% Summary Figure
-
-if length(digdata.FileNames)>1
-    hF_out = figure;
-    set(hF_out,'color','w','Name',['fidelity_summary']);
-    clf
-    hF_out.Position=[0 710 1300 250];
-    if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
-        t=uicontrol('style','text','string',opts.FigLabel,'fontsize',7,...
-            'backgroundcolor','w','Position',[1 1 600 15],'horizontalalignment','left');
-        t.Position(2) = t.Parent.Position(4)-t.Position(4)-2;
-    end
-
-    X= [digdata.X];
-    co=get(gca,'colororder');
-    subplot(141);
-    p1=plot(X,[fidelity.N1],'ko','markerfacecolor',co(4,:),'color',...
-        co(4,:)*.5,'linewidth',1);
-    hold on
-    p2=plot(X,[fidelity.N2],'^','markerfacecolor',co(5,:),'color',...
-        co(5,:)*.5,'linewidth',1);
-    ylabel('atom number')
-    if isequal(digdata.xVar,'ExecutionDate')
-        datetick x
-    end
-    legend([p1 p2],{'N1','N2'});
-    yL=get(gca,'YLim');
-    set(gca,'YLim',[0 yL(2)]);
-    xlabel(digdata.xVar,'interpreter','none');
-
-    subplot(142);
-    pLost=plot(X,[fidelity.Nlost],'o','markerfacecolor',co(2,:),'color',...
-        co(2,:)*.5,'linewidth',1);
-    hold on
-    pHop=plot(X,[fidelity.Nhop],'o','markerfacecolor',co(1,:),'color',...
-        co(1,:)*.5,'linewidth',1);
-    legend([pLost pHop],{'N lost','N hop'});
-    ylabel('number')
-    if isequal(digdata.xVar,'ExecutionDate')
-        datetick x
-    end
-    yL=get(gca,'YLim');
-    set(gca,'YLim',[0 yL(2)]);
-    xlabel(digdata.xVar,'interpreter','none');
-
-    subplot(143);
-    pRLost=plot(X,[fidelity.Rlost],'o','markerfacecolor',co(2,:),'color',...
-        co(2,:)*.5,'linewidth',1);
-    hold on
-    pRHop=plot(X,[fidelity.Rhop],'o','markerfacecolor',co(1,:),'color',...
-        co(1,:)*.5,'linewidth',1);
-    legend([pRLost pRHop],{'rate lost','rate hop'});
-    ylabel('number')
-    if isequal(digdata.xVar,'ExecutionDate')
-        datetick x
-    end
-    yL=get(gca,'YLim');
-    set(gca,'YLim',[0 yL(2)]);
-    xlabel(digdata.xVar,'interpreter','none');
-
-    subplot(144);
-    dz = digdata.Zdig(:,:,:,1)-digdata.Zdig(:,:,:,2);
-    defects = abs(dz);
-    defects = sum(defects,3);
-    imagesc(n1,n2,defects);
-    colormap jet
-    title('defect map');
-    colorbar 
-    axis equal tight
-
-    xc = mean(digdata.Xc_site,'all');
-    yc = mean(digdata.Yc_site,'all');
-
-    xlim(xc+[-50 50])
-    ylim(yc+[-50 50])
+% end
 
 
-end
-
-end
+% end
 
 % function [Tics,Average,dev,n]=radial_profile(data,radial_step)
 % %main axii cpecified:
