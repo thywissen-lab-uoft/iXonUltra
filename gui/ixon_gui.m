@@ -1739,9 +1739,6 @@ menuSelectImg.Position(2)=15;
 
 %% Display Options Panel
 
-% hpDispOpt=uitabgroup(hF,'units','pixels');
-% hpDispOpt=uipanel(hF,'units','pixels','title','display');
-
 hpDispOpt=uitabgroup(hpControl,'units','pixels');
 hpDispOpt.Position(1) = hpDisp_Select.Position(1);
 hpDispOpt.Position(3) = hpDisp_Select.Position(3);
@@ -2324,12 +2321,6 @@ enableInteractivity;
 % Panel for parameters and analysis results.
 
 hpFit=uitabgroup(hpControl,'units','pixels');
-% hpFit.Position=[320 0 300 ...
-    % hF.Position(4)-(hpCam.Position(4)+hpSave.Position(4)+hpNav.Position(4))];
-% hpFit.Position=[320 0 300 hpNav.Position(2)];
-
-% hpFit.Position=[320 0 300 hpNav.Position(2)-200];
-
 hpFit.Position(1) = hpDispOpt.Position(1);
 hpFit.Position(3) = hpDispOpt.Position(3);
 hpFit.Position(2) = 0;
