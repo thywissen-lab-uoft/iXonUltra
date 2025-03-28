@@ -3060,32 +3060,6 @@ end
             'YData',data.LatticeBin(imgnum).n2,...
             'CData',data.LatticeBin(imgnum).Zbin);  
         
-
-
-
-% RL = [data.LatticeBin(imgnum).n1(1) data.LatticeBin(imgnum).n1(end) ...
-%            data.LatticeBin(imgnum).n2(1) data.LatticeBin(imgnum).n2(end)];
-% 
-% 
-%         ROI=tblROIB.Data;     
-% 
-%         ROI=round(ROI);      % Make sure this ROI are integers   
-%         % Check that limits go from low to high
-%         % if ROI(2)<=ROI(1) || ROI(4)<=ROI(3)
-%         %    % warning('Bad ROI specification given.');
-%         %    % ROI(evt.Indices(2))=evt.PreviousData;
-%         % end               
-%         % Check that ROI is within image bounds
-%         if ROI(1)<RL(1); ROI(1)=RL(1); end       
-%         if ROI(3)<RL(3); ROI(3)=RL(3); end   
-%         if ROI(4)>RL(4); ROI(4)=RL(4); end       
-%         if ROI(2)>RL(2); ROI(2)=RL(2); end      
-% 
-%         tblROIB.Data = ROI;
-%         try
-%             pos=[ROI(1) ROI(3) ROI(2)-ROI(1) ROI(4)-ROI(3)];
-%             set(pROIB(1),'Position',pos);
-%         end
         if cAutoColor_B.Value;setClim('B');end     
         updateGridGraphics;
         latticeGridCB(cDrawLattice);
