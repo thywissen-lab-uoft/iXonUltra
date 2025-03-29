@@ -141,8 +141,7 @@ if dig_doFidelity && size(digdata.Zdig,4)==2
     % CF Needs to finish writing this
     digdata = dig_Fidelity(digdata);
     hF_FidelityMap = dig_showFidelityMap(digdata,dig_opts);
-    if dig_opts.doSave
-       
+    if dig_opts.doSave       
         if ~isempty(hF_FidelityMap)
                 ixon_saveFigure2(hF_FidelityMap,...
                     hF_FidelityMap.Name,dig_opts);  

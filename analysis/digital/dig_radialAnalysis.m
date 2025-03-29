@@ -47,12 +47,6 @@ else
     a_px = 2.68;
 end
 
-%% Get Data
-Z   = [digdata.Zdig];
-Zbar = mean(Z,[3 4]);
-P   = [digdata.Params];
-
-
 %% Calculate Radial Jacobian and Bins
 
 stepMax     = floor(opts.rMax/opts.BinStep);                 % # of r steps
@@ -86,6 +80,14 @@ end
 r_center        = r_center(2:end)';
 rcen            = r_center;
 jacobian_numerical = diff(Nr);
+
+
+%% Get Data
+Z           = [digdata.Zdig];
+Z           = Z(:,:,:,1);
+Zbar        = mean(Z,3);
+P           = [digdata.Params];
+
 %% Calculate radial profile
 % For every image compute distance to the center of every atom
 
@@ -208,53 +210,53 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     num2str(round(mean(digdata.Ys_um(:,1)),1)) ')~\mu\mathrm{m},~'  ...
     '(' num2str(round(mean(digdata.Xs_site(:,1)),1)) ',' ...
     num2str(round(mean(digdata.Ys_site(:,1)),1)) ')~\mathrm{site}$'];
-    
 
-    if ~isnan(opts.TrapOmega) && ~isnan(opts.Tunneling)
-        trap_str = ['$\omega=2\pi\cdot' num2str(opts.TrapOmega/(2*pi)) '~\mathrm{Hz},t='...
-            num2str(opts.Tunneling) '~\mathrm{Hz}$'];    
-        trap_str = [trap_str newline ...
-            '$\rightarrow r^*= ' ...
-            num2str(round(rstar,1)) '~\mu\mathrm{m},' ...
-            'T\approx m\omega^2\langle\sigma_r\rangle^2=' num2str(T_HOt,'%.1f') ...
-           't~(' num2str(round(T_HO_nK)) '~\mathrm{nK})$'];    
-    else
-        trap_str=[];
-    end
 
-    lineN = ['$' num2str(round(mean(digdata.Natoms(:,1)))) '\pm' ...        
-        num2str(round(std(digdata.Natoms(:,1),1))) '$ atoms (n=' num2str(size(Z,3)) ')'];
-    lineSigmaExpect = ['$\langle \sigma_r \rangle=' ...
-        num2str(round(aL_um*sigma_r_numerical,1)) '~\mu\mathrm{m}$'];
+if ~isnan(opts.TrapOmega) && ~isnan(opts.Tunneling)
+    trap_str = ['$\omega=2\pi\cdot' num2str(opts.TrapOmega/(2*pi)) '~\mathrm{Hz},t='...
+        num2str(opts.Tunneling) '~\mathrm{Hz}$'];    
+    trap_str = [trap_str newline ...
+        '$\rightarrow r^*= ' ...
+        num2str(round(rstar,1)) '~\mu\mathrm{m},' ...
+        'T\approx m\omega^2\langle\sigma_r\rangle^2=' num2str(T_HOt,'%.1f') ...
+       't~(' num2str(round(T_HO_nK)) '~\mathrm{nK})$'];    
+else
+    trap_str=[];
+end
 
-    strRadialSummary = [ lineN newline ...
-        lineSigmaExpect];
+lineN = ['$' num2str(round(mean(digdata.Natoms(:,1)))) '\pm' ...        
+    num2str(round(std(digdata.Natoms(:,1),1))) '$ atoms (n=' num2str(size(Z,3)) ')'];
+lineSigmaExpect = ['$\langle \sigma_r \rangle=' ...
+    num2str(round(aL_um*sigma_r_numerical,1)) '~\mu\mathrm{m}$'];
 
-    %% Find Center and limits in site space
-    n1 = digdata.n1;
-    n2 = digdata.n2;        
-    [nn1,nn2]=meshgrid(n1,n2);
+strRadialSummary = [ lineN newline ...
+    lineSigmaExpect];
 
-    for nn=1:size(Z,3)
-        Zthis = Z(:,:,nn);
-        n1c(nn) = sum(Zthis.*nn1,'all')/sum(Zthis,'all');
-        n2c(nn) = sum(Zthis.*nn2,'all')/sum(Zthis,'all');    
-        n1c_sq(nn) = sum(Zthis.*nn1.^2,'all')/sum(Zthis,'all');
-        n2c_sq(nn) = sum(Zthis.*nn2.^2,'all')/sum(Zthis,'all');    
-        n1_sigma(nn) = sqrt(n1c_sq(nn)-n1c(nn)^2);
-        n2_sigma(nn) = sqrt(n2c_sq(nn)-n2c(nn)^2);
-    end
-    n_sigma_med =[median(n1_sigma) median(n2_sigma)];
-    nc_med = [median(n1c) median(n2c)];    
-    n1_lim = nc_med(1)+4.5*[-1 1]*n_sigma_med(1);
-    n2_lim = nc_med(2)+4.5*[-1 1]*n_sigma_med(2);
+%% Find Center and limits in site space
+n1 = digdata.n1;
+n2 = digdata.n2;        
+[nn1,nn2]=meshgrid(n1,n2);
 
-    n1_lim(1) = max([n1_lim(1) n1(1)]);
-    n1_lim(2) = min([n1_lim(2) n1(end)]);
+for nn=1:size(Z,3)
+    Zthis = Z(:,:,nn);
+    n1c(nn) = sum(Zthis.*nn1,'all')/sum(Zthis,'all');
+    n2c(nn) = sum(Zthis.*nn2,'all')/sum(Zthis,'all');    
+    n1c_sq(nn) = sum(Zthis.*nn1.^2,'all')/sum(Zthis,'all');
+    n2c_sq(nn) = sum(Zthis.*nn2.^2,'all')/sum(Zthis,'all');    
+    n1_sigma(nn) = sqrt(n1c_sq(nn)-n1c(nn)^2);
+    n2_sigma(nn) = sqrt(n2c_sq(nn)-n2c(nn)^2);
+end
+n_sigma_med =[median(n1_sigma) median(n2_sigma)];
+nc_med = [median(n1c) median(n2c)];    
+n1_lim = nc_med(1)+4.5*[-1 1]*n_sigma_med(1);
+n2_lim = nc_med(2)+4.5*[-1 1]*n_sigma_med(2);
 
-    n2_lim(1) = max([n2_lim(1) n2(1)]);
-    n2_lim(2) = min([n2_lim(2) n2(end)]);
-  
+n1_lim(1) = max([n1_lim(1) n1(1)]);
+n1_lim(2) = min([n1_lim(2) n1(end)]);
+
+n2_lim(1) = max([n2_lim(1) n2(1)]);
+n2_lim(2) = min([n2_lim(2) n2(end)]);
+
 
     %% Assign to output
     output = struct;
