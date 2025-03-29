@@ -1,11 +1,15 @@
 function [hF,output] = dig_radialAnalysis(digdata,opts)
 if nargin == 1;opts = struct;end    
 
+
+%% Default Binning Options
 % How to calculate n(r)
-if ~isfield(opts,'BinStep');        opts.BinStep = 3;end   
+if ~isfield(opts,'BinStep');        opts.BinStep = 4;end   
 if ~isfield(opts,'Bin0');           opts.Bin0 = 5;end   
 if ~isfield(opts,'rMax');           opts.rMax = 110;end
 
+
+%%
 % Fittng n(r)
 % if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [.05 1];end
 
@@ -25,12 +29,12 @@ if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 %% Constants
 
 % Physical constants
-h = 6.62607015e-34;         % planck's constant [Js]
-amu = 1.66053906660e-27;    % atomic mass unit[kg]    
-m = amu*39.96399848;        % 40K mass [kg]
-aL = (1054e-9)/2;           % lattice spacing [m]
-aL_um = aL*1e6;
-kB= 1.380649e-23;           % J/K
+h       = 6.62607015e-34;         % planck's constant [Js]
+amu     = 1.66053906660e-27;    % atomic mass unit[kg]    
+m       = amu*39.96399848;        % 40K mass [kg]
+aL      = (1054e-9)/2;           % lattice spacing [m]
+aL_um   = aL*1e6;
+kB      = 1.380649e-23;           % J/K
 
 %% Trap Potential V(r) functions
 
@@ -40,9 +44,9 @@ sigma2Tovert =      @(sigmaR) sigmaR^2*m*opts.TrapOmega^2/(h*opts.Tunneling);
 
 %% Tunnel Connection Radius
 
-nstar = linspace(0,100,1e4);
-istar=find([site2Vr_Hz(nstar)]>=4*opts.Tunneling,1);
-rstar=nstar(istar)*aL_um;
+nstar   = linspace(0,100,1e4);
+istar   = find([site2Vr_Hz(nstar)]>=4*opts.Tunneling,1);
+rstar   = nstar(istar)*aL_um;
 
 if isfield(digdata,'Lattice_px')
     a_px = digdata.Lattice_px;
@@ -55,46 +59,60 @@ Z   = [digdata.Zdig];
 Zbar = mean(Z,[3 4]);
 P   = [digdata.Params];
 
+
+%% Calculate Radial Jacobian and Bins
+
+stepMax     = floor(opts.rMax/opts.BinStep);                 % # of r steps
+redges      = [0 opts.Bin0];                                  % About r=0
+redges      = [redges opts.Bin0+[1:1:stepMax]*opts.BinStep];  % Rest of edges
+rcen        = (redges(1:end-1) + redges(2:end))/2;             % bin centers
+
+% Jacobian via ideal circle
+areas           = pi*redges.^2;areas=areas(:);                % Area of each bin edge
+jacobian_circle = diff(areas);                                % Jacobian
+jacobian_circle = jacobian_circle(:);                         % Resize
+
+% Jacobian via numerical circle
+n               = [-opts.rMax:1:opts.rMax];
+[nn1,nn2]       = meshgrid(n,n);
+R               = (nn1.^2+nn2.^2).^(1/2);
+Nr              = zeros(length(redges),1);
+r_center        = zeros(length(redges),1);
+
+for rr=1:length(redges)
+    indsLess    = [R<redges(rr)];    
+    Nr(rr)      = sum(indsLess,'all');
+    if rr==1
+        indsMore    = [R>0];
+    else
+        indsMore    = [R>=redges(rr-1)];
+    end
+    indsSlice    = logical(indsLess.*indsMore);
+    r_center(rr) = mean(R(indsSlice));  
+end
+r_center        = r_center(2:end)';
+rcen            = r_center;
+jacobian_numerical = diff(Nr);
 %% Calculate radial profile
+% For every image compute distance to the center of every atom
+
 rlist={};
-% Compute distance to the center of every atom
+img_ind = 1; % Image index (in case of double shot, we always use first)
 for kk=1:size(digdata.Zdig,3)
-    R = digdata.Ratom{kk}-[digdata.Xc_px(kk);digdata.Yc_px(kk)];
+    Rc =  [digdata.Xc_px(kk,img_ind);digdata.Yc_px(kk,img_ind)];
+    R = digdata.Ratom{kk,img_ind}-Rc;
     r = sqrt(R(1,:).^2+R(2,:).^2)/a_px;
     r=r(:);
     rlist{kk} = r;
 end
 
-% Calculate the bins
-% Around r=0, find all a points within pi*Bin0^2
-% For all other radii bin are separated by BinStep
-
-stepMax=floor(opts.rMax/opts.BinStep);                   % # of r steps
-redges = [0 opts.Bin0];                                  % About r=0
-redges = [redges opts.Bin0+[1:1:stepMax]*opts.BinStep];  % Rest of edges
-rcen = (redges(1:end-1) + redges(2:end))/2;             % bin centers
-
-% Jacobian via ideal circle
-areas = pi*redges.^2;areas=areas(:);                % Area of each bin edge
-dN = diff(areas);                                   % Jacobian
-dN = dN(:);                                         % Resize
-
-% Jacobian via numerical circle
-n = [-opts.rMax:1:opts.rMax];
-[nn1,nn2]=meshgrid(n,n);
-R=(nn1.^2+nn2.^2).^(1/2);
-Nr = zeros(length(redges),1);
-for rr=1:length(redges)
-    Nr(rr)=sum(R(:)<redges(rr));
-end
-dN2 = diff(Nr);
-
+%%
 % Calculate the histograms
 nr = zeros(length(rcen),size(digdata.Zdig,3));
 for kk=1:size(digdata.Zdig,3)
     n = histcounts(rlist{kk},redges);
-    nr(:,kk) = n(:)./dN2;       % normalize by discrete jacboian
-    % nr(:,kk) = n(:)./dN;      % normalize by continuous jacboian
+    nr(:,kk) = n(:)./jacobian_numerical;       % normalize by discrete jacboian
+    % nr(:,kk) = n(:)./jacobian_circle;      % normalize by continuous jacboian
 end
 
 % take the average
@@ -291,7 +309,7 @@ strS = ['$(x_\sigma,y_\sigma):' ...
 %% Plotting
 
     if ~isfield(opts,'Parent')
-        opts.Parent = figure('color','w','Position',[300 100 1000 450],...
+        opts.Parent = figure('color','w','Position',[300 100 1200 630],...
             'Name','Radial','NumberTitle','off');
         hF = opts.Parent;
     else
@@ -377,14 +395,22 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     [x0, y0, w, h]=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
     ax2.Position = [x0 y0 w h];
 
-    errorbar(rcen,nr_mean,nr_std,'ko','linewidth',1,'markerfacecolor',[.5 .5 .5],...
-        'parent',ax2);
-     hold(ax2,'on')
+
+    histogram('BinEdges',redges,'BinCounts',nr_mean)
+    hold on
+    errorbar(rcen,nr_mean,nr_std,'linewidth',1,'markerfacecolor',[.5 .5 .5],...
+        'parent',ax2,'linestyle','none','color','k');
+    
+    hold on
+    hold(ax2,'on')
     xlabel(ax2,'radial distance (sites)');
     ylabel(ax2,'$n(r)$','interpreter','latex','fontsize',14);
     text(.99,.99,strRadialSummary,'units','normalized','fontsize',12,'horizontalalignment','right',...
         'verticalalignment','top','interpreter','latex','parent',ax2);
-    
+    rL = get(ax2,'XLim');
+    xlim(ax2,[0 rL(2)]);
+
+
     if isfield(opts,'nMaxShow')
        ylim(ax2,[0 opts.nMaxShow]); 
     end
@@ -393,7 +419,7 @@ strS = ['$(x_\sigma,y_\sigma):' ...
        xlim(ax2,[0 opts.rMaxShow]); 
     end
     
-    strRadialBin = ['radial bin ' char(916) 'r:' num2str(opts.BinStep)];
+    strRadialBin = ['radial bin ' char(916) 'r:' num2str(opts.BinStep) ', R_0: ' num2str(opts.Bin0)];
     text(.01,1,strRadialBin,'units','normalized','horizontalalignment','left',...
         'verticalalignment','bottom','fontsize',8,'parent',ax2);
 

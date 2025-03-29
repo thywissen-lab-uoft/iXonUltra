@@ -109,8 +109,7 @@ if do_qpd_analysis
     end
 end
 
-
-%% Redo Basic Analysis
+%% Basic Analysis
 digdata = dig_basic(digdata);
 
 %% Show Cloud
@@ -162,14 +161,7 @@ if dig_doRadialAnalysis2
     try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
     filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
     disp(['Saving ' filename ' ...']);
-    save(filename, '-struct','dig_radial_data');
-    
-%     
-%     hF2 = dig_TrackPeakCharge(digdata);
-%     if dig_opts.doSave
-%         ixon_saveFigure2(hF2,'dig_radial_peak_charge',dig_opts);  
-% 
-%     end
+    save(filename, '-struct','dig_radial_data'); 
 end
 
 %% Radial Analysis
@@ -271,7 +263,7 @@ if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')
                 ['dig_radial_skew_' num2str(kk)],dig_opts);   
        end
     end
-    end
+end
 
 %% Conductivity Analysis
 
