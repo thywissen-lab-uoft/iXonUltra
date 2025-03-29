@@ -5,7 +5,7 @@ if nargin == 1;opts = struct;end
 %% Default Binning Options
 % How to calculate n(r)
 if ~isfield(opts,'BinStep');        opts.BinStep = 4;end   
-if ~isfield(opts,'Bin0');           opts.Bin0 = 5;end   
+if ~isfield(opts,'Bin0');           opts.Bin0 = 4;end   
 if ~isfield(opts,'rMax');           opts.rMax = 110;end
 
 
@@ -106,8 +106,10 @@ for kk=1:size(digdata.Zdig,3)
     rlist{kk} = r;
 end
 
-%%
-% Calculate the histograms
+r_all = rlist{:};               % r for all atoms
+
+[f,x] = ecdf(r_all*aL_um);        % Empircal CDF (cummulative density function)
+%% Calculate Radial Histogram
 nr = zeros(length(rcen),size(digdata.Zdig,3));
 for kk=1:size(digdata.Zdig,3)
     n = histcounts(rlist{kk},redges);
@@ -115,13 +117,10 @@ for kk=1:size(digdata.Zdig,3)
     % nr(:,kk) = n(:)./jacobian_circle;      % normalize by continuous jacboian
 end
 
-% take the average
+% Average over each image
 nr_mean = mean(nr,2);
 nr_std = std(nr,0,2)/sqrt(size(nr,2));
 
-%% Get all r for all atoms
-r_all = rlist{:};               % r for all atoms
-[f,x]=ecdf(r_all*aL_um);        % Empircal CDF
 %% Calculate numerical second moment
 % The gaussian radius assuming a symmetric gaussian distribution is
 % related to the expectation value of the radius.
@@ -418,7 +417,10 @@ strS = ['$(x_\sigma,y_\sigma):' ...
     if isfield(opts,'rMaxShow')
        xlim(ax2,[0 opts.rMaxShow]); 
     end
-    
+
+    xlim(ax2,[0 5+ceil(prctile(r_all,98))])
+
+
     strRadialBin = ['radial bin ' char(916) 'r:' num2str(opts.BinStep) ', R_0: ' num2str(opts.Bin0)];
     text(.01,1,strRadialBin,'units','normalized','horizontalalignment','left',...
         'verticalalignment','bottom','fontsize',8,'parent',ax2);
