@@ -8,6 +8,8 @@ if ~isfield(opts,'BinStep');        opts.BinStep = 4;end
 if ~isfield(opts,'Bin0');           opts.Bin0 = 4;end   
 if ~isfield(opts,'rMax');           opts.rMax = 110;end
 
+strRadialBin = ['radial bin ' char(916) ...
+    'r:' num2str(opts.BinStep) ', R_0: ' num2str(opts.Bin0)];
 
 % YOU NEED A BETTER VERSION OF MATLAB TO DO OTHER DENSITY MAXIMUMS
 if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [1];end
@@ -350,45 +352,32 @@ end
 xlim(ax1,n1_lim);
 ylim(ax1,n2_lim);
 
+%% Radial Probability Density Function (PDF)
 % Average charge density
+
+% Initialize Axis Object
 hF.UserData.Axes{2}=subplot(2,2,2,'parent',hF);
 ax2=hF.UserData.Axes{2};
 ax2.Units='pixels';
 ax2.UserData.subplot_inds = [2 2 2];
 subplot_inds=ax2.UserData.subplot_inds;
-
 [x0, y0, w, h]=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
 ax2.Position = [x0 y0 w h];
 
-
-pData=histogram('BinEdges',redges,'BinCounts',nr_mean)
-legStr ={'data'};
-hold on
+% Plot the Data
+ps(1)=histogram('BinEdges',redges,'BinCounts',nr_mean);
+hold(ax2,'on')
 errorbar(rcen,nr_mean,nr_std,'linewidth',1,'markerfacecolor',[.5 .5 .5],...
     'parent',ax2,'linestyle','none','color','k');
+legStr ={'Data'};
 
-hold on
-hold(ax2,'on')
 xlabel(ax2,'radial distance (sites)');
 ylabel(ax2,'$n(r)$','interpreter','latex','fontsize',14);
 text(.99,.99,strRadialSummary,'units','normalized','fontsize',12,'horizontalalignment','right',...
     'verticalalignment','top','interpreter','latex','parent',ax2);
-rL = get(ax2,'XLim');
-xlim(ax2,[0 rL(2)]);
-
-
-if isfield(opts,'nMaxShow')
-   ylim(ax2,[0 opts.nMaxShow]); 
-end
-
-if isfield(opts,'rMaxShow')
-   xlim(ax2,[0 opts.rMaxShow]); 
-end
-
 xlim(ax2,[0 5+ceil(prctile(r_all,98))])
 
 
-strRadialBin = ['radial bin ' char(916) 'r:' num2str(opts.BinStep) ', R_0: ' num2str(opts.Bin0)];
 text(.01,1,strRadialBin,'units','normalized','horizontalalignment','left',...
     'verticalalignment','bottom','fontsize',8,'parent',ax2);
 
@@ -418,7 +407,7 @@ end
 set(ax2,'box','on','linewidth',1,'fontsize',12,...
     'yaxislocation','right')
 
-% Plot radial average ndet std
+%% Radial Cummulative Density Function (CDF)
 hF.UserData.Axes{3}=subplot(2,2,4,'parent',hF);
 ax3=hF.UserData.Axes{3};
 ax3.Units='pixels';
