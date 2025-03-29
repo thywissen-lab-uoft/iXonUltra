@@ -257,51 +257,51 @@ n2_lim(1) = max([n2_lim(1) n2(1)]);
 n2_lim(2) = min([n2_lim(2) n2(end)]);
 
 
-    %% Assign to output
-    output = struct;
-    output.Z                        = Zbar;
-    output.NumImages                = size(Z,3);
-    output.RadialVec                = rcen'.*aL_um;
-    output.RadialOccupation         = nr;
-    output.RadialOccupationMean     = nr_mean;
-    output.RadialOccupationError    = nr_std;
+%% Assign to output
+output = struct;
+output.Z                        = Zbar;
+output.NumImages                = size(Z,3);
+output.RadialVec                = rcen'.*aL_um;
+output.RadialOccupation         = nr;
+output.RadialOccupationMean     = nr_mean;
+output.RadialOccupationError    = nr_std;
 
-    output.GibbsFit                 = GibbsFit;
-    output.Gibbs_z0                 = GibbsFit.z0;
-    output.Gibbs_z0Err              = Gz0Err;
-    output.Gibbs_Rs                 = GibbsFit.s*aL_um; % in um
-    output.Gibbs_RsErr              = GsErr*aL_um;      % in um
+output.GibbsFit                 = GibbsFit;
+output.Gibbs_z0                 = GibbsFit.z0;
+output.Gibbs_z0Err              = Gz0Err;
+output.Gibbs_Rs                 = GibbsFit.s*aL_um; % in um
+output.Gibbs_RsErr              = GsErr*aL_um;      % in um
 
 %% Initialize Figure
 
-    if ~isfield(opts,'Parent')
-        opts.Parent = figure('color','w','Position',[300 100 1200 630],...
-            'Name','Radial','NumberTitle','off');
-        hF = opts.Parent;
-    else
-        hF = opts.Parent;
-        for kk=1:length(hF.Children)
-            delete(hF.Children(1))
-        end
+if ~isfield(opts,'Parent')
+    opts.Parent = figure('color','w','Position',[300 100 1200 630],...
+        'Name','Radial','NumberTitle','off');
+    hF = opts.Parent;
+else
+    hF = opts.Parent;
+    for kk=1:length(hF.Children)
+        delete(hF.Children(1))
     end
-    W = hF.Position(3);
-    H = hF.Position(4);
-        
-
-    if isfield(digdata,'SourceDirectory') && ...
-            ~isempty(digdata.SourceDirectory) &&  ...
-            ~isequal(digdata.SourceDirectory,{'GUI'})
-        tstr = digdata.SourceDirectory;
-    else
-        tstr  = digdata.FileNames{1};
-    end    
+end
+W = hF.Position(3);
+H = hF.Position(4);
     
-    tFig=uicontrol('style','text','string',tstr,...
-        'units','pixels','backgroundcolor',...
-        'w','horizontalalignment','left','parent',hF);
-    tFig.Position(4)=tFig.Extent(4);
-    tFig.Position(3)=tFig.Extent(3);
-    tFig.Position(1:2)=[1 1];
+
+if isfield(digdata,'SourceDirectory') && ...
+        ~isempty(digdata.SourceDirectory) &&  ...
+        ~isequal(digdata.SourceDirectory,{'GUI'})
+    tstr = digdata.SourceDirectory;
+else
+    tstr  = digdata.FileNames{1};
+end    
+
+tFig=uicontrol('style','text','string',tstr,...
+    'units','pixels','backgroundcolor',...
+    'w','horizontalalignment','left','parent',hF);
+tFig.Position(4)=tFig.Extent(4);
+tFig.Position(3)=tFig.Extent(3);
+tFig.Position(1:2)=[1 1];
    %%  2D Image of Average Image
     hF.UserData.Axes{1}=subplot(1,2,1,'parent',hF);
     ax1= hF.UserData.Axes{1};
