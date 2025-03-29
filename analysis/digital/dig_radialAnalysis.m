@@ -302,154 +302,154 @@ tFig=uicontrol('style','text','string',tstr,...
 tFig.Position(4)=tFig.Extent(4);
 tFig.Position(3)=tFig.Extent(3);
 tFig.Position(1:2)=[1 1];
-   %%  2D Image of Average Image
-    hF.UserData.Axes{1}=subplot(1,2,1,'parent',hF);
-    ax1= hF.UserData.Axes{1};
-    ax1.UserData.subplot_inds = [1 2 1];
-    ax1.Units='pixels';
-    [x0, y0, w, h]=getAxesPos(1,2,1,W,H);
-    ax1.Position = [x0 y0 w h];
+%%  2D Image of Average Image
+hF.UserData.Axes{1}=subplot(1,2,1,'parent',hF);
+ax1= hF.UserData.Axes{1};
+ax1.UserData.subplot_inds = [1 2 1];
+ax1.Units='pixels';
+[x0, y0, w, h]=getAxesPos(1,2,1,W,H);
+ax1.Position = [x0 y0 w h];
+
+if size(digdata.Zdig,3)>1
+    imagesc(n1,n2,imboxfilt(Zbar),'parent',ax1)
+    strBoxCar = ['boxcar avg: ' num2str(opts.BinStep) '\times' num2str(opts.BinStep)];
+    text(.99,.01,strBoxCar,'units','normalized','fontsize',10,...
+    'verticalalignment','top','horizontalalignment','right',...
+    'color','r','parent',ax1);
+    ax1.XAxisLocation='Top';
+    set(ax1,'FontSize',8);
+else
+    imagesc(n1,n2,Zbar,'parent',ax1)
+end
+xlabel(ax1,'position (sites)');
+ylabel(ax1,'position (sites)');    
+
+
+
+text(1,1,strRadialSummary,'units','pixels','fontsize',10,...
+    'horizontalalignment','left','verticalalignment','bottom',...
+    'color','r','interpreter','latex','parent',ax1);  
+colormap(ax1,'bone');
+axis(ax1,'equal');
+axis(ax1,'tight');
+
+ text(.99,.99,[strC newline strS],'units','normalized','fontsize',12,...
+    'verticalalignment','top','horizontalalignment','right',...
+    'color','r','parent',ax1,'interpreter','latex','fontname','arial');
+    ax1.XAxisLocation='Top';
+    set(ax1,'FontSize',8);
+
+cc1=colorbar(ax1);
+cc1.Label.String = 'charge occupation';
+
+set(ax1,'ydir','normal','box','on','linewidth',1);
+
+if isfield(opts,'nMaxShow')
+   caxis(ax1,[0 opts.nMaxShow]); 
+end
+xlim(ax1,n1_lim);
+ylim(ax1,n2_lim);
+
+% Average charge density
+hF.UserData.Axes{2}=subplot(2,2,2,'parent',hF);
+ax2=hF.UserData.Axes{2};
+ax2.Units='pixels';
+ax2.UserData.subplot_inds = [2 2 2];
+subplot_inds=ax2.UserData.subplot_inds;
+
+[x0, y0, w, h]=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
+ax2.Position = [x0 y0 w h];
+
+
+pData=histogram('BinEdges',redges,'BinCounts',nr_mean)
+legStr ={'data'};
+hold on
+errorbar(rcen,nr_mean,nr_std,'linewidth',1,'markerfacecolor',[.5 .5 .5],...
+    'parent',ax2,'linestyle','none','color','k');
+
+hold on
+hold(ax2,'on')
+xlabel(ax2,'radial distance (sites)');
+ylabel(ax2,'$n(r)$','interpreter','latex','fontsize',14);
+text(.99,.99,strRadialSummary,'units','normalized','fontsize',12,'horizontalalignment','right',...
+    'verticalalignment','top','interpreter','latex','parent',ax2);
+rL = get(ax2,'XLim');
+xlim(ax2,[0 rL(2)]);
+
+
+if isfield(opts,'nMaxShow')
+   ylim(ax2,[0 opts.nMaxShow]); 
+end
+
+if isfield(opts,'rMaxShow')
+   xlim(ax2,[0 opts.rMaxShow]); 
+end
+
+xlim(ax2,[0 5+ceil(prctile(r_all,98))])
+
+
+strRadialBin = ['radial bin ' char(916) 'r:' num2str(opts.BinStep) ', R_0: ' num2str(opts.Bin0)];
+text(.01,1,strRadialBin,'units','normalized','horizontalalignment','left',...
+    'verticalalignment','bottom','fontsize',8,'parent',ax2);
+
+rVec=linspace(0,100,100);
+for nn=1:length(opts.GaussFitDensityMax)
+    s       = gauss_sigma(nn,1);
+    s_err   = gauss_sigma(nn,2);
+
+    N = Iouter(nn)/nr_partial_cdf(s,rMin(nn));
+    pGaussFits(nn)=plot(rVec,nr_fit(s,rVec,N),'-');
+    legStr{end+1}=['2D Gauss : $\sigma=' num2str(round(s),'%.1f')  ...
+         '~sites (' num2str(round(s*aL_um,1)) '~\mu \mathrm{m}' ...
+        ' n<' num2str(opts.GaussFitDensityMax(nn)) '$'];
+end
+
+% Plot gibbs fit
+pGaussFits(end+1) = plot(rVec,feval(GibbsFit,rVec),'-');
+legStr{end+1} = ['Gibbs $z_0 = ' num2str(GibbsFit.z0,'%.1f') '$, $T= ' num2str(T_HOt_g,'%.1f') 't$ ' ...
+    '(' num2str(T_HO_g_nK,'%.0f') ' nK)' ];
+if ~isempty(opts.GaussFitDensityMax)
+legend([pData pGaussFits],legStr,'interpreter','latex','fontsize',8,...
+    'location','southeast','parent',hF);
+end
+
+
+
+set(ax2,'box','on','linewidth',1,'fontsize',12,...
+    'yaxislocation','right')
+
+% Plot radial average ndet std
+hF.UserData.Axes{3}=subplot(2,2,4,'parent',hF);
+ax3=hF.UserData.Axes{3};
+ax3.Units='pixels';
+ax3.UserData.subplot_inds = [2 2 4];
+[x0, y0, w, h]=getAxesPos(2,2,4,W,H);
+ax3.Position = [x0 y0 w h];
+
+plot(x,100*f,'k-','linewidth',2,'parent',ax3);
+xlabel(ax3,'radial distance (\mum)')
+xlim(ax3,[0 max(x)]);
+% ylim(ax3,[0 102]);
+set(ax3,'box','on','linewidth',1,'fontsize',12,...
+    'yaxislocation','right')
+ylabel(ax3,'% within radius')
+hold(ax3,'on');
     
-    if size(digdata.Zdig,3)>1
-        imagesc(n1,n2,imboxfilt(Zbar),'parent',ax1)
-        strBoxCar = ['boxcar avg: ' num2str(opts.BinStep) '\times' num2str(opts.BinStep)];
-        text(.99,.01,strBoxCar,'units','normalized','fontsize',10,...
-        'verticalalignment','top','horizontalalignment','right',...
-        'color','r','parent',ax1);
-        ax1.XAxisLocation='Top';
-        set(ax1,'FontSize',8);
-    else
-        imagesc(n1,n2,Zbar,'parent',ax1)
-    end
-    xlabel(ax1,'position (sites)');
-    ylabel(ax1,'position (sites)');    
 
+plot([1 1]*rstar,[0 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
+plot([rstar x(end)],[1 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
 
+if ~isempty(trap_str)    
+    text(.98,.02,trap_str,'interpreter','latex','horizontalalignment','right',...
+    'verticalalignment','bottom','fontsize',10,'units','normalized',...
+    'backgroundcolor','w','margin',1,'parent',ax3)
+end
+hF.UserData.Axes{1}.UserData.subplot_inds = [1 2 1];
+hF.UserData.Axes{2}.UserData.subplot_inds = [2 2 2];
+hF.UserData.Axes{3}.UserData.subplot_inds = [2 2 4];
 
-    text(1,1,strRadialSummary,'units','pixels','fontsize',10,...
-        'horizontalalignment','left','verticalalignment','bottom',...
-        'color','r','interpreter','latex','parent',ax1);  
-    colormap(ax1,'bone');
-    axis(ax1,'equal');
-    axis(ax1,'tight');
+hF.SizeChangedFcn=@figResize;
 
-     text(.99,.99,[strC newline strS],'units','normalized','fontsize',12,...
-        'verticalalignment','top','horizontalalignment','right',...
-        'color','r','parent',ax1,'interpreter','latex','fontname','arial');
-        ax1.XAxisLocation='Top';
-        set(ax1,'FontSize',8);
-
-    cc1=colorbar(ax1);
-    cc1.Label.String = 'charge occupation';
-
-    set(ax1,'ydir','normal','box','on','linewidth',1);
-    
-    if isfield(opts,'nMaxShow')
-       caxis(ax1,[0 opts.nMaxShow]); 
-    end
-    xlim(ax1,n1_lim);
-    ylim(ax1,n2_lim);
-
-    % Average charge density
-    hF.UserData.Axes{2}=subplot(2,2,2,'parent',hF);
-    ax2=hF.UserData.Axes{2};
-    ax2.Units='pixels';
-    ax2.UserData.subplot_inds = [2 2 2];
-    subplot_inds=ax2.UserData.subplot_inds;
-
-    [x0, y0, w, h]=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
-    ax2.Position = [x0 y0 w h];
-
-
-    pData=histogram('BinEdges',redges,'BinCounts',nr_mean)
-    legStr ={'data'};
-    hold on
-    errorbar(rcen,nr_mean,nr_std,'linewidth',1,'markerfacecolor',[.5 .5 .5],...
-        'parent',ax2,'linestyle','none','color','k');
-    
-    hold on
-    hold(ax2,'on')
-    xlabel(ax2,'radial distance (sites)');
-    ylabel(ax2,'$n(r)$','interpreter','latex','fontsize',14);
-    text(.99,.99,strRadialSummary,'units','normalized','fontsize',12,'horizontalalignment','right',...
-        'verticalalignment','top','interpreter','latex','parent',ax2);
-    rL = get(ax2,'XLim');
-    xlim(ax2,[0 rL(2)]);
-
-
-    if isfield(opts,'nMaxShow')
-       ylim(ax2,[0 opts.nMaxShow]); 
-    end
-    
-    if isfield(opts,'rMaxShow')
-       xlim(ax2,[0 opts.rMaxShow]); 
-    end
-
-    xlim(ax2,[0 5+ceil(prctile(r_all,98))])
-
-
-    strRadialBin = ['radial bin ' char(916) 'r:' num2str(opts.BinStep) ', R_0: ' num2str(opts.Bin0)];
-    text(.01,1,strRadialBin,'units','normalized','horizontalalignment','left',...
-        'verticalalignment','bottom','fontsize',8,'parent',ax2);
-
-    rVec=linspace(0,100,100);
-    for nn=1:length(opts.GaussFitDensityMax)
-        s       = gauss_sigma(nn,1);
-        s_err   = gauss_sigma(nn,2);
-
-        N = Iouter(nn)/nr_partial_cdf(s,rMin(nn));
-        pGaussFits(nn)=plot(rVec,nr_fit(s,rVec,N),'-');
-        legStr{end+1}=['2D Gauss : $\sigma=' num2str(round(s),'%.1f')  ...
-             '~sites (' num2str(round(s*aL_um,1)) '~\mu \mathrm{m}' ...
-            ' n<' num2str(opts.GaussFitDensityMax(nn)) '$'];
-    end
-
-    % Plot gibbs fit
-    pGaussFits(end+1) = plot(rVec,feval(GibbsFit,rVec),'-');
-    legStr{end+1} = ['Gibbs $z_0 = ' num2str(GibbsFit.z0,'%.1f') '$, $T= ' num2str(T_HOt_g,'%.1f') 't$ ' ...
-        '(' num2str(T_HO_g_nK,'%.0f') ' nK)' ];
-    if ~isempty(opts.GaussFitDensityMax)
-    legend([pData pGaussFits],legStr,'interpreter','latex','fontsize',8,...
-        'location','southeast','parent',hF);
-    end
-
-  
-
-    set(ax2,'box','on','linewidth',1,'fontsize',12,...
-        'yaxislocation','right')
-
-    % Plot radial average ndet std
-    hF.UserData.Axes{3}=subplot(2,2,4,'parent',hF);
-    ax3=hF.UserData.Axes{3};
-    ax3.Units='pixels';
-    ax3.UserData.subplot_inds = [2 2 4];
-    [x0, y0, w, h]=getAxesPos(2,2,4,W,H);
-    ax3.Position = [x0 y0 w h];
-    
-    plot(x,100*f,'k-','linewidth',2,'parent',ax3);
-    xlabel(ax3,'radial distance (\mum)')
-    xlim(ax3,[0 max(x)]);
-    % ylim(ax3,[0 102]);
-    set(ax3,'box','on','linewidth',1,'fontsize',12,...
-        'yaxislocation','right')
-    ylabel(ax3,'% within radius')
-    hold(ax3,'on');
-        
-
-    plot([1 1]*rstar,[0 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
-    plot([rstar x(end)],[1 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
-
-    if ~isempty(trap_str)    
-        text(.98,.02,trap_str,'interpreter','latex','horizontalalignment','right',...
-        'verticalalignment','bottom','fontsize',10,'units','normalized',...
-        'backgroundcolor','w','margin',1,'parent',ax3)
-    end
-    hF.UserData.Axes{1}.UserData.subplot_inds = [1 2 1];
-    hF.UserData.Axes{2}.UserData.subplot_inds = [2 2 2];
-    hF.UserData.Axes{3}.UserData.subplot_inds = [2 2 4];
-
-    hF.SizeChangedFcn=@figResize;
-    
   
 end
 
