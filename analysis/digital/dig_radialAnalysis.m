@@ -9,18 +9,11 @@ if ~isfield(opts,'Bin0');           opts.Bin0 = 4;end
 if ~isfield(opts,'rMax');           opts.rMax = 110;end
 
 
-%%
-% Fittng n(r)
-% if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [.05 1];end
-
 % YOU NEED A BETTER VERSION OF MATLAB TO DO OTHER DENSITY MAXIMUMS
 if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [1];end
 
 %% Parameters Relvant do Fermi-Hubbard Model
-
-% if ~isfield(opts,'TrapOmega');      opts.TrapOmega = [];end
-% if ~isfield(opts,'Tunneling');      opts.Tunneling = [];end
-% if ~isfield(opts,'U');              opts.Tunneling = [];end
+% Default Tunneling Values
 
 if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*67;end % 2025/03 sqrt(1.0965) % from 11/25/24
 if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
@@ -30,11 +23,11 @@ if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 
 % Physical constants
 h       = 6.62607015e-34;         % planck's constant [Js]
-amu     = 1.66053906660e-27;    % atomic mass unit[kg]    
+amu     = 1.66053906660e-27;      % atomic mass unit[kg]    
 m       = amu*39.96399848;        % 40K mass [kg]
-aL      = (1054e-9)/2;           % lattice spacing [m]
-aL_um   = aL*1e6;
-kB      = 1.380649e-23;           % J/K
+aL      = (1054e-9)/2;            % lattice spacing [m]
+aL_um   = aL*1e6;                 % lattice spacign [m]
+kB      = 1.380649e-23;           % boltzmann constant [J/K]
 
 %% Trap Potential V(r) functions
 
@@ -204,17 +197,17 @@ n_up = npeak_g/2 + n_doublon;
 
 % Center of the cloud
 strC = ['$(x_c,y_c):' ...
-    '(' num2str(round(mean(digdata.Xc_px),0)) ',' ...
-    num2str(round(mean(digdata.Yc_px),0)) ')~\mathrm{px},~'  ...
-    '(' num2str(round(mean(digdata.Xc_site),0)) ',' ...
-    num2str(round(mean(digdata.Yc_site),0)) ')~\mathrm{site}$'];
+    '(' num2str(round(mean(digdata.Xc_px(:,1)),0)) ',' ...
+    num2str(round(mean(digdata.Yc_px(:,1)),0)) ')~\mathrm{px},~'  ...
+    '(' num2str(round(mean(digdata.Xc_site(:,1)),0)) ',' ...
+    num2str(round(mean(digdata.Yc_site(:,1)),0)) ')~\mathrm{site}$'];
 
 % Second moment of cloud
 strS = ['$(x_\sigma,y_\sigma):' ...
-    '(' num2str(round(mean(digdata.Xs_um),1)) ',' ...
-    num2str(round(mean(digdata.Ys_um),1)) ')~\mu\mathrm{m},~'  ...
-    '(' num2str(round(mean(digdata.Xs_site),1)) ',' ...
-    num2str(round(mean(digdata.Ys_site),1)) ')~\mathrm{site}$'];
+    '(' num2str(round(mean(digdata.Xs_um(:,1)),1)) ',' ...
+    num2str(round(mean(digdata.Ys_um(:,1)),1)) ')~\mu\mathrm{m},~'  ...
+    '(' num2str(round(mean(digdata.Xs_site(:,1)),1)) ',' ...
+    num2str(round(mean(digdata.Ys_site(:,1)),1)) ')~\mathrm{site}$'];
     
 
     if ~isnan(opts.TrapOmega) && ~isnan(opts.Tunneling)
@@ -229,8 +222,8 @@ strS = ['$(x_\sigma,y_\sigma):' ...
         trap_str=[];
     end
 
-    lineN = ['$' num2str(round(mean(digdata.Natoms))) '\pm' ...        
-        num2str(round(std(digdata.Natoms,1))) '$ atoms (n=' num2str(size(Z,3)) ')'];
+    lineN = ['$' num2str(round(mean(digdata.Natoms(:,1)))) '\pm' ...        
+        num2str(round(std(digdata.Natoms(:,1),1))) '$ atoms (n=' num2str(size(Z,3)) ')'];
     lineSigmaExpect = ['$\langle \sigma_r \rangle=' ...
         num2str(round(aL_um*sigma_r_numerical,1)) '~\mu\mathrm{m}$'];
 
@@ -261,34 +254,7 @@ strS = ['$(x_\sigma,y_\sigma):' ...
 
     n2_lim(1) = max([n2_lim(1) n2(1)]);
     n2_lim(2) = min([n2_lim(2) n2(end)]);
-    %% Create radial potential vector
-    
-    % % Constants
-    % h = 6.62607015*10^-34;
-    % m = 39.96399848*1.66053906660*10^-27;
-    % lam = (1054*10^-9*1054*10^-9*1064*10^-9)^(1/3);
-    % aL = lam/2;
-    % 
-    % % 120mW XDT + 2.5ER request lattice trap frequencies - calibrated
-    % % 02/29/24 (reanalyzed 04/11/24)
-    % omega_x = 2*pi*67.3;
-    % omega_y = 2*pi*60.2;
-    % omega_bar = (omega_x*omega_y).^(1/2);
-    % 
-    % % Harmonic potential in Hz
-    % PotentialVector = 0.5*m*omega_bar^2*aL^2.*rVec.^2/h;    
-
-    % out = struct;
-    % out.CroppedImages                  = Zsub;
-    % out.AverageImage                   = ZsubBar;
-    % out.SiteVector1                    = r(1):r(2);
-    % out.SiteVector2                    = r(3):r(4);
-    % out.RadialCenter                   = [Xcbar Ycbar];
-    % out.RadialVector                   = rVec;
-    % out.PotentialVector                = PotentialVector;
-    % out.AverageOccupation              = radial_charge_mean;
-    % out.AverageOccupationUncertainty   = radial_charge_mean_std/sqrt(Npics);
-
+  
 
     %% Assign to output
     output = struct;
@@ -509,8 +475,7 @@ function [sigmaR,sigmaR_err]=pdf_gauss_fit(r,rMin)
         'pdf',pdf_r,'cdf',cdf_r,...
         'Start',r_expect*sqrt(2/pi), ...
         'LowerBound',0);
-    end
-    
+    end    
     sigmaR = pdf_r_vals(1);
     sigmaR_err =(pdf_r_cints(2,1)-pdf_r_cints(1,1))*0.5;
 end
