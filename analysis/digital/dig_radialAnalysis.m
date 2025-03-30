@@ -29,18 +29,26 @@ if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 
 
 input_data{1,1} = ['V₀ [Eᵣ]'];
-input_data{2,1} = ['ωᵣ/(2π) [Hz]'];
+input_data{2,1} = ['ωr/(2π) [Hz]'];
 input_data{3,1} = ['ωz/(2π) [Hz]'];
-input_data{4,1} = ['a lattice [nm]'];
-input_data{5,1} = ['m₀ [amu]'];
-input_data{6,1} = ['B [Gauss]'];
+input_data{4,1} = ['B [Gauss]'];
 
 input_data{1,2} = 2.5;
 input_data{2,2} = 67;
 input_data{3,2} = 67*5;
-input_data{4,2} = 527;
-input_data{5,2} = 39.9639;
-input_data{6,2} = 195;
+input_data{4,2} = 195;
+
+
+output_data{1,1} = 'tunneling [Hz]';
+output_data{1,2} = '[563, 20, .1]';
+output_data{2,1} = 'band gap [Hz]';
+output_data{2,2} = '[2000, 200, 100]';
+output_data{3,1} = 'tunnel r [sites]';
+output_data{3,2} = '20';
+output_data{4,1} = 'tunnel z [sites]';
+output_data{4,2} = '5';
+output_data{5,1} = 'U/t';
+output_data{5,2} = '5';
 
 %% Constants
 
@@ -378,8 +386,6 @@ ylim(ax1,n2_lim);
 %% Radial Probability Density Function (PDF)
 % Average charge density
 
-
-
 % Initialize Axis Object
 hF.UserData.Axes{2}=subplot(2,2,2,'parent',hF);
 ax2=hF.UserData.Axes{2};
@@ -428,32 +434,38 @@ end
 
 %% Radial Cummulative Density Function (CDF)
 
-hpSummary = uipanel('parent',hF,'units','pixels');
+hpSummary = uipanel('parent',hF,'units','pixels',...
+    'backgroundcolor','w','bordertype','none');
 hpSummary.UserData.subplot_inds=[2 2 4];
 subplot_inds=hpSummary.UserData.subplot_inds;
 hpSummary.Position=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
- % = [x0 y0 w h];
 hF.UserData.Axes{3}=hpSummary;
 
 ht_input = uitable('parent',hpSummary);
 set(ht_input,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
     'ColumnEditable',[false true],'units','normalized',...
-    'ColumnWidth',{70, 70});
-% subplot_inds=ht.UserData.subplot_inds;
-% [x0, y0, w, h]=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
-% ht.Position = [x0 y0 w h];
+    'ColumnWidth',{80, 90});
 ht_input.Data=input_data;
+ht_input.Position(3:4) = ht_input.Extent(3:4);
+ht_input.Position(1:2) = [0 1-ht_input.Extent(4)];
 
-ht_input.Position = [0 0 ht_input.Extent(3) 1];
 
+ht_output_1 = uitable('parent',hpSummary);
+set(ht_output_1,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
+    'ColumnEditable',[false false],'units','normalized',...
+    'ColumnWidth',{80, 90});
+ht_output_1.Data{1,1} =  ['T Gauss Equiparition [nK,t]'];
+ht_output_1.Data = output_data;
+ht_output_1.Position(3:4) = ht_output_1.Extent(3:4);
+ht_output_1.Position(1:2) = [0 ht_input.Position(4)];
 
-ht_output = uitable('parent',hpSummary);
-set(ht_output,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
-    'ColumnEditable',[false true],'units','normalized',...
-    'ColumnWidth',{200, 70});
-ht_output.Data{1,1} =  ['T Gauss Equiparition [nK,t]'];
-ht_output.Position = [ht_input.Position(3)  0 ht_output.Extent(3) 1];
-
+ht_output_2 = uitable('parent',hpSummary);
+set(ht_output_2,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
+    'ColumnEditable',[false false],'units','normalized',...
+    'ColumnWidth',{80, 90});
+ht_output_2.Data{1,1} =  ['T Gauss Equiparition [nK,t]'];
+ht_output_2.Position(3:4) = ht_output_2.Extent(3:4);
+ht_output_2.Position(1:2) = [0 ht_input.Position(4)];
 
 % hF.UserData.Axes{3}=subplot(2,2,4,'parent',hF);
 % ax3=hF.UserData.Axes{3};
@@ -494,7 +506,10 @@ function figResize(src,evt)
      ax1.Position = getAxesPos(1,2,1,src.Position(3),src.Position(4));
     ax2.Position = getAxesPos(2,2,2,src.Position(3),src.Position(4));
     hpSummary.Position = getAxesPos(2,2,4,src.Position(3),src.Position(4));
-    ht_input.Position = [0 0  ht_input.Extent(3) 1];
+ht_input.Position(3:4) = ht_input.Extent(3:4);
+ht_input.Position(1:2) = [0 1-ht_input.Extent(4)];
+ht_output_1.Position(3:4) = ht_output_1.Extent(3:4);
+ht_output_1.Position(1:2) = [0 ht_input.Position(2)-ht_output_1.Position(4)];
 
 end
 end
@@ -541,9 +556,6 @@ function [sigmaR,sigmaR_err]=pdf_gauss_fit(r,rMin)
     sigmaR_err =(pdf_r_cints(2,1)-pdf_r_cints(1,1))*0.5;
 end
 
-
-
- 
 
 function P=getAxesPos(num_rows,num_cols,index,figW,figH)
     yTop=60;
