@@ -102,7 +102,6 @@ for kk=1:size(digdata.Zdig,3)
     r=r(:);
     rlist{kk} = r;
 end
-
 r_all = rlist{:};               % r for all atoms
 
 [f,x] = ecdf(r_all*aL_um);        % Empircal CDF (cummulative density function)
@@ -130,7 +129,7 @@ T_HOt = sigma2Tovert(sigma_r_numerical*aL);
 T_HO_nK = 1e9*sigma2Tovert(sigma_r_numerical*aL)*h*opts.Tunneling/kB;
 
 %% Fit Observations to 2D Gaussian PDF
-% Fit the measured atoms to a probability density function
+% Fit the measured atoms to a 2D Gaussian probability density function
 rMin                    = zeros(length(opts.GaussFitDensityMax),1);
 gauss_sigma             = zeros(length(opts.GaussFitDensityMax),2);
 
@@ -138,6 +137,7 @@ gauss_sigma             = zeros(length(opts.GaussFitDensityMax),2);
 I0=trapz([0 rcen],[mean(nr_mean(1:2)); nr_mean]);
 
 % Iterate over max density fit
+gauss_str={};
 for nn=1:length(opts.GaussFitDensityMax)
     iMinFlip = find(flip(nr_mean)>opts.GaussFitDensityMax(nn),1);    
     if isempty(iMinFlip)
@@ -151,6 +151,10 @@ for nn=1:length(opts.GaussFitDensityMax)
     end
     % Fit the distribution
     [gauss_sigma(nn,1),gauss_sigma(nn,2)]=pdf_gauss_fit(r_all,rMin(nn));
+    s=gauss_sigma(nn,1);
+    gauss_str{nn}=['2D Gauss : $\sigma=' num2str(round(s),'%.1f')  ...
+         '~\mathrm{sites}~(' num2str(round(s*aL_um,1)) '~\mu \mathrm{m})' ...
+        '~[\mathrm{fit}~n(r)<' num2str(opts.GaussFitDensityMax(nn)) ']$'];
 end
 
 % Convert the fit into n(r)
@@ -158,6 +162,15 @@ nr_partial_cdf  = @(s,R) 1-erf(R./sqrt(2*s^2)); % integral of foo [R,infinity]
 nr_fit          = @(s,r,N0) sqrt(2/pi)/s*exp(-r.^2/(2*s.^2))*N0;
 
 %% Fit Data to Gibb's estimate
+% CJF : I am not familiar with this fitting protocol as it is something
+% that RL and JHT came up with. This should really be renamed to something
+% that is more clear into the physical assumptions. Example "Gibbs" I don't
+% think really means anything besides the fact it uses a Gibbs ensemble of
+% some kind....
+%
+% Also a note.. is that this function is a FIT function, and not a
+% probability density fit. So this will depend heavily on binning. It is
+% more correct to fit the probability. Please fix this.
 
 % Guesses
 Gz0 = 1;
@@ -369,43 +382,38 @@ ps(1)=histogram('BinEdges',redges,'BinCounts',nr_mean);
 hold(ax2,'on')
 errorbar(rcen,nr_mean,nr_std,'linewidth',1,'markerfacecolor',[.5 .5 .5],...
     'parent',ax2,'linestyle','none','color','k');
-legStr ={'Data'};
-
+data_str = ['Data : $N=' num2str(round(mean(digdata.Natoms(:,1)))) '\pm' ...        
+    num2str(round(std(digdata.Natoms(:,1),1))) '$~(' num2str(size(Z,3)) ' images)'];
+legStr ={data_str};
 xlabel(ax2,'radial distance (sites)');
 ylabel(ax2,'$n(r)$','interpreter','latex','fontsize',14);
-text(.99,.99,strRadialSummary,'units','normalized','fontsize',12,'horizontalalignment','right',...
-    'verticalalignment','top','interpreter','latex','parent',ax2);
+
+
 xlim(ax2,[0 5+ceil(prctile(r_all,98))])
-
-
 text(.01,1,strRadialBin,'units','normalized','horizontalalignment','left',...
     'verticalalignment','bottom','fontsize',8,'parent',ax2);
+set(ax2,'box','on','linewidth',1,'fontsize',12,...
+    'yaxislocation','right')
 
+% Plot 2D Gauss Fits
 rVec=linspace(0,100,100);
 for nn=1:length(opts.GaussFitDensityMax)
     s       = gauss_sigma(nn,1);
     s_err   = gauss_sigma(nn,2);
-
     N = Iouter(nn)/nr_partial_cdf(s,rMin(nn));
-    pGaussFits(nn)=plot(rVec,nr_fit(s,rVec,N),'-');
-    legStr{end+1}=['2D Gauss : $\sigma=' num2str(round(s),'%.1f')  ...
-         '~sites (' num2str(round(s*aL_um,1)) '~\mu \mathrm{m}' ...
-        ' n<' num2str(opts.GaussFitDensityMax(nn)) '$'];
+    ps(end+1)=plot(rVec,nr_fit(s,rVec,N),'-');
+    legStr{end+1}=gauss_str{nn};
 end
 
-% Plot gibbs fit
-pGaussFits(end+1) = plot(rVec,feval(GibbsFit,rVec),'-');
-legStr{end+1} = ['Gibbs $z_0 = ' num2str(GibbsFit.z0,'%.1f') '$, $T= ' num2str(T_HOt_g,'%.1f') 't$ ' ...
+% Plot Gibbs fit
+ps(end+1) = plot(rVec,feval(GibbsFit,rVec),'-');
+legStr{end+1} = ['Gibbs $z_0 = ' num2str(GibbsFit.z0,'%.2f') '$, $T= ' num2str(T_HOt_g,'%.1f') 't$ ' ...
     '(' num2str(T_HO_g_nK,'%.0f') ' nK)' ];
 if ~isempty(opts.GaussFitDensityMax)
-legend([pData pGaussFits],legStr,'interpreter','latex','fontsize',8,...
-    'location','southeast','parent',hF);
+legend(ps,legStr,'interpreter','latex','fontsize',8,...
+    'location','northeast','parent',hF);
 end
 
-
-
-set(ax2,'box','on','linewidth',1,'fontsize',12,...
-    'yaxislocation','right')
 
 %% Radial Cummulative Density Function (CDF)
 hF.UserData.Axes{3}=subplot(2,2,4,'parent',hF);
