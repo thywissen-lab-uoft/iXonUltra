@@ -1,9 +1,14 @@
 function [hF,output] = dig_radialAnalysis(digdata,opts)
+% Author : CJ Fujiwara
+%
+% This code takes digitized data and does various radial analysis which
+% assumes cylindrical symmetry, which is quite common.
 if nargin == 1;opts = struct;end    
 
 
 %% Default Binning Options
-% How to calculate n(r)
+% These are the default bin settings.
+
 if ~isfield(opts,'BinStep');        opts.BinStep = 4;end   
 if ~isfield(opts,'Bin0');           opts.Bin0 = 4;end   
 if ~isfield(opts,'rMax');           opts.rMax = 110;end
@@ -20,6 +25,22 @@ if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [1];end
 if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*67;end % 2025/03 sqrt(1.0965) % from 11/25/24
 if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
 if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
+
+
+
+input_data{1,1} = ['V₀ [Eᵣ]'];
+input_data{2,1} = ['ωᵣ/(2π) [Hz]'];
+input_data{3,1} = ['ωz/(2π) [Hz]'];
+input_data{4,1} = ['a lattice [nm]'];
+input_data{5,1} = ['m₀ [amu]'];
+input_data{6,1} = ['B [Gauss]'];
+
+input_data{1,2} = 2.5;
+input_data{2,2} = 67;
+input_data{3,2} = 67*5;
+input_data{4,2} = 527;
+input_data{5,2} = 39.9639;
+input_data{6,2} = 195;
 
 %% Constants
 
@@ -51,10 +72,10 @@ end
 
 %% Calculate Radial Jacobian and Bins
 
-stepMax     = floor(opts.rMax/opts.BinStep);                 % # of r steps
+stepMax     = floor(opts.rMax/opts.BinStep);                  % # of r steps
 redges      = [0 opts.Bin0];                                  % About r=0
 redges      = [redges opts.Bin0+[1:1:stepMax]*opts.BinStep];  % Rest of edges
-rcen        = (redges(1:end-1) + redges(2:end))/2;             % bin centers
+rcen        = (redges(1:end-1) + redges(2:end))/2;            % bin centers
 
 % Jacobian via ideal circle
 areas           = pi*redges.^2;areas=areas(:);                % Area of each bin edge
@@ -92,7 +113,6 @@ P           = [digdata.Params];
 
 %% Calculate radial profile
 % For every image compute distance to the center of every atom
-
 rlist={};
 img_ind = 1; % Image index (in case of double shot, we always use first)
 for kk=1:size(digdata.Zdig,3)
@@ -103,7 +123,6 @@ for kk=1:size(digdata.Zdig,3)
     rlist{kk} = r;
 end
 r_all = rlist{:};               % r for all atoms
-
 [f,x] = ecdf(r_all*aL_um);        % Empircal CDF (cummulative density function)
 %% Calculate Radial Histogram
 nr = zeros(length(rcen),size(digdata.Zdig,3));
@@ -189,16 +208,12 @@ options.Upper       = [30 2*Gs];
 options.StartPoint  = [Gz0 Gs];     
 options.MaxIter     = 3000;
 options.MaxFunEvals = 3000;
-% options.Weights     = w;
 
-% keyboard
         
 GibbsFit=fit(rcen',nr_mean,gibbsFit,options);
 cint = confint(GibbsFit,0.683);
 Gz0Err = (cint(2,1)-cint(1,1))*0.5;
 GsErr = (cint(2,2)-cint(1,2))*0.5;
-
-
 
 T_HOt_g = sigma2Tovert(GibbsFit.s*aL);
 T_HO_g_nK = 1e9*sigma2Tovert(GibbsFit.s*aL)*h*opts.Tunneling/kB;
@@ -252,18 +267,18 @@ n2 = digdata.n2;
 [nn1,nn2]=meshgrid(n1,n2);
 
 for nn=1:size(Z,3)
-    Zthis = Z(:,:,nn);
-    n1c(nn) = sum(Zthis.*nn1,'all')/sum(Zthis,'all');
-    n2c(nn) = sum(Zthis.*nn2,'all')/sum(Zthis,'all');    
-    n1c_sq(nn) = sum(Zthis.*nn1.^2,'all')/sum(Zthis,'all');
-    n2c_sq(nn) = sum(Zthis.*nn2.^2,'all')/sum(Zthis,'all');    
-    n1_sigma(nn) = sqrt(n1c_sq(nn)-n1c(nn)^2);
-    n2_sigma(nn) = sqrt(n2c_sq(nn)-n2c(nn)^2);
+    Zthis           = Z(:,:,nn);
+    n1c(nn)         = sum(Zthis.*nn1,'all')/sum(Zthis,'all');
+    n2c(nn)         = sum(Zthis.*nn2,'all')/sum(Zthis,'all');    
+    n1c_sq(nn)      = sum(Zthis.*nn1.^2,'all')/sum(Zthis,'all');
+    n2c_sq(nn)      = sum(Zthis.*nn2.^2,'all')/sum(Zthis,'all');    
+    n1_sigma(nn)    = sqrt(n1c_sq(nn)-n1c(nn)^2);
+    n2_sigma(nn)    = sqrt(n2c_sq(nn)-n2c(nn)^2);
 end
 n_sigma_med =[median(n1_sigma) median(n2_sigma)];
 nc_med = [median(n1c) median(n2c)];    
-n1_lim = nc_med(1)+4.5*[-1 1]*n_sigma_med(1);
-n2_lim = nc_med(2)+4.5*[-1 1]*n_sigma_med(2);
+n1_lim = nc_med(1)+3*[-1 1]*n_sigma_med(1)+[-5 5];
+n2_lim = nc_med(2)+3*[-1 1]*n_sigma_med(2)+[-5 5];
 
 n1_lim(1) = max([n1_lim(1) n1(1)]);
 n1_lim(2) = min([n1_lim(2) n1(end)]);
@@ -290,7 +305,7 @@ output.Gibbs_RsErr              = GsErr*aL_um;      % in um
 %% Initialize Figure
 
 if ~isfield(opts,'Parent')
-    opts.Parent = figure('color','w','Position',[300 100 1200 630],...
+    opts.Parent = figure('color','w','Position',[300 100 1200 610],...
         'Name','Radial','NumberTitle','off');
     hF = opts.Parent;
 else
@@ -301,6 +316,9 @@ else
 end
 W = hF.Position(3);
 H = hF.Position(4);
+
+hF.UserData.InputData = input_data;
+hF.UserData.OutputData = {};
     
 
 if isfield(digdata,'SourceDirectory') && ...
@@ -322,8 +340,7 @@ hF.UserData.Axes{1}=subplot(1,2,1,'parent',hF);
 ax1= hF.UserData.Axes{1};
 ax1.UserData.subplot_inds = [1 2 1];
 ax1.Units='pixels';
-[x0, y0, w, h]=getAxesPos(1,2,1,W,H);
-ax1.Position = [x0 y0 w h];
+ax1.Position=getAxesPos(1,2,1,W,H);
 
 if size(digdata.Zdig,3)>1
     imagesc(n1,n2,imboxfilt(Zbar),'parent',ax1)
@@ -338,35 +355,30 @@ else
 end
 xlabel(ax1,'position (sites)');
 ylabel(ax1,'position (sites)');    
-
-
-
 text(1,1,strRadialSummary,'units','pixels','fontsize',10,...
     'horizontalalignment','left','verticalalignment','bottom',...
     'color','r','interpreter','latex','parent',ax1);  
-colormap(ax1,'bone');
+colormap(ax1,slanCM('magma'))
+% colormap(ax1,'bone');
 axis(ax1,'equal');
 axis(ax1,'tight');
-
- text(.99,.99,[strC newline strS],'units','normalized','fontsize',12,...
+text(.99,.99,[strC newline strS],'units','normalized','fontsize',12,...
     'verticalalignment','top','horizontalalignment','right',...
     'color','r','parent',ax1,'interpreter','latex','fontname','arial');
-    ax1.XAxisLocation='Top';
-    set(ax1,'FontSize',8);
+ax1.XAxisLocation='Top';
+ax1.YAxisLocation='Right';
 
-cc1=colorbar(ax1);
-cc1.Label.String = 'charge occupation';
-
+set(ax1,'FontSize',8);
+cc1=colorbar(ax1,'location','westoutside');
+% cc1.Label.String = 'charge occupation';
 set(ax1,'ydir','normal','box','on','linewidth',1);
-
-if isfield(opts,'nMaxShow')
-   caxis(ax1,[0 opts.nMaxShow]); 
-end
 xlim(ax1,n1_lim);
 ylim(ax1,n2_lim);
 
 %% Radial Probability Density Function (PDF)
 % Average charge density
+
+
 
 % Initialize Axis Object
 hF.UserData.Axes{2}=subplot(2,2,2,'parent',hF);
@@ -374,8 +386,7 @@ ax2=hF.UserData.Axes{2};
 ax2.Units='pixels';
 ax2.UserData.subplot_inds = [2 2 2];
 subplot_inds=ax2.UserData.subplot_inds;
-[x0, y0, w, h]=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
-ax2.Position = [x0 y0 w h];
+ax2.Position=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
 
 % Plot the Data
 ps(1)=histogram('BinEdges',redges,'BinCounts',nr_mean);
@@ -385,10 +396,10 @@ errorbar(rcen,nr_mean,nr_std,'linewidth',1,'markerfacecolor',[.5 .5 .5],...
 data_str = ['Data : $N=' num2str(round(mean(digdata.Natoms(:,1)))) '\pm' ...        
     num2str(round(std(digdata.Natoms(:,1),1))) '$~(' num2str(size(Z,3)) ' images)'];
 legStr ={data_str};
+
+% Axes Labeling
 xlabel(ax2,'radial distance (sites)');
 ylabel(ax2,'$n(r)$','interpreter','latex','fontsize',14);
-
-
 xlim(ax2,[0 5+ceil(prctile(r_all,98))])
 text(.01,1,strRadialBin,'units','normalized','horizontalalignment','left',...
     'verticalalignment','bottom','fontsize',8,'parent',ax2);
@@ -416,38 +427,76 @@ end
 
 
 %% Radial Cummulative Density Function (CDF)
-hF.UserData.Axes{3}=subplot(2,2,4,'parent',hF);
-ax3=hF.UserData.Axes{3};
-ax3.Units='pixels';
-ax3.UserData.subplot_inds = [2 2 4];
-[x0, y0, w, h]=getAxesPos(2,2,4,W,H);
-ax3.Position = [x0 y0 w h];
 
-plot(x,100*f,'k-','linewidth',2,'parent',ax3);
-xlabel(ax3,'radial distance (\mum)')
-xlim(ax3,[0 max(x)]);
-% ylim(ax3,[0 102]);
-set(ax3,'box','on','linewidth',1,'fontsize',12,...
-    'yaxislocation','right')
-ylabel(ax3,'% within radius')
-hold(ax3,'on');
-    
+hpSummary = uipanel('parent',hF,'units','pixels');
+hpSummary.UserData.subplot_inds=[2 2 4];
+subplot_inds=hpSummary.UserData.subplot_inds;
+hpSummary.Position=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
+ % = [x0 y0 w h];
+hF.UserData.Axes{3}=hpSummary;
 
-plot([1 1]*rstar,[0 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
-plot([rstar x(end)],[1 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
+ht_input = uitable('parent',hpSummary);
+set(ht_input,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
+    'ColumnEditable',[false true],'units','normalized',...
+    'ColumnWidth',{70, 70});
+% subplot_inds=ht.UserData.subplot_inds;
+% [x0, y0, w, h]=getAxesPos(subplot_inds(1),subplot_inds(2),subplot_inds(3),W,H);
+% ht.Position = [x0 y0 w h];
+ht_input.Data=input_data;
 
-if ~isempty(trap_str)    
-    text(.98,.02,trap_str,'interpreter','latex','horizontalalignment','right',...
-    'verticalalignment','bottom','fontsize',10,'units','normalized',...
-    'backgroundcolor','w','margin',1,'parent',ax3)
-end
+ht_input.Position = [0 0 ht_input.Extent(3) 1];
+
+
+ht_output = uitable('parent',hpSummary);
+set(ht_output,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
+    'ColumnEditable',[false true],'units','normalized',...
+    'ColumnWidth',{200, 70});
+ht_output.Data{1,1} =  ['T Gauss Equiparition [nK,t]'];
+ht_output.Position = [ht_input.Position(3)  0 ht_output.Extent(3) 1];
+
+
+% hF.UserData.Axes{3}=subplot(2,2,4,'parent',hF);
+% ax3=hF.UserData.Axes{3};
+% ax3.Units='pixels';
+% ax3.UserData.subplot_inds = [2 2 4];
+% [x0, y0, w, h]=getAxesPos(2,2,4,W,H);
+% ax3.Position = [x0 y0 w h];
+% 
+% plot(x,100*f,'k-','linewidth',2,'parent',ax3);
+% xlabel(ax3,'radial distance (\mum)')
+% xlim(ax3,[0 max(x)]);
+% % ylim(ax3,[0 102]);
+% set(ax3,'box','on','linewidth',1,'fontsize',12,...
+%     'yaxislocation','right','fontname','times')
+% ylabel(ax3,'% within radius')
+% hold(ax3,'on');
+% 
+% 
+% 
+% plot([1 1]*rstar,[0 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
+% plot([rstar x(end)],[1 1]*interp1(x(2:end),100*f(2:end),rstar),'k--','linewidth',1,'parent',ax3);
+% 
+% if ~isempty(trap_str)    
+%     text(.98,.02,trap_str,'interpreter','latex','horizontalalignment','right',...
+%     'verticalalignment','bottom','fontsize',10,'units','normalized',...
+%     'backgroundcolor','w','margin',1,'parent',ax3)
+% end
+
+%%
 hF.UserData.Axes{1}.UserData.subplot_inds = [1 2 1];
 hF.UserData.Axes{2}.UserData.subplot_inds = [2 2 2];
 hF.UserData.Axes{3}.UserData.subplot_inds = [2 2 4];
 
 hF.SizeChangedFcn=@figResize;
+figResize(hF);
 
-  
+function figResize(src,evt)
+     ax1.Position = getAxesPos(1,2,1,src.Position(3),src.Position(4));
+    ax2.Position = getAxesPos(2,2,2,src.Position(3),src.Position(4));
+    hpSummary.Position = getAxesPos(2,2,4,src.Position(3),src.Position(4));
+    ht_input.Position = [0 0  ht_input.Extent(3) 1];
+
+end
 end
 
 function [sigmaR,sigmaR_err] = pdf_gauss2D(r)
@@ -493,57 +542,29 @@ function [sigmaR,sigmaR_err]=pdf_gauss_fit(r,rMin)
 end
 
 
-  function figResize(src,evt)
-        for kk=1:length(src.UserData.Axes)
-            ax=src.UserData.Axes{kk};
-            inds=ax.UserData.subplot_inds;
-            [a b c d]=getAxesPos(inds(1),inds(2),inds(3),src.Position(3),src.Position(4));
-            src.UserData.Axes{kk}.Position=[a b c d];                
-        end
-  end
-  
-  % Obsolete
-function [Tics,Average,dev,n]=radial_profile(data,radial_step)
-%main axii cpecified:
-x=(1:size(data,2))-size(data,2)/2;
-y=(1:size(data,1))-size(data,1)/2;
-% coordinate grid:
-[X,Y]=meshgrid(x,y);
-% creating circular layers
-Z_integer=round(abs(X+1i*Y)/radial_step)+1;
-% % illustrating the principle:
-% % figure;imagesc(Z_integer.*data)
-% very fast MatLab calculations:
-Tics=accumarray(Z_integer(:),abs(X(:)+1i*Y(:)),[],@mean);
-Average=accumarray(Z_integer(:),data(:),[],@mean);
 
+ 
 
-% dev=accumarray(Z_integer(:),data(:),[],@std);
-dev=accumarray(Z_integer(:),data(:),[],@(x) std(x,1));
+function P=getAxesPos(num_rows,num_cols,index,figW,figH)
+    yTop=60;
+    yBot=50;
+    
+    xLeft=60;
+    xRight=65;
+    
+    ySpace=60;
+    xSpace=60;
+    
+    rowNumber = floor((index-1)/num_cols)+1;
+    colNumber = mod(index-1,num_cols)+1;
+    
+    axHeight = (figH-yTop-yBot-ySpace*(num_rows-1))/num_rows;
+    axWidth = (figW-xLeft-xRight-xSpace*(num_cols-1))/num_cols;
+    
+    axX = xLeft + (axWidth+xSpace)*(colNumber-1);
+    axY=(figH-yTop-axHeight)-(rowNumber-1)*(axHeight+ySpace);
 
-n= accumarray(Z_integer(:),data(:),[],@(x) numel(x));
-
-end
-
-
-function [axX,axY,axWidth,axHeight]=getAxesPos(num_rows,num_cols,index,figW,figH)
-yTop=60;
-yBot=50;
-
-xLeft=60;
-xRight=65;
-
-ySpace=60;
-xSpace=60;
-
-rowNumber = floor((index-1)/num_cols)+1;
-colNumber = mod(index-1,num_cols)+1;
-
-axHeight = (figH-yTop-yBot-ySpace*(num_rows-1))/num_rows;
-axWidth = (figW-xLeft-xRight-xSpace*(num_cols-1))/num_cols;
-
-axX = xLeft + (axWidth+xSpace)*(colNumber-1);
-axY=(figH-yTop-axHeight)-(rowNumber-1)*(axHeight+ySpace);
+    P = [axX,axY,axWidth,axHeight];
 
 end
 
