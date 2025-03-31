@@ -46,7 +46,6 @@ if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
 if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 
 
-
 input_data{1,1} = ['V₀ [Eᵣ]'];
 input_data{2,1} = ['ωr/(2π) [Hz]'];
 input_data{3,1} = ['ωz/(2π) [Hz]'];
@@ -112,7 +111,6 @@ output_data{5,2} = '5';
         % Hubbard U
         output{5,1} = 'U/t';
         output{5,2} = 'TBD';
-
     end
 output_data = calcHubbard();
 
@@ -200,17 +198,6 @@ end
 nr_mean = mean(nr,2);
 nr_std = std(nr,0,2)/sqrt(size(nr,2));
 
-%% Calculate numerical second moment
-% The gaussian radius assuming a symmetric gaussian distribution is
-% related to the expectation value of the radius.
-
-% integral (2*pi*r)*P(r)*r = sigma_R*sqrt(pi/2)
-r_expect = mean(r_all,'all');            % expected r
-sigma_r_numerical = r_expect*sqrt(2/pi); % expected r to sigma_R
-
-T_HOt = sigma2Tovert(sigma_r_numerical*aL);
-T_HO_nK = 1e9*sigma2Tovert(sigma_r_numerical*aL)*h*opts.Tunneling/kB;
-
 %% Fit Observations to 2D Gaussian PDF
 % Fit the measured atoms to a 2D Gaussian probability density function
 rMin                    = zeros(length(opts.GaussFitDensityMax),1);
@@ -235,8 +222,13 @@ for nn=1:length(opts.GaussFitDensityMax)
     % Fit the distribution
     [gauss_sigma(nn,1),gauss_sigma(nn,2)]=pdf_gauss_fit(r_all,rMin(nn));
     s=gauss_sigma(nn,1);
-    gauss_str{nn}=['2D Gauss : $\sigma=' num2str(round(s),'%.1f')  ...
+
+    T_HO = m*(2*pi*67)^2*(gauss_sigma(nn,1)*aL)^2/kB;
+    T_HO_t = (kB*T_HO)/(h*563);
+    T_HO_nK = T_HO*1e9;
+    gauss_str{nn}=['Gauss : $\sigma=' num2str(round(s),'%.1f')  ...
          '~\mathrm{sites}~(' num2str(round(s*aL_um,1)) '~\mu \mathrm{m})' ...
+         ';T=' num2str(round(T_HO_nK,0)) '~\mathrm{nK}~(' num2str(round(T_HO_t,1)) 't)'...
         '~[\mathrm{fit}~n(r)<' num2str(opts.GaussFitDensityMax(nn)) ']$'];
 end
 
@@ -244,6 +236,16 @@ end
 nr_partial_cdf  = @(s,R) 1-erf(R./sqrt(2*s^2)); % integral of foo [R,infinity]
 nr_fit          = @(s,r,N0) sqrt(2/pi)/s*exp(-r.^2/(2*s.^2))*N0;
 
+%% Calculate numerical second moment
+% The gaussian radius assuming a symmetric gaussian distribution is
+% related to the expectation value of the radius.
+
+% integral (2*pi*r)*P(r)*r = sigma_R*sqrt(pi/2)
+r_expect = mean(r_all,'all');            % expected r
+sigma_r_numerical = r_expect*sqrt(2/pi); % expected r to sigma_R
+
+T_HOt = sigma2Tovert(sigma_r_numerical*aL);
+T_HO_nK = 1e9*sigma2Tovert(sigma_r_numerical*aL)*h*opts.Tunneling/kB;
 %% Fit Data to Gibb's estimate
 % CJF : I am not familiar with this fitting protocol as it is something
 % that RL and JHT came up with. This should really be renamed to something
@@ -260,7 +262,6 @@ Gz0 = 1;
 Gs = sigma_r_numerical;
 w       = 1./(nr_std.^2); % weights as 1/variance
 w(isinf(w)|isnan(w)) = 0;
-
 
 
 gibbsFit=fittype('2./(z0*exp(-r.^2./(2*s.^2)) + z0.^(-1)*exp(r.^2./(2*s.^2)) + 2)','independent',{'r'},...
@@ -285,7 +286,6 @@ T_HO_g_nK = 1e9*sigma2Tovert(GibbsFit.s*aL)*h*opts.Tunneling/kB;
 npeak_g = feval(GibbsFit,0);
 n_doublon = (GibbsFit.z0).^2./((GibbsFit.z0).^2 + 2*(GibbsFit.z0) + 1);
 n_up = npeak_g/2 + n_doublon;
-
      
 
 %% String Stuff
