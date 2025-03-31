@@ -5,6 +5,16 @@ function [hF,output] = dig_radialAnalysis(digdata,opts)
 % assumes cylindrical symmetry, which is quite common.
 if nargin == 1;opts = struct;end    
 
+hubbard = load('hubbard.mat');
+hubbard=hubbard.hubbard;
+
+v = hubbard.depth;
+t11 = hubbard.fr*reshape(hubbard.Tunneling(1,1,:),1,[]);
+t12 = hubbard.fr*reshape(hubbard.Tunneling(1,2,:),1,[]);
+t13 = hubbard.fr*reshape(hubbard.Tunneling(1,3,:),1,[]);
+t21 = hubbard.fr*reshape(hubbard.Tunneling(2,1,:),1,[]);
+t22 = hubbard.fr*reshape(hubbard.Tunneling(2,2,:),1,[]);
+t23 = hubbard.fr*reshape(hubbard.Tunneling(2,3,:),1,[]);
 
 %% Default Binning Options
 % These are the default bin settings.
@@ -18,6 +28,15 @@ strRadialBin = ['radial bin ' char(916) ...
 
 % YOU NEED A BETTER VERSION OF MATLAB TO DO OTHER DENSITY MAXIMUMS
 if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [1];end
+%% Constants
+
+% Physical constants
+h       = 6.62607015e-34;         % planck's constant [Js]
+amu     = 1.66053906660e-27;      % atomic mass unit[kg]    
+m       = amu*39.96399848;        % 40K mass [kg]
+aL      = (1054e-9)/2;            % lattice spacing [m]
+aL_um   = aL*1e6;                 % lattice spacign [m]
+kB      = 1.380649e-23;           % boltzmann constant [J/K]
 
 %% Parameters Relvant do Fermi-Hubbard Model
 % Default Tunneling Values
@@ -38,7 +57,6 @@ input_data{2,2} = 67;
 input_data{3,2} = 67*5;
 input_data{4,2} = 195;
 
-
 output_data{1,1} = 'tunneling [Hz]';
 output_data{1,2} = '[563, 20, .1]';
 output_data{2,1} = 'band gap [Hz]';
@@ -50,15 +68,53 @@ output_data{4,2} = '5';
 output_data{5,1} = 'U/t';
 output_data{5,2} = '5';
 
-%% Constants
+    function output = calcHubbard
+        % v0 = params.depth;
+        v0=2.5;
+        omega_r = 2*pi*67;
+        omega_z = 2*pi*67*5;
 
-% Physical constants
-h       = 6.62607015e-34;         % planck's constant [Js]
-amu     = 1.66053906660e-27;      % atomic mass unit[kg]    
-m       = amu*39.96399848;        % 40K mass [kg]
-aL      = (1054e-9)/2;            % lattice spacing [m]
-aL_um   = aL*1e6;                 % lattice spacign [m]
-kB      = 1.380649e-23;           % boltzmann constant [J/K]
+        % First Band Tunneling
+        tunnel_11 = interp1(v,t11,v0);  % one-site
+        tunnel_12 = interp1(v,t12,v0);  % two-site
+        tunnel_13 = interp1(v,t13,v0);  % three-site
+        output{1,1}='s-tunneling [Hz]';
+        output{1,2}=['(' num2str(round(tunnel_11,0)) ',' ...
+            num2str(round(tunnel_12,0)) ',' ...
+            num2str(round(tunnel_13,0)) ')'];
+
+        % Second Band Tunneling
+        % tunnel_21 = interp1(v,t21,v0);  % one-site
+        % tunnel_22 = interp1(v,t22,v0);  % two-site
+        % tunnel_23 = interp1(v,t23,v0);  % three-site
+        % output{2,1}='p-tunneling [Hz]';
+        % output{2,2}=['(' num2str(round(tunnel_21,0)) ',' ...
+        %     num2str(round(tunnel_22,0)) ',' ...
+        %     num2str(round(tunnel_23,0)) ')'];
+
+        % Band Gap
+        bg_1d = interp1(v,hubbard.fr*hubbard.BandGap1D,v0);
+        bg_2d = interp1(v,hubbard.fr*hubbard.BandGap2D,v0);
+        bg_3d = interp1(v,hubbard.fr*hubbard.BandGap3D,v0);
+        output{2,1}='1D,2D,3D Gap [Hz]';
+        output{2,2}=['(' num2str(round(bg_1d,0)) ',' ...
+            num2str(round(bg_2d,0)) ',' ...
+            num2str(round(bg_3d,0)) ')'];
+
+        % Tunneling Radius
+        r_tunnel = sqrt(4*tunnel_11*h/(0.5*m*omega_r^2));
+        z_tunnel = sqrt(4*tunnel_11*h/(0.5*m*omega_z^2));
+        output{3,1} = 'r tunnel [sites]';
+        output{3,2} = num2str(round(r_tunnel/aL,1));
+        output{4,1} = 'z tunnel [sites]';
+        output{4,2} = num2str(round(z_tunnel/aL,1));
+
+        % Hubbard U
+        output{5,1} = 'U/t';
+        output{5,2} = 'TBD';
+
+    end
+output_data = calcHubbard();
 
 %% Trap Potential V(r) functions
 
@@ -444,7 +500,7 @@ hF.UserData.Axes{3}=hpSummary;
 ht_input = uitable('parent',hpSummary);
 set(ht_input,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
     'ColumnEditable',[false true],'units','normalized',...
-    'ColumnWidth',{80, 90});
+    'ColumnWidth',{90, 100});
 ht_input.Data=input_data;
 ht_input.Position(3:4) = ht_input.Extent(3:4);
 ht_input.Position(1:2) = [0 1-ht_input.Extent(4)];
@@ -453,19 +509,19 @@ ht_input.Position(1:2) = [0 1-ht_input.Extent(4)];
 ht_output_1 = uitable('parent',hpSummary);
 set(ht_output_1,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
     'ColumnEditable',[false false],'units','normalized',...
-    'ColumnWidth',{80, 90});
+    'ColumnWidth',{95, 100});
 ht_output_1.Data{1,1} =  ['T Gauss Equiparition [nK,t]'];
 ht_output_1.Data = output_data;
 ht_output_1.Position(3:4) = ht_output_1.Extent(3:4);
 ht_output_1.Position(1:2) = [0 ht_input.Position(4)];
 
-ht_output_2 = uitable('parent',hpSummary);
-set(ht_output_2,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
-    'ColumnEditable',[false false],'units','normalized',...
-    'ColumnWidth',{80, 90});
-ht_output_2.Data{1,1} =  ['T Gauss Equiparition [nK,t]'];
-ht_output_2.Position(3:4) = ht_output_2.Extent(3:4);
-ht_output_2.Position(1:2) = [0 ht_input.Position(4)];
+% ht_output_2 = uitable('parent',hpSummary);
+% set(ht_output_2,'RowName',{},'ColumnName',{},'ColumnFormat',{'char', 'numeric'},...
+%     'ColumnEditable',[false false],'units','normalized',...
+%     'ColumnWidth',{90, 100});
+% ht_output_2.Data{1,1} =  ['T Gauss Equiparition [nK,t]'];
+% ht_output_2.Position(3:4) = ht_output_2.Extent(3:4);
+% ht_output_2.Position(1:2) = [0 ht_input.Position(4)];
 
 % hF.UserData.Axes{3}=subplot(2,2,4,'parent',hF);
 % ax3=hF.UserData.Axes{3};
