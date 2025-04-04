@@ -41,10 +41,14 @@ kB      = 1.380649e-23;           % boltzmann constant [J/K]
 %% Parameters Relvant do Fermi-Hubbard Model
 % Default Tunneling Values
 
-if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*67;end % 2025/03 sqrt(1.0965) % from 11/25/24
+
+if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*67;end%03/05 2*pi*52*sqrt(1.0965);end % from 11/25/24
 if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
 if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 
+
+%opts.TrapOmega = 2*pi*90;
+%opts.Tunnelling = 435;
 
 input_data{1,1} = ['V₀ [Eᵣ]'];
 input_data{2,1} = ['ωr/(2π) [Hz]'];
@@ -385,6 +389,34 @@ hF.UserData.InputData = input_data;
 hF.UserData.OutputData = {};
     
 
+    strRadialBin = ['radial bin ' char(916) 'r:' num2str(opts.BinStep)];
+    text(.01,1,strRadialBin,'units','normalized','horizontalalignment','left',...
+        'verticalalignment','bottom','fontsize',8,'parent',ax2);
+
+    rVec=linspace(0,100,100);
+    for nn=1:length(opts.GaussFitDensityMax)
+        s=sigma_r_gauss_fit(nn);
+        s_err=sigma_r_gauss_fit_err(nn);
+
+        N = Iouter(nn)/nr_partial_cdf(s,rMin(nn));
+        pGaussFits(nn)=plot(rVec,nr_fit(s,rVec,N),'-','Parent',ax2);
+        legStr{nn}=['$' num2str(s*aL_um,'%.1f')  ...
+            '(' num2str(round(10*s_err*aL_um)) ')~\mu\mathrm{m}$' ...
+            ' $n<' num2str(opts.GaussFitDensityMax(nn)) '$'];
+    end
+
+    % Plot gibbs fit
+    pGaussFits(nn+1) = plot(rVec,feval(GibbsFit,rVec),'-','Parent',ax2);
+    legStr{nn+1} = ['Gibbs $z_0 = ' num2str(GibbsFit.z0,'%.1f') '$, $T= ' num2str(T_HOt_g,'%.1f') 't$ ' ...
+        '(' num2str(T_HO_g_nK,'%.0f') ' nK)' ];
+    if ~isempty(opts.GaussFitDensityMax)
+    % legend(pGaussFits,legStr,'interpreter','latex','fontsize',8,...
+    %     'location','southeast','parent',hF);
+    legend(ax2,pGaussFits,legStr,'interpreter','latex','fontsize',8,...
+        'location','southeast','parent',hF);
+    end
+
+
 if isfield(digdata,'SourceDirectory') && ...
         ~isempty(digdata.SourceDirectory) &&  ...
         ~isequal(digdata.SourceDirectory,{'GUI'})
@@ -601,8 +633,8 @@ function [sigmaR,sigmaR_err]=pdf_gauss_fit(r,rMin)
         'Start',r_expect*sqrt(2/pi), ...
         'LowerBound',0,'TruncationBounds',[rMin inf]);
 
-    catch ME
-         [pdf_r_vals,pdf_r_cints] = mle(r,...
+    catch ME  
+        [pdf_r_vals,pdf_r_cints] = mle(r,...
         'pdf',pdf_r,'cdf',cdf_r,...
         'Start',r_expect*sqrt(2/pi), ...
         'LowerBound',0);

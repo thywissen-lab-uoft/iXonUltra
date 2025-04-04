@@ -38,6 +38,7 @@ for kk=1:length(composite_data)
             if exist(filename)
                 composite_data(kk).(field_name)(nn) = load(filename);
             else
+                warning(imgdir);
                 warning('no file found')
                 composite_data(kk).(field_name)(nn) = [];
             end

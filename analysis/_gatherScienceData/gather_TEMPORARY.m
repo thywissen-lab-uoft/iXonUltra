@@ -462,35 +462,38 @@ index=1;
 %     ];
 % index = index +1;
 
-%% 
-% Vary ODT2 V piezo
-composite_data(index).Name = '2025_02_08 200.9 G spectra 64.8 mW 4.5Er pulse';
-composite_data(index).Description = '2.5 Er, 200.9 G, 64.8 mW 4.5 Er pulse';
-% composite_data(index).Type = 'spectrum';
-composite_data(index).Runs = [     
+% %% 
+% % Vary ODT2 V piezo
+% composite_data(index).Name = '2025_02_08 200.9 G spectra 64.8 mW 4.5Er pulse';
+% composite_data(index).Description = '2.5 Er, 200.9 G, 64.8 mW 4.5 Er pulse';
+% % composite_data(index).Type = 'spectrum';
+% composite_data(index).Runs = [     
+% 
+%     2025 02 08 25
+%     2025 02 08 26
+%     2025 02 08 27
+%     2025 02 08 28
+%     2025 02 09 01
+%     2025 02 09 02
+%     2025 02 09 03
+%     2025 02 09 04
+%     2025 02 09 05
+%     2025 02 09 06
+%     2025 02 09 07
+%     2025 02 09 08
+%     2025 02 09 09
+%     2025 02 09 10
+%     2025 02 09 11
+% %     2025 02 09 12
+% %     2025 02 09 13
+% %     2025 02 09 14
+% %     2025 02 09 15
+% %     2025 02 09 16
+%     ];
+% index = index +1;
 
-    2025 02 08 25
-    2025 02 08 26
-    2025 02 08 27
-    2025 02 08 28
-    2025 02 09 01
-    2025 02 09 02
-    2025 02 09 03
-    2025 02 09 04
-    2025 02 09 05
-    2025 02 09 06
-    2025 02 09 07
-    2025 02 09 08
-    2025 02 09 09
-    2025 02 09 10
-    2025 02 09 11
-%     2025 02 09 12
-%     2025 02 09 13
-%     2025 02 09 14
-%     2025 02 09 15
-%     2025 02 09 16
-    ];
-index = index +1;
+
+
 
 %% Redo Analysis
 do_redo_analysis =0;    % Do you want to run analysis on it?

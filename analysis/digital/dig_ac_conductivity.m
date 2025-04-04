@@ -18,6 +18,7 @@ end
 
 Natoms = [digdata.Natoms];
 X = [digdata.Xc_um];
+% X = X';
 Xs = [digdata.Xs_um];
 Y = [digdata.Yc_um];
 Ys = [digdata.Ys_um];
@@ -134,8 +135,11 @@ x0 = median(X);
 phiVec = linspace(0,-2*pi,100);
 phi_sse = zeros(length(phiVec),1);
 for kk=1:length(phiVec)
+%     keyboard
     phi_sse(kk) = sum((-Ag*sin(2*pi*f*Ttot + phiVec(kk)) - X).^2);
+%     phi_sse(kk) = sum((-Ag*sin(2*pi*f*Ttot + phiVec(kk)) - X.').^2);
 end
+
 [~,ii] = min(phi_sse);
 phi = phiVec(ii);
 %%
@@ -182,6 +186,7 @@ sinephasefit_opt.StartPoint = [Ag phi x0 0];
 sinephasefit_opt.Weights = double(~bad_inds);
 strFit1 = '$-A\sin(2\pi f t+\phi) + x_0 + v_0t$';
 fout_sine = fit(Ttot',X',sinephasefit,sinephasefit_opt);
+% fout_sine = fit(Ttot,Xr,sinephasefit,sinephasefit_opt);
 
 cint = confint(fout_sine,0.667);
 Aerr = (cint(2,1)-cint(1,1))*0.5;
