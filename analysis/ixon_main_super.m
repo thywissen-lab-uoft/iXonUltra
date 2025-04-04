@@ -1435,6 +1435,392 @@ composite_data = struct;
 composite_data.Runs = runs;
 composite_data.Name = '2025_02_11 200.9 G spectrum 64.7 mW, 3 Er pulse';
 
+%% 
+runs = [
+    2025 03 15 15
+    2025 03 15 16
+    2025 03 15 17
+    2025 03 15 18
+    2025 03 15 19
+    2025 03 15 20
+    2025 03 15 21
+    2025 03 15 22
+    2025 03 15 23
+    2025 03 15 24
+    2025 03 15 25
+    2025 03 15 26
+    2025 03 15 27
+    2025 03 15 28
+    2025 03 15 29
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_15 200.6 G spectrum 54 mW, 2.5 Er pulse';
+
+%% 
+runs = [
+    2025 03 15 31
+    2025 03 15 32
+    2025 03 16 01
+    2025 03 16 02
+    2025 03 16 03
+    2025 03 16 04
+    2025 03 16 05
+    2025 03 16 06
+    2025 03 16 07
+    2025 03 16 08
+    2025 03 16 09
+    2025 03 16 10
+    2025 03 16 11
+    2025 03 16 12
+    2025 03 16 13
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_16 201.1 G spectrum 54 mW, 3 Er pulse';
+
+%% 
+runs = [
+    2025 03 16 15
+    2025 03 16 16
+    2025 03 16 17 
+    2025 03 16 18
+    2025 03 16 19
+    2025 03 16 20
+    2025 03 16 21
+    2025 03 16 22
+    2025 03 16 23
+    2025 03 16 24
+    2025 03 16 25
+    2025 03 16 26
+    2025 03 16 27
+    2025 03 16 28
+    2025 03 16 29
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_16 198.5 G spectrum 54.3 mW, 3 Er pulse';
+
+%% 
+runs = [
+    2025 03 17 01
+    2025 03 17 02
+    2025 03 17 03 
+    2025 03 17 04
+    2025 03 17 05
+    2025 03 17 06
+    2025 03 17 07
+    2025 03 17 08
+    2025 03 17 09
+    2025 03 17 10
+    2025 03 17 11
+    2025 03 17 12
+    2025 03 17 13
+    2025 03 17 14
+    2025 03 17 15
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_17 200.35 G spectrum 54.3 mW, 3 Er pulse';
+
+%%
+
+runs = [
+    2025 03 17 17
+    2025 03 17 18
+    2025 03 17 19
+    2025 03 17 20
+    2025 03 17 21
+    2025 03 17 22
+    2025 03 17 23
+    2025 03 17 24
+    2025 03 17 25
+    2025 03 17 26
+    2025 03 17 27
+    2025 03 17 28
+    2025 03 17 29
+    2025 03 17 30
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_17 201.1 G spectrum 54.5 mW, 3 Er pulse';
+
+%%
+
+runs = [
+    2025 03 18 04
+    2025 03 18 05
+    2025 03 18 06
+    2025 03 18 07
+    2025 03 18 08
+    2025 03 18 09
+    2025 03 18 10
+    2025 03 18 11
+    2025 03 18 12
+    2025 03 18 13
+    2025 03 18 14
+    2025 03 18 15
+    2025 03 18 16
+    2025 03 18 17
+    2025 03 18 18
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_18 201.1 G spectrum 54 mW, 1 Er pulse';
+
+%%
+
+runs = [
+    2025 03 18 20
+    2025 03 18 21
+    2025 03 18 22
+    2025 03 18 23
+    2025 03 18 24
+    2025 03 18 25
+    2025 03 18 26
+    2025 03 18 27
+    2025 03 18 28
+    2025 03 18 29
+    2025 03 18 30
+    2025 03 19 01
+    2025 03 19 02
+    2025 03 19 03
+    2025 03 19 04
+    2025 03 19 01
+    2025 03 19 02
+    2025 03 19 03
+    2025 03 19 04
+    2025 03 19 06 %repeat
+    2025 03 19 07 %repeat
+    2025 03 19 08 %repeat
+    2025 03 19 09 %repeat
+    2025 03 19 10 %repeat
+    2025 03 19 11 %repeat
+    2025 03 19 12 %repeat
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_18 201.1 G spectrum 54.8 mW, 3 Er pulse';
+%%
+
+runs = [
+    2025 03 20 06
+    2025 03 20 07
+    2025 03 20 08
+    2025 03 20 09
+% %     2025 03 20 10
+% %     2025 03 20 11
+% %     2025 03 20 12 % out of focus
+% %     2025 03 20 13 % out of focus
+    2025 03 21 01
+    2025 03 21 02
+    2025 03 21 03
+    2025 03 21 04
+    2025 03 21 05
+    2025 03 21 06
+    2025 03 21 07
+    2025 03 21 08
+    2025 03 21 09
+    2025 03 21 10
+    2025 03 21 11
+    2025 03 21 12
+    2025 03 21 13
+    
+    2025 03 21 14
+    2025 03 21 15
+
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_20 201.1 G spectrum 54.6 mW, 1 Er pulse';
+%% 
+
+% composite_data = struct;
+% composite_data.Runs = runs;
+% composite_data.Name = '2025_03_22 190 G spectrum 53.7 mW, 4 Er pulse';
+
+runs = [
+%     2025 03 22 07
+%     2025 03 22 08
+%     2025 03 22 09
+%     2025 03 22 10
+%     2025 03 22 11
+%     2025 03 22 12 %
+%     2025 03 22 13 %
+%     2025 03 22 14
+%     2025 03 22 15
+    2025 03 23 01
+    2025 03 23 02
+    2025 03 23 03
+    2025 03 23 04
+    2025 03 23 05
+    2025 03 23 06
+    2025 03 23 07
+    2025 03 23 08
+    2025 03 23 09
+    2025 03 23 10
+    2025 03 23 11
+    2025 03 23 12
+
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_22 190 G spectrum 53.7 mW, 4 Er pulse';
+%%
+runs = [
+    2025 03 23 15
+    2025 03 23 16
+    2025 03 23 17
+    2025 03 23 18
+    2025 03 23 19
+    2025 03 23 20
+    2025 03 23 21
+    2025 03 23 22
+    2025 03 23 23 
+    2025 03 23 24
+%     2025 03 23 25 % density drops here
+%     2025 03 23 26
+%     2025 03 24 01
+%     2025 03 24 02
+%     2025 03 24 03
+%     2025 03 24 04
+%     2025 03 24 05
+%     2025 03 24 06
+%     2025 03 24 07
+%     2025 03 24 08
+%     2025 03 24 09
+%     2025 03 24 10
+%     2025 03 24 11
+%     2025 03 24 12 % very low density
+%     2025 03 24 13
+%     2025 03 24 14
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_23 190 G spectrum 53.7 mW, 3 Er pulse';
+%%
+runs = [
+    2025 03 27 07
+    2025 03 27 08
+    2025 03 27 09
+    2025 03 27 10
+    2025 03 27 11
+    2025 03 27 12
+    2025 03 27 13
+    2025 03 27 14
+%     2025 03 28 01 % low amplitude response
+    2025 03 28 02
+    2025 03 28 03 
+    2025 03 28 04
+    2025 03 28 05 
+    2025 03 28 06
+    2025 03 28 07 
+    2025 03 28 08
+    2025 03 28 09 
+    2025 03 28 10
+    2025 03 28 11 
+%     2025 03 28 12 % low amplitude response
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_27 195 G spectrum 54.2 mW, 3 Er pulse';
+
+%% non-constant density
+runs = [
+    2025 03 28 14
+    2025 03 28 15
+    2025 03 28 16
+    2025 03 28 17
+    2025 03 28 18
+    2025 03 28 19
+    2025 03 28 20
+    2025 03 28 21
+    2025 03 28 22
+    2025 03 28 23
+    2025 03 28 24
+    2025 03 28 25
+    2025 03 28 26
+    2025 03 28 27
+    2025 03 29 01
+    2025 03 29 02
+    2025 03 29 03
+    2025 03 29 04
+%     2025 03 29 05 %repeat
+%     2025 03 29 06 %repeat
+%     2025 03 29 07 %repeat
+%     2025 03 29 08 %repeat
+%     2025 03 29 09 %repeat
+%     2025 03 29 10 %repeat
+%     2025 03 29 11 %repeat
+%     2025 03 29 12 %repeat
+%     2025 03 29 13 %repeat
+%     2025 03 29 14 %repeat
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_28 195 G spectrum 54 mW, 3 Er pulse';
+
+%%
+runs = [
+    2025 03 30 04 % 
+    2025 03 30 05 %
+    2025 03 30 06
+    2025 03 30 07 %
+    2025 03 30 08
+    2025 03 30 09 %
+    2025 03 30 10 %
+    2025 03 30 11 %
+    2025 03 30 12
+    2025 03 30 13
+    2025 03 30 14
+    2025 03 30 15
+    2025 03 30 16 %
+    2025 03 30 17
+    2025 03 30 18
+    2025 03 31 01
+    2025 03 31 02
+    2025 03 31 03
+    2025 03 31 05 %repeat
+    2025 03 31 06 %repeat
+    2025 03 31 07 %repeat
+    2025 03 31 08 %repeat
+    2025 03 31 09 %repeat
+    2025 03 31 10 %repeat
+    2025 03 31 11 %repeat
+    2025 03 31 12 %repeat
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_30 195 G spectrum 54 mW, 3 Er pulse';
+
+%%
+runs = [
+    2025 03 31 17
+    2025 04 01 01
+    2025 04 01 02
+    2025 04 01 03 % <0.5 um response / bad fit
+    2025 04 01 04
+    2025 04 01 05 % <0.5 um response / bad fit
+    2025 04 01 06
+    2025 04 01 07
+    2025 04 01 08
+    2025 04 01 09 % <0.5 um response / bad fit
+    2025 04 01 10
+    2025 04 01 11
+    2025 04 01 12
+    2025 04 01 13
+    2025 04 01 14
+    2025 04 01 15 % low response e
+    2025 04 01 16
+    2025 04 01 17
+    2025 04 01 19
+    2025 04 01 20
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_03_31 195 G spectrum 54 mW, 3 Er pulse';
+
+
 %%
 super_opts=struct;
 
@@ -1448,7 +1834,7 @@ ixon_super(composite_data,super_opts);
 
  %% Save Composite Analysis locally and to google drive
  composite_save_opts = struct;
- composite_save_opts.Name = name;
+ composite_save_opts.Name = compositename;
  composite_save_opts.doUpload = true;
  
  saveCompositeData(composite_data,composite_save_opts);

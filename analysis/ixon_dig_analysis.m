@@ -64,10 +64,10 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 0;                % Auto detect changing variable?
+dig_opts.autoXVar       = 1;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
- dig_opts.xVar           = 'qgm_planeShift_N';  % Variable Name
+%  dig_opts.xVar           = 'qgm_planeShift_N';  % Variable Name
 
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 dig_opts.doSave         = 1;                % Save Analysis?
@@ -83,12 +83,12 @@ dig_quench_conductivity_fit             = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
 
-dig_doRadialAnalysis2                   = 0;
+dig_doRadialAnalysis2                   = 1;
 dig_doFidelity                          = 0;
 
 
 %% QPD Analysis
-do_qpd_analysis = 0;
+do_qpd_analysis = 1;
 if do_qpd_analysis
     try
     P=[digdata.Params];
