@@ -1,4 +1,4 @@
-function hF = ixon_showCircleStripe(ixondata,xVar,opts)
+function hF = ixon_showCircleStripe(stripe,xVar,opts)
 
 if nargin <3
     opts = struct;
@@ -12,6 +12,8 @@ if ~isfield(opts,'ControlVariable')
    opts.ControlVariable='qgm_plane_uwave_frequency_offset';
 end
 
+   opts.ControlVariable='f_offset';
+
 
 co =  [0    0.4470    0.7410
     0.8500    0.3250    0.0980
@@ -21,13 +23,13 @@ co =  [0    0.4470    0.7410
     0.3010    0.7450    0.9330
     0.6350    0.0780    0.1840];
 
-stripe = [ixondata.StripeCircular];
+% stripe = [ixondata.StripeCircular];
 
 
 for kk=1:length(stripe)
     Phi(kk) = stripe(kk).PhaseFunc(opts.nCenter(1),opts.nCenter(2));
 end
-P = [ixondata.Params];
+P = [stripe.Params];
 X = [P.(xVar)];
 
 %% Get Values
@@ -45,19 +47,22 @@ PhiUnwrap = unwrapPhaseTime(X,Phi,Navg);
 %% Smush Data
 
 
-Xvec = ixondata(1).X;
-Yvec = ixondata(1).Y;
+% Xvec = ixondata(1).X;
+% Yvec = ixondata(1).Y;
+
+L = size(stripe(1).ZRotatedSum,1);
 
 
-ZsAll = zeros(length(Xvec),length(stripe));
+ZsAll = zeros(L,length(stripe));
 for nn=1:length(stripe)
-    Z = sum(ixondata(nn).Z,3);
-    Z(isnan(Z))=0;
-    Z(isinf(Z))=0;
-    Zrot = imrotate(Z,-Theta(nn),'crop');
-    Zs = sum(Zrot,1);
-    Zs = Zs(:);
-    ZsAll(:,nn) = Zs;
+    % Z = sum(ixondata(nn).Z,3);
+    % Z(isnan(Z))=0;
+    % Z(isinf(Z))=0;
+    % Zrot = imrotate(Z,-Theta(nn),'crop');
+    % Zs = sum(Zrot,1);
+    % Zs = Zs(:);
+    % ZsAll(:,nn) = Zs;
+    ZsAll(:,nn) = stripe(nn).ZRotatedSum(1:L);
 end
 
 
@@ -113,7 +118,7 @@ title('unwrapped local phase');
 
 % Image
 subplot(2,4,3);
-imagesc(X,Xvec,ZsAll)
+imagesc(X,1:L,ZsAll)
 set(gca,'YDir','normal','box','on','linewidth',1);
 hold on
 xlabel(xVar,'interpreter','none');

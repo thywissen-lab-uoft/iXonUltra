@@ -19,13 +19,24 @@ end
 
 %% Error Checking
 if ~isfield(opts,'CountMax')
-    opts.CountMax = 15e3;
+    opts.CountMax = 20e3;
 end
 
 %% Recenter bindata
 if length(data)>1
     data = bin_recenter(data);
 end
+
+%% Make All Counts
+Nc = zeros(length(data),1);
+for kk=1:length(data)
+    Zb = data(kk).LatticeBin(1).ZbinRaw;
+    Zb(isnan(Zb))=[];
+    Nc(kk) = sum(Zb,'all');
+end
+
+bad_inds = Nc<(max(Nc)*0.3);
+
 
 %% Preparing
 for kk=1:length(data)
@@ -63,76 +74,99 @@ for kk=1:length(data)
                 % Load a file which has a pixel map
             case 'otherwise'
                 error('invalid spatial CompensateMethod')
-        end        
-        %% Clustering
-        fprintf('kmeans...');
+        end    
 
-        z=Zbin(:);z(z==0)=[];       % Get histogram of all counts
-        z(isnan(z))=[];
-        
-        bInds = [z>opts.CountMax];
-        
-        if sum(bInds)
-            warning(['hot lattice sistes detected (N=' num2str(sum(bInds)) ') BE CAREFUL']);
-        end
-        
-        z(bInds)=[];
-        
-        % Sort into clusters
-        [idx,ClusterCentroids,sumD,D]=kmeans(z,opts.ClusterNumber);
-        
-        % Sort by centroid
-        [ClusterCentroids,inds]=sort(ClusterCentroids,'ascend');
-        sumD=sumD(inds);
-        
-        ClusterRadii = zeros(numel(ClusterCentroids),1);
-        ClusterThresholds = zeros(numel(ClusterCentroids),1);
-        for jj=1:numel(ClusterCentroids)
-            ind = inds(jj);
-            nThis = sum(idx==ind);
-            ClusterRadii(jj) = sqrt(sumD(jj)/nThis);
-            ClusterThresholds(jj) = round(max(z(idx==ind)));
-        end
-        ClusterThresholds(end)=[];    
-
-        %% Fit PDF To Cluster
-        fprintf('pdf...');
-
-        boundLow = ClusterCentroids(2)-1.5*ClusterRadii(2);% send this to be based on cluster threshold
-        boundLow = ClusterThresholds(1);
-        boundHigh = 2*ClusterCentroids(2);
-        boundHigh = inf;
-        
-        z_truncate =z;
-        z_truncate(z_truncate<boundLow)=[];
-        z_truncate(z_truncate>boundHigh)=[];
-
-        try
-        [pdf1_c,pdf1_cint] = mle(z_truncate,'distribution','normal',...
-            'TruncationBounds',[boundLow boundHigh]);
-        catch ME
-           keyboard 
-        end
-     
-        
-        PDF1_Distribution = 'normal';
-        PDF1_Center = pdf1_c(1);
-        PDF1_Radius = pdf1_c(2);
-        PDF1_Center_Bounds = pdf1_cint(:,1);
-        PDF1_Radius_Bounds = pdf1_cint(:,2);
-        PDF1 = @(x) pdf('normal',x,PDF1_Center,PDF1_Radius);
-
+        %% Simple Output
         data(kk).LatticeBin(rr).PostBinOptions=opts;
         data(kk).LatticeBin(rr).Zbin=Zbin;
-        data(kk).LatticeBin(rr).ClusterThreshold     = ClusterThresholds;
-        data(kk).LatticeBin(rr).ClusterCentroids     = ClusterCentroids;
-        data(kk).LatticeBin(rr).ClusterRadii         = ClusterRadii;
-        data(kk).LatticeBin(rr).PDF1                 = PDF1;
-        data(kk).LatticeBin(rr).PDF1_Distribution    = PDF1_Distribution;
-        data(kk).LatticeBin(rr).PDF1_Center          = PDF1_Center;
-        data(kk).LatticeBin(rr).PDF1_Radius          = PDF1_Radius;
-        data(kk).LatticeBin(rr).PDF1_Center_Bounds   = PDF1_Center_Bounds;
-        data(kk).LatticeBin(rr).PDF1_Radius_Bounds   = PDF1_Radius_Bounds;
+        %% Clustering
+        if ~bad_inds(kk)
+            fprintf('kmeans...');
+    
+            z=Zbin(:);z(z==0)=[];       % Get histogram of all counts
+            z(isnan(z))=[];        
+            bInds = [z>opts.CountMax];        
+            if sum(bInds)
+                warning(['hot lattice sistes detected (N=' num2str(sum(bInds)) ') BE CAREFUL']);
+            end        
+            z(bInds)=[];        
+            % Sort into clusters
+            [idx,ClusterCentroids,sumD,D]=kmeans(z,opts.ClusterNumber);
+            
+            % Sort by centroid
+            [ClusterCentroids,inds]=sort(ClusterCentroids,'ascend');
+            sumD=sumD(inds);
+            
+            ClusterRadii = zeros(numel(ClusterCentroids),1);
+            ClusterThresholds = zeros(numel(ClusterCentroids),1);
+            for jj=1:numel(ClusterCentroids)
+                ind = inds(jj);
+                nThis = sum(idx==ind);
+                ClusterRadii(jj) = sqrt(sumD(jj)/nThis);
+                ClusterThresholds(jj) = round(max(z(idx==ind)));
+            end
+            ClusterThresholds(end)=[];    
+    
+            %% Fit PDF To Cluster
+            fprintf('pdf...');
+    
+            boundLow = ClusterCentroids(2)-1.5*ClusterRadii(2);% send this to be based on cluster threshold
+            boundLow = ClusterThresholds(1);
+            boundHigh = 2*ClusterCentroids(2);
+            boundHigh = inf;
+            
+            z_truncate =z;
+            z_truncate(z_truncate<boundLow)=[];
+            z_truncate(z_truncate>boundHigh)=[];
+    
+            try
+            [pdf1_c,pdf1_cint] = mle(z_truncate,'distribution','normal',...
+                'TruncationBounds',[boundLow boundHigh]);
+            isbad =0;
+            catch ME
+               isbad =1; 
+            end
+         
+            if ~isbad
+            
+            PDF1_Distribution = 'normal';
+            PDF1_Center = pdf1_c(1);
+            PDF1_Radius = pdf1_c(2);
+            PDF1_Center_Bounds = pdf1_cint(:,1);
+            PDF1_Radius_Bounds = pdf1_cint(:,2);
+            PDF1 = @(x) pdf('normal',x,PDF1_Center,PDF1_Radius);
+    
+            data(kk).LatticeBin(rr).ClusterThreshold     = ClusterThresholds;
+            data(kk).LatticeBin(rr).ClusterCentroids     = ClusterCentroids;
+            data(kk).LatticeBin(rr).ClusterRadii         = ClusterRadii;
+            data(kk).LatticeBin(rr).PDF1                 = PDF1;
+            data(kk).LatticeBin(rr).PDF1_Distribution    = PDF1_Distribution;
+            data(kk).LatticeBin(rr).PDF1_Center          = PDF1_Center;
+            data(kk).LatticeBin(rr).PDF1_Radius          = PDF1_Radius;
+            data(kk).LatticeBin(rr).PDF1_Center_Bounds   = PDF1_Center_Bounds;
+            data(kk).LatticeBin(rr).PDF1_Radius_Bounds   = PDF1_Radius_Bounds;
+            else
+         data(kk).LatticeBin(rr).ClusterThreshold     = [];
+            data(kk).LatticeBin(rr).ClusterCentroids     = [];
+            data(kk).LatticeBin(rr).ClusterRadii         = [];
+            data(kk).LatticeBin(rr).PDF1                 = [];
+            data(kk).LatticeBin(rr).PDF1_Distribution    = [];
+            data(kk).LatticeBin(rr).PDF1_Center          = [];
+            data(kk).LatticeBin(rr).PDF1_Radius          = [];
+            data(kk).LatticeBin(rr).PDF1_Center_Bounds   = [];
+            data(kk).LatticeBin(rr).PDF1_Radius_Bounds   = [];
+            end
+        else
+            data(kk).LatticeBin(rr).ClusterThreshold     = [];
+            data(kk).LatticeBin(rr).ClusterCentroids     = [];
+            data(kk).LatticeBin(rr).ClusterRadii         = [];
+            data(kk).LatticeBin(rr).PDF1                 = [];
+            data(kk).LatticeBin(rr).PDF1_Distribution    = [];
+            data(kk).LatticeBin(rr).PDF1_Center          = [];
+            data(kk).LatticeBin(rr).PDF1_Radius          = [];
+            data(kk).LatticeBin(rr).PDF1_Center_Bounds   = [];
+            data(kk).LatticeBin(rr).PDF1_Radius_Bounds   = [];
+        end
         disp('done');
     end
 end

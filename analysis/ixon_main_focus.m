@@ -1,4 +1,4 @@
-function ixondata = ixon_main_stripe
+function ixondata = ixon_main_focus
 % ixonAnalysis.m
 %
 % Author : CF Fujiwara
@@ -78,7 +78,7 @@ img_opt.doSubtractBias      = 1;        % Subtract 200 count electronic offset
 img_opt.doSubtractBG        = 1;
 img_opt.doScale             = 0;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
-img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
+img_opt.doRotate            = 0;        % Rotate image? (useful to align along lattices)
 img_opt.Theta               = 59.81;  % Rotation amount (deg.)
 img_opt.DetectNoise         = 1;
 img_opt.doMask              = 0;        % Mask the data? (not used)
@@ -233,21 +233,14 @@ if ixon_doBoxCount
 end
 
 
-%% Stripe Analysis
-    ixondata = ixon_AnalyzeCircleStripe(ixondata);
+%% Focus Analysis
 
-    stripe_opts=struct;
-    stripe_opts.FigLabel = FigLabel;
-    stripe_opts.ControlVariable = 'qgm_plane_uwave_frequency_offset';
-    stripe_opts.nCenter =[276 256];
+ focus = ixon_MultiShotFocus(ixondata);
 
-%%
-
-    hF_circle_stripe = ixon_showCircleStripe([ixondata.StripeCircular],ixon_xVar,stripe_opts);
-    if ixon_doSave;ixon_saveFigure2(hF_circle_stripe,'ixon_circle_stripe',saveOpts);end     
+[hF]= ixon_showMultiShotFocusSummary(focus,ixon_xVar);
 
 
-    
+
 
 end
 

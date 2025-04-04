@@ -92,7 +92,7 @@ ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
 ixon_PixelSize = 16;            % Pixel size in um
 
-
+ 
 % Ignore these variables when choosing auto var
 autoVar_Ignore = {'f_offset','piezo_offset'};
 % autoVar_Ignore = {};

@@ -82,33 +82,50 @@ if opts.doSubtractBG
         error('Cannot subtract background with odd number of images');
     end
     Z_bg_removed = zeros(size(Z,1),size(Z,2),L/2);
+    Z_bg = zeros(size(Z,1),size(Z,2),L/2);
+
+    R = 256 + [-100:100];
+
+
     for n=1:L/2
-        Z_bg_removed(:,:,n) = Z(:,:,n) -  Z(:,:,n+L/2);
+        Z_bg = Z(:,:,n+L/2);
+        Z_bg_blur = imgaussfilt(Z_bg,2);
+        dZ_bg = Z_bg-Z_bg_blur;
+        pd = fitdist(dZ_bg(:),'normal');
+        data(kk).NoiseEstimation(n) = pd.sigma;
+        Z_bg_removed(:,:,n) = Z(:,:,n) - Z_bg_blur;
     end
     Z=Z_bg_removed;
     data(kk).Z = Z_bg_removed;
 
-    % Measure the noise of the subtraction
-    for n = 1:L/2
-        try
-            Zthis = Z(:,:,n);
-            
-            d=load('ixon_mask.mat');
-            BW = d.BW;
-            BW=double(BW);
-            BW(BW==0)=nan;
-            Zb = Zthis.*BW;
-            Zc = Zb(:);
-            Zc(isnan(Zc)) = [];            
-            Zd = Zc;
-            Zd(Zd>0)=[];
-            Zd = [Zd; -Zd];            
-            s = std(Zd);            
-            data(kk).NoiseEstimation(n) = s ;
-        catch ME
-            data(kk).NoiseEstimation(n) = 0;
-        end
-    end
+
+
+    % % Measure the noise of the subtraction
+    % for n = 1:L/2
+    %     try
+    % 
+    % 
+    % 
+    %         Zthis = Z(:,:,n);
+    % 
+    %         d=load('ixon_mask.mat');
+    %         BW = d.BW;
+    %         BW=double(BW);
+    %         BW(BW==0)=nan;
+    %         Zb = Zthis.*BW;
+    %         Zc = Zb(:);
+    %         Zc(isnan(Zc)) = [];            
+    %         Zd = Zc;
+    %         Zd(Zd>0)=[];
+    %         Zd = [Zd; -Zd];            
+    %         s = std(Zd);            
+    %         data(kk).NoiseEstimation(n) = s ;
+    % 
+    %         Z_bg
+    %     catch ME
+    %         data(kk).NoiseEstimation(n) = 0;
+    %     end
+    % end
 else
     data(kk).NoiseEstimation = 0;
 end
@@ -134,25 +151,29 @@ end
         psf     = fspecial('gaussian',N,s);  
         for ii = 1:size(data(kk).Z,3) 
             
-            if  opts.DetectNoise  && opts.doSubtractBG
-                Nnoise=data(kk).NoiseEstimation(ii);
-                
-            else
-                Nnoise = opts.Noise;
-                data(kk).NoiseEstimation(ii) = Nnoise;
-            end
-            
-            noise_variance = Nnoise^2;
+            % if  opts.DetectNoise  && opts.doSubtractBG
+            %     Nnoise=data(kk).NoiseEstimation(ii);
+            % 
+            % else
+            %     Nnoise = opts.Noise;
+            %     data(kk).NoiseEstimation(ii) = Nnoise;
+            % end            
+            % noise_variance = Nnoise^2;
+            % Zpre = data(kk).Z(:,:,ii);
+            % Zpre(Zpre<=0)=0;
+            % Zpre(Zpre<=(Nnoise))=0;          
+            % 
+            % Zsharp = deconvlucy(Zpre,...
+            %     psf,Niter,0,1,noise_variance);             
+            % data(kk).Z(:,:,ii) =    Zsharp;
+
             Zpre = data(kk).Z(:,:,ii);
-
-            Zpre(Zpre<=0)=0;
-            Zpre(Zpre<=(Nnoise))=0;
-            
-%             psf2     = fspecial('gaussian',N,3*s);  
-%             psf = psf*.9+psf2*.1;
-
-            Zsharp = deconvlucy(Zpre,...
-                psf,Niter,0,1,noise_variance);             
+            Nsigma_offset = 2;
+            NoiseSigma = data(kk).NoiseEstimation(n);
+            NoiseVariance = NoiseSigma^2;
+            offset = Nsigma_offset*NoiseSigma;
+            Zsharp = deconvlucy(Zpre+offset,...
+                psf,Niter,0,1,NoiseVariance+offset)-offset;      
             data(kk).Z(:,:,ii) =    Zsharp;
         end        
     end      

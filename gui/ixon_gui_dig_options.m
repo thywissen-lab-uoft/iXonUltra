@@ -5,8 +5,11 @@ opts=struct;
 %% Digitization Method Options
 
 % Use fitted probability density function [pdf] to find the threshold
-opts.DigitizeMethod     = 'pdf_kmeans_threshold'; % recommended (uses kmeans+pdf)
-opts.pdf_Sigma          = 2.5;
+opts.DigitizeMethod         = 'pdf_kmeans_threshold'; % recommended (uses kmeans+pdf)
+opts.pdf_Sigma              = 2.5;
+opts.NormalizedThreshold    = 0.5;
+
+% count_threshold = opts.NormalizedThreshold*count_center;
 
 % % Use kmeans clustering to find threshold
 % opts.DigitzeMethod      = 'kmeans';
@@ -39,6 +42,7 @@ opts.doHubbardAnalysis = true;
 % Trap Frequency
 % The overall harmonic trap frequency
 opts.TrapOmega      = 2*pi*67;57;
+% opts.TrapOmega      = 2*pi*90;
 
 %% Hubbard Parameters
 
@@ -51,7 +55,7 @@ opts.LatticeDepth   = 'lattice_depth_var_name';    % Pull depth from these param
 % The single particle tunneling element.
 opts.Tunneling = [];    % keep empty if auto-calculate from V0 
 opts.Tunneling = 563;
-
+% opts.Tunneling = 435;
 % Magnetic Field
 % The magnetic field is used to calculate the s-wave scattering length.
 opts.MagneticField  = 'varname';    % 

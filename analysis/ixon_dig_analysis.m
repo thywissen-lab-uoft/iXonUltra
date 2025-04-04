@@ -67,10 +67,12 @@ dig_opts.varType        = 'param';          % always select 'param' for now
 dig_opts.autoXVar       = 1;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
+
 %  dig_opts.xVar           = 'qgm_planeShift_N';  % Variable Name
 
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 dig_opts.doSave         = 1;                % Save Analysis?
+autoVar_Ignore = {'f_offset','piezo_offset'};
 
 %% Flags
 
@@ -130,7 +132,7 @@ if dig_doShowCloud
     opts = dig_opts;
     opts.doAnimate = 1;
     opts.ROI = 'max';
-    opts.filename = 'dig_animateFull.gif';
+    opts.filename = 'dig_animateFull';
     hF_digCloud = dig_showCloud(digdata,opts);
     if dig_opts.doSave
         ixon_saveFigure2(hF_digCloud,...
@@ -145,6 +147,25 @@ if dig_standardAnalysis
     if dig_opts.doSave
         ixon_saveFigure2(hF_digStandard,...
          'dig_standard',dig_opts);  
+    end
+end
+
+%% Fidelity
+dig_fidelity=1;
+if dig_fidelity && size(digdata.Zdig,4)==2
+    % CF Needs to finish writing this
+    [fidelity,hF_fidelity1,hF_fidelity2] = dig_Fidelity(digdata,opts);
+    if dig_opts.doSave
+        if ~isempty(hF_fidelity2)
+            for kk=1:length(hF_fidelity2(kk))
+                ixon_saveFigure2(hF_fidelity2(kk),...
+                    hF_fidelity2(kk).Name,dig_opts);  
+            end
+        end
+        if ~isempty(hF_fidelity1)
+                ixon_saveFigure2(hF_fidelity1,...
+                    hF_fidelity1.Name,dig_opts);  
+        end           
     end
 end
 

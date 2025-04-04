@@ -46,15 +46,25 @@ end
 %% Find Lattice Phase
 
 if ixon_doQGM_FindLattice
+    BC = [ixondata.BoxCount];
+    N  = [BC.Ncounts];
+
     for nn=1:length(ixondata)
         fprintf(['(' num2str(nn) '/' num2str(numel(ixondata))...
             ') lattice phase']);        
         k1 = ixondata(nn).LatticeK(1).k1;
-        k2 = ixondata(nn).LatticeK(1).k2;          
+        k2 = ixondata(nn).LatticeK(1).k2;     
+
+        if N(nn)<0.25*max(N)
+            LatticeK.BadLattice(nn) = 1;
+        end
+
         if (ixon_doQGM_reassignBadK && LatticeK.BadLattice(nn)) || ixon_doQGM_useAverageK
             k1 = LatticeK.k1;
             k2 = LatticeK.k2;
         end        
+
+        
         % Make sure column vector
         k1 = reshape(k1,[2 1]);
         k2 = reshape(k2,[2 1]);

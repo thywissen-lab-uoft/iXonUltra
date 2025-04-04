@@ -2,15 +2,13 @@ function [data] = ixon_ProcessImagesToBin(data,opts)
 %% Options
 if nargin == 1
     opts = struct;
-
     
 %     opts.BasisSource                = 'manual';
     opts.BasisManual                =   [0.1923 0.3244 .3;
                                         .3208 -0.1862 0.3];
                                     
     % Use this if you want to use FFT to specify basis
-    opts.BasisSource                = 'fft';
-    
+    opts.BasisSource                = 'fft';   
     
 
     % Bin PreProcess Options
@@ -75,6 +73,10 @@ for kk = 1 :length(data)
     [XX,YY]=meshgrid(X,Y);                  % matrix of X and Y
     R = [XX(:) YY(:)]'; 
 
+    % Find image that has best K score
+    KScores = [data(kk).LatticeK.NkScore];
+    [~,ind_bestK]=max(KScores);
+
     for rr = 1:size(data(kk).Z,3)        
         fprintf(['(' num2str(kk) '/' num2str(length(data)) ')' num2str(rr) ' '])
         Z = data(kk).Z(:,:,rr);
@@ -106,6 +108,12 @@ for kk = 1 :length(data)
                 a2 = data(kk).LatticePhase(rr).a2;                        
                 p1 = data(kk).LatticePhase(rr).p1;
                 p2 = data(kk).LatticePhase(rr).p2;   
+
+                % 2025/03/27 testing this to use the best K
+                a1 = data(kk).LatticePhase(ind_bestK).a1;
+                a2 = data(kk).LatticePhase(ind_bestK).a2;                        
+                p1 = data(kk).LatticePhase(ind_bestK).p1;
+                p2 = data(kk).LatticePhase(ind_bestK).p2;   
         end
         A = [a1 a2];                % Basis Matrix  
         N0 = inv(A)*R;              % Pixel to Lattice Site

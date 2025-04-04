@@ -18,6 +18,7 @@ if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [1];end
 % if ~isfield(opts,'Tunneling');      opts.Tunneling = [];end
 % if ~isfield(opts,'U');              opts.Tunneling = [];end
 
+
 if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*67;end%03/05 2*pi*52*sqrt(1.0965);end % from 11/25/24
 if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
 if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
@@ -55,7 +56,7 @@ end
 
 %% Get Data
 Z   = [digdata.Zdig];
-Zbar = mean(Z,3);
+Zbar = mean(Z,[3 4]);
 P   = [digdata.Params];
 
 %% Calculate radial profile
@@ -406,18 +407,20 @@ strS = ['$(x_\sigma,y_\sigma):' ...
         s_err=sigma_r_gauss_fit_err(nn);
 
         N = Iouter(nn)/nr_partial_cdf(s,rMin(nn));
-        pGaussFits(nn)=plot(rVec,nr_fit(s,rVec,N),'-');
+        pGaussFits(nn)=plot(rVec,nr_fit(s,rVec,N),'-','Parent',ax2);
         legStr{nn}=['$' num2str(s*aL_um,'%.1f')  ...
             '(' num2str(round(10*s_err*aL_um)) ')~\mu\mathrm{m}$' ...
             ' $n<' num2str(opts.GaussFitDensityMax(nn)) '$'];
     end
 
     % Plot gibbs fit
-    pGaussFits(nn+1) = plot(rVec,feval(GibbsFit,rVec),'-');
+    pGaussFits(nn+1) = plot(rVec,feval(GibbsFit,rVec),'-','Parent',ax2);
     legStr{nn+1} = ['Gibbs $z_0 = ' num2str(GibbsFit.z0,'%.1f') '$, $T= ' num2str(T_HOt_g,'%.1f') 't$ ' ...
         '(' num2str(T_HO_g_nK,'%.0f') ' nK)' ];
     if ~isempty(opts.GaussFitDensityMax)
-    legend(pGaussFits,legStr,'interpreter','latex','fontsize',8,...
+    % legend(pGaussFits,legStr,'interpreter','latex','fontsize',8,...
+    %     'location','southeast','parent',hF);
+    legend(ax2,pGaussFits,legStr,'interpreter','latex','fontsize',8,...
         'location','southeast','parent',hF);
     end
 
