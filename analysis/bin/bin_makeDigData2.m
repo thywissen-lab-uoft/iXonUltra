@@ -22,6 +22,10 @@ if ~isfield(opts,'CountMax')
     opts.CountMax = 35e3;
 end
 
+if ~isfield(opts,'NormalizedThreshold')
+    opts.NormalizedThreshold = .5;
+end
+
 %% Grab Basic Data Information
 
 P = [bindata.Params];           % Params structure
@@ -65,8 +69,13 @@ for kk=1:length(bindata)
 end
 
 % Average over each image
-count_center=mean(count_center,2);
-count_sigma=mean(count_sigma,2);
+% count_center=mean(count_center,2);
+[count_center,inds] = max(count_center,[],2);
+
+
+inds_sigma=sub2ind([size(count_sigma,1) size(count_sigma,2)],[1:size(count_sigma,1)]',inds);
+count_sigma=count_sigma(inds_sigma);
+
 
 % Find bad indeces
 bad_inds = isnan(count_center);

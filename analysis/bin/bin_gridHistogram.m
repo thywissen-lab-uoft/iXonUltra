@@ -22,8 +22,11 @@ function hF = bin_gridHistogram(bindata,opts)
    if ~isfield(opts,'Source')
       opts.Source='Zbin'; 
    end
+
     
-    edges = linspace(0,6*opts.Nthresh,opts.NumBins);
+    
+
+    % edges = linspace(0,6*opts.Nthresh,opts.NumBins);
     n1 = bindata(1).LatticeBin(1).n1;
     n2 = bindata(1).LatticeBin(1).n2;
     %% Get All Data
@@ -36,6 +39,21 @@ function hF = bin_gridHistogram(bindata,opts)
     
     Zallcopy = Zall;
     Zallcopy(isnan(Zallcopy))=0;
+
+    zz=Zallcopy;
+    zz=zz(:);
+    zz(isnan(zz))=[];
+    zz(zz==0)=[];
+    if isequal(opts.Nthresh,'auto')        
+        [idx,ClusterCentroids,sumD,D]=kmeans(zz,2);
+        N0 = max(ClusterCentroids);
+        opts.Nthresh = N0*.35;
+        edges=linspace(0,2*N0,opts.Bins);
+    else
+        edges=linspace(0,15e3,opts.Bins);
+    end
+
+
     
     Zsum = sum(Zallcopy,3);
     

@@ -18,11 +18,8 @@ Z = zeros(numel(n2),numel(n1),2);
 for nn=1:size(digdata.Zdig,3)
     
     Z(:,:,1) = digdata.Zdig(:,:,nn);
-    Z(:,:,2) = digdata.Zdig_img2(:,:,nn);
-    
-    out(nn) = dig_Fidelity(Z,n1,n2);
-
-    
+    Z(:,:,2) = digdata.Zdig_img2(:,:,nn);    
+    out(nn) = dig_Fidelity(Z,n1,n2);    
 end
 
 %% Initialize Graphics

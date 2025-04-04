@@ -6,16 +6,10 @@
 % plane.
 
 % Display this filename
-disp(repmat('-',1,60));disp(repmat('-',1,60));    
-disp(['Calling ' mfilename '.m']);
-disp(repmat('-',1,60));disp(repmat('-',1,60));    
-
+disp(repmat('-',2,60));disp(mfilename);disp(repmat('-',2,60)); 
 % Add all subdirectories for this m file
 curpath = fileparts(mfilename('fullpath'));
 addpath(curpath);addpath(genpath(curpath));
-
-a = fileparts(curpath);
-addpath(a);addpath(genpath(a));
 %% Close all non GUI figures
 % Close all figures without the GUI tag.
 figs=get(groot,'Children');
@@ -29,12 +23,10 @@ end
 disp(' ');
 %% Select image directory
     
-if ~exist('dig_auto_file')
-   dig_auto_file = 1; 
-end
+if ~exist('dig_auto_file');dig_auto_file = 1;end
 
 if dig_auto_file
-    dialog_title='Select GUI data';       
+    dialog_title='Select digdata';       
     [filename,dig_imgdir,b]=uigetfile(fullfile(ixon_getDayDir,'*.mat'),dialog_title);
     filename = fullfile(dig_imgdir,filename);    
     if  b == 0
@@ -70,6 +62,7 @@ dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
 
 %  dig_opts.xVar           = 'qgm_planeShift_N';  % Variable Name
 
+
 dig_opts.overrideUnit   = 'V';              % If ixon_autoUnit=0, use this
 dig_opts.doSave         = 1;                % Save Analysis?
 autoVar_Ignore = {'f_offset','piezo_offset'};
@@ -86,11 +79,11 @@ dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
 
 dig_doRadialAnalysis2                   = 1;
-dig_doFidelity                          = 0;
+dig_doFidelity                          = 1;
 
+do_qpd_analysis                         = 1;
 
 %% QPD Analysis
-do_qpd_analysis = 1;
 if do_qpd_analysis
     try
     P=[digdata.Params];
@@ -118,12 +111,9 @@ if do_qpd_analysis
        warning(getReport(ME),'extended','hyperlinks','on');
        disp('DID YOU MAKE SURE TO ADD THE AUXLIARY_ANALYSIS GIT REPOSITORY IS LOADE?');
     end
-    
-%     keyboard
 end
 
-
-%% Redo Basic Analysis
+%% Basic Analysis
 digdata = dig_basic(digdata);
 
 %% Show Cloud
@@ -151,20 +141,14 @@ if dig_standardAnalysis
 end
 
 %% Fidelity
-dig_fidelity=1;
-if dig_fidelity && size(digdata.Zdig,4)==2
+if dig_doFidelity && size(digdata.Zdig,4)==2
     % CF Needs to finish writing this
-    [fidelity,hF_fidelity1,hF_fidelity2] = dig_Fidelity(digdata,opts);
-    if dig_opts.doSave
-        if ~isempty(hF_fidelity2)
-            for kk=1:length(hF_fidelity2(kk))
-                ixon_saveFigure2(hF_fidelity2(kk),...
-                    hF_fidelity2(kk).Name,dig_opts);  
-            end
-        end
-        if ~isempty(hF_fidelity1)
-                ixon_saveFigure2(hF_fidelity1,...
-                    hF_fidelity1.Name,dig_opts);  
+    digdata = dig_Fidelity(digdata);
+    hF_FidelityMap = dig_showFidelityMap(digdata,dig_opts);
+    if dig_opts.doSave       
+        if ~isempty(hF_FidelityMap)
+                ixon_saveFigure2(hF_FidelityMap,...
+                    hF_FidelityMap.Name,dig_opts);  
         end           
     end
 end
@@ -180,14 +164,7 @@ if dig_doRadialAnalysis2
     try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
     filename = fullfile(dig_opts.saveDir,'dig_radial_data.mat');
     disp(['Saving ' filename ' ...']);
-    save(filename, '-struct','dig_radial_data');
-    
-%     
-%     hF2 = dig_TrackPeakCharge(digdata);
-%     if dig_opts.doSave
-%         ixon_saveFigure2(hF2,'dig_radial_peak_charge',dig_opts);  
-% 
-%     end
+    save(filename, '-struct','dig_radial_data'); 
 end
 
 %% Radial Analysis
@@ -289,7 +266,7 @@ if  dig_doRadialSkewAnalysis && isequal(digdata.xVar,'ExecutionDate')
                 ['dig_radial_skew_' num2str(kk)],dig_opts);   
        end
     end
-    end
+end
 
 %% Conductivity Analysis
 
@@ -327,17 +304,3 @@ opts = dig_opts;
 
 end
 
-%% Two-shot fidelity
-
-if dig_doFidelity
-    opts = dig_opts;
-    [dig_fidelity,hF_fidelity] = dig_showFidelity(digdata);
-    if dig_opts.doSave
-        ixon_saveFigure2(hF_fidelity,...
-         'dig_fidelity',dig_opts);  
-    end
-    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
-    filename = fullfile(dig_opts.saveDir,'dig_fidelity.mat');
-    disp(['Saving ' filename ' ...']);
-    save(filename, 'dig_fidelity');
-end
