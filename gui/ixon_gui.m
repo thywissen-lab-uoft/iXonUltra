@@ -1276,7 +1276,7 @@ hcStripe=uicontrol(hpPosition,'style','checkbox','string','circle stripe pattern
     'ToolTipString',ttstr);
 
 ttstr='Analyze focus of multi shot imaging';
-hcFocus=uicontrol(hpPosition,'style','checkbox','string','2shot focus','fontsize',7,...
+hcFocus=uicontrol(hpPosition,'style','checkbox','string','mult-shot focus','fontsize',7,...
     'backgroundcolor','w','Position',[5 hcStripe.Position(2)-15 100 15],...
     'ToolTipString',ttstr);
 
@@ -1362,7 +1362,7 @@ hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 % Checkbox to analyze the focuing degree of freedom with multi-shot imaging
 hcKFocus=uicontrol(hpKspace,'style','checkbox','string','multi-shot focusing','fontsize',7,...
     'backgroundcolor','w','Position',[5 5 120 15],...
-    'ToolTipString',ttstr,'enable','on','value',1);
+    'ToolTipString',ttstr,'enable','off','value',0);
 hcKFocus.Position(2) = hcFindLattice.Position(2) - 15;
 
 % Button to analyze momentum space
@@ -1473,7 +1473,7 @@ hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe','fontsize',7
 ttstr='  focus';
 hc_anlB_multishotfocus=uicontrol(hpBin,'style','checkbox','string','multi-shot focusing','fontsize',7,...
     'backgroundcolor','w','Position',[1 hc_anlB_stripe.Position(2)-15 hpBin.Position(3)-1 15],...
-    'ToolTipString',ttstr,'enable','on','Value',0);
+    'ToolTipString',ttstr,'enable','off','Value',0);
 
 ttstr='circle stripe phase';
 hc_anlB_circlestripe=uicontrol(hpBin,'style','checkbox','string','circle stripe','fontsize',7,...
@@ -3162,7 +3162,7 @@ end
     %% Focus Analysis
 
     if hcFocus.Value && size(data.Z,3)>1 && ~data.Flags.plane_selection_dotilt ...
-            && data.Flags.lattice_fluor_multi_mode
+            && data.Flags.lattice_fluor_multi_mode==2
         opts=struct;
         opts.Parent=tabFocus;
         opts.Name = data.Name;
