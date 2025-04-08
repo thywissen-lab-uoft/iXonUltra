@@ -18,7 +18,7 @@ end
 
 Natoms = [digdata.Natoms];
 X = [digdata.Xc_um];
-% X = X';
+X = X';
 Xs = [digdata.Xs_um];
 Y = [digdata.Yc_um];
 Ys = [digdata.Ys_um];

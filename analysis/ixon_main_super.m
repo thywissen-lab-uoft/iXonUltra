@@ -1820,6 +1820,56 @@ composite_data = struct;
 composite_data.Runs = runs;
 composite_data.Name = '2025_03_31 195 G spectrum 54 mW, 3 Er pulse';
 
+%%
+runs = [
+    2025 04 03 09
+    2025 04 03 10
+    2025 04 03 11
+    2025 04 03 12
+    2025 04 03 13
+    2025 04 03 14
+    2025 04 03 15
+    2025 04 04 01
+    2025 04 04 02
+    2025 04 04 03 
+    2025 04 04 04
+    2025 04 04 05
+    2025 04 04 06
+    2025 04 04 07 % only one period
+%     2025 04 04 08
+%     2025 04 04 09
+%     2025 04 04 10
+%     2025 04 04 11
+%     2025 04 04 12
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_04_03 3.5ER 195 G spectrum 54 mW, 1 Er pulse';
+
+%%
+runs = [
+    2025 04 07 05
+    2025 04 07 06
+    2025 04 07 07
+    2025 04 07 08
+    2025 04 07 09
+    2025 04 07 10
+    2025 04 07 11
+    2025 04 08 01
+    2025 04 08 02
+    2025 04 08 03 
+    2025 04 08 04
+    2025 04 08 05
+    2025 04 08 06
+    2025 04 08 07
+    2025 04 08 08
+    2025 04 08 09
+    2025 04 08 10
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_04_07 3.5ER 195 G spectrum 54.2 mW, 3 Er pulse';
+
 
 %%
 super_opts=struct;
