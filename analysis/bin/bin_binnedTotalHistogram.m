@@ -47,11 +47,32 @@ function [hF] = bin_binnedTotalHistogram(bindata,opts)
     
     in1i = find(n1==R(1),1);in1f = find(n1==R(2),1);    
     in2i = find(n2==R(3),1);in2f = find(n2==R(4),1);
+
+
+    zz=Zall(in2i:in2f,in1i:in1f,:);
+    zz=zz(:);
+    zz(isnan(zz))=[];
+    zz(zz==0)=[];
+
+
+    if isequal(opts.Nthresh,'auto')        
+        [idx,ClusterCentroids,sumD,D]=kmeans(zz,2);
+        N0 = max(ClusterCentroids);
+        opts.Nthresh = N0*.35;
+        edges=linspace(0,2*N0,opts.Bins);
+    else
+        edges=linspace(0,15e3,opts.Bins);
+    end
+    
+
+  [N,edges] = histcounts(zz,edges);  
+
+    
     
      
-  [N,edges] = histcounts(Zall(in2i:in2f,in1i:in1f,:),opts.Bins);  
+  % [N,edges] = histcounts(Zall(in2i:in2f,in1i:in1f,:),opts.Bins);  
     centers = (edges(1:end-1) + edges(2:end))/2;           
-    iL = centers<=opts.Nthresh;
+    iL = [centers<=opts.Nthresh];
     iH = ~iL; 
     
     %% Initialize Graphics

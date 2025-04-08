@@ -1276,7 +1276,7 @@ hcStripe=uicontrol(hpPosition,'style','checkbox','string','circle stripe pattern
     'ToolTipString',ttstr);
 
 ttstr='Analyze focus of multi shot imaging';
-hcFocus=uicontrol(hpPosition,'style','checkbox','string','2shot focus','fontsize',7,...
+hcFocus=uicontrol(hpPosition,'style','checkbox','string','mult-shot focus','fontsize',7,...
     'backgroundcolor','w','Position',[5 hcStripe.Position(2)-15 100 15],...
     'ToolTipString',ttstr);
 
@@ -1362,7 +1362,7 @@ hcFindLattice.Position(2) = tblROIK.Position(2) - 15;
 % Checkbox to analyze the focuing degree of freedom with multi-shot imaging
 hcKFocus=uicontrol(hpKspace,'style','checkbox','string','multi-shot focusing','fontsize',7,...
     'backgroundcolor','w','Position',[5 5 120 15],...
-    'ToolTipString',ttstr,'enable','on','value',1);
+    'ToolTipString',ttstr,'enable','off','value',0);
 hcKFocus.Position(2) = hcFindLattice.Position(2) - 15;
 
 % Button to analyze momentum space
@@ -1473,7 +1473,7 @@ hc_anlB_stripe=uicontrol(hpBin,'style','checkbox','string','stripe','fontsize',7
 ttstr='  focus';
 hc_anlB_multishotfocus=uicontrol(hpBin,'style','checkbox','string','multi-shot focusing','fontsize',7,...
     'backgroundcolor','w','Position',[1 hc_anlB_stripe.Position(2)-15 hpBin.Position(3)-1 15],...
-    'ToolTipString',ttstr,'enable','on','Value',0);
+    'ToolTipString',ttstr,'enable','off','Value',0);
 
 ttstr='circle stripe phase';
 hc_anlB_circlestripe=uicontrol(hpBin,'style','checkbox','string','circle stripe','fontsize',7,...
@@ -1637,7 +1637,9 @@ hb_Diganalyze.Position=[3 1 hpDig.Position(3)-8 18];
         updateDigitalGraphics;
         drawnow;
         if hcDigFidelity.Value
-            [fidelity,b,a] = dig_Fidelity(digdata,opts)
+            opts.Parent = tabF;
+            digdata = dig_Fidelity(digdata);
+            dig_showFidelityMap(digdata,opts);
         end
 
     end
@@ -1739,9 +1741,6 @@ menuSelectImg.Position(2)=15;
 
 %% Display Options Panel
 
-% hpDispOpt=uitabgroup(hF,'units','pixels');
-% hpDispOpt=uipanel(hF,'units','pixels','title','display');
-
 hpDispOpt=uitabgroup(hpControl,'units','pixels');
 hpDispOpt.Position(1) = hpDisp_Select.Position(1);
 hpDispOpt.Position(3) = hpDisp_Select.Position(3);
@@ -1751,12 +1750,12 @@ hpDispOpt.Position(2) = hpDisp_Select.Position(2)-hpDispOpt.Position(4);
 disp_opt_tabs(1)=uitab(hpDispOpt,'Title','position','units','pixels');
 disp_opt_tabs(2)=uitab(hpDispOpt,'Title','stripe','units','pixels');
 disp_opt_tabs(3)=uitab(hpDispOpt,'Title','focus','units','pixels');
-
 disp_opt_tabs(4)=uitab(hpDispOpt,'Title','histogram','units','pixels');
 disp_opt_tabs(5)=uitab(hpDispOpt,'Title','momentum','units','pixels');
 disp_opt_tabs(6)=uitab(hpDispOpt,'Title','binned','units','pixels');
 disp_opt_tabs(7)=uitab(hpDispOpt,'Title','binned histogram','units','pixels');
 disp_opt_tabs(8)=uitab(hpDispOpt,'Title','digitized','units','pixels');
+disp_opt_tabs(9)=uitab(hpDispOpt,'Title','fidelity','units','pixels');
 
 
 %% Display Options Panel
@@ -2324,12 +2323,6 @@ enableInteractivity;
 % Panel for parameters and analysis results.
 
 hpFit=uitabgroup(hpControl,'units','pixels');
-% hpFit.Position=[320 0 300 ...
-    % hF.Position(4)-(hpCam.Position(4)+hpSave.Position(4)+hpNav.Position(4))];
-% hpFit.Position=[320 0 300 hpNav.Position(2)];
-
-% hpFit.Position=[320 0 300 hpNav.Position(2)-200];
-
 hpFit.Position(1) = hpDispOpt.Position(1);
 hpFit.Position(3) = hpDispOpt.Position(3);
 hpFit.Position(2) = 0;
@@ -2435,7 +2428,6 @@ hp.Position=[hpControl.Position(3) 0 hF.Position(3)-hpControl.Position(3) hF.Pos
 
     function hp_tab_cb(src,evt)
         newTitle = evt.NewValue.Title;
-
         ind = 0;
         for jj=1:length(hpDispOpt.Children)
             if isequal(hpDispOpt.Children(jj).Title,newTitle)
@@ -2444,9 +2436,7 @@ hp.Position=[hpControl.Position(3) 0 hF.Position(3)-hpControl.Position(3) hF.Pos
         end
         if ind
             hpDispOpt.SelectedTab=hpDispOpt.Children(ind);
-        end
-
-       
+        end       
     end
 
 
@@ -2458,11 +2448,12 @@ tabFocus=uitab(hp,'Title','focus','units','pixels','backgroundcolor','w');
 tabH=uitab(hp,'Title','histogram','units','pixels','backgroundcolor','w');
 tabK=uitab(hp,'Title','momentum','units','pixels','backgroundcolor','w');
 tabB=uitab(hp,'Title','binned','units','pixels','backgroundcolor','w');
-
 tabHB=uitab(hp,'Title','binned histogram','units','pixels','backgroundcolor','w');
 tabD=uitab(hp,'Title','digitized','units','pixels','backgroundcolor','w');
+tabF=uitab(hp,'Title','fidelity','units','pixels','backgroundcolor','w');
+
+
 % tabC=uitab(hp,'Title','correlators','units','pixels','backgroundcolor','w');
-% tabFidelity=uitab(hp,'Title','fidelity','units','pixels','backgroundcolor','w');
 
 % Define spacing for images, useful for resizing
 l=80;   % Left gap for fitting and data analysis summary
@@ -3171,7 +3162,7 @@ end
     %% Focus Analysis
 
     if hcFocus.Value && size(data.Z,3)>1 && ~data.Flags.plane_selection_dotilt ...
-            && data.Flags.lattice_fluor_multi_mode
+            && data.Flags.lattice_fluor_multi_mode==2
         opts=struct;
         opts.Parent=tabFocus;
         opts.Name = data.Name;
