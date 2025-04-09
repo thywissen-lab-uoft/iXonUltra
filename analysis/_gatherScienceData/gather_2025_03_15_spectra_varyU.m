@@ -171,7 +171,7 @@ composite_data = gatherCompositeData(composite_data);
 
 %% Upload
 
-doUpload = true;
+doUpload = false;
 
 
 GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
