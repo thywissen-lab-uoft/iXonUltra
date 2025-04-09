@@ -46,10 +46,10 @@ if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*67;end%03/05 2*pi*52
 if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
 if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 
-opts.TrapOmega = 2*pi*75;
-opts.Tunneling = 435;
+opts.TrapOmega = 2*pi*74;
+% opts.Tunneling = 563;
 
-%opts.TrapOmega = 2*pi*90;
+% opts.TrapOmega = 2*pi*70.5;
 %opts.Tunnelling = 435;
 
 input_data{1,1} = ['V₀ [Eᵣ]'];
@@ -58,9 +58,9 @@ input_data{3,1} = ['ωz/(2π) [Hz]'];
 input_data{4,1} = ['B [Gauss]'];
 
 input_data{1,2} = 2.5;
-input_data{2,2} = 67;
-input_data{3,2} = 67*5;
-input_data{4,2} = 195;
+input_data{2,2} = opts.TrapOmega/2/pi;67;
+input_data{3,2} = 298;
+input_data{4,2} = 200;
 
 output_data{1,1} = 'tunneling [Hz]';
 output_data{1,2} = '[563, 20, .1]';
@@ -229,12 +229,12 @@ for nn=1:length(opts.GaussFitDensityMax)
     [gauss_sigma(nn,1),gauss_sigma(nn,2)]=pdf_gauss_fit(r_all,rMin(nn));
     s=gauss_sigma(nn,1);
 
-    T_HO = m*(2*pi*67)^2*(gauss_sigma(nn,1)*aL)^2/kB;
-    T_HO_t = (kB*T_HO)/(h*563);
+    T_HO = m*(opts.TrapOmega)^2*(gauss_sigma(nn,1)*aL)^2/kB;
+    T_HO_t = (kB*T_HO)/(h*opts.Tunneling);
     T_HO_nK = T_HO*1e9;
     gauss_str{nn}=['Gauss : $\sigma=' num2str(round(s),'%.1f')  ...
          '~\mathrm{sites}~(' num2str(round(s*aL_um,1)) '~\mu \mathrm{m})' ...
-         ';T=' num2str(round(T_HO_nK,0)) '~\mathrm{nK}~(' num2str(round(T_HO_t,1)) 't)'...
+         ';T=' num2str(round(T_HO_t,1)) 't~(' num2str(round(T_HO_nK,0)) '~\mathrm{nK})'...
         '~[\mathrm{fit}~n(r)<' num2str(opts.GaussFitDensityMax(nn)) ']$'];
 end
 
