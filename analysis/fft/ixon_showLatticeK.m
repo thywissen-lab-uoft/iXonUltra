@@ -88,8 +88,11 @@ hF.Color='w';
 hF.Position = [100 100 600 400];
 clf
 
+k0 = mean([median(k1mag) median(k2mag)]);
+dk = 0.01;
+
 subplot(221);
-histfit(k1mag,50)
+histfit(k1mag,25)
 hold on
 p1=fitdist(k1mag,'normal');
 xlabel('$k_1$ magnitude (1/px)','interpreter','latex');
@@ -103,7 +106,7 @@ text(.02,.98,...
     'interpreter','latex','fontsize',10);
 
 subplot(222);
-histfit(k2mag,50)
+histfit(k2mag,25)
 hold on
 p2=fitdist(k2mag,'normal');
 xlabel('$k_2$ magnitude (1/px)','interpreter','latex');
@@ -118,7 +121,7 @@ text(.02,.98,...
 
 
 subplot(223);
-histfit(theta1/pi*180,50)
+histfit(theta1/pi*180,25)
 hold on
 p3=fitdist(theta1/pi*180,'normal');
 xlabel('$\theta_1$ (deg.)','interpreter','latex');
@@ -134,7 +137,7 @@ text(.02,.98,...
 
 
 subplot(224);
-histfit(theta2/pi*180,50)
+histfit(theta2/pi*180,25)
 hold on
 p4=fitdist(theta2/pi*180,'normal');
 xlabel('$\theta_2$ (deg.)','interpreter','latex');

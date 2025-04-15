@@ -69,10 +69,10 @@ title('focus score');
 hold on
 
 yyaxis right
-ps(end) =plot(X,sum(Scores,2),'-','color',[.5 .5 .5],...
+ps(end+1) =plot(X,sum(Scores,2),'-','color',[.5 .5 .5],...
 'markersize',8,'linewidth',1);
 hold on
-legStr{end}='sum score';
+legStr{end+1}='sum score';
 set(gca,'YColor',[.5 .5 .5]);
 ylabel('sum score');
 
