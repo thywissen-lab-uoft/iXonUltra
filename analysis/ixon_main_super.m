@@ -1870,6 +1870,98 @@ composite_data = struct;
 composite_data.Runs = runs;
 composite_data.Name = '2025_04_07 3.5ER 195 G spectrum 54.2 mW, 3 Er pulse';
 
+%%
+runs = [
+    2025 04 08 20
+    2025 04 08 21
+    2025 04 08 22
+    2025 04 08 23
+    2025 04 08 24    
+    2025 04 09 01
+    2025 04 09 02
+    2025 04 09 03 
+    2025 04 09 04
+    2025 04 09 05
+    2025 04 09 06
+    2025 04 09 07
+    2025 04 09 08
+    2025 04 09 09
+    2025 04 09 10
+    2025 04 09 11
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_04_08 2.5 Er 200 G spectrum 53.7 mW, 2.5 Er pulse';
+%%
+runs = [
+%     2025 04 09 18 %poor fit
+    2025 04 09 19 %okay signal
+    2025 04 09 20
+    2025 04 09 21
+    2025 04 09 22
+    2025 04 09 23 %good signal but outlier?
+    2025 04 09 24    
+    2025 04 09 25
+    2025 04 09 26
+    2025 04 09 27 
+    2025 04 10 01
+%     2025 04 10 02 poor signal
+    2025 04 10 03 %okay signal
+    2025 04 10 04 %okay signal
+    2025 04 10 05 %okay signal
+    2025 04 10 06
+    2025 04 10 07 %good signal very large amplitude 
+    2025 04 10 09 %repeat good signal, large amplitude
+    2025 04 10 10 %repeat okay signal
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_04_09 2.5 Er 200 G spectrum 53.6 mW, 2 Er pulse 74 Hz';
+%%
+runs = [
+    2025 04 10 17 % okay signal
+    2025 04 10 18 % large amplitude
+    2025 04 10 19 % okay signal
+    2025 04 10 20 % good signal
+    2025 04 10 21 % good signal, large amplitude
+    2025 04 10 22 % good signal, large amplitude
+    2025 04 11 01 % good signal, large amplitude
+    2025 04 11 02 % good signal
+    2025 04 11 03 % good signal, large amplitude
+    2025 04 11 04 % good signal
+    2025 04 11 05 % good signal, large amplitude
+    2025 04 11 06 % good signal, large amplitude
+    2025 04 11 07 % good signal, small amplitude
+    2025 04 11 08 % good signal
+    2025 04 11 09 % good signal
+%     2025 04 11 10 % not great signal, large drift
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_04_10 2.5 Er 200 G spectrum 53.5 mW, 2.8 Er pulse 70 Hz';
+%%
+runs = [
+    2025 04 12 05 % good signal
+    2025 04 12 06 % no signal
+    2025 04 12 07 % no signal
+    2025 04 12 08 % good signal
+    2025 04 12 09 % good signal
+    2025 04 12 10 % no signal
+    2025 04 12 11 % questionable, small amplitude
+    2025 04 12 12 % good signal
+    2025 04 12 13 % good signal
+    2025 04 12 14 % large drift, small amplitude
+    2025 04 12 15 % no signal
+    2025 04 12 16 % good signal, large amplitude
+    2025 04 12 17 % good signal
+    2025 04 12 18 % good signal
+    2025 04 12 19 % good signal, small ish amplitude
+    2025 04 12 20 % okay signal, small amplitude
+    2025 04 13 02 % good signal
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_04_12 3.5 Er 195 G spectrum 53.5 mW, 2.5 Er pulse 74.5 Hz';
 
 %%
 super_opts=struct;
