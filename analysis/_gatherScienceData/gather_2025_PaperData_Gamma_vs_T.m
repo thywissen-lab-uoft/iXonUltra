@@ -240,3 +240,27 @@ composite_data(end).Name = '2025_03_20 201.1 G spectra T = 2.2t';
 %% Gather All Data
 composite_data(1)=[];
 composite_data = gatherCompositeData(composite_data);
+
+%% Upload
+
+doUpload = true;
+
+
+GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
+output_folder_name ='2025_paper_data_vs_T';
+saveDir = fullfile(GDrive_root,output_folder_name);
+
+if doUpload
+    try
+        if ~exist(GDrive_root,'dir');mkdir(GDrive_root);end
+        if ~exist(saveDir,'dir');mkdir(saveDir);end
+         gFile = fullfile(saveDir,'composite_data.mat');
+
+        disp(gFile);
+        fprintf('upload to google drive ...');        
+        save(gFile,'composite_data'); 
+        disp('done!')   
+    catch ME
+        error('OH NO I COUD NOT UPL<OD');
+    end
+end 

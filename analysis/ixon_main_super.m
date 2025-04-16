@@ -1964,6 +1964,37 @@ composite_data.Runs = runs;
 composite_data.Name = '2025_04_12 3.5 Er 195 G spectrum 53.5 mW, 2.5 Er pulse 74.5 Hz';
 
 %%
+runs = [
+    2025 04 15 11
+%     2025 04 15 12 
+%     2025 04 15 13 
+%     2025 04 15 14 
+%     2025 04 15 15 
+%     2025 04 15 16
+%     2025 04 15 17
+%     2025 04 16 01 
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_04_15 2.5 Er, 57 mW cross thermalization, 100 ms ramp to (100, 300) mW, snap back to (198, 88) mW in 0.1 ms';
+
+%%
+runs = [
+    2025 04 16 02
+    2025 04 16 03 
+    2025 04 16 04 
+    2025 04 16 05 
+    2025 04 16 06 
+    2025 04 16 07
+    2025 04 16 08
+    2025 04 16 09 
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_04_15 2.5 Er 54 mW cross thermalization, 100 ms ramp to (100, 300) mW, snap back to (198, 88) mW in 0.1 ms';
+
+
+%%
 super_opts=struct;
 
 super_opts.do_ixon_main = 1;
