@@ -46,8 +46,8 @@ if ~isfield(opts,'TrapOmega');      opts.TrapOmega   = 2*pi*67;end%03/05 2*pi*52
 if ~isfield(opts,'Tunneling');      opts.Tunneling   = 563;end
 if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 
-opts.TrapOmega = 2*pi*74;
-% opts.Tunneling = 563;
+% opts.TrapOmega = 2*pi*74;
+% opts.Tunneling = 435;563;
 
 % opts.TrapOmega = 2*pi*70;
 opts.Tunnelling = 435;

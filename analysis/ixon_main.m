@@ -84,9 +84,10 @@ end
 varType             = 'param'; % always select 'param' for now 
 ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-ixon_xVar           = 'conductivity_mod_time'; % Variable Name
-% ixon_xVar           = 'ExecutionDate'; % Variable Name
-% ixon_xVar           = 'qgm_planeShift_N'; % Variable Name
+% ixon_xVar           = 'conductivity_mod_time'; % Variable Name
+ixon_xVar           = 'ExecutionDate'; % Variable Name
+% ixon_xVar           = 'tilt_notilt_shift'; % Variable Name
+
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
 ixon_Magnification = 83;        % Magnification of imaging system
@@ -100,7 +101,7 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 %% Analysis Options
 
 ixon_doBoxCount                     = 1;
-ixon_doGaussFit                     = 0;
+ixon_doGaussFit                     = 1;
 
 % Analysis to run
 ixon_doStandardAnalysis             = 1;

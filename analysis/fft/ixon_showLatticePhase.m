@@ -54,7 +54,7 @@ clf
 hF.Name = 'Lattice Phase';
 
 subplot(121);
-histogram(p1,50)
+histogram(p1(:),linspace(0,1,25))
 hold on
 xlabel('$\phi_1$ phase (sites)','interpreter','latex');
 ylabel('occurences','interpreter','latex');
@@ -69,7 +69,7 @@ text(.02,.98,...
 
 
 subplot(122);
-histogram(p2,50)
+histogram(p2(:),linspace(0,1,25))
 hold on
 xlabel('$\phi_1$ phase (sites)','interpreter','latex');
 ylabel('occurences','interpreter','latex');

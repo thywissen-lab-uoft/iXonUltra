@@ -59,7 +59,7 @@ dig_opts.varType        = 'param';          % always select 'param' for now
 dig_opts.autoXVar       = 0;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
-
+dig_opts.xVar           = 'tilt_notilt_offset';
 %  dig_opts.xVar           = 'qgm_planeShift_N';  % Variable Name
 
 
