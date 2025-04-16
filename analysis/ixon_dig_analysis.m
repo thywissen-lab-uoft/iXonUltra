@@ -56,7 +56,7 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 0;                % Auto detect changing variable?
+dig_opts.autoXVar       = 1;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
 dig_opts.xVar           = 'tilt_notilt_offset';
@@ -73,13 +73,15 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
-dig_ac_conductivity_fit                 = 1;
+dig_ac_conductivity_fit                 = 0;
 dig_quench_conductivity_fit             = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
 
 dig_doRadialAnalysis2                   = 1;
 dig_doFidelity                          = 1;
+
+do_cross_thermalization                 = 1;
 
 do_qpd_analysis                         = 1;
 
@@ -304,3 +306,17 @@ opts = dig_opts;
 
 end
 
+%% Cross-thermalization
+
+if do_cross_thermalization
+    opts = dig_opts;
+    [hF_XT,dig_XT_data] = dig_cross_thermalization(digdata,opts);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF_XT,...
+         'dig_cross_thermalization',dig_opts);  
+    end
+    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+    filename = fullfile(dig_opts.saveDir,'dig_XT_data.mat');
+    disp(['Saving ' filename ' ...']);
+    save(filename, '-struct','dig_XT_data');
+end

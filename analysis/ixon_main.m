@@ -82,7 +82,7 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 0;      % Auto detect changing variable?
+ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 % ixon_xVar           = 'conductivity_mod_time'; % Variable Name
 ixon_xVar           = 'ExecutionDate'; % Variable Name
@@ -146,7 +146,7 @@ img_opt.doSubtractBG        = 1;
 img_opt.doScale             = 0;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
-img_opt.Theta               = 59.81;  % Rotation amount (deg.)
+img_opt.Theta               = 30;59.81;  % Rotation amount (deg.)
 img_opt.DetectNoise         = 1;
 img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512

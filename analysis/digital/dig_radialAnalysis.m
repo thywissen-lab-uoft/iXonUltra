@@ -50,7 +50,7 @@ if ~isfield(opts,'Interaction');    opts.Interaction = 1e3;end
 % opts.Tunneling = 435;563;
 
 % opts.TrapOmega = 2*pi*70;
-opts.Tunnelling = 435;
+% opts.Tunnelling = 435;
 
 input_data{1,1} = ['V₀ [Eᵣ]'];
 input_data{2,1} = ['ωr/(2π) [Hz]'];
