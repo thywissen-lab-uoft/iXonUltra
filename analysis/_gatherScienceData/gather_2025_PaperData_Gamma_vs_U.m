@@ -165,27 +165,27 @@ runs = [
 composite_data(end+1).Runs = runs;
 composite_data(end).Name = '2025_03_30 195 G spectrum 54 mW, 3 Er pulse';
 
-%% 200 G (not the best should remove)
-runs = [
-    2025 04 08 20
-    2025 04 08 21
-    2025 04 08 22
-    2025 04 08 23
-    2025 04 08 24    
-    2025 04 09 01
-    2025 04 09 02
-    2025 04 09 03 
-    2025 04 09 04
-    2025 04 09 05
-    2025 04 09 06
-    2025 04 09 07
-    2025 04 09 08
-    2025 04 09 09
-    2025 04 09 10
-    2025 04 09 11
-    ];
-composite_data(end+1).Runs = runs;
-composite_data(end).Name = '2025_04_08 2.5 Er 200 G spectrum 53.7 mW, 2.5 Er pulse';
+% %% 200 G (not the best should remove)
+% runs = [
+%     2025 04 08 20
+%     2025 04 08 21
+%     2025 04 08 22
+%     2025 04 08 23
+%     2025 04 08 24    
+%     2025 04 09 01
+%     2025 04 09 02
+%     2025 04 09 03 
+%     2025 04 09 04
+%     2025 04 09 05
+%     2025 04 09 06
+%     2025 04 09 07
+%     2025 04 09 08
+%     2025 04 09 09
+%     2025 04 09 10
+%     2025 04 09 11
+%     ];
+% composite_data(end+1).Runs = runs;
+% composite_data(end).Name = '2025_04_08 2.5 Er 200 G spectrum 53.7 mW, 2.5 Er pulse';
 
 % %% 200 G post selected looks better
 % runs = [
@@ -231,10 +231,33 @@ runs = [
     2025 04 11 09 % good signal
 %     2025 04 11 10 % not great signal, large drift
     ];
-composite_data = struct;
-composite_data.Runs = runs;
-composite_data.Name = '2025_04_10 2.5 Er 200 G spectrum 53.5 mW, 2.8 Er pulse 70 Hz';
+composite_data(end+1).Runs = runs;
+composite_data(end).Name = '2025_04_10 2.5 Er 200 G spectrum 53.5 mW, 2.8 Er pulse 70 Hz';
 
 %% Gather All Data
 composite_data(1)=[];
 composite_data = gatherCompositeData(composite_data);
+
+%% Upload
+
+doUpload = true;
+
+
+GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
+output_folder_name ='2025_paper_data_vs_U';
+saveDir = fullfile(GDrive_root,output_folder_name);
+
+if doUpload
+    try
+        if ~exist(GDrive_root,'dir');mkdir(GDrive_root);end
+        if ~exist(saveDir,'dir');mkdir(saveDir);end
+         gFile = fullfile(saveDir,'composite_data.mat');
+
+        disp(gFile);
+        fprintf('upload to google drive ...');        
+        save(gFile,'composite_data'); 
+        disp('done!')   
+    catch ME
+        error('OH NO I COUD NOT UPL<OD');
+    end
+end 
