@@ -5,7 +5,16 @@ function [digdata] = dig_basic(digdata)
     end
     a_px = digdata.Lattice_px;
     a_um = digdata.Lattice_um;  
-            
+%     keyboard
+%     %Some legacy issue
+%     if length(digdata.Ratom(:,1)) == 1
+%         digdata.Ratom = digdata.Ratom';
+%     end
+%     if length(digdata.Natoms(:,1)) == 1
+%         digdata.Natoms = digdata.Natoms';
+%     end
+    
+    
     for nn=1:length(digdata.FileNames)
         for rr=1:size(digdata.Zdig,4)
             Ratom = digdata.Ratom{nn,rr};

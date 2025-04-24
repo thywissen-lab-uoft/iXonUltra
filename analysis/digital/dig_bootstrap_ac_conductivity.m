@@ -41,13 +41,117 @@ b1 = [Natoms>Nmed*1.5];
 b2 = [Natoms<Nmed*0.5];
 bad_inds = logical(b1)|logical(b2);
 
+%% Initial Fit Guess
+
+f = unique([digdata.Params.conductivity_mod_freq]);
+if length(f)>1;warning('multiple oscillation frequencies detected');end
+f = mean(f);
+f = f*1e-3;
+
+Ag = 0.5*(max(X)-min(X));
+x0 = median(X);
+
+phiVec = linspace(0,-2*pi,100);
+phi_sse = zeros(length(phiVec),1);
+for kk=1:length(phiVec)
+%     keyboard
+    phi_sse(kk) = sum((-Ag*sin(2*pi*f*Ttot + phiVec(kk)) - X).^2);
+%     phi_sse(kk) = sum((-Ag*sin(2*pi*f*Ttot + phiVec(kk)) - X.').^2);
+end
+
+[~,ii] = min(phi_sse);
+phi = phiVec(ii);
+
+%% Post select bad data points based off atom number
+
+data = [Ttot(~bad_inds)', X(~bad_inds)'];
+
+%% Bootstrap Fitting
+
+qphi = opts.QPD_phi;
+sinecosine = @(P,t) -P(1)*sin(2*pi*f*t+qphi)-P(2)*cos(2*pi*f*t+qphi) + P(3) + P(4)*t;
+
+P_guess = [Ag*cos(phi) Ag*sin(phi) x0 0];
+
+nBootstraps = 1e3; %number of bootstrap iterations
+[bootstat, bootsam] = bootstrp(nBootstraps, @fitModel, data);
+
+S_boot = bootstat(:,1);
+C_boot = bootstat(:,2);
+x0_boot = bootstat(:,3);
+v0_boot = bootstat(:,4);
+
+%% Fit the bootstrap data with a normal distribution
+S_norm = fitdist(S_boot,'Normal');
+C_norm = fitdist(C_boot,'Normal');
+x0_norm = fitdist(x0_boot,'Normal');
+v0_norm = fitdist(v0_boot,'Normal');
+
+alpha = 1 - 0.95; %1 - confidence interval
+S_ci = paramci(S_norm,'Alpha',alpha);
+C_ci = paramci(C_norm,'Alpha',alpha);
+x0_ci = paramci(x0_norm,'Alpha',alpha);
+v0_ci = paramci(v0_norm,'Alpha',alpha);
+
+S_mu = S_norm.mu;
+C_mu = C_norm.mu;
+x0_mu = x0_norm.mu;
+v0_mu = v0_norm.mu;
+
+S_sigma = S_norm.sigma;
+C_sigma = C_norm.sigma;
+x0_sigma = x0_norm.sigma;
+v0_sigma = v0_norm.sigma;
+
+%% Import normal least squares fit results
+cond_data_temp = load([opts.saveDir filesep 'conductivity_data.mat']);
+
+S = cond_data_temp.S;
+C = cond_data_temp.C;
+x0 = cond_data_temp.x0;
+v0 = cond_data_temp.v0;
+
+Serr = cond_data_temp.Serr;
+Cerr = cond_data_temp.Cerr;
+x0err = cond_data_temp.x0err;
+v0err = cond_data_temp.v0err;
+
+Natoms_mean = cond_data_temp.Natoms;
+SpatialMaxUpDensity = cond_data_temp.SpatialMaxUpDensity;
+XsBar = cond_data_temp.XsBar;
+YsBar = cond_data_temp.YsBar;
+
+Natoms_std = cond_data_temp.NatomsErr;
+SpatialMaxUpDensityErr = cond_data_temp.SpatialMaxUpDensityErr;
+XsBarErr = cond_data_temp.XsBarErr;
+YsBarErr = cond_data_temp.YsBarErr;
+
+%% Create table of data
+
+tbl_f3={['Bootstrap: '],[''];
+['S(' char(956) 'm)'], [num2str(S_mu,'%.2f') ' ' char(177) ' ' num2str(S_sigma,'%.2f')];
+['C(' char(956) 'm)'], [num2str(C_mu,'%.2f') ' ' char(177) ' ' num2str(C_sigma,'%.2f')];
+['x' char(8320) '(' char(956) 'm)'], [num2str(x0_mu,'%.1f') ' ' char(177) ' ' num2str(x0_sigma,'%.1f')];
+['v' char(8320) '(' char(956) 'm/ms)'], [num2str(v0_mu,'%.1e') ' ' char(177) ' ' num2str(v0_sigma,'%.1e')];
+['Fit: '],[''];
+['S(' char(956) 'm)'], [num2str(S,'%.2f') ' ' char(177) ' ' num2str(Serr,'%.2f')];
+['C(' char(956) 'm)'], [num2str(C,'%.2f') ' ' char(177) ' ' num2str(Cerr,'%.2f')];
+['x' char(8320) '(' char(956) 'm)'], [num2str(x0,'%.1f') ' ' char(177) ' ' num2str(x0err,'%.1f')];
+['v' char(8320) '(' char(956) 'm/ms)'], [num2str(v0,'%.1e') ' ' char(177) ' ' num2str(v0err,'%.1e')];
+['Density Info: '],[''];
+['N'], [num2str(round(Natoms_mean)) ' ' char(177) ' ' num2str(round(Natoms_std)) ];
+['n' char(8320) 'up'], [num2str(SpatialMaxUpDensity,'%.2f')  ' ' char(177) ' ' num2str(SpatialMaxUpDensityErr,'%.2f')  ];
+[char(963) 'x'  '(' char(956) 'm)'], [num2str(XsBar,'%.2f')  ' ' char(177) ' ' num2str(XsBarErr,'%.2f')  ];
+[char(963) 'y'  '(' char(956) 'm)'], [num2str(YsBar,'%.2f')  ' ' char(177) ' ' num2str(YsBarErr,'%.2f')  ];
+};
+
 %% Create figure
 
 hF = figure;
 hF.Color='w';
-hF.Position = [100 100 800 400];
+hF.Position = [100 100 1400 400];
 
-hF.Name = 'Digital AC Conductivity';
+hF.Name = 'Digital AC Conductivity Bootstrap';
 
 if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
     tFig=uicontrol('style','text','string',opts.FigLabel,...
@@ -58,26 +162,23 @@ if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
     tFig.Position(1:2)=[5 hF.Position(4)-tFig.Position(4)];
 end    
 
-
-ax1=subplot(2,3,[1 2]);
+tt=linspace(min(Ttot),max(Ttot),1e3);
+ax1=subplot(2,5,[1 2]);
 co=get(gca,'colororder');
 plot(Ttot(~bad_inds),X(~bad_inds),'o','markerfacecolor',co(1,:),...
     'linewidth',1,'markeredgecolor',co(1,:)*.3);
 hold on
 plot(Ttot(bad_inds),X(bad_inds),'o','markerfacecolor',co(2,:),...
     'linewidth',1,'markeredgecolor',co(2,:)*.3);
-
+pF1 = plot(tt,sinecosine([S_mu,C_mu,x0_mu,v0_mu],tt), 'r','LineWidth',2,'DisplayName', 'Bootstrap');
+pF2 = plot(tt,sinecosine([S,C,x0,v0],tt), 'g--','LineWidth',2,'DisplayName','$-S\sin(2\pi f t)-C\cos(2\pi f t) + x_0 + v_0t$');
+strFit = {'Bootstrap', '$-S\sin(2\pi f t)-C\cos(2\pi f t) + x_0 + v_0t$'};
+legend([pF1 pF2],strFit,'interpreter','latex','fontsize',7,'location','best');
 
 xlabel('total modulation time (ms)');
 ylabel('x center (um)');
 
-% if opts.RemoveBadData
-%     str = ['ignoring dN>' num2str(opts.Ndelta_bound) '\sigma'];
-%     text(.99,.01,str,'units','normalized','verticalalignment','bottom',...
-%         'HorizontalAlignment','right','fontsize',8);
-% end
-
-ax2=subplot(2,3,4);
+ax2=subplot(2,5,6);
 plot(Ttot(~bad_inds),Xs(~bad_inds),'o','markerfacecolor',co(1,:),...
     'linewidth',1,'markeredgecolor',co(1,:)*.3);
 hold on
@@ -86,7 +187,7 @@ plot(Ttot(bad_inds),Xs(bad_inds),'o','markerfacecolor',co(2,:),...
 xlabel('total modulation time (ms)');
 ylabel('x sigma (um)');
 
-ax3=subplot(2,3,5);
+ax3=subplot(2,5,7);
 plot(Ttot(~bad_inds),Natoms(~bad_inds),'o','markerfacecolor',co(1,:),...
     'linewidth',1,'markeredgecolor','k');
 hold on
@@ -95,7 +196,82 @@ plot(Ttot(bad_inds),Natoms(bad_inds),'o','markerfacecolor',co(2,:),...
 ylabel('atom number');
 xlabel('total modulation time (ms)');
 
-keyboard
+ax4 = subplot(2,5,3);
+histfit(S_boot);
+xlabel('S (\mum)')
+ylabel('Occurences')
+text(0.02,0.95,['\mu: ' num2str(round(S_mu,2)) '\pm' num2str(round(abs(S_ci(1,1) - S_ci(2,1))/2,2)) newline ...
+    '\sigma: ' num2str(round(S_sigma,3)) '\pm' num2str(round(abs(S_ci(1,2) - S_ci(2,2))/2,4))],'Units','normalized', 'BackgroundColor','white');
+
+ax5 = subplot(2,5,4);
+histfit(C_boot);
+xlabel('C (\mum)')
+ylabel('Occurences')
+text(0.02,0.95,['\mu: ' num2str(round(C_mu,2)) '\pm' num2str(round(abs(C_ci(1,1) - C_ci(2,1))/2,2)) newline ...
+    '\sigma: ' num2str(round(C_sigma,3)) '\pm' num2str(round(abs(C_ci(1,2) - C_ci(2,2))/2,4))],'Units','normalized','BackgroundColor','white')
+
+ax6 = subplot(2,5,8);
+histfit(x0_boot);
+xlabel('x0 (\mum)')
+ylabel('Occurences')
+text(0.02,0.95,['\mu: ' num2str(round(x0_mu,2)) '\pm' num2str(round(abs(x0_ci(1,1) - x0_ci(2,1))/2,2)) newline ...
+    '\sigma: ' num2str(round(x0_sigma,3)) '\pm' num2str(round(abs(x0_ci(1,2) - x0_ci(2,2))/2,4))],'Units','normalized','BackgroundColor','white')
+
+ax7 = subplot(2,5,9);
+histfit(v0_boot);
+xlabel('v0 (\mum/ms)')
+ylabel('Occurences')
+text(0.02,0.95,['\mu: ' num2str(round(v0_mu,2)) '\pm' num2str(round(abs(v0_ci(1,1) - v0_ci(2,1))/2,2)) newline ...
+    '\sigma: ' num2str(round(v0_sigma,3)) '\pm' num2str(round(abs(v0_ci(1,2) - v0_ci(2,2))/2,4))],'Units','normalized','BackgroundColor','white')
+
+ax8=subplot(2,5,[5 10]);
+p = ax8.Position;
+delete(ax8);
+myTable = uitable('parent',hF,'units','normalized','position',p);
+myTable.Data = tbl_f3;
+set(myTable,'rowname',{},'columnname',{},'fontsize',8,'Columnwidth',{70 100});
+myTable.Position(3:4) = myTable.Extent(3:4);
+
+%% Make Output
+
+
+out = struct;
+out.SourceDirecotry = digdata.SourceDirectory;
+out.T = Ttot;
+out.X = X;
+out.Xs = Xs;
+out.Y = Y;
+out.Ys = Ys;
+out.Natoms = Natoms_mean;
+out.Params = [digdata.Params];
+out.Flags = [digdata.Flags];
+out.Units = [digdata.Units];
+
+out.S = S_mu;
+out.C = C_mu;
+out.x0 = x0_mu;
+out.v0 = v0_mu;
+out.Serr = S_sigma;
+out.Cerr = C_sigma;
+out.x0err = x0_sigma;
+out.v0err = v0_sigma;
+
+out.YsBar               = YsBar;
+out.YsBarErr            = YsBarErr ;
+out.XsBar               = XsBar;
+out.XsBarErr            = XsBarErr;
+out.NatomsErr           = Natoms_std;
+out.SpatialMaxUpDensity = SpatialMaxUpDensity;
+out.SpatialMaxUpDensityErr = SpatialMaxUpDensityErr;
+
+
+%% Define functions
+
+function fitParams = fitModel(data)
+    options = optimset('Display','off');
+    fitParams = lsqcurvefit(sinecosine, P_guess, data(:,1), data(:,2), [], [], options);
+end
+
 
 end
 

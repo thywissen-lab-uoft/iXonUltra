@@ -70,21 +70,21 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 %% Flags
 
 % Recenter all binned data to have same limits
-dig_doShowCloud                         = 1;
-dig_doShowCloudAnimate                  = 1;
-dig_standardAnalysis                    = 1;
+dig_doShowCloud                         = 0;1;
+dig_doShowCloudAnimate                  = 0;1;
+dig_standardAnalysis                    = 0;1;
 dig_ac_conductivity_fit                 = 0;
-dig_bootstrap_ac_conductivity_fit       = 0;
+dig_bootstrap_ac_conductivity_fit       = 1;
 dig_quench_conductivity_fit             = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
 
-dig_doRadialAnalysis2                   = 1;
-dig_doFidelity                          = 1;
+dig_doRadialAnalysis2                   = 0;1;
+dig_doFidelity                          = 0;1;
 
-do_cross_thermalization                 = 1;
+do_cross_thermalization                 = 0;1;
 
-do_qpd_analysis                         = 1;
+do_qpd_analysis                         = 0;1;
 
 %% QPD Analysis
 if do_qpd_analysis
@@ -276,17 +276,20 @@ end
 if dig_ac_conductivity_fit
 opts = dig_opts;
 
-opts.QPD_phi = mean([output.QPD_Modulation.Phi1 output.QPD_Modulation.Phi2]);
+%Load QPD data
+qpd_data_temp = load([opts.saveDir filesep 'qpd.mat']);
+opts.QPD_phi = mean([qpd_data_temp.QPD_Modulation.Phi1 qpd_data_temp.QPD_Modulation.Phi2]);
 % opts.QPD_phi = 0;
 [hF_conductivity,conductivity_data] = dig_ac_conductivity(digdata,opts);
     if dig_opts.doSave
         ixon_saveFigure2(hF_conductivity,...
          'dig_conductivity',dig_opts);  
+    
+        try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+        filename = fullfile(dig_opts.saveDir,'conductivity_data.mat');
+        disp(['Saving ' filename ' ...']);
+        save(filename, '-struct','conductivity_data');
     end
-    try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
-    filename = fullfile(dig_opts.saveDir,'conductivity_data.mat');
-    disp(['Saving ' filename ' ...']);
-    save(filename, '-struct','conductivity_data');
 % keyboard
 
 end
@@ -295,11 +298,13 @@ if dig_bootstrap_ac_conductivity_fit
     
 opts = dig_opts;
 
-opts.QPD_phi = mean([output.QPD_Modulation.Phi1 output.QPD_Modulation.Phi2]);
+%Load QPD data
+qpd_data_temp = load([opts.saveDir filesep 'qpd.mat']);
+opts.QPD_phi = mean([qpd_data_temp.QPD_Modulation.Phi1 qpd_data_temp.QPD_Modulation.Phi2]);
 % opts.QPD_phi = 0;
-[hF_conductivity,conductivity_data] = dig_bootstrap_ac_conductivity(digdata,opts);
+[hF_bootstrap_conductivity,bootstrap_conductivity_data] = dig_bootstrap_ac_conductivity(digdata,opts);
     if dig_opts.doSave
-        ixon_saveFigure2(hF_conductivity,...
+        ixon_saveFigure2(hF_bootstrap_conductivity,...
          'dig_bootstrap_conductivity',dig_opts);  
     
         try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
@@ -307,7 +312,7 @@ opts.QPD_phi = mean([output.QPD_Modulation.Phi1 output.QPD_Modulation.Phi2]);
         disp(['Saving ' filename ' ...']);
         save(filename, '-struct','bootstrap_conductivity_data');
     end
-    
+%     keyboard
 end
 
 if dig_quench_conductivity_fit

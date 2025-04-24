@@ -2029,13 +2029,18 @@ composite_data.Runs = runs;
 composite_data.Name = '2025_04_15 2.5 Er 57 mW cross thermalization, 100 ms ramp to (100, 175) mW, snap back to (198, 88) mW in 0.1 ms';
 
 %%
+composite_data_temp = struct;
+composite_data_temp.Runs = composite_data(1).Runs;
+composite_data_temp.Name = composite_data(1).Name;
+
+%%
 super_opts=struct;
 
-super_opts.do_ixon_main = 1;
-super_opts.do_ixon_bin_analysis = 1;
+super_opts.do_ixon_main = 0;
+super_opts.do_ixon_bin_analysis = 0;
 super_opts.do_ixon_dig_analysis = 1;
 
-ixon_super(composite_data,super_opts);
+ixon_super(composite_data_temp,super_opts);
  %% Gather Data
  clear opts;
  opts = struct;
