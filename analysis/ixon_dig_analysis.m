@@ -74,6 +74,7 @@ dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 0;
+dig_bootstrap_ac_conductivity_fit       = 0;
 dig_quench_conductivity_fit             = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
@@ -288,6 +289,25 @@ opts.QPD_phi = mean([output.QPD_Modulation.Phi1 output.QPD_Modulation.Phi2]);
     save(filename, '-struct','conductivity_data');
 % keyboard
 
+end
+
+if dig_bootstrap_ac_conductivity_fit
+    
+opts = dig_opts;
+
+opts.QPD_phi = mean([output.QPD_Modulation.Phi1 output.QPD_Modulation.Phi2]);
+% opts.QPD_phi = 0;
+[hF_conductivity,conductivity_data] = dig_bootstrap_ac_conductivity(digdata,opts);
+    if dig_opts.doSave
+        ixon_saveFigure2(hF_conductivity,...
+         'dig_bootstrap_conductivity',dig_opts);  
+    
+        try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
+        filename = fullfile(dig_opts.saveDir,'bootstrap_conductivity_data.mat');
+        disp(['Saving ' filename ' ...']);
+        save(filename, '-struct','bootstrap_conductivity_data');
+    end
+    
 end
 
 if dig_quench_conductivity_fit
