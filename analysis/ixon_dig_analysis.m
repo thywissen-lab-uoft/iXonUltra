@@ -313,7 +313,7 @@ if do_cross_thermalization
     [hF_XT,dig_XT_data] = dig_cross_thermalization(digdata,opts);
     if dig_opts.doSave
         ixon_saveFigure2(hF_XT,...
-         'dig_cross_thermalization',dig_opts);  
+         'dig_cross_thermalization_ODT_basis',dig_opts);  
     end
     try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
     filename = fullfile(dig_opts.saveDir,'dig_XT_data.mat');
