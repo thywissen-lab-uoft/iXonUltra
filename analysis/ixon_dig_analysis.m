@@ -73,7 +73,7 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 dig_doShowCloud                         = 0;1;
 dig_doShowCloudAnimate                  = 0;1;
 dig_standardAnalysis                    = 0;1;
-dig_ac_conductivity_fit                 = 0;
+dig_ac_conductivity_fit                 = 1;
 dig_bootstrap_ac_conductivity_fit       = 1;
 dig_quench_conductivity_fit             = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
@@ -302,17 +302,19 @@ opts = dig_opts;
 qpd_data_temp = load([opts.saveDir filesep 'qpd.mat']);
 opts.QPD_phi = mean([qpd_data_temp.QPD_Modulation.Phi1 qpd_data_temp.QPD_Modulation.Phi2]);
 % opts.QPD_phi = 0;
-[hF_bootstrap_conductivity,bootstrap_conductivity_data] = dig_bootstrap_ac_conductivity(digdata,opts);
+[hF_bootstrap_conductivity,hF_correlations,bootstrap_conductivity_data] = dig_bootstrap_ac_conductivity(digdata,opts);
     if dig_opts.doSave
         ixon_saveFigure2(hF_bootstrap_conductivity,...
-         'dig_bootstrap_conductivity',dig_opts);  
+         'dig_bootstrap_conductivity',dig_opts); 
+        ixon_saveFigure2(hF_correlations,...
+         'dig_bootstrap_correlations',dig_opts); 
     
         try if ~exist(dig_opts.saveDir,'dir');mkdir(dig_opts.saveDir);end;end
         filename = fullfile(dig_opts.saveDir,'bootstrap_conductivity_data.mat');
         disp(['Saving ' filename ' ...']);
         save(filename, '-struct','bootstrap_conductivity_data');
     end
-%     keyboard
+    keyboard
 end
 
 if dig_quench_conductivity_fit
