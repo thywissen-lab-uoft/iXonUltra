@@ -147,6 +147,7 @@ nBootstraps = 1e4; %number of bootstrap iterations
 
 A_boot = bootstat2(:,1);
 phi_boot = bootstat2(:,2);
+% phi_boot = mod(phi_boot+pi,2*pi) - pi; %fixes mod 2*pi issue?
 x02_boot = bootstat2(:,3);
 v02_boot = bootstat2(:,4);
 
@@ -359,6 +360,15 @@ out.Natoms = Natoms_mean;
 out.Params = [digdata.Params];
 out.Flags = [digdata.Flags];
 out.Units = [digdata.Units];
+
+out.S_boot = S_boot;
+out.C_boot = C_boot;
+out.x0_boot = x0_boot;
+out.v0_boot = v0_boot;
+out.A_boot = A_boot;
+out.phi_boot = phi_boot;
+out.x02_boot = x02_boot;
+out.v02_boot = v02_boot;
 
 out.S = S_mu;
 out.C = C_mu;
