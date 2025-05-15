@@ -170,8 +170,8 @@ runs = [
     2025 03 18 11;
     2025 03 18 12;
     2025 03 18 13;
-    2025 03 18 14;
-    2025 03 18 15;
+    2025 03 18 14; % not the best signal, but probably OK 
+    2025 03 18 15; % a few bad shots
     2025 03 18 16;
     2025 03 18 17;
     2025 03 18 18;
@@ -182,10 +182,10 @@ composite_data(end).Name = '2025_03_18 201.1 G spectra T = 1.4t';
 
 %% T = 2.2t (201.1G) 
 runs = [  
-    2025 03 20 06;
-    2025 03 20 07;
-    2025 03 20 08;
-    2025 03 20 09;
+    2025 03 20 06; % density decreases, but good signal
+    2025 03 20 07; % one bad shot
+    2025 03 20 08; % fluctuating density, not best signal
+    2025 03 20 09; % OK, but starting to go out of focus
     2025 03 21 01;
     2025 03 21 02;
     2025 03 21 03;
