@@ -185,18 +185,18 @@ runs = [
     2025 03 20 06; % density decreases, but good signal
     2025 03 20 07; % one bad shot
     2025 03 20 08; % fluctuating density, not best signal
-    2025 03 20 09; % OK, but starting to go out of focus
-    2025 03 21 01;
-    2025 03 21 02;
-    2025 03 21 03;
-    2025 03 21 04;
-    2025 03 21 05;
-    2025 03 21 06;
-    2025 03 21 07;
+    2025 03 20 09; % OK, but starting to go out of focus (next four folders are out of focus)
+    % 2025 03 21 01; % back in focus but much hotter and less dense
+    2025 03 21 02; 
+    2025 03 21 03; % not great signal
+    2025 03 21 04; 
+    2025 03 21 05; % not great signal
+    2025 03 21 06; 
+    2025 03 21 07; % not great signal
     2025 03 21 08;
     2025 03 21 09;
-    2025 03 21 10;
-    2025 03 21 11;
+    2025 03 21 10; % hotter
+    2025 03 21 11; 
     2025 03 21 12;
     2025 03 21 13;
     2025 03 21 14;

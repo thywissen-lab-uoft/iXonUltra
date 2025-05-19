@@ -24,24 +24,24 @@ composite_data = struct;
 % composite_data(end).Name = '2025_01_27 200 G specta 65 mW, 6 Er pulse';
 %% 190 G (requires different experimental trap parameters in analysis)
 runs = [  
-    2025 01 28 08;
-    2025 01 28 09;
+    2025 01 28 08; % not great signal
+    % 2025 01 28 09; % no signal
     2025 01 28 10;
 %     2025 01 28 11; %out of focus
     2025 01 28 12;
-    2025 01 28 13;
+    2025 01 28 13; % a bit larger
     2025 01 28 14;
-    2025 01 28 15;
+    % 2025 01 28 15; % pretty much no signal, slightly out of focus
     2025 01 28 16;
-    2025 01 28 17;
-    2025 01 28 18;
+    2025 01 28 17; % density a bit lower
+    2025 01 28 18; % not much of a signal, slightly out of focus
     2025 01 28 19;
     2025 01 28 20;
     2025 01 28 21;
     ];
 
 composite_data(end+1).Runs = runs;
-composite_data(end).Name = '2025_01_27 190 G specta 64.5 mW, 5.5 Er pulse';
+composite_data(end).Name = '2025_01_28 190 G spectrum 64.5 mW, 5.5 Er pulse';
 
 %% 200.9 G
 runs = [  
