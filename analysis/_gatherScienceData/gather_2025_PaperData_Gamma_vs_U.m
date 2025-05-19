@@ -35,8 +35,8 @@ runs = [
     2025 01 28 16;
     2025 01 28 17; % density a bit lower
     2025 01 28 18; % not much of a signal, slightly out of focus
-    2025 01 28 19;
-    2025 01 28 20;
+%     2025 01 28 19; % no signal
+    2025 01 28 20; % OK, a little warmer
     2025 01 28 21;
     ];
 
@@ -51,15 +51,16 @@ runs = [
     2025 03 12 19;
     2025 03 12 20;
     2025 03 12 21;
-    2025 03 13 01;
+    2025 03 13 01; % fluctuating density, inconsistent fluor/atom
     2025 03 13 02;
-    2025 03 13 03;
-    2025 03 13 04;
-    2025 03 13 06;
+    2025 03 13 03; % decreasing density
+    2025 03 13 04; % fluctuating density
+    2025 03 13 05; % perfectly fine, not sure why this wasn't analyzed
+    2025 03 13 06; 
     2025 03 13 07;
     2025 03 13 08;
-    2025 03 13 09;
-    2025 03 13 10;
+    2025 03 13 09; % drop in density
+    2025 03 13 10; 
     2025 03 13 11;
     ];
 
@@ -68,11 +69,11 @@ composite_data(end).Name = '2025_03_12 200.9 G specta 54.5 mW, 1 Er pulse';
 
 %% 200.6 G
 runs = [
-    2025 03 15 15
-    2025 03 15 16
+    2025 03 15 15 % decreasing density
+    2025 03 15 16 
     2025 03 15 17
     2025 03 15 18
-    2025 03 15 19
+    2025 03 15 19 
     2025 03 15 20
     2025 03 15 21
     2025 03 15 22
@@ -90,21 +91,21 @@ composite_data(end).Name = '2025_03_15 200.6 G spectrum 54 mW, 2.5 Er pulse';
 
 %% 201.1 G
 runs = [
-    2025 03 15 31
+    2025 03 15 31 
     2025 03 15 32
-    2025 03 16 01
+    2025 03 16 01 % 70 Hz density a little low
     2025 03 16 02
     2025 03 16 03
     2025 03 16 04
-    2025 03 16 05
-    2025 03 16 06
+    2025 03 16 05 % 100 Hz lower density
+    2025 03 16 06 
     2025 03 16 07
-    2025 03 16 08
-    2025 03 16 09
+    2025 03 16 08 % not the best signal
+%     2025 03 16 09 % few bad shots, no signal
     2025 03 16 10
     2025 03 16 11
     2025 03 16 12
-    2025 03 16 13
+    2025 03 16 13 % fluctuating/low density
     ];
 
 composite_data(end+1).Runs = runs;
@@ -113,7 +114,7 @@ composite_data(end).Name = '2025_03_16 201.1 G spectrum 54 mW, 3 Er pulse';
 %% 198.5 G
 runs = [
     2025 03 16 15
-    2025 03 16 16
+%     2025 03 16 16 % large drift/no signal
     2025 03 16 17 
     2025 03 16 18
     2025 03 16 19
