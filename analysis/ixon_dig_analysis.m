@@ -70,21 +70,21 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 %% Flags
 
 % Recenter all binned data to have same limits
-dig_doShowCloud                         = 0;1;
-dig_doShowCloudAnimate                  = 0;1;
-dig_standardAnalysis                    = 0;1;
+dig_doShowCloud                         = 1;
+dig_doShowCloudAnimate                  = 1;
+dig_standardAnalysis                    = 1;
 dig_ac_conductivity_fit                 = 1;
-dig_bootstrap_ac_conductivity_fit       = 1;
+dig_bootstrap_ac_conductivity_fit       = 0;
 dig_quench_conductivity_fit             = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
 
-dig_doRadialAnalysis2                   = 0;1;
+dig_doRadialAnalysis2                   = 1;
 dig_doFidelity                          = 0;1;
 
 do_cross_thermalization                 = 0;1;
 
-do_qpd_analysis                         = 0;1;
+do_qpd_analysis                         = 1;
 
 %% QPD Analysis
 if do_qpd_analysis
