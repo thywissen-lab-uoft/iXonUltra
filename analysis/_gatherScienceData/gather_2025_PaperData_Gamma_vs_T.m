@@ -49,31 +49,31 @@ runs = [
 
 composite_data(end+1).Runs = runs;
 composite_data(end).Name = '2024_12_05 201.1 G spectra T = 1t';
-%% T = 2.9t (201.1G) 
-runs = [  
-    2024 12 09 02; % OK
-    2024 12 09 03; % OK
-    2024 12 09 04; % fluctuating density, low amplitude response/bad fit
-%     2024 12 09 05; % decreasing density, slightly out of focus, bad fit
-    2024 12 09 06; % not great signal, but OK
-%     2024 12 10 01; % plane selection issues? inconsistent density, bad fit
-    2024 12 10 02; % not great fit
-    2024 12 10 03; % OK
-    2024 12 10 04; % low density, a few bad shots
-    2024 12 10 05; % OK
-    2024 12 10 06; % OK
-    2024 12 10 07; % OK
-    2024 12 10 08; % OK
-    2024 12 10 09; % OK
-%     2024 12 10 10; % bad fit, inconsistent density
-    2024 12 10 11; % OK
-    2024 12 10 12; % OK
-    2024 12 10 13; % OK
-    2024 12 10 14; % OK
-    ];
-
-composite_data(end+1).Runs = runs;
-composite_data(end).Name = '2024_12_09 201.1 G spectra T = 2.9t';
+%% T = 2.9t (201.1G) NOT ENOUGH HIGH FREQUENCY DATA POINTS TO DETERMINE GAMMA
+% runs = [  
+%     2024 12 09 02; % OK
+%     2024 12 09 03; % OK
+%     2024 12 09 04; % fluctuating density, low amplitude response/bad fit
+% %     2024 12 09 05; % decreasing density, slightly out of focus, bad fit
+%     2024 12 09 06; % not great signal, but OK
+% %     2024 12 10 01; % plane selection issues? inconsistent density, bad fit
+%     2024 12 10 02; % not great fit
+%     2024 12 10 03; % OK
+%     2024 12 10 04; % low density, a few bad shots
+%     2024 12 10 05; % OK
+%     2024 12 10 06; % OK
+%     2024 12 10 07; % OK
+%     2024 12 10 08; % OK
+%     2024 12 10 09; % OK
+% %     2024 12 10 10; % bad fit, inconsistent density
+%     2024 12 10 11; % OK
+%     2024 12 10 12; % OK
+%     2024 12 10 13; % OK
+%     2024 12 10 14; % OK
+%     ];
+% 
+% composite_data(end+1).Runs = runs;
+% composite_data(end).Name = '2024_12_09 201.1 G spectra T = 2.9t';
 
 %% T = 1.7t (201.1G) 
 runs = [  
@@ -214,8 +214,8 @@ composite_data = gatherCompositeData(composite_data);
 
 %% Upload
 
-% doUpload = true;
-doUpload = false;
+doUpload = true;
+% doUpload = false;
 
 GDrive_root =['G:\My Drive\Lattice Shared\SharedData\Conductivity_Saturated_23-24'];
 output_folder_name ='2025_paper_data_vs_T';
