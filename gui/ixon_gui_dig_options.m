@@ -16,7 +16,7 @@ opts.NormalizedThreshold    = 0.5;
 % 
 % % Use a manual threshold
 % opts.DigitizeMethod     = 'manual';
-% opts.ManualThreshold    = 2000;
+% opts.ManualThreshold    = 30000;
 
 % For future useful to not just do simple thresholding by somekind of
 % algorithm to calculate

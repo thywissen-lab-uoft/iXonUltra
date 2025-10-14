@@ -87,6 +87,7 @@ ixon_autoUnit       = 1;      % Auto detect unit for variable?
 % ixon_xVar           = 'conductivity_mod_time'; % Variable Name
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'tilt_notilt_shift'; % Variable Name
+ixon_xVar           = 'qgm_plane_uwave_frequency_offset_notilt';
 
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -101,7 +102,7 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 %% Analysis Options
 
 ixon_doBoxCount                     = 1;
-ixon_doGaussFit                     = 1;
+ixon_doGaussFit                     = 0;
 
 % Analysis to run
 ixon_doStandardAnalysis             = 1;
@@ -115,7 +116,7 @@ ixon_showFOffset                    = 1;
 %% QGM Single Plane Analysis
 
 % Master flag for QGM stuff
-ixon_doQGM                          = 1;
+ixon_doQGM                          = 0;
 ixon_doQGM_FindLattice              = 1;
 ixon_doQGM_Bin                      = 1;
 ixon_doQGM_BinStripe                = 0;
@@ -146,7 +147,7 @@ img_opt.doSubtractBG        = 1;
 img_opt.doScale             = 0;        % Scale up image? (good for single-site)
 img_opt.ScaleFactor         = 2;        % Amount to scale up by (x2 is good)
 img_opt.doRotate            = 1;        % Rotate image? (useful to align along lattices)
-img_opt.Theta               = 30;59.81;  % Rotation amount (deg.)
+img_opt.Theta               = 59.81;  % Rotation amount (deg.)
 img_opt.DetectNoise         = 1;
 img_opt.doMask              = 0;        % Mask the data? (not used)
 img_opt.Mask                = ixon_mask;% Mask File 512x512
@@ -170,6 +171,15 @@ ixonROI = [1 512 1 512];
 % ixonROI = [1 512 238-44 238+44];
 % ixonROI = [1 512 100 236-45];
 % ixonROI = [1 512 236+45 400];
+
+% bad square ROI + excited boxes
+ixonROI = [170 430 80 340; % FBZ
+            170 430 340 470; % top py
+            170 430 1 80; % bottom py
+            430 512 80 340; % right px
+            40 170 80 340]; % left px
+       
+
     
 
 %% Load the data
@@ -399,12 +409,14 @@ ixon_animateOpts.Source = 'ZNoFilter';
      ixon_animateOpts.CLim='auto';   % Automatically choose CLIM?
 %     ixon_animateOpts.CLim=[0 1500];   % Color limits
 %     ixon_animateOpts.CLim=[0 1000];   % Color limits
-    ixon_animateOpts.CLim=[0 700];
+    % ixon_animateOpts.CLim=[0 700];
+    % ixon_animateOpts.CLim=[0 1000];   % Automatically choose CLIM?
 if ~ixon_doQGM
-     % ixon_animateOpts.CLim='auto';
-     ixon_animateOpts.CLim=[0 10000];
+     ixon_animateOpts.CLim='auto';
+     % ixon_animateOpts.CLim=[0 10000];
+     % ixon_animateOpts.CLim=[0 5000];
 end
-      ixon_animateOpts.CLim=[0 500];   % Automatically choose CLIM?
+      % ixon_animateOpts.CLim=[0 1000];   % Automatically choose CLIM?
 
     ixon_animate(ixondata,ixon_xVar,ixon_animateOpts);
 end

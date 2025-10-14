@@ -40,7 +40,7 @@ dig_opts=bin_opts;
 dig_opts.NormalizedCenter = 1.07;       % Center point of normalized distribution (close to unity)
 dig_opts.NormalizedSigma  = 0.24;       % Gaussian radius of normalized distribution
 dig_opts.NormalizedThreshold = ...      % Simple thresholding
-    dig_opts.NormalizedCenter - 2.5*dig_opts.NormalizedSigma;
+    dig_opts.NormalizedCenter - 1*dig_opts.NormalizedSigma;
 
 digdata = bin_makeDigData2(bindata,dig_opts);
 
