@@ -487,9 +487,9 @@ for nn=1:length(opts.GaussFitDensityMax)
 end
 
 % Plot Gibbs fit
-ps(end+1) = plot(rVec,feval(GibbsFit,rVec),'-');
-legStr{end+1} = ['Gibbs $z_0 = ' num2str(GibbsFit.z0,'%.2f') '$, $T= ' num2str(T_HOt_g,'%.1f') 't$ ' ...
-    '(' num2str(T_HO_g_nK,'%.0f') ' nK)' ];
+% ps(end+1) = plot(rVec,feval(GibbsFit,rVec),'-');
+% legStr{end+1} = ['Gibbs $z_0 = ' num2str(GibbsFit.z0,'%.2f') '$, $T= ' num2str(T_HOt_g,'%.1f') 't$ ' ...
+%     '(' num2str(T_HO_g_nK,'%.0f') ' nK)' ];
 if ~isempty(opts.GaussFitDensityMax)
 legend(ps,legStr,'interpreter','latex','fontsize',8,...
     'location','northeast','parent',hF);
