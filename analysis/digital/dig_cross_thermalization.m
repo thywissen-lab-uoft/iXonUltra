@@ -2,13 +2,41 @@ function [hF_XT,dig_XT_data] = dig_cross_thermalization(digdata,opts)
 %% Load digdata
 d = digdata;
 
+
+%% Recalculate 2nd moment in ODT basis
+
+a_px = digdata.Lattice_px;
+a_um = digdata.Lattice_um;  
+
+for nn=1:length(digdata.FileNames)
+        for rr=1:size(digdata.Zdig,4)
+            Ratom = digdata.Ratom{nn,rr};
+            
+            Xs_px   = 0.5*std(Ratom(1,:)*sqrt(3)-Ratom(2,:));
+            Xs_site = Xs_px/a_px;
+            Xs_um(nn)   = Xs_site*a_um;
+        
+            Ys_px   = 0.5*std(Ratom(1,:)+sqrt(3)*Ratom(2,:));
+            Ys_site = Ys_px/a_px;
+            Ys_um(nn)   = Ys_site*a_um;       
+            
+            nPeakGauss(nn,rr) = digdata.Natoms(nn,rr)./(sqrt(2*pi*Xs_site.^2).*sqrt(2*pi*Ys_site.^2));
+              
+        end  
+end
+
 X = d.X;
 
 Xs = d.Xs_um;
 Ys = d.Ys_um;
 
+Xs = Xs_um';
+Ys = Ys_um';
+
 ratio = Xs./Ys;
 % Y = Ys;
+
+% keyboard
 
 %% Exponential fit
 
@@ -120,11 +148,12 @@ ylabel('\sigma_x^2 + \sigma_y^2 (um^2)')
 
 %% Output XT_data
 clear dig_XT_data
-dig_XT_data = struct;
-dig_XT_data.fitX = foutX;
-dig_XT_data.fitY = foutY;
-dig_XT_data.fitR = foutR;
-dig_XT_data.ratio = ratio;
+dig_XT_data            = struct;
+dig_XT_data.fitX       = foutX;
+dig_XT_data.fitY       = foutY;
+dig_XT_data.fitR       = foutR;
+dig_XT_data.ratio      = ratio;
+dig_XT_data.nPeakGauss = nPeakGauss;
 
 
 

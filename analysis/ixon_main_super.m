@@ -1604,30 +1604,33 @@ composite_data.Name = '2025_03_18 201.1 G spectrum 54.8 mW, 3 Er pulse';
 %%
 
 runs = [
-    2025 03 20 06
-    2025 03 20 07
-    2025 03 20 08
-    2025 03 20 09
-% %     2025 03 20 10
-% %     2025 03 20 11
-% %     2025 03 20 12 % out of focus
-% %     2025 03 20 13 % out of focus
-    2025 03 21 01
-    2025 03 21 02
-    2025 03 21 03
-    2025 03 21 04
-    2025 03 21 05
-    2025 03 21 06
-    2025 03 21 07
-    2025 03 21 08
-    2025 03 21 09
-    2025 03 21 10
-    2025 03 21 11
-    2025 03 21 12
-    2025 03 21 13
+%     2025 03 20 06
+%     2025 03 20 07
+%     2025 03 20 08
+%     2025 03 20 09
+% % %     2025 03 20 10
+% % %     2025 03 20 11
+% % %     2025 03 20 12 % out of focus
+% % %     2025 03 20 13 % out of focus
+%     2025 03 21 01
+%     2025 03 21 02
+%     2025 03 21 03
+%     2025 03 21 04
+%     2025 03 21 05
+%     2025 03 21 06
+%     2025 03 21 07
+%     2025 03 21 08
+%     2025 03 21 09
+%     2025 03 21 10
+%     2025 03 21 11
+%     2025 03 21 12
+%     2025 03 21 13
+%     
+%     2025 03 21 14
+%     2025 03 21 15
     
-    2025 03 21 14
-    2025 03 21 15
+    2025 03 21 22
+    2025 03 21 23
 
     ];
 composite_data = struct;
@@ -1965,14 +1968,20 @@ composite_data.Name = '2025_04_12 3.5 Er 195 G spectrum 53.5 mW, 2.5 Er pulse 74
 
 %%
 runs = [
+    2025 04 15 09
+    2025 04 15 10 
     2025 04 15 11
-%     2025 04 15 12 
-%     2025 04 15 13 
-%     2025 04 15 14 
-%     2025 04 15 15 
-%     2025 04 15 16
-%     2025 04 15 17
-%     2025 04 16 01 
+    2025 04 15 12 
+    2025 04 15 13 
+    2025 04 15 14 
+    2025 04 15 15 
+    2025 04 15 16
+    2025 04 15 17
+    2025 04 16 01 
+    2025 04 16 10 
+    2025 04 16 11 
+    2025 04 16 12 
+    2025 04 16 13 
     ];
 composite_data = struct;
 composite_data.Runs = runs;
@@ -1993,6 +2002,39 @@ composite_data = struct;
 composite_data.Runs = runs;
 composite_data.Name = '2025_04_15 2.5 Er 54 mW cross thermalization, 100 ms ramp to (100, 300) mW, snap back to (198, 88) mW in 0.1 ms';
 
+%%
+runs = [
+%     2025 04 16 14 % Fit constrained by 1st two points, not great
+%     2025 04 16 15 % first two
+    2025 04 16 16 
+%     2025 04 16 17 % looks underdamped, not great fit
+%     2025 04 16 18 % data not great
+    2025 04 16 19 
+    2025 04 17 01
+    2025 04 17 02
+    2025 04 17 03 
+    2025 04 17 04 
+%     2025 04 17 05 % low amplitude
+%     2025 04 17 06 % low amplitdue
+    2025 04 17 07 % looks underdamped
+    2025 04 17 08 % low amplitude - rotation issue?
+    2025 04 17 09 
+%     2025 04 17 10 % No signal/initial deformation
+    2025 04 17 11
+    2025 04 17 12
+    2025 04 17 13
+    2025 04 17 14
+%     2025 04 17 15 % not great signal
+    2025 04 17 16
+    ];
+composite_data = struct;
+composite_data.Runs = runs;
+composite_data.Name = '2025_04_15 2.5 Er 57 mW cross thermalization, 100 ms ramp to (100, 175) mW, snap back to (198, 88) mW in 0.1 ms';
+
+%%
+composite_data_temp = struct;
+composite_data_temp.Runs = composite_data(1).Runs;
+composite_data_temp.Name = composite_data(1).Name;
 
 %%
 super_opts=struct;
@@ -2001,9 +2043,13 @@ super_opts.do_ixon_main = 1;
 super_opts.do_ixon_bin_analysis = 1;
 super_opts.do_ixon_dig_analysis = 1;
 
-ixon_super(composite_data,super_opts);
+ixon_super(composite_data_temp,super_opts);
  %% Gather Data
- composite_data = gatherCompositeData(composite_data);
+ clear opts;
+ opts = struct;
+ opts.MatFiles = {'conductivity_data.mat','digdata.mat','dig_radial_data.mat','qpd.mat'};
+ opts.MatFiles = {'dig_XT_data.mat','digdata.mat','dig_radial_data.mat','qpd.mat'};
+ composite_data = gatherCompositeData(composite_data,opts);
 
  %% Save Composite Analysis locally and to google drive
  composite_save_opts = struct;

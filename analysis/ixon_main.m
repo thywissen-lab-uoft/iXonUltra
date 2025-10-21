@@ -82,9 +82,8 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 1;      % Auto detect changing variable?
+ixon_autoXVar       = 0;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
-% ixon_xVar           = 'conductivity_mod_time'; % Variable Name
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'tilt_notilt_shift'; % Variable Name
 ixon_xVar           = 'qgm_plane_uwave_frequency_offset_notilt';
