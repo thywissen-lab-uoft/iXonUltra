@@ -13,15 +13,19 @@ function ixondata=ixon_boxCount(ixondata,bgROI)
     for kk=1:length(ixondata)
 
         BoxCount=struct;    
-        for k=1:size(ixondata(kk).Z,3)
-            ROI=ixondata(kk).ROI;            
+        % for k=1:size(ixondata(kk).Z,3)
+        %     ROI=ixondata(kk).ROI; 
+        for k=1:size(ixondata(kk).ROI,1)
+            ROI=ixondata(kk).ROI(k,:);
+          
             ix_1 = find(ixondata(kk).X>=ROI(1),1);
             ix_2 = find(ixondata(kk).X>=ROI(2),1);
             iy_1 = find(ixondata(kk).Y>=ROI(3),1);
             iy_2 = find(ixondata(kk).Y>=ROI(4),1);            
             x = ixondata(kk).X(ix_1:ix_2);
             y = ixondata(kk).Y(iy_1:iy_2);   
-            z = ixondata(kk).Z(iy_1:iy_2,ix_1:ix_2,k);             
+            % z = ixondata(kk).Z(iy_1:iy_2,ix_1:ix_2,k);   
+            z = ixondata(kk).Z(iy_1:iy_2,ix_1:ix_2,1);  
             nbg=0;  
             Npeak = max(z,[],'all');            
             Nraw=sum(sum(z));

@@ -15,12 +15,15 @@ ixon_fit_opts = struct;
 ixon_fit_opts.NumberExpFit          = 0;
 ixon_fit_opts.NumberExpOffsetFit      = 0;
 ixon_fit_opts.Number_Lorentzian   = 0;
+ixon_fit_opts.Number_SineDecay    = 1;
 
 % Center position fit
 ixon_fit_opts.Center_Sine         = 0;
 ixon_fit_opts.Center_SineDecay    = 0;
 ixon_fit_opts.Center_SineGrow     = 0;
 ixon_fit_opts.Center_Linear       = 0;
+
+
 
 
 %% PLOTTING : BOX

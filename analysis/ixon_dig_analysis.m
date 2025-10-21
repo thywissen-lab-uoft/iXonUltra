@@ -56,10 +56,10 @@ dig_opts.FigLabel=digdata.SourceDirectory{1};
 
 % Choose what kind of variable to plot against (sequencer/camera)
 dig_opts.varType        = 'param';          % always select 'param' for now 
-dig_opts.autoXVar       = 1;                % Auto detect changing variable?
+dig_opts.autoXVar       = 0;                % Auto detect changing variable?
 dig_opts.autoUnit       = 1;                % Auto detect unit for variable?
 dig_opts.xVar           = 'conductivity_mod_time';  % Variable Name
-dig_opts.xVar           = 'tilt_notilt_offset';
+dig_opts.xVar           = 'ExecutionDate';
 %  dig_opts.xVar           = 'qgm_planeShift_N';  % Variable Name
 
 
@@ -73,18 +73,19 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 dig_doShowCloud                         = 1;
 dig_doShowCloudAnimate                  = 1;
 dig_standardAnalysis                    = 1;
-dig_ac_conductivity_fit                 = 1;
+dig_ac_conductivity_fit                 = 0;
 dig_bootstrap_ac_conductivity_fit       = 0;
 dig_quench_conductivity_fit             = 0;
 dig_doRadialAnalysis                        = 0; % has issues,obsolete
 dig_doRadialSkewAnalysis                    = 0; % has issues,obsolete
 
 dig_doRadialAnalysis2                   = 1;
-dig_doFidelity                          = 0;1;
 
-do_cross_thermalization                 = 0;1;
+dig_doFidelity                          = 0;
+do_cross_thermalization                 = 0;
 
-do_qpd_analysis                         = 1;
+
+do_qpd_analysis                         = 0;
 
 %% QPD Analysis
 if do_qpd_analysis
@@ -152,6 +153,14 @@ if dig_doFidelity && size(digdata.Zdig,4)==2
         if ~isempty(hF_FidelityMap)
                 ixon_saveFigure2(hF_FidelityMap,...
                     hF_FidelityMap.Name,dig_opts);  
+        end           
+    end
+
+    hF_FidelitySummary = dig_showFidelitySummary(digdata,dig_opts);
+    if dig_opts.doSave       
+        if ~isempty(hF_FidelitySummary)
+                ixon_saveFigure2(hF_FidelitySummary,...
+                    hF_FidelitySummary.Name,dig_opts);  
         end           
     end
 end

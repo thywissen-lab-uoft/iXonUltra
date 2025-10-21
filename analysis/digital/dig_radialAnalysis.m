@@ -27,7 +27,7 @@ strRadialBin = ['radial bin ' char(916) ...
     'r:' num2str(opts.BinStep) ', R_0: ' num2str(opts.Bin0)];
 
 % YOU NEED A BETTER VERSION OF MATLAB TO DO OTHER DENSITY MAXIMUMS
-if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [1];end
+if ~isfield(opts,'GaussFitDensityMax');opts.GaussFitDensityMax = [.2];end
 %% Constants
 
 % Physical constants

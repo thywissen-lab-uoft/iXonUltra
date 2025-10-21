@@ -1,86 +1,95 @@
-function [outputArg1,outputArg2] = dig_showFidelitySummary(fidelity)
+function hF = dig_showFidelitySummary(digdata,opts)
 
+if nargin~=2
+    opts=struct;
+end
+%% Analysis
 
-digdata.Fidelity = fidelity;
+pdLoss = fitdist([digdata.lost_fraction]','normal');
+Rloss_mean=pdLoss.mu; 
+Rloss_sigma=pdLoss.sigma;
+loss_str = ['$' num2str(round(100*Rloss_mean,1)) '\% \pm' num2str(round(100*Rloss_sigma,1)) '\% $'];
 
-%% Summary Figure
+pdLossCenter = fitdist([digdata.lost_fraction_center]','normal');
+RlossCenter_mean=pdLossCenter.mu; 
+RlossCenter_sigma=pdLossCenter.sigma;
+losscen_str = ['$' num2str(round(100*RlossCenter_mean,1)) '\% \pm' num2str(round(100*RlossCenter_sigma,1)) '\% $'];
 
-if length(digdata.FileNames)>1
-    hF_out = figure;
-    set(hF_out,'color','w','Name',['fidelity_summary']);
+pdHop = fitdist([digdata.hop_fraction]','normal');
+Rhop_mean=pdHop.mu; 
+Rhop_sigma=pdHop.sigma;
+hop_str = ['$' num2str(round(100*Rhop_mean,1)) '\% \pm' num2str(round(100*Rhop_sigma,1)) '\% $'];
+
+% Peak charge density if it were a gaussian
+nPeakGauss=mean(digdata.nPeakGauss,2);
+
+%% Make the figure
+if ~isfield(opts,'Parent') || isempty(opts.Parent)
+    opts.Parent = figure;
+    set(opts.Parent,'color','w','Name',['fidelity_summary']);
     clf
-    hF_out.Position=[0 710 1300 250];
-    if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
-        t=uicontrol('style','text','string',opts.FigLabel,'fontsize',7,...
-            'backgroundcolor','w','Position',[1 1 600 15],'horizontalalignment','left');
-        t.Position(2) = t.Parent.Position(4)-t.Position(4)-2;
-    end
 
-    X= [digdata.X];
-    co=get(gca,'colororder');
-    subplot(141);
-    p1=plot(X,[fidelity.N1],'ko','markerfacecolor',co(4,:),'color',...
-        co(4,:)*.5,'linewidth',1);
-    hold on
-    p2=plot(X,[fidelity.N2],'^','markerfacecolor',co(5,:),'color',...
-        co(5,:)*.5,'linewidth',1);
-    ylabel('atom number')
-    if isequal(digdata.xVar,'ExecutionDate')
-        datetick x
-    end
-    legend([p1 p2],{'N1','N2'});
-    yL=get(gca,'YLim');
-    set(gca,'YLim',[0 yL(2)]);
-    xlabel(digdata.xVar,'interpreter','none');
-
-    subplot(142);
-    pLost=plot(X,[fidelity.Nlost],'o','markerfacecolor',co(2,:),'color',...
-        co(2,:)*.5,'linewidth',1);
-    hold on
-    pHop=plot(X,[fidelity.Nhop],'o','markerfacecolor',co(1,:),'color',...
-        co(1,:)*.5,'linewidth',1);
-    legend([pLost pHop],{'N lost','N hop'});
-    ylabel('number')
-    if isequal(digdata.xVar,'ExecutionDate')
-        datetick x
-    end
-    yL=get(gca,'YLim');
-    set(gca,'YLim',[0 yL(2)]);
-    xlabel(digdata.xVar,'interpreter','none');
-
-    subplot(143);
-    pRLost=plot(X,[fidelity.Rlost],'o','markerfacecolor',co(2,:),'color',...
-        co(2,:)*.5,'linewidth',1);
-    hold on
-    pRHop=plot(X,[fidelity.Rhop],'o','markerfacecolor',co(1,:),'color',...
-        co(1,:)*.5,'linewidth',1);
-    legend([pRLost pRHop],{'rate lost','rate hop'});
-    ylabel('number')
-    if isequal(digdata.xVar,'ExecutionDate')
-        datetick x
-    end
-    yL=get(gca,'YLim');
-    set(gca,'YLim',[0 yL(2)]);
-    xlabel(digdata.xVar,'interpreter','none');
-
-    subplot(144);
-    dz = digdata.Zdig(:,:,:,1)-digdata.Zdig(:,:,:,2);
-    defects = abs(dz);
-    defects = sum(defects,3);
-    imagesc(n1,n2,defects);
-    colormap jet
-    title('defect map');
-    colorbar 
-    axis equal tight
-
-    xc = mean(digdata.Xc_site,'all');
-    yc = mean(digdata.Yc_site,'all');
-
-    xlim(xc+[-50 50])
-    ylim(yc+[-50 50])
-
-
+    opts.Parent.Position=[50 50 700 500];
 end
 
-end
+hF=opts.Parent;
 
+if isfield(opts,'FigLabel') && ~isempty(opts.FigLabel)
+    t=uicontrol('style','text','string',opts.FigLabel,'fontsize',7,...
+        'backgroundcolor','w','Position',[1 1 600 15],'horizontalalignment','left',...
+        'parent',hF);
+    % t.Position(2) = t.Parent.Position(4)-t.Position(4)-2;
+end
+ 
+ax1 = subplot(211);
+co=get(gca,'colororder');
+pL_all=plot([digdata.X],100*[digdata.lost_fraction],'o','markerfacecolor',co(1,:),...
+    'color',co(1,:)*.5,'linewidth',1);
+hold on
+pL_cen=plot([digdata.X],100*[digdata.lost_fraction_center],'o','markerfacecolor',co(2,:),...
+    'color',co(2,:)*.5,'linewidth',1);
+ 
+pH=plot([digdata.X],100*[digdata.hop_fraction],'^','markerfacecolor',co(3,:),...
+    'color',co(3,:)*.5,'linewidth',1);
+
+
+xlabel(digdata.xVar,'interpreter','none');
+if isequal(digdata.xVar,'ExecutionDate')
+    datetick x;
+end
+ylim([0 30]);
+ylabel('rate (%)');
+
+yyaxis right
+set(gca,'YColor',[.5 .5 .5]);
+pDensity=plot([digdata.X],nPeakGauss,'x','color',[.5 .5 .5]);
+ylim([0 .5])
+ylabel('charge density')
+
+legend([pL_all,pL_cen,pH,pDensity],...
+    {'loss (all R) ',...
+    ['loss (R<' num2str(digdata.FidelityCenterRadius) ')'],...
+    'hop (all R)','peak gauss'},'orientation','horizontal','location','northwest')
+
+subplot(234);
+p1=histfit([digdata.lost_fraction]);
+title('total loss fraction')
+ylabel('occurences')
+xlabel('rate');
+legend(p1(2),loss_str,'interpreter','latex')
+
+subplot(235);
+p2=histfit([digdata.lost_fraction_center]);
+title(['center loss fraction (R<' num2str(digdata.FidelityCenterRadius) ')']);
+ylabel('occurences')
+xlabel('rate');
+legend(p2(2),losscen_str,'interpreter','latex')
+
+subplot(236);
+p3=histfit([digdata.hop_fraction]);
+title('hop fraction')
+ylabel('occurences')
+xlabel('rate');
+legend(p3(2),hop_str,'interpreter','latex')
+
+end

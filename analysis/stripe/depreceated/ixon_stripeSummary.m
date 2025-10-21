@@ -27,11 +27,38 @@ t.Position(3)=hF2.Position(3);
 t.Position(1:2)=[5 hF2.Position(4)-t.Position(4)];
 
 
+% Phase
+fitWavelength=1;
+if fitWavelength
+    
+    myfit = fittype('L/(I-I0)',...
+        'coefficients',{'L','I0'},...
+        'independent','I');
+
+    % Fit options and guess
+    opt=fitoptions(myfit);        
+    Lg = 300;
+    I0g = -1;
+    G=[Lg I0g];        
+    opt.StartPoint=G;
+
+    % Perform the fit
+    fout=fit(xvals',[stripes.L]',myfit,opt)
+
+    l_text = sprintf('\\lambda =%.2f px/(I - (%.2f A))',fout.L,fout.I0);
+    end
+
 % Wavelength
 subplot(221);
 errorbar(xvals,[stripes.L],[stripes.L_err],'marker','o',...
     'MarkerFacecolor',cface1,'markeredgecolor',cedge1,'linestyle','none',...
     'linewidth',1.5,'color',cedge1);
+if fitWavelength
+    hold on;
+    ii = linspace(min(xvals),max(xvals),1000);
+    lfit = plot(ii,feval(fout,ii));
+    legend(lfit,l_text,'interpeter','latex')
+end
 xlabel([opts.xVar ' (' opts.xUnit ')'],'interpreter','none');
 ylabel('wavelength (px)');
 grid on
