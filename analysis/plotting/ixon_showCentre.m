@@ -618,6 +618,8 @@ guess_freq = fVec(ind);
 % Get the phase
 guess_phi = atan2(imag(CC(ind)),real(CC(ind))); 
 
+guess_freq = 0.17;
+
 % keyboard
 
 % Tau Guess

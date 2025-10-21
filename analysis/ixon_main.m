@@ -87,6 +87,7 @@ ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'tilt_notilt_shift'; % Variable Name
 ixon_xVar           = 'qgm_plane_uwave_frequency_offset_notilt';
+ixon_xVar           = 'lattice_FB_Raman_time';
 
 ixon_overrideUnit   = 'V';    % If ixon_autoUnit=0, use this
 ixon_doSave         = 1;    % Save Analysis?
@@ -171,13 +172,39 @@ ixonROI = [1 512 1 512];
 % ixonROI = [1 512 100 236-45];
 % ixonROI = [1 512 236+45 400];
 
-% bad square ROI + excited boxes
-ixonROI = [170 430 80 340; % FBZ
-            170 430 340 470; % top py
-            170 430 1 80; % bottom py
-            430 512 80 340; % right px
-            40 170 80 340]; % left px
-       
+dy = 5;30;
+dx = -10;-20;
+
+% ixonROI = [170+dx 390+dx 120+dy 340+dy; % FBZ
+%             170+dx 390+dx 340+dy 450+dy; % top py
+%             170+dx 390+dx 10+dy 120+dy; % bottom py
+%             390+dx 500+dx 120+dy 340+dy; % right px
+%             60+dx 170+dx 120+dy 340+dy]; % left px
+% 
+% ixonROI = [170+dx 390+dx 340+dy 450+dy; % top py
+%     60+dx 170+dx 120+dy 340+dy]; % left px
+% 
+% % ixonROI = [170+dx 390+dx 340+dy 450+dy; % top py
+% %     390+dx 500+dx 120+dy 340+dy]; % rihgt px
+% 
+% ixonROI = [170+dx 390+dx 120+dy 340+dy; % FBZ
+%             60+dx 170+dx 120+dy 340+dy]; % left px
+% 
+% ixonROI = [170+dx 390+dx 120+dy 340+dy; % FBZ
+%             390+dx 500+dx 120+dy 340+dy]; % right px
+
+ixonROI = [210+dx 360+dx 160+dy 260+dy; % FBZ
+            210+dx 360+dx 110+dy 160+dy; % top py
+            210+dx 360+dx 260+dy 310+dy]; % bottom py
+            % 140+dx 210+dx 160+dy 260+dy; % left px
+            % 360+dx 430+dx 160+dy 260+dy]; % right px
+
+% ixonROI = [210+dx 360+dx 110+dy 160+dy; % top py
+%             210+dx 360+dx 260+dy 310+dy; % bottom py   
+%             140+dx 210+dx 160+dy 260+dy; % left px
+%             360+dx 430+dx 160+dy 260+dy]; % right px
+        
+           
 
     
 

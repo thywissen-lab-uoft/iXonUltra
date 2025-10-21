@@ -19,7 +19,16 @@ end
 %% Sort the data by the parameter given
 params=[data.Params];
 X=[params.(xVar)]';
-Natoms = data.N;
+xvals = X';
+% Natoms = data.N;
+
+% Natoms(:,1) = data.N(:,1) + data.N(:,2);
+% Natoms(:,2) = data.N(:,3) + data.N(:,4);
+% 
+Natoms(:,1) = data.N(:,1);
+Natoms(:,2) = data.N(:,2) + data.N(:,3);
+
+
 
 opts = fit_opts;
 
@@ -116,6 +125,15 @@ ylabel([data.FitType ' number']);
         
 % Plot the data
 for nn=1:size(Natoms,2)
+
+    % if nn==1
+    %         yyaxis left;
+    %         ylabel([data.FitType ' number 1']);
+    % else
+    %         yyaxis right;
+    %         ylabel([data.FitType ' number p']);
+    % end
+
     [cface,cedge] = ixoncolororder(nn);
    plot(X,Natoms(:,nn),'o','color',cedge,'linewidth',1,'markersize',8,...
        'markerfacecolor',cface,'markeredgecolor',cedge);
@@ -126,6 +144,7 @@ if (opts.NumberExpFit || opts.NumberExpOffsetFit) && size(Natoms,1)>3
     xx=linspace(0,max(X),1000);
     
     for nn=1:size(Natoms,2)
+
         
         [cface,cedge] = ixoncolororder(nn);
         
@@ -192,6 +211,198 @@ if size(Natoms,2)==2
 end
 ixon_resizeFig(hF,t,[hax]);
 
+%% Sine Decay
+
+if isfield(fit_opts,'Number_SineDecay') && fit_opts.Number_SineDecay && length(xvals)>4
+
+    yyaxis left
+
+    tVec=linspace(min(xvals),max(xvals),100);   
+    
+    % X Fit
+    axes(hax);
+    fit1=makeSineDecayFit(xvals',Natoms(:,nn));
+    plot(tVec,feval(fit1,tVec),'r-');  
+
+    % sTblX.ColumnWidth={60 60 60};
+    % sTblY.ColumnWidth={60 60 60};
+    % 
+    % cX=coeffvalues(fit1);
+    % cInt=confint(fit1);
+    % 
+    % data={};
+    % 
+    % sTblX.Data={};
+    % data{1,1}='amp (px)';
+    % data{2,1}='freq';
+    % data{3,1}='period';
+    % data{4,1}='phase (rad)';
+    % data{6,1}='offset (px)';
+    % data{5,1}='tau ';
+    % 
+    % data{1,2}=cX(1);
+    % data{2,2}=cX(2);
+    % data{3,2}=1/cX(2);
+    % data{4,2}=cX(3);
+    % data{5,2}=cX(4);
+    % data{6,2}=cX(5);
+    % 
+    % data{1,3}=range(cInt(:,1))/2;
+    % data{2,3}=range(cInt(:,2))/2;
+    % data{3,3}=(range(cInt(:,2))/2)./(cX(2)).^2;
+    % data{4,3}=range(cInt(:,3))/2;
+    % data{5,3}=range(cInt(:,4))/2;
+    % data{6,3}=range(cInt(:,5))/2;
+    % 
+    % data{7,1}='<HTML> &Delta;X (px)</HTML>';
+    % data{7,2}=range(Xc(:,nn));
+    % data{8,1}='<HTML> Mean(x) </HTML>';
+    % data{8,2}=mean(Xc(:,nn));
+    % 
+    % sTblX.Data=data;
+    % sTblX.Position(3)=sTblX.Extent(3);
+    % sTblX.Position(4)=sTblX.Extent(4); 
+    % 
+    % % Y Fit
+    % data={};
+    % 
+    % 
+    % axes(hax2);
+    % fit2=makeSineDecayFit(xvals',Yc(:,nn));
+    % 
+    % plot(tVec,feval(fit2,tVec),'r-');  
+    % 
+    % cY=coeffvalues(fit2);
+    % 
+    % cInt=confint(fit2);
+    % 
+    % data{1,3}=range(cInt(:,1))/2;
+    % data{2,3}=range(cInt(:,2))/2;
+    % 
+    % data{3,3}=(range(cInt(:,2))/2)./(cY(2)).^2;
+    % data{4,3}=range(cInt(:,3))/2;
+    % data{5,3}=range(cInt(:,4))/2;
+    % data{6,3}=range(cInt(:,5))/2;
+    % 
+    % sTblY.Data={};
+    % data{1,1}='amp (px)';
+    % data{2,1}='freq';
+    % data{3,1}='period';
+    % data{4,1}='phase (rad)';
+    % data{6,1}='offset (px)';
+    % data{5,1}='tau ';
+    % 
+    % data{1,2}=cY(1);
+    % data{2,2}=cY(2);
+    % data{3,2}=1/cY(2);
+    % 
+    % data{4,2}=cY(3);
+    % data{5,2}=cY(4);
+    % data{6,2}=cY(5);
+    % 
+    % data{7,1}='<HTML> &Delta;Y (px)</HTML>';
+    % data{7,2}=range(Yc(:,nn));
+    % data{8,1}='<HTML> Mean(y) </HTML>';
+    % data{8,2}=mean(Yc(:,nn));
+    % 
+    % sTblY.Data=data;
+    % sTblY.Position(3)=sTblY.Extent(3);
+    % sTblY.Position(4)=sTblY.Extent(4); 
+    % drawnow;
+end
+
+
 
 end
 
+%% Fit funcs
+
+function fitResult=makeSineDecayFit(X,Y,W)
+
+% GUESS : AMPLITUDE
+guess_amp = 0.5*range(Y);
+
+% GUESS : OFFSET
+guess_off = (max(Y)+min(Y))*.5;
+
+% GUESS : FREQUENCY
+dX = diff(sort(unique(X),'ascend'));
+dXMin = min(dX);             % Minimum separation sets highest freq
+dXMax = max(X) - min(X);     % Total range sets lowest freq
+
+% Set reasonable frequency guess bounds
+freq_min = 1.5*(1/dXMax);
+freq_max = 0.2*(1/dXMin);
+% freq_min = 0.03;
+% freq_max = 0.05;
+N=1e4;
+
+% Do a correlation measurement with the frequency vector
+fVec = linspace(freq_min,freq_max,N);
+CC=zeros(N,1);
+Yosc = Y(:)-guess_off;
+for nn=1:N
+    fme = fVec(nn);
+    Yf = exp(1i*2*pi*fme*X(:));
+    CC(nn) = sum(Yf.*Yosc);
+end
+
+% Find the index whose frequency has the highest correlation
+[~,ind] = max(abs(CC).^2);
+
+% Get the frequency
+guess_freq = fVec(ind);
+% Get the phase
+guess_phi = atan2(imag(CC(ind)),real(CC(ind))); 
+
+% guess_freq = 0.17;
+
+% keyboard
+
+% Tau Guess
+guess_tau = max(X) - min(X);
+guess_tau = 40;
+
+% In case of sine grow
+if max(Y(1:round(length(Y)/2))) < max(Y(round(length(Y)/2):end))
+    guess_tau = -guess_tau;
+end
+
+% Override Guess
+% guess_tau = 1000;           % manual override
+% guess_freq = .3; % manual overide
+
+
+cosFit=fittype('amp*cos(2*pi*freq*t-phi)*exp(-t/tau)+off','independent',{'t'},...
+    'coefficients',{'amp','freq','phi','tau','off'});
+options=fitoptions(cosFit);          
+
+options.TolFun = 1E-14;
+options.Lower  = [...
+    0.5*guess_amp,...
+    .5*guess_freq,...
+    guess_phi-pi, ...
+    -abs(guess_tau)*20, ...
+    guess_off-100];
+options.Upper  = [...
+    2*guess_amp, ...
+    2.0*guess_freq,...
+    guess_phi+pi, ...
+    abs(guess_tau)*20, ...
+    guess_off+100];
+options.StartPoint = [guess_amp, guess_freq,...
+    guess_phi,guess_tau, guess_off];
+options.MaxIter = 3000;
+options.MaxFunEvals = 3000;
+options.TolFun = 1E-9;
+
+if nargin==3
+   options.Weights = W;
+end                
+
+fitResult=fit(X,Y,cosFit,options);             
+disp(fitResult);
+
+
+
+end
