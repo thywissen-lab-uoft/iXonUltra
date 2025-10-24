@@ -20,15 +20,26 @@ end
 params=[data.Params];
 X=[params.(xVar)]';
 xvals = X';
-% Natoms = data.N;
+
+%% Sort the Data based on which image and ROI numbers are of interest
+ % (Default is image 1 and ROI 1)
+ imNums = plt_opts.ImageNumber;
+ ROINums = plt_opts.ROINumber;
+ ind = 1;
+ for ii = imNums
+     for rr = ROINums
+        Natoms(:,ind) = data.N(:,ii,rr);
+        ind = ind+1;
+     end
+ end
+
+% Natoms = data.N(:,1,1);
 
 % Natoms(:,1) = data.N(:,1) + data.N(:,2);
 % Natoms(:,2) = data.N(:,3) + data.N(:,4);
-% 
-Natoms(:,1) = data.N(:,1);
-Natoms(:,2) = data.N(:,2) + data.N(:,3);
-
-
+% % 
+% Natoms(:,1) = data.N(:,1);
+% Natoms(:,2) = data.N(:,2) + data.N(:,3);
 
 opts = fit_opts;
 
@@ -221,7 +232,7 @@ if isfield(fit_opts,'Number_SineDecay') && fit_opts.Number_SineDecay && length(x
     
     % X Fit
     axes(hax);
-    fit1=makeSineDecayFit(xvals',Natoms(:,nn));
+    fit1=makeSineDecayFit(xvals',Natoms(:,1)); %Currently fits only the first data set, needs to be updated
     plot(tVec,feval(fit1,tVec),'r-');  
 
     % sTblX.ColumnWidth={60 60 60};

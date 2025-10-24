@@ -21,17 +21,19 @@ X = reshape(X,[length(X) 1]);
 bgROI=ixondata(1).BoxCount.bgROI;        % ROI for calculating bgkd
 
 for kk=1:length(ixondata)
-   for nn=1:length(ixondata(kk).BoxCount)
-        bc=ixondata(kk).BoxCount(nn);               % Grab the fit   
-        N(kk,nn)=bc.Ncounts;        % Number of counts (w/ bkgd removed)
-        Nraw(kk,nn)=bc.Nraw;          % Raw of number of counts
-        Nbg(kk,nn)=bc.Nbkgd;          % Bakcground number of counts
-        nbg(kk,nn)=bc.nbkgd;          % Background counts/px
-        Xc(kk,nn)=bc.Xc;              % X center of mass
-        Yc(kk,nn)=bc.Yc;              % Y center of mass
-        Xs(kk,nn)=bc.Xs;              % X standard deviation
-        Ys(kk,nn)=bc.Ys;              % Y standard deviation                      
-        Zs(kk,nn)=bc.Xs;              % Y standard deviation      
+    for ll = 1:size(ixondata(kk).BoxCount,1)
+       for nn=1:length(ixondata(kk).BoxCount(ll,:))
+            bc=ixondata(kk).BoxCount(ll,nn);               % Grab the fit   
+            N(kk,ll,nn)=bc.Ncounts;        % Number of counts (w/ bkgd removed)
+            Nraw(kk,ll,nn)=bc.Nraw;          % Raw of number of counts
+            Nbg(kk,ll,nn)=bc.Nbkgd;          % Bakcground number of counts
+            nbg(kk,ll,nn)=bc.nbkgd;          % Background counts/px
+            Xc(kk,ll,nn)=bc.Xc;              % X center of mass
+            Yc(kk,ll,nn)=bc.Yc;              % Y center of mass
+            Xs(kk,ll,nn)=bc.Xs;              % X standard deviation
+            Ys(kk,ll,nn)=bc.Ys;              % Y standard deviation                      
+            Zs(kk,ll,nn)=bc.Xs;              % Y standard deviation  
+       end
    end        
 end
 

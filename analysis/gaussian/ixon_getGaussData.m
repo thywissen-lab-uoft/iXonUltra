@@ -19,14 +19,15 @@ X = reshape(X,[length(X) 1]);
 %% Grab the Erf Fit outputs
 
 for kk=1:length(ixondata)
-   for nn=1:length(ixondata(kk).GaussFit)            
-        fout=ixondata(kk).GaussFit{nn};             % Grab the fit             
-        Xc(kk,nn)=fout.Xc;Yc(kk,nn)=fout.Yc;        % X and Y center
-        Xs(kk,nn)=fout.Xs;Ys(kk,nn)=fout.Ys;        % X and Y sigma
-        A(kk,nn)=fout.A;                            % Amplitude
-        nbg(kk,nn)=fout.nbg;                        % Background
-        N(kk,nn)=2*pi*Xs(kk,nn)*Ys(kk,nn)*A(kk,nn);  % Number of counts
-        
+    for ll = 1:size(ixondata(kk).GaussFit,1)
+       for nn=1:length(ixondata(kk).GaussFit(ll,:))            
+            fout=ixondata(kk).GaussFit{ll,nn};             % Grab the fit             
+            Xc(kk,ll,nn)=fout.Xc;Yc(kk,ll,nn)=fout.Yc;        % X and Y center
+            Xs(kk,ll,nn)=fout.Xs;Ys(kk,ll,nn)=fout.Ys;        % X and Y sigma
+            A(kk,ll,nn)=fout.A;                            % Amplitude
+            nbg(kk,ll,nn)=fout.nbg;                        % Background
+            N(kk,ll,nn)=2*pi*Xs(kk,ll,nn)*Ys(kk,ll,nn)*A(kk,ll,nn);  % Number of counts
+       end 
    end        
 end
 

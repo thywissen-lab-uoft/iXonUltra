@@ -15,14 +15,29 @@ end
 if ~isfield(plt_opts,'FigLabel')
     plt_opts.FigLabel = '';
 end
+
+%% Sort the Data based on which image and ROI numbers are of interest
+ % (Default is image 1 and ROI 1) The Xs and Ys list will be populated will
+ % all ROIs for a given image first, and then proceed with the second
+ % image, and so on.
+ imNums = plt_opts.ImageNumber;
+ ROINums = plt_opts.ROINumber;
+ ind = 1;
+ for ii = imNums
+     for rr = ROINums
+        Xs(:,ind) = data.Xs(:,ii,rr);
+        Ys(:,ind) = data.Ys(:,ii,rr);
+        ind = ind+1;
+     end
+ end
 %% Grab Data
 
 params=[data.Params];
 xvals=[params.(xVar)];
 
 PixelSize = data.PixelSize;
-Xs = data.Xs*PixelSize/data.Magnification;
-Ys = data.Ys*PixelSize/data.Magnification;
+Xs = Xs*PixelSize/data.Magnification;
+Ys = Ys*PixelSize/data.Magnification;
 
 %% Make Figure
 

@@ -7,6 +7,8 @@ ixon_plt_opts.NumberScale = 'Linear';
 % plt_opts.NumberScale = 'Log';
 ixon_plt_opts.PositionUnit = 'px';
 % plt_opts.PositionUnit = 'um';
+ixon_plt_opts.ImageNumber = [1]; %Choose which image numbers are of interest
+ixon_plt_opts.ROINumber = [1]; %Choose which ROIs are of interest, 1 will be full FOV
 
 %% Fitting Options
 ixon_fit_opts = struct;
@@ -22,9 +24,6 @@ ixon_fit_opts.Center_Sine         = 0;
 ixon_fit_opts.Center_SineDecay    = 0;
 ixon_fit_opts.Center_SineGrow     = 0;
 ixon_fit_opts.Center_Linear       = 0;
-
-
-
 
 %% PLOTTING : BOX
 

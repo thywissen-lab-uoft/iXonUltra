@@ -82,7 +82,7 @@ end
 
 % Choose what kind of variable to plot against (sequencer/camera)
 varType             = 'param'; % always select 'param' for now 
-ixon_autoXVar       = 0;      % Auto detect changing variable?
+ixon_autoXVar       = 1;      % Auto detect changing variable?
 ixon_autoUnit       = 1;      % Auto detect unit for variable?
 ixon_xVar           = 'ExecutionDate'; % Variable Name
 % ixon_xVar           = 'tilt_notilt_shift'; % Variable Name
@@ -102,7 +102,7 @@ autoVar_Ignore = {'f_offset','piezo_offset'};
 %% Analysis Options
 
 ixon_doBoxCount                     = 1;
-ixon_doGaussFit                     = 0;
+ixon_doGaussFit                     = 1;
 
 % Analysis to run
 ixon_doStandardAnalysis             = 1;
@@ -111,6 +111,9 @@ ixon_doAnimate                      = 1;    % Animate in position domain
 ixon_doAnalyzeRaw                   = 0;    % Raw Image Analysis
 ixon_doAnalyzeFourier               = 0;    % Fourier Domain Analysis
 ixon_doAnalyzeStripes2D             = 0;    % Stripe Analysis :  for field stability in titled plane selection
+
+%Do Custom Analysis
+ixon_doCustomAnalysisBM               = 1;
 
 ixon_showFOffset                    = 1;
 %% QGM Single Plane Analysis
@@ -175,6 +178,13 @@ ixonROI = [1 512 1 512];
 dy = 5;30;
 dx = -10;-20;
 
+%%Use this for Custom Analysis BM
+ixonROI_BM = [210+dx 360+dx 160+dy 260+dy; % FBZ
+            210+dx 360+dx 110+dy 160+dy; % top py
+            210+dx 360+dx 260+dy 310+dy; % bottom py
+            140+dx 210+dx 160+dy 260+dy; % left px
+            360+dx 430+dx 160+dy 260+dy]; % right px
+
 % ixonROI = [170+dx 390+dx 120+dy 340+dy; % FBZ
 %             170+dx 390+dx 340+dy 450+dy; % top py
 %             170+dx 390+dx 10+dy 120+dy; % bottom py
@@ -193,13 +203,7 @@ dx = -10;-20;
 % ixonROI = [170+dx 390+dx 120+dy 340+dy; % FBZ
 %             390+dx 500+dx 120+dy 340+dy]; % right px
 
-ixonROI = [210+dx 360+dx 160+dy 260+dy; % FBZ
-            210+dx 360+dx 110+dy 160+dy; % top py
-            210+dx 360+dx 260+dy 310+dy]; % bottom py
-            % 140+dx 210+dx 160+dy 260+dy; % left px
-            % 360+dx 430+dx 160+dy 260+dy]; % right px
-
-% ixonROI = [210+dx 360+dx 110+dy 160+dy; % top py
+% ixonROI_BM = [210+dx 360+dx 110+dy 160+dy; % top py
 %             210+dx 360+dx 260+dy 310+dy; % bottom py   
 %             140+dx 210+dx 160+dy 260+dy; % left px
 %             360+dx 430+dx 160+dy 260+dy]; % right px
@@ -306,7 +310,11 @@ if ixon_doSave
     save(filename,'Params');
 end
 %% Distribute ROI
-[ixondata.ROI]=deal(ixonROI);
+if ixon_doCustomAnalysisBM
+    [ixondata.ROI]=deal([ixonROI; ixonROI_BM]);
+else
+    [ixondata.ROI]=deal(ixonROI);
+end
 [ixondata.Magnification] = deal(ixon_Magnification);
 [ixondata.PixelSize] = deal(ixon_PixelSize);
 
@@ -376,7 +384,7 @@ if ixon_doGaussFit
 end
 
 
-%% Profiles
+%% Profiles (Note: this is not compatible with multiple images per cycle)
 profile_opts = struct;
 profile_opts.Style = 'cut'; 'sum';  % Cut or sum?
 % profile_opts.Style = 'sum';  % Cut or sum?
@@ -474,6 +482,8 @@ end
 
 %% Standard Cloud Analysis
 if ixon_doStandardAnalysis;ixon_StandardAnalysis;end
+%% Custom Cloud Analysis
+if ixon_doCustomAnalysisBM; ixon_CustomAnalysis_BM; end
 %% Raw Image Analysis
 if ixon_doAnalyzeRaw;ixon_AnalyzeRawImages;end
 %% Fourier Analysis

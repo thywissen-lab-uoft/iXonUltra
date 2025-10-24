@@ -18,9 +18,20 @@ end
 
 doFit = 1;
 
-%% Get Data
-Xc = datain.Xc;
-Yc = datain.Yc;
+%% Sort the Data based on which image and ROI numbers are of interest
+ % (Default is image 1 and ROI 1)
+ imNums = plt_opts.ImageNumber;
+ ROINums = plt_opts.ROINumber;
+ ind = 1;
+ for ii = imNums
+     for rr = ROINums
+        Xc(:,ind) = datain.Xc(:,ii,rr);
+        Yc(:,ind) = datain.Yc(:,ii,rr);
+        ind = ind+1;
+     end
+ end
+
+%% Get Data Params
 
 params = [datain.Params];
 xvals = [params.(xVar)];
